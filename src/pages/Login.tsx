@@ -16,6 +16,7 @@ import {
   InputGroup,
 } from "@chakra-ui/react";
 import { IoEyeOutline, IoEyeOffOutline } from "react-icons/io5";
+import { useTranslation } from "react-i18next";
 import icon from "../assets/human_ico.png";
 import OtpInput from "../components/otpInput";
 
@@ -31,6 +32,7 @@ export default function Login() {
   const [loginState, setLoginState] = useState("parent"); // "parent" or "children"
 
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   const parentFormFields = [
     { name: "email", type: "email", placeholder: "Email" },
@@ -136,7 +138,7 @@ export default function Login() {
               color={"on_backgroudColor"}
               fontWeight={"bold"}
             >
-              Login in to your iGrade
+              {t("login_title")}
             </Heading>
             <Text
               fontSize={"md"}
@@ -144,8 +146,7 @@ export default function Login() {
               color={"mediumGrey"}
               my={5}
             >
-              Enter your email address and password to securely login to you
-              iGrade account
+              {t("login_desc")}
             </Text>
           </Box>
 
@@ -286,7 +287,7 @@ export default function Login() {
                 color="white"
                 borderRadius="xl"
               >
-                Login
+                {t("login")}
               </Button>
             </Flex>
           </form>

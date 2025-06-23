@@ -1,0 +1,14 @@
+{
+    "welcome": "Hello",
+    "welcome_complement": "You are doing well",
+    "login": "Log In",
+    "logout": "Log Out",
+  "register": "Create Account",
+    "dashboard": "Dashboard",
+    "login_desc": "Enter your email address and password to securely login to your iGrade account",
+    "login_title": "Login in to your iGrade",
+    "langEn": "English",
+    "langZulu": "Zulu",
+    "langAfrik": "Afrikaans"
+  }
+  

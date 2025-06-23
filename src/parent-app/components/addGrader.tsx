@@ -1,7 +1,8 @@
 import { useState } from "react";
 import {getParentId} from "../utils/getParentId";
 import { supabase } from "../../lib/supabaseClient";
-import { Input } from "@chakra-ui/react";
+import { Input, Button } from "@chakra-ui/react";
+
 
 function AddGrader() {
   const [formData, setFormData] = useState({
@@ -15,10 +16,8 @@ function AddGrader() {
     school:"",
     profile_image: "",
   });
-
-
-
   const [status, setStatus] = useState("");
+  
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
