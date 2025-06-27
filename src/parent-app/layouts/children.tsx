@@ -81,8 +81,8 @@ const Children = (prop: Props) => {
                   {
                     studentsData.filter(
                       (student) =>
-                        student.subscription === "standard" ||
-                        student.subscription === "premium"
+                        student.subscription === "Standard" ||
+                        student.subscription === "Premium"
                     ).length
                   }
                 </Heading>

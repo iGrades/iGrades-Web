@@ -39,8 +39,6 @@ const Home = (props: Props) => {
         return <Student />;
       case "settings":
         return <Settings />;
-      case "community":
-        return <Community />;
       default:
         return <Homepage />;
     }
@@ -52,7 +50,6 @@ const Home = (props: Props) => {
         <Sidebar />
         <DashboardLayout renderPage={renderPage} />
       </Flex>
-      <LogoutBtn />
     </Box>
   );
 };

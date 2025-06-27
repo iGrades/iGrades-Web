@@ -40,14 +40,25 @@ const Navbar = ({userFirstName, userLastName}: Props) => {
       zIndex="1000"
     >
       {/* logo image */}
-      <Box display="flex" alignItems="center" bg="white" w={{base:'25%', md:'15%'}} mr={{ base: 4, md: 6, lg: 0 }}>
+      <Box
+        display="flex"
+        alignItems="center"
+        bg="white"
+        w={{ base: "25%", md: "15%" }}
+        mr={{ base: 4, md: 6, lg: 0 }}
+      >
         <Image src={logo} alt="Logo" width="150px" fit="cover" />
       </Box>
 
       <Flex bg="white" w="85%" justify="space-between" alignItems="center">
         {/* welcome text */}
         <Box>
-          <Heading as="h1" size={{base:'lg', md:'xl', lg:'2xl'}} ml={1} color="on_backgroundColor">
+          <Heading
+            as="h1"
+            size={{ base: "lg", md: "xl", lg: "2xl" }}
+            ml={1}
+            color="on_backgroundColor"
+          >
             {t("welcome")} {userFirstName || "User"}, 🤗
           </Heading>
           <Text ml={1} fontSize="xs" color="greyOthers">
@@ -102,7 +113,10 @@ const Navbar = ({userFirstName, userLastName}: Props) => {
           >
             <IoNotifications />
           </Icon>
-          <AvatarComp username={`${userFirstName ?? ''} ${userLastName ?? ''}`.trim()} />
+          <AvatarComp
+            username={`${userFirstName ?? ""} ${userLastName ?? ""}`.trim()}
+            
+          />
         </Box>
       </Flex>
     </Flex>

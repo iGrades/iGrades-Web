@@ -1,19 +1,30 @@
-import React, { useEffect, useState } from "react";
-import { supabase } from "@/lib/supabaseClient";
-import { Box, Text } from "@chakra-ui/react";
+import React from "react";
+import { Box, Text, Image } from "@chakra-ui/react";
 import { useStudentsData } from "../context/studentsDataContext";
 import GraderTable from "./graderTable";
+import addFiles_img from "../../assets/addFiles_img.svg"
 
 const GraderDetails = () => {
-
-   // gets students data array from the studentsDataContext
-    const { studentsData } = useStudentsData();
+  // gets students data array from the studentsDataContext
+  const { studentsData } = useStudentsData();
 
   return (
     <Box>
-        <GraderTable studentsData={studentsData} />
+      <GraderTable studentsData={studentsData} />
       {studentsData.length === 0 ? (
-        <Text>No students found.</Text>
+        <Box
+          w="full"
+          display="flex"
+          flexDirection="column"
+          justifyItems="center"
+          alignItems="center"
+        >
+          <Text my={10}>
+            You have not added any child yet. Click the Students section to add
+            a child
+          </Text>
+          <Image src={addFiles_img} />
+        </Box>
       ) : null}
     </Box>
   );

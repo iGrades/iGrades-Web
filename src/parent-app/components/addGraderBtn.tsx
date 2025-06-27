@@ -2,17 +2,41 @@ import React from "react";
 import type { Dispatch, SetStateAction } from "react"
 import { Button } from "@chakra-ui/react";
 import { AiOutlineUserAdd } from "react-icons/ai";
+import { LiaUserTimesSolid } from "react-icons/lia";
+
 type Props = {
   showBox: boolean;
-  setShowBox: Dispatch<SetStateAction<boolean>>
+  setShowBox: Dispatch<SetStateAction<boolean>>;
+  basePageWidth: number;
+  mdPageWidth: number;
+  lgPageWidth: number;
 };
 
-const AddGraderBtn = ({showBox, setShowBox}: Props) => {
+const AddGraderBtn = ({ showBox, setShowBox, basePageWidth, mdPageWidth, lgPageWidth}: Props) => {
   return (
-    <Button bg='white' color='blue.600' borderColor='blue.600' borderRadius='3xl' p={5} w='20%' fontSize={'xs'} onClick={()=> setShowBox(!showBox)}>
-      <AiOutlineUserAdd fontSize={'xs'} />
-      Add New Child
-    </Button>
+    <>
+      {!showBox && (
+        <Button
+          bg="white"
+          color="blue.600"
+          borderColor="blue.600"
+          borderRadius="3xl"
+          outline="none"
+          p={5}
+          // w={{ base: "100%", md: "25%", lg: "20%" }}
+          w={{
+            base: `${basePageWidth}%`,
+            md: `${mdPageWidth}%`,
+            lg: `${lgPageWidth}%`,
+          }}
+          fontSize={"xs"}
+          onClick={() => setShowBox(!showBox)}
+        >
+          <AiOutlineUserAdd fontSize={"xs"} />
+          Add New Child
+        </Button>
+      )}
+    </>
   );
 };
 

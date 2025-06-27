@@ -7,18 +7,17 @@ import { RiUserCommunityLine } from "react-icons/ri";
 import { useNavigationStore } from "../store/usenavigationStore";
 import type { IconType } from "react-icons";
 import type { Page } from "../store/usenavigationStore";
+import LogoutBtn from "@/parent-app/components/logoutBtn";
 
 type Props = [];
 
 const Sidebar = () => {
-  const [isActive, setIsActive] = useState(true);
   const { currentPage, setCurrentPage } = useNavigationStore();
 
   const parentsAsideElem: { icon: IconType; label: string; value: Page }[] = [
     { icon: PiHouseLineDuotone, label: "Home", value: "home" },
-    { icon: PiStudentDuotone, label: "Students", value: "student" },
+    { icon: PiStudentDuotone, label: "Grader", value: "student" },
     { icon: AiTwotoneSetting, label: "Settings", value: "settings" },
-    { icon: RiUserCommunityLine, label: "Community", value: "community" },
   ];
 
   return (
@@ -56,9 +55,10 @@ const Sidebar = () => {
             </Text>
           </Box>
         ))}
+         <LogoutBtn />
       </Box>
 
-      {isActive ? (
+{/* medium and smaller screens floating nav */}
         <Box
           as="aside"
           display={{ base: "block", lg: "none" }}
@@ -102,7 +102,7 @@ const Sidebar = () => {
             ))}
           </Flex>
         </Box>
-      ) : null}
+    
     </>
   );
 };

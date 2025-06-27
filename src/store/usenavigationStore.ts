@@ -1,6 +1,6 @@
 import { create } from "zustand";
 
-export type Page = "home" | "student" | "settings" | "community";
+export type Page = "home" | "student" | "settings";
 
 interface NavigationState {
   currentPage: Page;

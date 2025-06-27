@@ -1,25 +1,38 @@
 import React, { useState } from "react";
 import SearchBar from "../components/searchBar";
 import { Flex, Box } from "@chakra-ui/react";
-
 import AddGraderBtn from "../components/addGraderBtn";
-import AddGrader from "../components/addGrader";
 import GraderDetails from "../components/graderDetails";
-import GraderTable from "../components/graderTable";
+import AddGraderPopup from "../components/addGraderPopover";
 
 type Props = {};
 
-const StudentPage = (props: Props) => {
+const StudentPage = () => {
   const [showBox, setShowBox] = useState(false);
-  const [showPage, setShowPage] = useState(false);
 
   return (
     <Flex direction="column" w="95%" m="auto">
-      <Flex w="full" my={5} justify="space-between" align="center">
+      <Flex
+        direction={{ base: "column", md: "row" }}
+        gap={4}
+        w="full"
+        my={5}
+        justify="space-between"
+        align="center"
+      >
         <SearchBar />
-        <AddGraderBtn showBox={showBox} setShowBox={setShowBox} />
+        <AddGraderBtn
+          showBox={showBox}
+          setShowBox={setShowBox}
+          basePageWidth={100}
+          mdPageWidth={25}
+          lgPageWidth={20}
+        />
       </Flex>
-      <Box>{showBox ? <AddGrader /> : <GraderDetails />}</Box>
+      <Box>
+        <GraderDetails />
+        {showBox && <AddGraderPopup onClose={() => setShowBox(false)} />}
+      </Box>
     </Flex>
   );
 };

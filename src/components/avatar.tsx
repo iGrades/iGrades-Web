@@ -3,8 +3,9 @@ import { Avatar, HStack } from "@chakra-ui/react";
 
 type Props = {
   username?: string;
+  profileImage?: any;
 };
-const AvatarComp = ({username}: Props) => {
+const AvatarComp = ({username, profileImage}: Props) => {
     const colorPalette = ["red", "blue", "green", "yellow", "purple", "orange"];
 
     const pickPalette = (name: string) => {
@@ -16,7 +17,7 @@ const AvatarComp = ({username}: Props) => {
     <HStack>
       <Avatar.Root colorPalette={pickPalette(username ?? "")}>
         <Avatar.Fallback name={username} />
-        <Avatar.Image src="https://bit.ly/broken-link" />
+        <Avatar.Image src={profileImage} />
       </Avatar.Root>
     </HStack>
   );

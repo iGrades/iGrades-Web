@@ -14,7 +14,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
   ...rest
 }) => {
   return (
-    <InputGroup w='40%' startElement={<IoMdSearch color="black" />}>
+    <InputGroup w={{base: '100%', md:'50%', lg:'40%'}} startElement={<IoMdSearch color="black" />}>
       <Input
         type="search"
         placeholder={placeholder}
