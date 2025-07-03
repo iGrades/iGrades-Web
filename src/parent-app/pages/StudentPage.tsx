@@ -31,7 +31,7 @@ const StudentPage = () => {
       </Flex>
       <Box>
         <GraderDetails />
-        {showBox && <AddGraderPopup onClose={() => setShowBox(false)} />}
+        {showBox && <AddGraderPopup showBox={showBox} setShowBox={setShowBox} onClose={() => setShowBox(false)} />}
       </Box>
     </Flex>
   );

@@ -14,18 +14,29 @@ import {
   createListCollection,
   Select,
   Portal,
+  Alert,
 } from "@chakra-ui/react";
 import manikin from "../../assets/manikin.png";
 import addPix from "../../assets/addPix.png";
-
+import AddGraderSuccessPopover from "./addGraderSuccessPopover";
+import type { Dispatch, SetStateAction } from "react";
 interface AddGraderProps {
   basePageWidth: number;
   mdPageWidth: number;
   lgPageWidth: number;
   radius: string;
+  showBox: boolean;
+  setShowBox: Dispatch<SetStateAction<boolean>>;
 }
 
-function AddGrader({ basePageWidth, mdPageWidth, lgPageWidth, radius }: AddGraderProps) {
+function AddGrader({
+  basePageWidth,
+  mdPageWidth,
+  lgPageWidth,
+  radius,
+  showBox,
+  setShowBox
+}: AddGraderProps) {
   const [formData, setFormData] = useState({
     email: "",
     firstname: "",
@@ -37,9 +48,12 @@ function AddGrader({ basePageWidth, mdPageWidth, lgPageWidth, radius }: AddGrade
     school: "",
     profile_image: "",
   });
-  const [status, setStatus] = useState("");
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
-
+  const [showModal, setShowModal] = useState(false);
+  const [alert, setAlert] = useState<{
+    status: "success" | "error";
+    message: string;
+  } | null>(null);
 
   const selectCollections = {
     genders: createListCollection({
@@ -108,21 +122,24 @@ function AddGrader({ basePageWidth, mdPageWidth, lgPageWidth, radius }: AddGrade
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setStatus("Uploading image...");
+    setAlert({ status: "success", message: "Uploading image..." });
 
     const parentId = await getParentId();
     if (!parentId) {
-      setStatus("Parent not found or not authenticated.");
+      setAlert({
+        status: "error",
+        message: "Parent not found or not authenticated.",
+      });
       return;
     }
 
     const imageUrl = await handleImageUpload();
     if (!imageUrl) {
-      setStatus("Image upload failed.");
+      setAlert({ status: "error", message: "Image upload failed." });
       return;
     }
 
-    setStatus("Adding student...");
+    setAlert({ status: "success", message: "Adding student..." });
 
     const { error } = await supabase.from("students").insert({
       ...formData,
@@ -131,266 +148,306 @@ function AddGrader({ basePageWidth, mdPageWidth, lgPageWidth, radius }: AddGrade
     });
 
     if (error) {
-      setStatus("Error: " + error.message);
+      setAlert({ status: "error", message: "Error: " + error.message });
     } else {
-      setStatus("Student added successfully!");
+      setAlert({ status: "success", message: "Student created successfully!" });
+      setFormData({
+        email: "",
+        firstname: "",
+        lastname: "",
+        date_of_birth: "",
+        gender: "",
+        class: "",
+        basic_language: "",
+        school: "",
+        profile_image: "",
+      });
+      setSelectedFile(null);
+      setShowModal(true);
     }
+
+    // Optional: Auto-dismiss alert after 5 seconds
+    setTimeout(() => {
+      setAlert(null);
+    }, 5000);
   };
 
   return (
-    <Box
-      as="section"
-      bg="white"
-      boxShadow="lg"
-      p={{ base: "5", md: "10" }}
-      m="auto"
-      w={{
-        base: `${basePageWidth}%`,
-        md: `${mdPageWidth}%`,
-        lg: `${lgPageWidth}%`,
-      }}
-      rounded={radius}
-      mb={{ base: "24", lg: "10" }}
-    >
-      <Box w={{ base: "3/4", md: "1/2" }} m="auto" textAlign="center">
-        <Heading
-          as="h1"
-          fontSize="3xl"
-          color="backgroundColor2"
-          fontWeight={700}
-          mt={{base: '14', md: '5'}}
-        >
-          Student Credentials
-        </Heading>
-        <Text fontSize="sm" my={1} color="on_containerColor" fontWeight={400}>
-          Please fill the field provided correctly
-        </Text>
-      </Box>
-
-      <Box w="1/2" m="auto" textAlign="center">
-        <Box position="relative" display="inline-block" mx="auto" mt={16}>
-          <Box
-            display="flex"
-            justifyContent="center"
-            alignItems="center"
-            bg="textFieldColor"
-            overflow="hidden"
-            w="90px"
-            h="90px"
-            borderRadius="2xl"
+    <>
+      <Box
+        as="section"
+        bg="white"
+        boxShadow="lg"
+        p={{ base: "5", md: "10" }}
+        m="auto"
+        w={{
+          base: `${basePageWidth}%`,
+          md: `${mdPageWidth}%`,
+          lg: `${lgPageWidth}%`,
+        }}
+        rounded={radius}
+        mb={{ base: "24", lg: "10" }}
+      >
+        <Box w={{ base: "3/4", md: "1/2" }} m="auto" textAlign="center">
+          <Heading
+            as="h1"
+            fontSize="3xl"
+            color="backgroundColor2"
+            fontWeight={700}
+            mt={{ base: "14", md: "5" }}
           >
-            {selectedFile ? (
-              <Image
-                src={URL.createObjectURL(selectedFile)}
-                alt="profile preview"
-                fit="cover"
-                w="full"
-                h="full"
-                borderRadius="2xl"
-              />
-            ) : (
-              <Image src={manikin} alt="add profile photo" boxSize="40px" />
-            )}
-          </Box>
-
-          <label>
-            <Image
-              src={addPix}
-              alt="add button"
-              boxSize="30px"
-              position="absolute"
-              bottom="0"
-              right="0"
-              transform="translate(30%, 30%)"
-              borderRadius="full"
-              bg="textFieldColor"
-              p="1"
-              cursor="pointer"
-              boxShadow="md"
-            />
-            <Input
-              type="file"
-              accept="image/*"
-              hidden
-              onChange={(e) => {
-                const file = e.target.files?.[0];
-                if (file) setSelectedFile(file);
-              }}
-            />
-          </label>
+            Student Credentials
+          </Heading>
+          <Text fontSize="sm" my={1} color="on_containerColor" fontWeight={400}>
+            Please fill the field provided correctly
+          </Text>
         </Box>
-      </Box>
 
-      <form onSubmit={handleSubmit}>
-        <Grid
-          templateColumns={{ base: "repeat(1, 1fr)", md: "repeat(2, 1fr)" }}
-          gap="6"
-          my="10"
-        >
-          {["firstname", "lastname", "email", "school", "date_of_birth"].map(
-            (index, field) => (
-              <Field.Root key={field}>
-                <Field.Label color="on_backgroundColor" fontSize="xs">
-                  {index
-                    .replace(/_/g, " ")
-                    .replace(/\b\w/g, (c) => c.toUpperCase())}
-                </Field.Label>
-                <Input
-                  name={index}
-                  placeholder={index
-                    .replace(/_/g, " ")
-                    .replace(/\b\w/g, (c) => c.toUpperCase())}
-                  onChange={handleChange}
-                  required
-                  type={
-                    index === "email"
-                      ? "email"
-                      : index === "date_of_birth"
-                      ? "date"
-                      : "text"
-                  }
-                  border="none"
-                  bg="textFieldColor"
-                  fontSize="xs"
+        <Box w="1/2" m="auto" textAlign="center">
+          <Box position="relative" display="inline-block" mx="auto" mt={16}>
+            <Box
+              display="flex"
+              justifyContent="center"
+              alignItems="center"
+              bg="textFieldColor"
+              overflow="hidden"
+              w="90px"
+              h="90px"
+              borderRadius="2xl"
+            >
+              {selectedFile ? (
+                <Image
+                  src={URL.createObjectURL(selectedFile)}
+                  alt="profile preview"
+                  fit="cover"
+                  w="full"
+                  h="full"
+                  borderRadius="2xl"
                 />
-              </Field.Root>
-            )
+              ) : (
+                <Image src={manikin} alt="add profile photo" boxSize="40px" />
+              )}
+            </Box>
+
+            <label>
+              <Image
+                src={addPix}
+                alt="add button"
+                boxSize="30px"
+                position="absolute"
+                bottom="0"
+                right="0"
+                transform="translate(30%, 30%)"
+                borderRadius="full"
+                bg="textFieldColor"
+                p="1"
+                cursor="pointer"
+                boxShadow="md"
+              />
+              <Input
+                type="file"
+                accept="image/*"
+                hidden
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (file) setSelectedFile(file);
+                }}
+              />
+            </label>
+          </Box>
+        </Box>
+
+        <form onSubmit={handleSubmit}>
+          <Grid
+            templateColumns={{ base: "repeat(1, 1fr)", md: "repeat(2, 1fr)" }}
+            gap="6"
+            my="10"
+          >
+            {["firstname", "lastname", "email", "school", "date_of_birth"].map(
+              (index, field) => (
+                <Field.Root key={field}>
+                  <Field.Label color="on_backgroundColor" fontSize="xs">
+                    {index
+                      .replace(/_/g, " ")
+                      .replace(/\b\w/g, (c) => c.toUpperCase())}
+                  </Field.Label>
+                  <Input
+                    name={index}
+                    placeholder={index
+                      .replace(/_/g, " ")
+                      .replace(/\b\w/g, (c) => c.toUpperCase())}
+                    onChange={handleChange}
+                    required
+                    type={
+                      index === "email"
+                        ? "email"
+                        : index === "date_of_birth"
+                        ? "date"
+                        : "text"
+                    }
+                    border="none"
+                    bg="textFieldColor"
+                    fontSize="xs"
+                  />
+                </Field.Root>
+              )
+            )}
+
+            {/* gender select */}
+            <Select.Root
+              collection={selectCollections.genders}
+              size="md"
+              onValueChange={(e) =>
+                setFormData({ ...formData, gender: e.value[0] })
+              }
+            >
+              <label htmlFor="gender" style={{ fontSize: "0.75rem" }}>
+                Gender
+              </label>
+              <Select.HiddenSelect name="gender" />
+              <Select.Control>
+                <Select.Trigger
+                  border="none"
+                  outline="none"
+                  bg="textFieldColor"
+                  cursor="pointer"
+                >
+                  <Select.ValueText placeholder="Select gender" fontSize="xs" />
+                </Select.Trigger>
+                <Select.IndicatorGroup>
+                  <Select.Indicator />
+                </Select.IndicatorGroup>
+              </Select.Control>
+              <Portal>
+                <Select.Positioner>
+                  <Select.Content>
+                    {selectCollections.genders.items.map((item) => (
+                      <Select.Item key={item.value} item={item}>
+                        {item.label}
+                        <Select.ItemIndicator />
+                      </Select.Item>
+                    ))}
+                  </Select.Content>
+                </Select.Positioner>
+              </Portal>
+            </Select.Root>
+
+            {/* languages select */}
+            <Select.Root
+              collection={selectCollections.languages}
+              size="md"
+              onValueChange={(e) =>
+                setFormData({ ...formData, basic_language: e.value[0] })
+              }
+            >
+              <label htmlFor="language" style={{ fontSize: "0.75rem" }}>
+                Basic Language
+              </label>
+              <Select.HiddenSelect name="language" />
+              <Select.Control>
+                <Select.Trigger
+                  border="none"
+                  outline="none"
+                  bg="textFieldColor"
+                  cursor="pointer"
+                >
+                  <Select.ValueText
+                    placeholder="Select Basic Language"
+                    fontSize="xs"
+                  />
+                </Select.Trigger>
+                <Select.IndicatorGroup>
+                  <Select.Indicator />
+                </Select.IndicatorGroup>
+              </Select.Control>
+              <Portal>
+                <Select.Positioner>
+                  <Select.Content>
+                    {selectCollections.languages.items.map((item) => (
+                      <Select.Item key={item.value} item={item}>
+                        {item.label}
+                        <Select.ItemIndicator />
+                      </Select.Item>
+                    ))}
+                  </Select.Content>
+                </Select.Positioner>
+              </Portal>
+            </Select.Root>
+
+            {/* classes select */}
+            <Select.Root
+              collection={selectCollections.classes}
+              size="md"
+              onValueChange={(e) =>
+                setFormData({ ...formData, class: e.value[0] })
+              }
+            >
+              <label htmlFor="class" style={{ fontSize: "0.75rem" }}>
+                Class
+              </label>
+              <Select.HiddenSelect name="class" />
+              <Select.Control>
+                <Select.Trigger
+                  border="none"
+                  outline="none"
+                  bg="textFieldColor"
+                  cursor="pointer"
+                >
+                  <Select.ValueText placeholder="Select Class" fontSize="xs" />
+                </Select.Trigger>
+                <Select.IndicatorGroup>
+                  <Select.Indicator />
+                </Select.IndicatorGroup>
+              </Select.Control>
+              <Portal>
+                <Select.Positioner>
+                  <Select.Content>
+                    {selectCollections.classes.items.map((item) => (
+                      <Select.Item key={item.value} item={item}>
+                        {item.label}
+                        <Select.ItemIndicator />
+                      </Select.Item>
+                    ))}
+                  </Select.Content>
+                </Select.Positioner>
+              </Portal>
+            </Select.Root>
+          </Grid>
+          {/* alert */}
+          {alert && (
+            <Alert.Root
+              status={alert.status}
+              borderRadius="md"
+              my={4}
+              fontSize="sm"
+            >
+              <Alert.Indicator />
+              <Alert.Title mr={2}>
+                {alert.status === "error" ? "Error" : "Success"}:
+              </Alert.Title>
+              <Alert.Description>{alert.message}</Alert.Description>
+            </Alert.Root>
           )}
 
-          {/* gender select */}
-          <Select.Root
-            collection={selectCollections.genders}
-            size="md"
-            onValueChange={(e) =>
-              setFormData({ ...formData, gender: e.value[0] })
-            }
-          >
-            <label htmlFor="gender" style={{ fontSize: "0.75rem" }}>
-              Gender
-            </label>
-            <Select.HiddenSelect name="gender" />
-            <Select.Control>
-              <Select.Trigger
-                border="none"
-                outline="none"
-                bg="textFieldColor"
-                cursor="pointer"
-              >
-                <Select.ValueText placeholder="Select gender" fontSize="xs" />
-              </Select.Trigger>
-              <Select.IndicatorGroup>
-                <Select.Indicator />
-              </Select.IndicatorGroup>
-            </Select.Control>
-            <Portal>
-              <Select.Positioner>
-                <Select.Content>
-                  {selectCollections.genders.items.map((item) => (
-                    <Select.Item key={item.value} item={item}>
-                      {item.label}
-                      <Select.ItemIndicator />
-                    </Select.Item>
-                  ))}
-                </Select.Content>
-              </Select.Positioner>
-            </Portal>
-          </Select.Root>
+          <Flex justify="center" align="center" w="full">
+            <Button
+              type="submit"
+              w={{ base: "100%", md: "80%", lg: "80%" }}
+              m="auto"
+              rounded="xl"
+              bg="primaryColor"
+            >
+              Add Child
+            </Button>
+          </Flex>
+          <Text mt={2}>{status}</Text>
+        </form>
+      </Box>
 
-          {/* languages select */}
-          <Select.Root
-            collection={selectCollections.languages}
-            size="md"
-            onValueChange={(e) =>
-              setFormData({ ...formData, basic_language: e.value[0] })
-            }
-          >
-            <label htmlFor="language" style={{ fontSize: "0.75rem" }}>
-              Basic Language
-            </label>
-            <Select.HiddenSelect name="language" />
-            <Select.Control>
-              <Select.Trigger
-                border="none"
-                outline="none"
-                bg="textFieldColor"
-                cursor="pointer"
-              >
-                <Select.ValueText
-                  placeholder="Select Basic Language"
-                  fontSize="xs"
-                />
-              </Select.Trigger>
-              <Select.IndicatorGroup>
-                <Select.Indicator />
-              </Select.IndicatorGroup>
-            </Select.Control>
-            <Portal>
-              <Select.Positioner>
-                <Select.Content>
-                  {selectCollections.languages.items.map((item) => (
-                    <Select.Item key={item.value} item={item}>
-                      {item.label}
-                      <Select.ItemIndicator />
-                    </Select.Item>
-                  ))}
-                </Select.Content>
-              </Select.Positioner>
-            </Portal>
-          </Select.Root>
-
-          {/* classes select */}
-          <Select.Root
-            collection={selectCollections.classes}
-            size="md"
-            onValueChange={(e) =>
-              setFormData({ ...formData, class: e.value[0] })
-            }
-          >
-            <label htmlFor="class" style={{ fontSize: "0.75rem" }}>
-              Class
-            </label>
-            <Select.HiddenSelect name="class" />
-            <Select.Control>
-              <Select.Trigger
-                border="none"
-                outline="none"
-                bg="textFieldColor"
-                cursor="pointer"
-              >
-                <Select.ValueText placeholder="Select Class" fontSize="xs" />
-              </Select.Trigger>
-              <Select.IndicatorGroup>
-                <Select.Indicator />
-              </Select.IndicatorGroup>
-            </Select.Control>
-            <Portal>
-              <Select.Positioner>
-                <Select.Content>
-                  {selectCollections.classes.items.map((item) => (
-                    <Select.Item key={item.value} item={item}>
-                      {item.label}
-                      <Select.ItemIndicator />
-                    </Select.Item>
-                  ))}
-                </Select.Content>
-              </Select.Positioner>
-            </Portal>
-          </Select.Root>
-        </Grid>
-        <Flex justify="center" align="center" w="full">
-          <Button
-            type="submit"
-            w={{ base: "100%", md: "80%", lg: "80%" }}
-            m="auto"
-            rounded="xl"
-            bg="primaryColor"
-          >
-            Add Child
-          </Button>
-        </Flex>
-        <Text mt={2}>{status}</Text>
-      </form>
-    </Box>
+      {showModal && (
+        <AddGraderSuccessPopover setShowBox={setShowBox} setShowModal={setShowModal} />
+      )}
+    </>
   );
 }
 

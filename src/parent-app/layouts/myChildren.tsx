@@ -1,18 +1,11 @@
 import React, { useState } from "react";
-import {
-  Box,
-  Flex,
-  Grid,
-  Text,
-  Image,
-  Heading,
-  Icon,
-} from "@chakra-ui/react";
+import { Box, Flex, Grid, Text, Image, Heading, Icon } from "@chakra-ui/react";
 import { useStudentsData } from "../context/studentsDataContext";
 import { MdOutlineKeyboardArrowRight } from "react-icons/md";
 import AvatarComp from "@/components/avatar";
 import AddGraderBtn from "../components/addGraderBtn";
 import AddGraderPopup from "../components/addGraderPopover";
+import EditGraderPopup from "../components/editGraderPopover";
 
 type Props = {};
 
@@ -22,7 +15,6 @@ const MyChildren = (props: Props) => {
   // gets students data array from the studentsDataContext
   const { studentsData } = useStudentsData();
   console.log(studentsData);
-  
 
   return (
     <>
@@ -48,52 +40,58 @@ const MyChildren = (props: Props) => {
               m="auto"
             >
               {studentsData.map((student, index) => (
-                <Flex
-                  key={index}
-                  justify="space-between"
-                  align="center"
-                  w="full"
-                  bg="textFieldColor"
-                  borderRadius="lg"
-                  p={{ base: "4", md: "4", lg: "5" }}
-                  my={2}
-                  cursor="pointer"
-                >
-                  <Box
-                    display="flex"
-                    justifyItems="space-between"
-                    alignItems="center"
+                <>
+                  <Flex
+                    key={index}
+                    justify="space-between"
+                    align="center"
+                    w="full"
+                    bg="textFieldColor"
+                    borderRadius="lg"
+                    p={{ base: "4", md: "4", lg: "5" }}
+                    my={2}
+                    cursor="pointer"
                   >
-                    <AvatarComp
-                      username={`${student.firstname ?? ""} ${
-                        student.lastname ?? ""
-                      }`}
-                      profileImage={student.profile_image}
-                    />
+                    <Box
+                      display="flex"
+                      justifyItems="space-between"
+                      alignItems="center"
+                    >
+                      <AvatarComp
+                        username={`${student.firstname ?? ""} ${
+                          student.lastname ?? ""
+                        }`}
+                        profileImage={student.profile_image}
+                      />
 
-                    <Box mx={5}>
-                      <Heading
-                        as="h2"
-                        fontSize={{ base: "sm", md: "md", lg: "lg" }}
-                        color="#333951"
-                      >
-                        {student.firstname} {student.lastname}
-                      </Heading>
-                      <Text
-                        fontSize="xs"
-                        mb={1}
-                        color="#333951"
-                        textTransform="capitalize"
-                      >
-                        {student.school} {student.class}
-                      </Text>
+                      <Box mx={5}>
+                        <Heading
+                          as="h2"
+                          fontSize={{ base: "sm", md: "md", lg: "lg" }}
+                          color="#333951"
+                        >
+                          {student.firstname} {student.lastname}
+                        </Heading>
+                        <Text
+                          fontSize="xs"
+                          mb={1}
+                          color="#333951"
+                          textTransform="capitalize"
+                        >
+                          {student.school} {student.class}
+                        </Text>
+                      </Box>
                     </Box>
-                  </Box>
-                  <Icon as={MdOutlineKeyboardArrowRight} ml={5} fontSize="xl" />
-                </Flex>
+                    <Icon
+                      as={MdOutlineKeyboardArrowRight}
+                      ml={5}
+                      fontSize="xl"
+                    />
+                  </Flex>
+                </>
               ))}
             </Grid>
-            <Flex justify='center'>
+            <Flex justify="center">
               <AddGraderBtn
                 showBox={myChildrenShowBox}
                 setShowBox={setMyChildrenShowBox}
@@ -106,7 +104,11 @@ const MyChildren = (props: Props) => {
         ) : null}
       </Flex>
       {myChildrenShowBox && (
-        <AddGraderPopup onClose={() => setMyChildrenShowBox(false)} />
+        <AddGraderPopup
+          onClose={() => setMyChildrenShowBox(false)}
+          showBox={myChildrenShowBox}
+          setShowBox={setMyChildrenShowBox}
+        />
       )}
     </>
   );

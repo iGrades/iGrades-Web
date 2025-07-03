@@ -1,11 +1,10 @@
-import React, {useState, useEffect} from 'react'
+
 import { Flex } from '@chakra-ui/react'
 import Children from '../layouts/children'
 import MyChildren from '../layouts/myChildren'
-import { supabase } from "@/lib/supabaseClient";
-type Props = {}
 
-const HomePage = (props: Props) => {
+
+const HomePage = () => {
   
   return (
     <Flex w="95%" m="auto" direction="column">

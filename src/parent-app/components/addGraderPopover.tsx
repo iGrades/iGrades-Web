@@ -1,12 +1,15 @@
 import { Box, Button } from "@chakra-ui/react";
 import { LiaUserTimesSolid } from "react-icons/lia";
 import AddGrader from "./addGrader";
+import type { Dispatch, SetStateAction } from "react";
 
 interface AddGraderPopupProps {
-  onClose: () => void;
+  onClose?: () => void;
+  showBox: boolean;
+  setShowBox: Dispatch<SetStateAction<boolean>>;
 }
 
-const AddGraderPopup = ({ onClose }: AddGraderPopupProps) => {
+const AddGraderPopup = ({ onClose, showBox, setShowBox }: AddGraderPopupProps) => {
   return (
     <Box
       position="fixed"
@@ -19,7 +22,7 @@ const AddGraderPopup = ({ onClose }: AddGraderPopupProps) => {
       display="flex"
       justifyContent="center"
       alignItems="center"
-      p={{base:'2', md:'4'}}
+      p={{ base: "2", md: "4" }}
     >
       <Box
         position="relative"
@@ -32,6 +35,8 @@ const AddGraderPopup = ({ onClose }: AddGraderPopupProps) => {
           mdPageWidth={100}
           lgPageWidth={100}
           radius="lg"
+          showBox={showBox}
+          setShowBox={setShowBox}
         />
 
         {/* Close Button */}

@@ -8,7 +8,6 @@ import Homepage from "../parent-app/pages/HomePage";
 import Student from "../parent-app/pages/StudentPage";
 import Settings from "../parent-app/pages/SettingsPage";
 import Community from "@/parent-app/pages/CommunityPage";
-import LogoutBtn from "@/parent-app/components/logoutBtn";
 import DashboardLayout from "@/layouts/dashboard";
 import Navbar from "@/components/navbar";
 
@@ -44,11 +43,34 @@ const Home = (props: Props) => {
     }
   };
   return (
-    <Box as="section">
-      <Navbar userFirstName={parent?.firstname} userLastName={parent?.lastname} />
-      <Flex as="section">
-        <Sidebar />
-        <DashboardLayout renderPage={renderPage} />
+    <Box
+      as="main"
+      display="flex"
+      flexDirection="column"
+      minH="100vh"
+      maxH="100vh" // Constrain to viewport height
+      overflow="hidden" // Prevent any overflow
+    >
+      <Navbar
+        userFirstName={parent?.firstname}
+        userLastName={parent?.lastname}
+      />
+
+      <Flex flex="1" overflow="hidden">
+        {/* Sidebar - will not scroll */}
+        <Box
+          position="relative"
+          flexShrink={0}
+          w={{base: '0%', lg:"15%"}}
+          overflowY="auto"
+        >
+          <Sidebar />
+        </Box>
+
+        {/* Main content - will scroll independently */}
+        <Box flex="1" overflowY="auto">
+          <DashboardLayout renderPage={renderPage} />
+        </Box>
       </Flex>
     </Box>
   );

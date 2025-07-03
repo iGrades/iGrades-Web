@@ -7,7 +7,6 @@ import { RiUserCommunityLine } from "react-icons/ri";
 import { useNavigationStore } from "../store/usenavigationStore";
 import type { IconType } from "react-icons";
 import type { Page } from "../store/usenavigationStore";
-import LogoutBtn from "@/parent-app/components/logoutBtn";
 
 type Props = [];
 
@@ -25,8 +24,9 @@ const Sidebar = () => {
       <Box
         as="aside"
         display={{ base: "none", lg: "block" }}
-        width="15%"
-        height="100vh"
+        width="full"
+        h='full'
+        overflow="hidden"
         bg="white"
         p={4}
         boxShadow="md"
@@ -55,54 +55,52 @@ const Sidebar = () => {
             </Text>
           </Box>
         ))}
-         <LogoutBtn />
       </Box>
 
-{/* medium and smaller screens floating nav */}
-        <Box
-          as="aside"
-          display={{ base: "block", lg: "none" }}
-          position="fixed"
-          bottom="4"
-          left="50%"
-          transform="translateX(-50%)"
-          bg="white"
-          borderRadius="2xl"
-          boxShadow="xl"
-          px={1}
-          py={1}
-          maxW="sm"
-          width="90%"
-          zIndex={1000}
-        >
-          <Flex justify="space-between" align="center">
-            {parentsAsideElem.map(({ icon, label, value }) => (
-              <Flex
-                key={label}
-                direction="column"
-                align="center"
-                flex="1"
-                p={1}
-                fontWeight={"normal"}
-                onClick={() => setCurrentPage(value)}
+      {/* medium and smaller screens floating nav */}
+      <Box
+        as="aside"
+        display={{ base: "block", lg: "none" }}
+        position="fixed"
+        bottom="4"
+        left="50%"
+        transform="translateX(-50%)"
+        bg="white"
+        borderRadius="2xl"
+        boxShadow="xl"
+        px={1}
+        py={1}
+        maxW="sm"
+        width="90%"
+        zIndex={1000}
+      >
+        <Flex justify="space-between" align="center">
+          {parentsAsideElem.map(({ icon, label, value }) => (
+            <Flex
+              key={label}
+              direction="column"
+              align="center"
+              flex="1"
+              p={1}
+              fontWeight={"normal"}
+              onClick={() => setCurrentPage(value)}
+            >
+              <IconButton
+                aria-label={label}
+                variant="ghost"
+                size="lg"
+                fontSize="xl"
+                color={currentPage === value ? "blue.700" : "fieldTextColor"}
+                bg={currentPage === value ? "blue.50" : "transparent"}
+                borderRadius="xl"
               >
-                <IconButton
-                  aria-label={label}
-                  variant="ghost"
-                  size="lg"
-                  fontSize="xl"
-                  color={currentPage === value ? "blue.700" : "fieldTextColor"}
-                  bg={currentPage === value ? "blue.50" : "transparent"}
-                  borderRadius='xl'
-                >
-                  <Icon as={icon} />
-                </IconButton>
-                {/* <Text fontSize="xs">{label}</Text> */}
-              </Flex>
-            ))}
-          </Flex>
-        </Box>
-    
+                <Icon as={icon} />
+              </IconButton>
+              {/* <Text fontSize="xs">{label}</Text> */}
+            </Flex>
+          ))}
+        </Flex>
+      </Box>
     </>
   );
 };

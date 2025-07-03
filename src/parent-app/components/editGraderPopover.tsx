@@ -29,30 +29,6 @@ const EditGraderPopup = ({
 
   console.log("The student picked is: ", student);
 
-  // delete User function
-
-  const deleteUser = async () => {
-    const confirmDelete = window.confirm(
-      "Are you sure you want to delete this student?"
-    );
-    if (!confirmDelete) return;
-
-    const { error } = await supabase
-      .from("students")
-      .delete()
-      .eq("id", student.id);
-
-    console.log("Deleting student with ID:", student.id);
-
-    if (error) {
-      console.error("Delete failed:", error.message);
-      alert("Failed to delete student.");
-      console.error("Supabase error deleting student:", error.message);
-    } else {
-      alert("Student deleted successfully.");
-      onClose(); // Close the popup
-    }
-  };
 
   return (
     <>
@@ -76,7 +52,7 @@ const EditGraderPopup = ({
           overflowY="auto"
           bg="white"
           borderRadius="xl"
-          p={6}
+          p={{base:'1', md:'6'}}
         >
           {showEditBox ? (
             <EditGrader student={student} onClose={onClose} />
@@ -196,6 +172,7 @@ const EditGraderPopup = ({
                   p={5}
                   rounded="xl"
                   my={2}
+                  cursor="pointer"
                 >
                   <Box
                     display="flex"
@@ -219,7 +196,7 @@ const EditGraderPopup = ({
                   rounded="xl"
                   my={2}
                   cursor="pointer"
-                  onClick={() => setModal("delete")}
+                  onClick={() => setModal && setModal("delete")}
                 >
                   <Box
                     display="flex"
@@ -237,7 +214,7 @@ const EditGraderPopup = ({
           )}
         </Box>
       </Box>
-      {modal === "delete" && student ? (
+      {modal === "delete" && student && setModal ? (
         <DeleteGraderPopover
           student={student}
           setStudent={setStudent}

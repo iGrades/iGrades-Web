@@ -13,7 +13,7 @@ const config = defineConfig({
         backgrondColor: { value: "#FFFFFF" },
         backgrondColor2: { value: "#07052A" },
         on_backgroundColor: { value: "##242E3E" },
-        on_containerColor: {value: "#474256"},
+        on_containerColor: { value: "#474256" },
         successColor: { value: "#2DD4A5" },
         errorColor: { value: "#E43F40" },
         textFieldColor: { value: "#F9F9FB" },

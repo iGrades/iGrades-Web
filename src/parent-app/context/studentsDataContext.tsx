@@ -1,9 +1,6 @@
-// context/UserContext.tsx
-import React, { createContext, useContext, useState, useEffect } from "react";
+import { createContext, useContext, useState, useEffect } from "react";
 import { supabase } from "@/lib/supabaseClient";
 import type {ReactNode} from "react"
-
-// Define the shape of your context
 import type { Dispatch, SetStateAction } from "react";
 
 interface StudentsDataContextType {

@@ -11,6 +11,7 @@ const DashboardLayout = ({renderPage}: Props) => {
   return (
     <StudentsDataProvider>
       <Box as="main" w="full" bg="textFieldColor">
+
         {renderPage()}
       </Box>
     </StudentsDataProvider>

@@ -6,7 +6,7 @@ import { MdErrorOutline } from "react-icons/md";
 type Props = {
   student: any;
   setStudent: React.Dispatch<any>;
-  modal: "" | "edit" | "delete";
+  modal: "" | "edit" | "delete" | "undefined";
   setModal: React.Dispatch<React.SetStateAction<"" | "edit" | "delete">>;
   onClose: () => void;
 };
@@ -18,6 +18,7 @@ const DeleteGraderPopover = ({
   setModal,
   onClose,
 }: Props) => {
+  
   // delete function
 
   const tryDelete = async () => {
@@ -68,7 +69,7 @@ const DeleteGraderPopover = ({
         bg="white"
         borderRadius="2xl"
         boxShadow="lg"
-        p={10}
+        p={{base: '5', md: '10'}}
       >
         {/* warning texts */}
         <Box
@@ -93,7 +94,7 @@ const DeleteGraderPopover = ({
             fontSize="xs"
             color="on_containerColor"
             textAlign="center"
-            w="80%"
+            w={{base: '100%', md:'80%'}}
             mb="2"
           >
             By removing the child all classes are going to be cancelled and fees
@@ -107,7 +108,7 @@ const DeleteGraderPopover = ({
           flexDirection="column"
           justifyContent="space between"
           alignItems="center"
-          w="90%"
+          w={{base: '100%', md:'90%'}}
           m="auto"
           my={5}
           gap={4}

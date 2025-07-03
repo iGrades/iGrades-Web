@@ -23,7 +23,7 @@ const GraderDetails = () => {
             You have not added any child yet. Click the Students section to add
             a child
           </Text>
-          <Image src={addFiles_img} />
+          <Image src={addFiles_img} w='20%' my={16} />
         </Box>
       ) : null}
     </Box>

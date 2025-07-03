@@ -102,7 +102,7 @@ const Children = (prop: Props) => {
             You have not added any child yet. Click the Students section to add
             a child
           </Text>
-          <Image src={addUser_img} />
+          <Image src={addUser_img} w='40%' my={16} />
         </Box>
       )}
     </Flex>

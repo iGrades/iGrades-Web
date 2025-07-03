@@ -29,6 +29,7 @@ export default function Login() {
     message: string;
   } | null>(null);
   const [showPassword, setShowPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const [loginState, setLoginState] = useState("parent"); // "parent" or "children"
 
   const navigate = useNavigate();
@@ -74,18 +75,23 @@ export default function Login() {
 
   const handlePasswordLogin = async (e: React.FormEvent) => {
     e.preventDefault();
+    setIsLoading(true); // Start loading
 
     const { data, error } = await supabase.auth.signInWithPassword({
       email,
       password,
     });
+
     if (error) {
       setAlert({ type: "error", message: error.message });
+      setIsLoading(false); // Stop loading on error
       return;
     }
+
+    setIsLoading(false); // Stop loading on success
     navigate("/");
   };
-
+  
   
 
   return (
@@ -279,6 +285,9 @@ export default function Login() {
 
             <Flex justify={"center"} my={10}>
               <Button
+                loading={isLoading}
+                loadingText="Logging in..."
+                spinnerPlacement="start"
                 type="submit"
                 fontWeight="semibold"
                 w="60%"
