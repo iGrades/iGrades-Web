@@ -14,11 +14,13 @@ import {
   Grid,
   Field,
   InputGroup,
+  Image
 } from "@chakra-ui/react";
 import { IoEyeOutline, IoEyeOffOutline } from "react-icons/io5";
 import { useTranslation } from "react-i18next";
 import icon from "../assets/human_ico.png";
 import OtpInput from "../components/otpInput";
+import sideImage from '../assets/undraw_sign-in_uva0-removebg-preview.png'
 
 export default function Login() {
   const [email, setEmail] = useState("");
@@ -98,15 +100,21 @@ export default function Login() {
     <Flex
       as="section"
       align="center"
-      justify={{ base: "center", md: "flex-end" }}
-      bg="gray.100"
+      justify={{ base: "center", md: "space-between" }}
+      backgroundImage={{ base: "url('/undraw_sign-in_uva0.png')", lg: "none" }}
+      backgroundSize="cover"
+      backgroundRepeat="no-repeat"
+      backgroundPosition="center"
+      bg={{ lg: "textFieldColor" }}
+      h="100vh"
     >
-      <Box
-        bg={"white"}
-        boxShadow={"lg"}
-        h={"full"}
-        w={{ base: "full", md: "60%", lg: "50%" }}
-      >
+      <Image
+        src={sideImage}
+        alt="login_image"
+        display={{ base: "none", lg: "block" }}
+        w={{ base: "full", lg: "50%" }}
+      />
+      <Box bg="white" h={"full"} w={{ base: "full", lg: "50%" }}>
         <Flex justify={"flex-end"}>
           <Flex
             align={"center"}
@@ -134,7 +142,7 @@ export default function Login() {
             </Link>
           </Flex>
         </Flex>
-        <Box w={{ base: "90%", md: "90%", lg: "90%" }} m={"auto"}>
+        <Box w={{ base: "90%", md: "70%", lg: "90%" }} m={"auto"}>
           <Box w={{ base: "90%", lg: "65%" }} m={"auto"} textAlign={"center"}>
             <Heading
               as={"h1"}
@@ -290,7 +298,7 @@ export default function Login() {
                 spinnerPlacement="start"
                 type="submit"
                 fontWeight="semibold"
-                w="60%"
+                w={{base: '100%', lg:'100%'}}
                 p={6}
                 bg="blue.500"
                 color="white"

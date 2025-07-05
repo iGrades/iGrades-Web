@@ -1,21 +1,17 @@
-import React, { useState } from "react";
-import { Box, Flex, Text, Image, Heading, Icon } from "@chakra-ui/react";
-import { useStudentsData } from "../context/studentsDataContext";
+import { Box, Flex, Text, Image, Heading, EmptyState, VStack} from "@chakra-ui/react";
 import childrenBox_ico from "../../assets/childrenBox_ico.png";
 import activeChildrenBox_ico from "../../assets/activeChildrenBox_ico.png";
-import addUser_img from "../../assets/addUser_img.svg";
-import addFiles_img from "../../assets/addFiles_img.svg";
 
-type Props = {
-};
 
-const Children = (prop: Props) => {
-    // gets students data array from the studentsDataContext
-  const { studentsData } = useStudentsData();
+
+type Prop ={
+  data: any[]
+}
+
+const Children = ({data}: Prop) => {
 
   return (
     <Flex w="full">
-      {studentsData.length > 0 ? (
         <Box bg="white" boxShadow="md" borderRadius="lg" w="full" my={5} p={4}>
           <Heading as="h1" my={2}>
             Children
@@ -32,6 +28,7 @@ const Children = (prop: Props) => {
               w={{ base: "full", lg: "48%" }}
               bg="textFieldColor"
               borderRadius="lg"
+              boxShadow='xs'
               p={{ base: "5", md: "8", lg: "10" }}
               my={2}
             >
@@ -49,7 +46,7 @@ const Children = (prop: Props) => {
                   fontSize={{ base: "xl", md: "2xl", lg: "3xl" }}
                   color="#333951"
                 >
-                  {studentsData.length}
+                  {data.length}
                 </Heading>
               </Box>
             </Box>
@@ -61,6 +58,7 @@ const Children = (prop: Props) => {
               w={{ base: "full", lg: "48%" }}
               bg="textFieldColor"
               borderRadius="lg"
+              shadow='xs'
               p={{ base: "5", md: "8", lg: "10" }}
               my={2}
             >
@@ -79,7 +77,7 @@ const Children = (prop: Props) => {
                   color="#333951"
                 >
                   {
-                    studentsData.filter(
+                    data.filter(
                       (student) =>
                         student.subscription === "Standard" ||
                         student.subscription === "Premium"
@@ -90,21 +88,6 @@ const Children = (prop: Props) => {
             </Box>
           </Flex>
         </Box>
-      ) : (
-        <Box
-          w="full"
-          display="flex"
-          flexDirection="column"
-          justifyItems="center"
-          alignItems="center"
-        >
-          <Text my={10}>
-            You have not added any child yet. Click the Students section to add
-            a child
-          </Text>
-          <Image src={addUser_img} w='40%' my={16} />
-        </Box>
-      )}
     </Flex>
   );
 };

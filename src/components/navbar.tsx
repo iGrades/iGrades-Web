@@ -1,5 +1,4 @@
-import React from 'react'
-import { Flex, Image, Box, Icon, Heading, Text, Avatar, Menu, HStack } from '@chakra-ui/react'
+import { Flex, Image, Box, Icon, Heading, Text, Menu} from '@chakra-ui/react'
 import { t } from 'i18next';
 import { Portal, Select, createListCollection } from "@chakra-ui/react";
 import { useState } from "react";
@@ -128,7 +127,6 @@ const Navbar = ({userFirstName, userLastName}: Props) => {
               <Portal>
                 <Menu.Positioner>
                   <Menu.Content>
-                    <Menu.Item value="settings">Settings</Menu.Item>
                     <Menu.Item
                       value="logout"
                       onClick={() => setShowLogoutModal(true)}

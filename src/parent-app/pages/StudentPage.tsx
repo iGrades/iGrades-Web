@@ -16,7 +16,7 @@ const StudentPage = () => {
         direction={{ base: "column", md: "row" }}
         gap={4}
         w="full"
-        my={5}
+        mt={5}
         justify="space-between"
         align="center"
       >

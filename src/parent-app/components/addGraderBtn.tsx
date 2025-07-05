@@ -22,8 +22,8 @@ const AddGraderBtn = ({ showBox, setShowBox, basePageWidth, mdPageWidth, lgPageW
           borderColor="blue.600"
           borderRadius="3xl"
           outline="none"
+          boxShadow='md'
           p={5}
-          // w={{ base: "100%", md: "25%", lg: "20%" }}
           w={{
             base: `${basePageWidth}%`,
             md: `${mdPageWidth}%`,

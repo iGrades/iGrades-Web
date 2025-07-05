@@ -48,8 +48,9 @@ const Home = (props: Props) => {
       display="flex"
       flexDirection="column"
       minH="100vh"
-      maxH="100vh" // Constrain to viewport height
-      overflow="hidden" // Prevent any overflow
+      maxH="100vh"
+      overflow="hidden"
+      bg={{ base: "white", md: "textFieldColor" }}
     >
       <Navbar
         userFirstName={parent?.firstname}
@@ -61,14 +62,23 @@ const Home = (props: Props) => {
         <Box
           position="relative"
           flexShrink={0}
-          w={{base: '0%', lg:"15%"}}
+          w={{ base: "0%", lg: "15%" }}
           overflowY="auto"
         >
           <Sidebar />
         </Box>
 
-        {/* Main content - will scroll independently */}
-        <Box flex="1" overflowY="auto">
+        <Box
+          flex="1"
+          overflowY="auto"
+          css={{
+            "&::-webkit-scrollbar": {
+              display: "none",
+            },
+            "-ms-overflow-style": "none", // IE and Edge
+            "scrollbar-width": "none", // Firefox
+          }}
+        >
           <DashboardLayout renderPage={renderPage} />
         </Box>
       </Flex>

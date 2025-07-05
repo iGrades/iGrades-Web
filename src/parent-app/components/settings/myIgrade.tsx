@@ -1,6 +1,15 @@
 // src/components/settings/myIgrade.tsx
 import { useEffect, useState } from "react";
-import { Flex, Box, Image, Heading, Text, Grid, Input } from "@chakra-ui/react";
+import {
+  Flex,
+  Box,
+  Image,
+  Heading,
+  Text,
+  Grid,
+  Input,
+  Alert,
+} from "@chakra-ui/react";
 import { supabase } from "@/lib/supabaseClient";
 import { useUser } from "../../context/parentDataContext";
 import { MdPerson } from "react-icons/md";
@@ -9,13 +18,17 @@ import { HiUserGroup } from "react-icons/hi";
 import { FaLink } from "react-icons/fa6";
 import { MdOutlineKeyboardArrowRight } from "react-icons/md";
 import { MdDelete } from "react-icons/md";
+import { LuArrowLeft } from "react-icons/lu";
 import manikin from "../../../assets/manikin.png";
 import addPix from "../../../assets/addPix.png";
 
 const MyIgrade = () => {
   const { parent, loading } = useUser();
- const [selectedFile, setSelectedFile] = useState<File | null>(null);
-
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [alert, setAlert] = useState<{
+    type: "success" | "error";
+    message: string;
+  } | null>(null);
 
   const settingsItems = [
     { head: "Profile", icon: MdPerson, iconColor: "#206CE1" },
@@ -25,83 +38,115 @@ const MyIgrade = () => {
   ];
 
   const handleImageUpload = async (): Promise<string | null> => {
-      if (!selectedFile) return null;
-  
-      const fileExt = selectedFile.name.split(".").pop();
-      const fileName = `${Date.now()}.${fileExt}`;
-      const filePath = `parents/${fileName}`;
-  
-      const { data, error } = await supabase.storage
-        .from("profile-photos")
-        .upload(filePath, selectedFile);
-  
+    if (!selectedFile) return null;
+
+    const fileExt = selectedFile.name.split(".").pop();
+    const fileName = `${Date.now()}.${fileExt}`;
+    const filePath = `parents/${fileName}`;
+
+    const { data, error } = await supabase.storage
+      .from("profile-photos")
+      .upload(filePath, selectedFile);
+
+    if (error) {
+      setAlert({ type: "error", message: error.message });
+      return null;
+    }
+
+    const {
+      data: { publicUrl },
+    } = supabase.storage.from("profile-photos").getPublicUrl(filePath);
+
+    return publicUrl;
+  };
+
+  // Function to handle saving the uploaded image to the database
+  const handleSaveProfileImage = async () => {
+    const imageUrl = await handleImageUpload();
+    // if (!imageUrl) {
+    //   setAlert({ status: "error", message: "Image upload failed." });
+    //   return;
+    // }
+    if (imageUrl) {
+      const { error } = await supabase.from("parents").insert({
+        profile_image: imageUrl,
+      });
+
       if (error) {
-        console.error("Upload error:", error);
-        return null;
+        setAlert({ type: "error", message: error.message });
+        return;
       }
-  
-      const {
-        data: { publicUrl },
-      } = supabase.storage.from("profile-photos").getPublicUrl(filePath);
-  
-      return publicUrl;
-    };
+    }
+  };
 
-    // Function to handle saving the uploaded image to the database
-    const handleSaveProfileImage = async () => {
-      const imageUrl = await handleImageUpload();
-      // if (!imageUrl) {
-      //   setAlert({ status: "error", message: "Image upload failed." });
-      //   return;
-      // }
-      if (imageUrl) {
-        const { error } = await supabase.from("parents").insert({
-          profile_image: imageUrl,
-        });
-        if (error) {
-          console.error("Database insert error:", error);
-        }
-      }
-    };
-
-    useEffect(() => {
-      handleSaveProfileImage()
-    }, [selectedFile])
-    
-
+  useEffect(() => {
+    handleSaveProfileImage();
+  }, [selectedFile]);
 
   return (
     <Box
       as="section"
       bg="white"
-      boxShadow="lg"
-      rounded="lg"
-      w="95%"
-      m="auto"
-      p={6}
+      boxShadow={{ base: "none", md: "md" }}
+      rounded={{ base: "none", md: "md" }}
+      w="full"
+      h="auto"
+      mb={{ base: "20", lg: "10" }}
+      p={{ base: "0", md: "3", lg: "6" }}
     >
-      {loading ? (
-        <Text>Loading...</Text>
+      <Heading
+        as="h3"
+        display="flex"
+        alignItems="center"
+        justifyContent="flex-start"
+        gap={3}
+        mt={3}
+        mb={5}
+        mx={2}
+      >
+        <LuArrowLeft />
+        Profile
+      </Heading>
+      {alert ? (
+        <Alert.Root status={alert.type} variant="subtle" mt={6}>
+          <Alert.Indicator />
+          <Alert.Content>
+            <Alert.Title>
+              {alert.type === "error" ? "Error!" : "Success!"}
+            </Alert.Title>
+            <Alert.Description>{alert.message}</Alert.Description>
+          </Alert.Content>
+        </Alert.Root>
+      ) : loading ? (
+        <Text>loading ...</Text>
       ) : parent.length > 0 ? (
         <Flex
           direction="column"
           justify="space-around"
           alignItems="center"
-          w="80%"
+          w={{ base: "100%", lg: "80%" }}
           m="auto"
         >
-          <Flex my={5}>
-            <Box w="1/2" m="auto" textAlign="center">
-              <Box position="relative" display="inline-block" mx="auto" mt={16}>
+          <Flex
+            direction={{ base: "column", md: "row" }}
+            my={5}
+            align="center"
+            justify="space-between"
+            gap={6}
+            w="30%"
+          >
+            <Box w={{ base: "100%", md: "50%" }} m="auto" textAlign="center">
+              <Box position="relative" display="inline-block" mx="auto">
                 <Box
                   display="flex"
                   justifyContent="center"
                   alignItems="center"
                   bg="textFieldColor"
                   overflow="hidden"
-                  w="90px"
-                  h="90px"
+                  w="100px"
+                  h="100px"
                   borderRadius="2xl"
+                  boxShadow="xs"
                 >
                   {selectedFile ? (
                     <Image
@@ -148,15 +193,30 @@ const MyIgrade = () => {
                 </label>
               </Box>
             </Box>
-            <Box>
-              <Heading as="h1">
+            <Box w={"100%"}>
+              <Heading as="h1" my={2}>
                 {parent[0].firstname} {parent[0].lastname}
               </Heading>
-              <Text>iGrade Parent</Text>
+              <Text
+                fontSize="xs"
+                bg="textFieldColor"
+                p={2}
+                rounded="2xl"
+                textAlign="center"
+                shadow="xs"
+              >
+                iGrade Parent
+              </Text>
             </Box>
           </Flex>
 
-          <Grid templateColumns="repeat(2, 2fr)" gap={6} w="full" p={4} my={2}>
+          <Grid
+            templateColumns={{ base: "repeat(1, 2fr)", md: "repeat(2, 2fr)" }}
+            gap={6}
+            w="full"
+            p={4}
+            my={2}
+          >
             {settingsItems.map((item, index) => (
               <Flex
                 key={index}
@@ -164,10 +224,11 @@ const MyIgrade = () => {
                 align="center"
                 gap="2"
                 bg="textFieldColor"
-                w="90%"
+                w={{ base: "100%", md: "90%" }}
                 m="auto"
                 p={6}
-                rounded="xl"
+                rounded="lg"
+                shadow="xs"
                 cursor="pointer"
               >
                 <Box
@@ -193,9 +254,11 @@ const MyIgrade = () => {
             gap="3"
             bg="#E43F401A"
             w="92%"
-            my={2}
+            mt={2}
+            mb={5}
             p={6}
-            rounded={"xl"}
+            rounded="lg"
+            shadow="xs"
           >
             <MdDelete style={{ color: "red", fontSize: "1.4rem" }} />
             <Text fontSize="sm" fontWeight={500}>

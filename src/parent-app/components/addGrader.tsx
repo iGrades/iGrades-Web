@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { getParentId } from "../utils/getParentId";
 import { supabase } from "../../lib/supabaseClient";
+import { useStudentsData } from "../context/studentsDataContext";
 import {
   Input,
   Button,
@@ -20,6 +21,7 @@ import manikin from "../../assets/manikin.png";
 import addPix from "../../assets/addPix.png";
 import AddGraderSuccessPopover from "./addGraderSuccessPopover";
 import type { Dispatch, SetStateAction } from "react";
+
 interface AddGraderProps {
   basePageWidth: number;
   mdPageWidth: number;
@@ -37,6 +39,9 @@ function AddGrader({
   showBox,
   setShowBox
 }: AddGraderProps) {
+
+  const {getGraderDetails} = useStudentsData()
+
   const [formData, setFormData] = useState({
     email: "",
     firstname: "",
@@ -47,6 +52,7 @@ function AddGrader({
     basic_language: "",
     school: "",
     profile_image: "",
+    subscription: "Basic",
   });
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [showModal, setShowModal] = useState(false);
@@ -97,6 +103,7 @@ function AddGrader({
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
+  // function handles image upload
   const handleImageUpload = async (): Promise<string | null> => {
     if (!selectedFile) return null;
 
@@ -161,9 +168,11 @@ function AddGrader({
         basic_language: "",
         school: "",
         profile_image: "",
+        subscription: "Basic"
       });
       setSelectedFile(null);
       setShowModal(true);
+      getGraderDetails()
     }
 
     // Optional: Auto-dismiss alert after 5 seconds
@@ -194,7 +203,7 @@ function AddGrader({
             fontSize="3xl"
             color="backgroundColor2"
             fontWeight={700}
-            mt={{ base: "14", md: "5" }}
+            mt={{ base: "24", md: "15" }}
           >
             Student Credentials
           </Heading>
@@ -204,7 +213,7 @@ function AddGrader({
         </Box>
 
         <Box w="1/2" m="auto" textAlign="center">
-          <Box position="relative" display="inline-block" mx="auto" mt={16}>
+          <Box position="relative" display="inline-block" mx="auto" mt={10}>
             <Box
               display="flex"
               justifyContent="center"

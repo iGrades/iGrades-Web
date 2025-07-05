@@ -29,7 +29,7 @@ const AddGraderSuccessPopover = ({ setShowBox, setShowModal }: Props) => {
     >
       <Box
         position="relative"
-        width={{ base: "95%", md: "80%", lg: "50%" }}
+        width={{ base: "95%", md: "70%", lg: "40%" }}
         maxH="90vh"
         overflowY="auto"
         bg="white"
@@ -55,7 +55,7 @@ const AddGraderSuccessPopover = ({ setShowBox, setShowModal }: Props) => {
             <FaCircleCheck />
           </Icon>
           <Heading as="h1" fontSize="2xl" color="backgroundColor2" my={2}>
-            Yes, Grader added!
+            Yes, Student added!
           </Heading>
           <Text
             fontSize="xs"
@@ -64,7 +64,7 @@ const AddGraderSuccessPopover = ({ setShowBox, setShowModal }: Props) => {
             w={{ base: "100%", md: "80%" }}
             mb="2"
           >
-            You have successfully added a grader
+            You have successfully added a stuent
           </Text>
         </Box>
 
@@ -92,7 +92,7 @@ const AddGraderSuccessPopover = ({ setShowBox, setShowModal }: Props) => {
             fontWeight={500}
             onClick={handleBoxes}
           >
-            View your Graders
+            View your Students
           </Button>
         </Box>
       </Box>

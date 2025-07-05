@@ -1,7 +1,8 @@
-import { useEffect } from "react";
+import { useState } from "react";
 import { supabase } from "@/lib/supabaseClient";
-import { Box, Icon, Heading, Text, Button } from "@chakra-ui/react";
+import { Box, Icon, Heading, Text, Button, Alert } from "@chakra-ui/react";
 import { MdErrorOutline } from "react-icons/md";
+import { useStudentsData } from "../context/studentsDataContext";
 
 type Props = {
   student: any;
@@ -18,9 +19,14 @@ const DeleteGraderPopover = ({
   setModal,
   onClose,
 }: Props) => {
-  
-  // delete function
+  const { getGraderDetails } = useStudentsData();
 
+  const [alert, setAlert] = useState<{
+    type: "success" | "error";
+    message: string;
+  } | null>(null);
+
+  // delete function
   const tryDelete = async () => {
     if (modal === "delete" && student) {
       const confirmDelete = window.confirm(
@@ -32,21 +38,54 @@ const DeleteGraderPopover = ({
         return;
       }
 
-      const { error } = await supabase
+      // Extract file path from public URL
+      const publicUrl = student.profile_image;
+      let filePath = "";
+      if (publicUrl) {
+        const parts = publicUrl.split("/");
+        const bucketNameIndex: number = parts.findIndex((p: string) => p === "profile-photos");
+        filePath = parts.slice(bucketNameIndex + 1).join("/");
+      }
+
+      // Delete the image from storage first
+      if (filePath) {
+        const { error: imageError } = await supabase.storage
+          .from("profile-photos")
+          .remove([filePath]);
+
+        if (imageError) {
+          console.error("Image delete error:", imageError.message);
+          setAlert({
+            type: "error",
+            message: "Failed to delete student image.",
+          });
+          return;
+        }
+      }
+
+      // Delete student from DB
+      const { error: dbError } = await supabase
         .from("students")
         .delete()
         .eq("id", student.id);
 
-      if (error) {
-        console.error("Delete failed:", error.message);
-        alert("Failed to delete student.");
-      } else {
-        alert("Student deleted successfully.");
-        setModal("");
-        setStudent(null);
+      if (dbError) {
+        console.error("Delete failed:", dbError.message);
+        setAlert({ type: "error", message: "Failed to delete student." });
+        return;
       }
+
+      // Success!
+      setModal("");
+      setStudent(null);
+      getGraderDetails();
+      setAlert({ type: "success", message: "Student deleted successfully." });
+
+      // Auto-dismiss alert
+      setTimeout(() => setAlert(null), 5000);
     }
   };
+  
   return (
     <Box
       position="fixed"
@@ -63,13 +102,13 @@ const DeleteGraderPopover = ({
     >
       <Box
         position="relative"
-        width={{ base: "95%", md: "80%", lg: "50%" }}
+        width={{ base: "95%", md: "70%", lg: "40%" }}
         maxH="90vh"
         overflowY="auto"
         bg="white"
         borderRadius="2xl"
         boxShadow="lg"
-        p={{base: '5', md: '10'}}
+        p={{ base: "5", md: "10" }}
       >
         {/* warning texts */}
         <Box
@@ -94,7 +133,7 @@ const DeleteGraderPopover = ({
             fontSize="xs"
             color="on_containerColor"
             textAlign="center"
-            w={{base: '100%', md:'80%'}}
+            w={{ base: "100%", md: "80%" }}
             mb="2"
           >
             By removing the child all classes are going to be cancelled and fees
@@ -108,7 +147,7 @@ const DeleteGraderPopover = ({
           flexDirection="column"
           justifyContent="space between"
           alignItems="center"
-          w={{base: '100%', md:'90%'}}
+          w={{ base: "100%", md: "90%" }}
           m="auto"
           my={5}
           gap={4}
@@ -148,6 +187,17 @@ const DeleteGraderPopover = ({
           </Button>
         </Box>
       </Box>
+      {alert && (
+        <Alert.Root status={alert.type} variant="subtle" mt={6}>
+          <Alert.Indicator />
+          <Alert.Content>
+            <Alert.Title>
+              {alert.type === "error" ? "Error!" : "Success!"}
+            </Alert.Title>
+            <Alert.Description>{alert.message}</Alert.Description>
+          </Alert.Content>
+        </Alert.Root>
+      )}
     </Box>
   );
 };

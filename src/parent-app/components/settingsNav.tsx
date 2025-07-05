@@ -10,22 +10,34 @@ const SettingsNav = ({ settingsState, setSettingsState }: Props) => {
   const navItems = [
     { text: "My iGrade", state: "igrade" },
     { text: "Security", state: "security" },
-    { text: "Notification", state: "notification" },
+    { text: "Notifications", state: "notification" },
   ];
   return (
-    <Flex as="nav" justify="start" align="center" gap={4} p={4}>
+    <Flex
+      as="nav"
+      justify="start"
+      align="center"
+      gap={4}
+      p={4}
+      bg="white"
+      shadow="md"
+      rounded="md"
+      w="full"
+      m="auto"
+      mb={5}
+    >
       {navItems.map((item, idx) => (
         <Box
           key={idx}
-          bg="blue.100"
+          bg={settingsState === item.state ? "#206CE11A" : 'transparent'}
           p={2}
-          rounded="xl"
+          rounded="md"
           w={32}
           textAlign="center"
-          cursor='pointer'
+          cursor="pointer"
           onClick={() => setSettingsState(item.state)}
         >
-          <Text color="primaryColor" fontSize="sm" fontWeight={400}>
+          <Text color="primaryColor" fontSize="sm" fontWeight={600}>
             {item.text}
           </Text>
         </Box>

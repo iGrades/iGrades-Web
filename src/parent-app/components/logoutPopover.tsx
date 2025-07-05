@@ -1,5 +1,5 @@
 import { Box, Heading, Text, Button, Icon, Alert } from "@chakra-ui/react"
-import { BiLogOutCircle } from "react-icons/bi";
+import { LuLogOut } from "react-icons/lu";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/lib/supabaseClient";
 import { useState } from "react";
@@ -66,7 +66,7 @@ const LogoutPopover = ({ setShowLogoutModal }: Props) => {
               mb={5}
               p={2}
             >
-              <BiLogOutCircle />
+              <LuLogOut />
             </Icon>
             <Heading as="h1" color="backgroundColor2" my={2}>
               Logout Parent Request

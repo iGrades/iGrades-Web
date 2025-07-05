@@ -1,5 +1,6 @@
 import { Box, Button } from "@chakra-ui/react";
 import { LiaUserTimesSolid } from "react-icons/lia";
+// import { IoClose } from "react-icons/io5";
 import AddGrader from "./addGrader";
 import type { Dispatch, SetStateAction } from "react";
 
@@ -26,9 +27,17 @@ const AddGraderPopup = ({ onClose, showBox, setShowBox }: AddGraderPopupProps) =
     >
       <Box
         position="relative"
-        width={{ base: "100%", md: "90%", lg: "60%" }}
+        width={{ base: "100%", md: "90%", lg: "50%" }}
         maxH="90vh"
+        rounded='3xl'
         overflowY="auto"
+        css={{
+          "&::-webkit-scrollbar": {
+            display: "none",
+          },
+          "-ms-overflow-style": "none", // IE and Edge
+          "scrollbar-width": "none", // Firefox
+        }}
       >
         <AddGrader
           basePageWidth={100}
@@ -42,7 +51,7 @@ const AddGraderPopup = ({ onClose, showBox, setShowBox }: AddGraderPopupProps) =
         {/* Close Button */}
         <Button
           position="absolute"
-          top="10px"
+          top="30px"
           right="10px"
           bg="white"
           color="red.600"

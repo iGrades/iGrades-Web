@@ -14,9 +14,11 @@ import {
   Box,
   Flex,
   Icon,
+  Image
 } from "@chakra-ui/react";
 import { IoEyeOutline, IoEyeOffOutline } from "react-icons/io5";
 import icon from "../assets/human_ico.png";
+import sideImage from "../assets/undraw_sign-up_qamz-removebg-preview.png";
 
 interface FormData {
   firstName: string;
@@ -41,6 +43,7 @@ export default function SignUp() {
 
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const [alert, setAlert] = useState<{
     type: "success" | "error";
     message: string;
@@ -54,7 +57,6 @@ export default function SignUp() {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
- 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -120,9 +122,20 @@ export default function SignUp() {
     <Flex
       as="section"
       align="center"
-      justify={{ base: "center", lg: "flex-end" }}
-      bg="gray.100"
+      justify={{ base: "center", md: "space-between" }}
+      backgroundImage={{ base: "url('/undraw_sign-in_uva0.png')", lg: "none" }}
+      backgroundSize="cover"
+      backgroundRepeat="no-repeat"
+      backgroundPosition="center"
+      bg={{ lg: "textFieldColor" }}
+      h="100vh"
     >
+      <Image
+        src={sideImage}
+        alt="login_image"
+        display={{ base: "none", lg: "block" }}
+        w={{ base: "full", lg: "50%" }}
+      />
       <Box bg="white" boxShadow="lg" w={{ base: "full", lg: "60%" }}>
         <Flex justify="flex-end">
           <Flex
@@ -237,9 +250,12 @@ export default function SignUp() {
             )}
             <Flex justify={"center"} my={10}>
               <Button
+                loading={isLoading}
+                loadingText="Signing you up..."
+                spinnerPlacement="start"
                 type="submit"
                 fontWeight="semibold"
-                w="60%"
+                w={{ base: "100%", lg: "100%" }}
                 p={6}
                 bg="blue.500"
                 color="white"

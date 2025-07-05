@@ -1,25 +1,21 @@
-import React, { useState } from "react";
-import { Box, Flex, Grid, Text, Image, Heading, Icon } from "@chakra-ui/react";
-import { useStudentsData } from "../context/studentsDataContext";
+import { useState } from "react";
+import { Box, Flex, Grid, Text, Heading, Icon } from "@chakra-ui/react";
 import { MdOutlineKeyboardArrowRight } from "react-icons/md";
 import AvatarComp from "@/components/avatar";
 import AddGraderBtn from "../components/addGraderBtn";
 import AddGraderPopup from "../components/addGraderPopover";
-import EditGraderPopup from "../components/editGraderPopover";
 
-type Props = {};
+type Props = {
+  data: any[]
+};
 
-const MyChildren = (props: Props) => {
+const MyChildren = ({data}: Props) => {
   const [myChildrenShowBox, setMyChildrenShowBox] = useState(false);
 
-  // gets students data array from the studentsDataContext
-  const { studentsData } = useStudentsData();
-  console.log(studentsData);
 
   return (
     <>
       <Flex w="full" mb={{ base: "24", lg: "10" }}>
-        {studentsData.length > 0 ? (
           <Box
             bg="white"
             boxShadow="md"
@@ -39,7 +35,7 @@ const MyChildren = (props: Props) => {
               w={{ base: "full", md: "90%", lg: "80%" }}
               m="auto"
             >
-              {studentsData.map((student, index) => (
+              {data.map((student, index) => (
                 <>
                   <Flex
                     key={index}
@@ -48,6 +44,7 @@ const MyChildren = (props: Props) => {
                     w="full"
                     bg="textFieldColor"
                     borderRadius="lg"
+                    boxShadow='xs'
                     p={{ base: "4", md: "4", lg: "5" }}
                     my={2}
                     cursor="pointer"
@@ -101,7 +98,6 @@ const MyChildren = (props: Props) => {
               />
             </Flex>
           </Box>
-        ) : null}
       </Flex>
       {myChildrenShowBox && (
         <AddGraderPopup

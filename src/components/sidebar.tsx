@@ -3,6 +3,7 @@ import { Box, Icon, Text, Flex, IconButton } from "@chakra-ui/react";
 import { PiHouseLineDuotone } from "react-icons/pi";
 import { AiTwotoneSetting } from "react-icons/ai";
 import { PiStudentDuotone } from "react-icons/pi";
+import { TbHomeFilled } from "react-icons/tb";
 import { RiUserCommunityLine } from "react-icons/ri";
 import { useNavigationStore } from "../store/usenavigationStore";
 import type { IconType } from "react-icons";
@@ -14,8 +15,8 @@ const Sidebar = () => {
   const { currentPage, setCurrentPage } = useNavigationStore();
 
   const parentsAsideElem: { icon: IconType; label: string; value: Page }[] = [
-    { icon: PiHouseLineDuotone, label: "Home", value: "home" },
-    { icon: PiStudentDuotone, label: "Grader", value: "student" },
+    { icon: TbHomeFilled, label: "Home", value: "home" },
+    { icon: PiStudentDuotone, label: "Students", value: "student" },
     { icon: AiTwotoneSetting, label: "Settings", value: "settings" },
   ];
 
@@ -25,7 +26,7 @@ const Sidebar = () => {
         as="aside"
         display={{ base: "none", lg: "block" }}
         width="full"
-        h='full'
+        h="full"
         overflow="hidden"
         bg="white"
         p={4}
@@ -44,13 +45,15 @@ const Sidebar = () => {
             p={3}
             borderRadius="lg"
             cursor="pointer"
-            color={currentPage === item.value ? "blue.700" : "fieldTextColor"}
-            bg={currentPage === item.value ? "blue.50" : "transparent"}
-            fontWeight={"normal"}
+            color={
+              currentPage === item.value ? "primaryColor" : "fieldTextColor"
+            }
+            bg={currentPage === item.value ? "#206CE11A" : "transparent"}
+            fontWeight={"400"}
             onClick={() => setCurrentPage(item.value)}
           >
             <Icon as={item.icon} size="sm" />
-            <Text mx={2} fontSize={"sm"}>
+            <Text mx={2} fontSize={"sm"} fontWeight={400}>
               {item.label}
             </Text>
           </Box>
@@ -96,7 +99,7 @@ const Sidebar = () => {
               >
                 <Icon as={icon} />
               </IconButton>
-              {/* <Text fontSize="xs">{label}</Text> */}
+              <Text fontSize="xs">{label}</Text>
             </Flex>
           ))}
         </Flex>

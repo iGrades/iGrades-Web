@@ -27,7 +27,7 @@ const EditGraderPopup = ({
 }: Props) => {
   const [showEditBox, setShowEditBox] = useState(false);
 
-  console.log("The student picked is: ", student);
+  
 
 
   return (
@@ -47,18 +47,25 @@ const EditGraderPopup = ({
       >
         <Box
           position="relative"
-          width={{ base: "95%", md: "80%", lg: "50%" }}
+          width={{ base: "100%", md: "80%", lg: "50%" }}
           maxH="90vh"
           overflowY="auto"
           bg="white"
           borderRadius="xl"
-          p={{base:'1', md:'6'}}
+          p={{ base: "1", md: "6" }}
+          css={{
+            "&::-webkit-scrollbar": {
+              display: "none",
+            },
+            "-ms-overflow-style": "none", // IE and Edge
+            "scrollbar-width": "none", // Firefox
+          }}
         >
           {showEditBox ? (
             <EditGrader student={student} onClose={onClose} />
           ) : (
             <>
-              <Flex justify="space-between" mb={4}>
+              <Flex justify="space-between" my={4}>
                 <Button
                   variant="plain"
                   colorScheme="red"
@@ -118,7 +125,8 @@ const EditGraderPopup = ({
                   w="90%"
                   m="auto"
                   p={3}
-                  rounded="xl"
+                  rounded="lg"
+                  shadow="xs"
                   my={2}
                 >
                   <Text fontSize="xs" color="fieldTextColor">
@@ -133,7 +141,8 @@ const EditGraderPopup = ({
                   w="90%"
                   m="auto"
                   p={3}
-                  rounded="xl"
+                  rounded="lg"
+                  shadow="xs"
                   my={2}
                 >
                   <Text fontSize="xs" color="fieldTextColor">
@@ -148,7 +157,8 @@ const EditGraderPopup = ({
                   w="90%"
                   m="auto"
                   p={3}
-                  rounded="xl"
+                  rounded="lg"
+                  shadow="xs"
                   my={2}
                 >
                   <Text fontSize="xs" color="fieldTextColor">
@@ -170,7 +180,8 @@ const EditGraderPopup = ({
                   w="90%"
                   m="auto"
                   p={5}
-                  rounded="xl"
+                  rounded="lg"
+                  shadow="xs"
                   my={2}
                   cursor="pointer"
                 >
@@ -193,7 +204,8 @@ const EditGraderPopup = ({
                   w="90%"
                   m="auto"
                   p={5}
-                  rounded="xl"
+                  rounded="lg"
+                  shadow="xs"
                   my={2}
                   cursor="pointer"
                   onClick={() => setModal && setModal("delete")}
