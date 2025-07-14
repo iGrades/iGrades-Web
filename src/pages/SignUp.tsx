@@ -14,11 +14,13 @@ import {
   Box,
   Flex,
   Icon,
-  Image
+  Image,
+  Tag,
 } from "@chakra-ui/react";
 import { IoEyeOutline, IoEyeOffOutline } from "react-icons/io5";
 import icon from "../assets/human_ico.png";
 import sideImage from "../assets/undraw_sign-up_qamz-removebg-preview.png";
+import Verify from "./Verify";
 
 interface FormData {
   firstName: string;
@@ -40,7 +42,7 @@ export default function SignUp() {
     confirmPassword: "",
     aboutUs: "",
   });
-
+  const [signUpState, setSignUpState] = useState<String | null>("signup");
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -59,6 +61,8 @@ export default function SignUp() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setIsLoading(true);
+    setAlert(null);
 
     const {
       email,
@@ -72,32 +76,46 @@ export default function SignUp() {
 
     if (password !== confirmPassword) {
       setAlert({ type: "error", message: "Passwords do not match." });
+      setIsLoading(false);
       return;
     }
 
-    // Sign up user with Supabase auth
-    const { data, error } = await supabase.auth.signUp({
+    // Send OTP for signup
+    const { error } = await supabase.auth.signInWithOtp({
       email,
-      password,
       options: {
-        emailRedirectTo: `${window.location.origin}/verify`, // Redirect after confirmation
+        shouldCreateUser: true,
+        data: { firstName, lastName, phone, aboutUs, password },
+        emailRedirectTo: `${window.location.origin}/verify`,
       },
     });
 
     if (error) {
-      setAlert({ type: "error", message: error.message });
+      setAlert({
+        type: "error",
+        message: error.message || "Failed to send OTP. Please try again.",
+      });
+      setIsLoading(false);
       return;
     }
 
-    // Save additional data to localStorage (to insert later)
+    // Save form data to localStorage
     localStorage.setItem(
       "formData",
-      JSON.stringify({ firstName, lastName, phone, aboutUs })
+      JSON.stringify({ firstName, lastName, phone, aboutUs, email })
     );
+
+    setIsLoading(false);
     setAlert({
       type: "success",
-      message: `Confirmation email sent to ${email}. Please verify your email.`,
+      message: `A 6-digit OTP has been sent to ${email}. Please check your email (including spam/junk).`,
     });
+
+    // Redirect to verify page with email in state
+    setTimeout(() => {
+      // navigate("/verify", { state: { email } });
+      setSignUpState("verify");
+    }, 1000);
   };
 
   const passIcons = () => {
@@ -128,145 +146,189 @@ export default function SignUp() {
       backgroundRepeat="no-repeat"
       backgroundPosition="center"
       bg={{ lg: "textFieldColor" }}
-      h="100vh"
     >
       <Image
         src={sideImage}
         alt="login_image"
         display={{ base: "none", lg: "block" }}
-        w={{ base: "full", lg: "50%" }}
+        // w={{ base: "full", lg: "50%" }}
       />
-      <Box bg="white" boxShadow="lg" w={{ base: "full", lg: "60%" }}>
-        <Flex justify="flex-end">
-          <Flex
-            align="center"
-            bg="gray.100"
-            w={{ base: "78%", md: "40%", lg: "37%" }}
-            p={1}
-            m={5}
-            borderRadius="3xl"
-          >
-            <Icon size="2xl" mx={2}>
-              <img src={icon} alt="human_icon" />
-            </Icon>
-            <Text fontSize="xs" color="gray.600">
-              Already have an account?
-            </Text>
-            <Link
-              onClick={() => navigate("/login")}
-              variant="plain"
-              color="blue.600"
-              fontWeight="semibold"
-              fontSize="sm"
-              mx={2}
+      {signUpState === "signup" ? (
+        <Box bg="white" boxShadow="lg" w={{ base: "full", lg: "50%" }}>
+          <Flex justify="flex-end">
+            <Flex
+              align="center"
+              bg="gray.100"
+              w={{ base: "78%", md: "40%", lg: "40%" }}
+              p={1}
+              m={5}
+              borderRadius="3xl"
             >
-              Sign In
-            </Link>
-          </Flex>
-        </Flex>
-        <Box w="85%" m="auto">
-          <Box textAlign="center" mb={6}>
-            <Heading fontSize="3xl">Let's get you started</Heading>
-            <Text fontSize="md" mt={2} color="gray.600">
-              Please provide your details
-            </Text>
-          </Box>
-          <form onSubmit={handleSubmit}>
-            <Grid
-              templateColumns={{ base: "repeat(1, 1fr)", md: "repeat(2, 1fr)" }}
-              gap="6"
-            >
-              {formFields.map((field) => (
-                <Box key={field.name}>
-                  <Field.Root>
-                    <Field.Label
-                      color="gray.600"
-                      fontSize="sm"
-                      fontWeight="medium"
-                      my={2}
-                    >
-                      {field.placeholder}
-                    </Field.Label>
-                  </Field.Root>
-                  <InputGroup
-                    endElement={
-                      (field.name === "password" ||
-                        field.name === "confirmPassword") && (
-                        <button type="button" onClick={passIcons}>
-                          {showPassword || showConfirmPassword ? (
-                            <IoEyeOutline />
-                          ) : (
-                            <IoEyeOffOutline />
-                          )}
-                        </button>
-                      )
-                    }
-                  >
-                    <Input
-                      name={field.name}
-                      type={
-                        (field.name === "password" && showPassword) ||
-                        (field.name === "confirmPassword" &&
-                          showConfirmPassword)
-                          ? "text"
-                          : field.type
-                      }
-                      placeholder={field.placeholder}
-                      onChange={handleChange}
-                      required
-                      bg="gray.50"
-                      border="1px solid #ccc"
-                    />
-                  </InputGroup>
-                </Box>
-              ))}
-            </Grid>
-            <Box mt={4}>
-              <Field.Root>
-                <Field.Label color="gray.600" fontSize="sm" my={2}>
-                  How did you hear about us?
-                </Field.Label>
-              </Field.Root>
-              <Input
-                name="aboutUs"
-                type="text"
-                placeholder="Let us know how you found us"
-                onChange={handleChange}
-                required
-                bg="gray.50"
-                border="1px solid #ccc"
-              />
-            </Box>
-            {alert && (
-              <Alert.Root status={alert.type} variant="subtle" mt={6}>
-                <Alert.Indicator />
-                <Alert.Content>
-                  <Alert.Title>
-                    {alert.type === "error" ? "Error!" : "Success!"}
-                  </Alert.Title>
-                  <Alert.Description>{alert.message}</Alert.Description>
-                </Alert.Content>
-              </Alert.Root>
-            )}
-            <Flex justify={"center"} my={10}>
-              <Button
-                loading={isLoading}
-                loadingText="Signing you up..."
-                spinnerPlacement="start"
-                type="submit"
+              <Icon size="2xl" mx={2}>
+                <img src={icon} alt="human_icon" />
+              </Icon>
+              <Text fontSize="xs" color="gray.600">
+                Already have an account?
+              </Text>
+              <Link
+                onClick={() => navigate("/login")}
+                variant="plain"
+                color="blue.600"
                 fontWeight="semibold"
-                w={{ base: "100%", lg: "100%" }}
-                p={6}
-                bg="blue.500"
-                color="white"
-                borderRadius="xl"
+                fontSize="sm"
+                mx={2}
               >
-                Create an Account
-              </Button>
+                Sign In 
+              </Link>
             </Flex>
-          </form>
+          </Flex>
+          <Box w="85%" m="auto">
+            <Box textAlign="center" mb={6}>
+              <Heading fontSize="3xl">Let's get you started</Heading>
+              <Text fontSize="md" mt={2} color="gray.600">
+                Please provide your details
+              </Text>
+            </Box>
+            <form onSubmit={handleSubmit}>
+              <Grid
+                templateColumns={{
+                  base: "repeat(1, 1fr)",
+                  md: "repeat(2, 1fr)",
+                }}
+                gap="6"
+              >
+                {formFields.map((field) => (
+                  <Box key={field.name}>
+                    <Field.Root>
+                      <Field.Label
+                        color="gray.600"
+                        fontSize="sm"
+                        fontWeight="medium"
+                        my={2}
+                      >
+                        {field.placeholder}
+                      </Field.Label>
+                    </Field.Root>
+                    <InputGroup
+                      endElement={
+                        (field.name === "password" ||
+                          field.name === "confirmPassword") && (
+                          <button type="button" onClick={passIcons}>
+                            {showPassword || showConfirmPassword ? (
+                              <IoEyeOutline />
+                            ) : (
+                              <IoEyeOffOutline />
+                            )}
+                          </button>
+                        )
+                      }
+                    >
+                      <Input
+                        name={field.name}
+                        type={
+                          (field.name === "password" && showPassword) ||
+                          (field.name === "confirmPassword" &&
+                            showConfirmPassword)
+                            ? "text"
+                            : field.type
+                        }
+                        placeholder={field.placeholder}
+                        _placeholder={{ fontSize: "xs" }}
+                        onChange={handleChange}
+                        required
+                        bg="gray.50"
+                        border="1px solid #ccc"
+                      />
+                    </InputGroup>
+                  </Box>
+                ))}
+              </Grid>
+              <Flex mt={5} flexWrap={{ base: "wrap", md: "nowrap" }} gap={2}>
+                {[
+                  "Lowercase Letter",
+                  "Uppercase Letter",
+                  "Number",
+                  "Special character",
+                  "8 characters in length",
+                ].map((tag, idx) => (
+                  <Tag.Root
+                    key={idx}
+                    w={{ base: "30", md: "40" }}
+                    size="sm"
+                    p={2}
+                    rounded="2xl"
+                  >
+                    <Tag.Label
+                      fontSize="0.7em"
+                      color="greyOthers"
+                      textAlign="center"
+                      m="auto"
+                    >
+                      {tag}
+                    </Tag.Label>
+                  </Tag.Root>
+                ))}
+              </Flex>
+              <Box mt={4}>
+                <Field.Root>
+                  <Field.Label color="gray.600" fontSize="sm" my={2}>
+                    How did you hear about us?
+                  </Field.Label>
+                </Field.Root>
+                <Input
+                  name="aboutUs"
+                  type="text"
+                  placeholder="Let us know how you found us"
+                  onChange={handleChange}
+                  required
+                  bg="gray.50"
+                  border="1px solid #ccc"
+                />
+              </Box>
+              {alert && (
+                <Alert.Root status={alert.type} variant="subtle" mt={6}>
+                  <Alert.Indicator />
+                  <Alert.Content>
+                    <Alert.Title>
+                      {alert.type === "error" ? "Error!" : "Success!"}
+                    </Alert.Title>
+                    <Alert.Description>{alert.message}</Alert.Description>
+                  </Alert.Content>
+                </Alert.Root>
+              )}
+
+              <Text mt={10} color="#464646" fontSize="sm" textAlign="center">
+                By clicking continue, I agree to{" "}
+                <span style={{ fontWeight: "bold", color: "#206CE1" }}>
+                  Terms of Use
+                </span>{" "}
+                and acknowledge <br /> that I have read the{" "}
+                <span style={{ fontWeight: "bold", color: "#206CE1" }}>
+                  Privacy Policy
+                </span>
+              </Text>
+              <Flex justify="center" my={10}>
+                <Button
+                  loading={isLoading}
+                  loadingText="Creating your account..."
+                  spinnerPlacement="start"
+                  type="submit"
+                  fontWeight="semibold"
+                  w={{ base: "100%", lg: "100%" }}
+                  p={6}
+                  bg="blue.500"
+                  color="white"
+                  borderRadius="3xl"
+                >
+                  Create an Account
+                </Button>
+              </Flex>
+            </form>
+          </Box>
         </Box>
-      </Box>
+      ) : (
+        <Verify />
+      )}
     </Flex>
   );
 }

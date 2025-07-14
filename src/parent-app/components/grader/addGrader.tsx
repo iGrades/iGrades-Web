@@ -1,7 +1,7 @@
 import { useState } from "react";
-import { getParentId } from "../utils/getParentId";
-import { supabase } from "../../lib/supabaseClient";
-import { useStudentsData } from "../context/studentsDataContext";
+import { getParentId } from "../../utils/getParentId";
+import { supabase } from "../../../lib/supabaseClient";
+import { useStudentsData } from "../../context/studentsDataContext";
 import {
   Input,
   Button,
@@ -17,8 +17,8 @@ import {
   Portal,
   Alert,
 } from "@chakra-ui/react";
-import manikin from "../../assets/manikin.png";
-import addPix from "../../assets/addPix.png";
+import manikin from "@/assets/manikin.png";
+import addPix from "@/assets/addPix.png";
 import AddGraderSuccessPopover from "./addGraderSuccessPopover";
 import type { Dispatch, SetStateAction } from "react";
 
@@ -80,19 +80,19 @@ function AddGrader({
     classes: createListCollection({
       items: [
         { label: "Creche / Day Care", value: "creche" },
-        { label: "Kindergarten 1", value: "kg_1" },
-        { label: "Kindergarten 2", value: "kg_2" },
-        { label: "Primary 1", value: "primary1" },
-        { label: "Primary 2", value: "primary2" },
-        { label: "Primary 3", value: "primary3" },
-        { label: "Primary 4", value: "primary4" },
-        { label: "Primary 5", value: "primary5" },
-        { label: "Junior Secondary School 1", value: "jss1" },
-        { label: "Junior Secondary School 2", value: "jss2" },
-        { label: "Junior Secondary School 3", value: "jss3" },
-        { label: "Senior Secondary School 1", value: "sss1" },
-        { label: "Senior Secondary School 2", value: "sss2" },
-        { label: "Senior Secondary School 3", value: "sss3" },
+        { label: "Kindergarten 1", value: "kindergarten 1" },
+        { label: "Kindergarten 2", value: "kindergarten 2" },
+        { label: "Primary 1", value: "primary 1" },
+        { label: "Primary 2", value: "primary 2" },
+        { label: "Primary 3", value: "primary 3" },
+        { label: "Primary 4", value: "primary 4" },
+        { label: "Primary 5", value: "primary 5" },
+        { label: "Junior Secondary School 1", value: "JSS 1" },
+        { label: "Junior Secondary School 2", value: "JSS 2" },
+        { label: "Junior Secondary School 3", value: "JSS 3" },
+        { label: "Senior Secondary School 1", value: "SSS 1" },
+        { label: "Senior Secondary School 2", value: "SSS 2" },
+        { label: "Senior Secondary School 3", value: "SSS 3" },
       ],
     }),
   };

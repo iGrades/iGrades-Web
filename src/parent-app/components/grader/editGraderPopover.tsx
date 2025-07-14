@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { supabase } from "@/lib/supabaseClient";
 import { Box, Button, Flex, Heading, Text, Image } from "@chakra-ui/react";
 import { LuArrowLeft } from "react-icons/lu";
 import { MdOutlineModeEditOutline } from "react-icons/md";
@@ -26,9 +25,6 @@ const EditGraderPopup = ({
   setModal,
 }: Props) => {
   const [showEditBox, setShowEditBox] = useState(false);
-
-  
-
 
   return (
     <>

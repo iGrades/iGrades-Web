@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Flex } from "@chakra-ui/react";
-import SettingsNav from "../components/settingsNav";
+import SettingsNav from "../components/settings/settingsNav";
 import MyIgrade from "../components/settings/myIgrade";
 import Security from "../components/settings/security";
 import Notification from "../components/settings/notification";

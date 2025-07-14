@@ -1,24 +1,31 @@
-import { Flex, Image, Box, Icon, Heading, Text, Menu} from '@chakra-ui/react'
-import { t } from 'i18next';
+import { Flex, Image, Box, Icon, Heading, Text, Menu } from "@chakra-ui/react";
 import { Portal, Select, createListCollection } from "@chakra-ui/react";
-import { useState } from "react";
-import { useTranslation } from 'react-i18next';
+import { useState, type SetStateAction, type Dispatch } from "react";
+import { useUser } from "../context/parentDataContext";
+import { useTranslation } from "react-i18next";
 import { IoNotifications } from "react-icons/io5";
-import logo from "../assets/logo.png";
-import AvatarComp from './avatar';
-import LogoutPopover from '@/parent-app/components/logoutPopover';
-
+import { SkeletonText } from "@chakra-ui/react";
+import logo from "@/assets/logo.png";
+import AvatarComp from "../../components/avatar";
 
 type Props = {
-  userFirstName?: string;
-  userLastName?: string;
+  showLogoutModal: boolean;
+  setShowLogoutModal: Dispatch<SetStateAction<boolean>>;
+};
+
+const Navbar = ({showLogoutModal, setShowLogoutModal}: Props) => {
+const { parent, loading } = useUser();
+const { t } = useTranslation();
+const [value, setValue] = useState<string[]>([]);
+
+
+if (loading) {
+  return <SkeletonText noOfLines={1} gap="4" />; 
 }
 
-
-const Navbar = ({userFirstName, userLastName}: Props) => {
-  const { t } = useTranslation();
-  const [value, setValue] = useState<string[]>([]);
-  const [showLogoutModal, setShowLogoutModal] = useState(false)
+// Get first parent or empty object
+const currentParent = parent[0] || {};
+  
 
   const languages = createListCollection({
     items: [
@@ -61,7 +68,7 @@ const Navbar = ({userFirstName, userLastName}: Props) => {
               ml={1}
               color="on_backgroundColor"
             >
-              {t("welcome")} {userFirstName || "User"}, 🤗
+              {t("welcome")} {currentParent.firstname || "User"}, 🤗
             </Heading>
             <Text ml={1} fontSize="xs" color="greyOthers">
               {t("welcome_complement")}
@@ -117,11 +124,12 @@ const Navbar = ({userFirstName, userLastName}: Props) => {
             </Icon>
 
             <Menu.Root positioning={{ placement: "right-end" }}>
-              <Menu.Trigger rounded="full" cursor='pointer'>
+              <Menu.Trigger rounded="full" cursor="pointer">
                 <AvatarComp
-                  username={`${userFirstName ?? ""} ${
-                    userLastName ?? ""
+                  username={`${currentParent.firstname ?? ""} ${
+                    currentParent.lastname ?? ""
                   }`.trim()}
+                  profileImage={currentParent.profile_image}
                 />
               </Menu.Trigger>
               <Portal>
@@ -140,11 +148,9 @@ const Navbar = ({userFirstName, userLastName}: Props) => {
           </Box>
         </Flex>
       </Flex>
-      {showLogoutModal && (
-        <LogoutPopover setShowLogoutModal={setShowLogoutModal} />
-      )}
+     
     </>
   );
-}
+};
 
-export default Navbar
+export default Navbar;

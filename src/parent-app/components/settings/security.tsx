@@ -1,5 +1,4 @@
 import { Box, Heading, Field, Flex, Button } from "@chakra-ui/react"
-import { LuArrowLeft } from "react-icons/lu";
 import { GiPadlock } from "react-icons/gi";
 import { PasswordInput } from "../../../components/ui/password-input"
 
@@ -17,7 +16,7 @@ const Security = () => {
         mb={16}
         mx={2}
       >
-        <LuArrowLeft />
+        {/* <LuArrowLeft /> */}
         Password
       </Heading>
 

@@ -1,14 +1,14 @@
-import { Box, Heading, Flex, Text, Icon } from "@chakra-ui/react";
-import { LuArrowLeft } from "react-icons/lu";
+import { Box, Heading, Flex, Text, Icon, Switch } from "@chakra-ui/react";
 import { BiSolidNotification } from "react-icons/bi";
-import { LiaToggleOffSolid } from "react-icons/lia";
-import { LiaToggleOnSolid } from "react-icons/lia";
+// import { LiaToggleOffSolid } from "react-icons/lia";
+// import { LiaToggleOnSolid } from "react-icons/lia";
 import { useState } from "react";
 
 type Props = {};
 
 const Notification = (props: Props) => {
-  const [notificationOn, setNotificationOn] = useState(false)
+  // const [notificationOn, setNotificationOn] = useState(false)
+  const [checked, setChecked] = useState(false);
   return (
     <Box bg="white" rounded="lg" shadow="lg" p={4} mb={20} h="75vh">
       <Heading
@@ -21,7 +21,7 @@ const Notification = (props: Props) => {
         mb={10}
         mx={2}
       >
-        <LuArrowLeft />
+        {/* <LuArrowLeft /> */}
         Notifications
       </Heading>
 
@@ -31,7 +31,7 @@ const Notification = (props: Props) => {
         p={{ base: "3", md: "8", lg: "10" }}
         bg="textFieldColor"
         rounded="lg"
-        shadow='xs'
+        shadow="xs"
       >
         <Flex align="center" justify="center" gap={4}>
           <Icon
@@ -54,7 +54,19 @@ const Notification = (props: Props) => {
           </Box>
         </Flex>
 
-        <Box>
+        <Switch.Root
+          checked={checked}
+          onCheckedChange={(e) => setChecked(e.checked)}
+          colorPalette='blue'
+        >
+          <Switch.HiddenInput />
+          <Switch.Control>
+            <Switch.Thumb />
+          </Switch.Control>
+          <Switch.Label />
+        </Switch.Root>
+
+        {/* <Box>
           {notificationOn ? (
             <Icon
               boxSize={{ base: "40px", md: "45px" }}
@@ -77,7 +89,7 @@ const Notification = (props: Props) => {
               <LiaToggleOffSolid onClick={() => setNotificationOn(true)} />
             </Icon>
           )}
-        </Box>
+        </Box> */}
       </Flex>
     </Box>
   );

@@ -35,8 +35,8 @@ const AddGraderPopup = ({ onClose, showBox, setShowBox }: AddGraderPopupProps) =
           "&::-webkit-scrollbar": {
             display: "none",
           },
-          "-ms-overflow-style": "none", // IE and Edge
-          "scrollbar-width": "none", // Firefox
+          "-MsOverflowStyle": "none", // IE and Edge
+          "scrollbarWidth": "none", // Firefox
         }}
       >
         <AddGrader

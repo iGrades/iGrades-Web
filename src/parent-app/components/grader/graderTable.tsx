@@ -1,13 +1,11 @@
-import { useState, useEffect } from "react";
-import { supabase } from "@/lib/supabaseClient";
+import { useState } from "react";
 import { Table, Flex, Box, Text, Image } from "@chakra-ui/react";
-import { VscKebabVertical } from "react-icons/vsc";
 import { GoDotFill } from "react-icons/go";
 import AvatarComp from "@/components/avatar";
-import MenuModal from "./menuModal";
+import MenuModal from "../menuModal";
 import EditGraderPopup from "./editGraderPopover";
 import DeleteGraderPopover from "./deleteGraderPopover";
-import addFiles_img from "../../assets/addFiles_img.svg";
+import addFiles_img from "@/assets/addFiles_img.svg";
 
 type Props = {
   studentsData: any[];
@@ -102,7 +100,7 @@ const GraderTable = ({ studentsData }: Props) => {
                       color="on_containerColor"
                       fontWeight={400}
                       fontSize="xs"
-                      textTransform="uppercase"
+                      textTransform="capitalize"
                     >
                       {item.class}
                     </Table.Cell>
@@ -149,9 +147,9 @@ const GraderTable = ({ studentsData }: Props) => {
             justifyItems="center"
             alignItems="center"
           >
-            <Text my={10} fontSize='xs' color='fieldTextColor'>
-              You have not added any child yet. Click the button above to
-              add a child
+            <Text my={10} fontSize="xs" color="fieldTextColor">
+              You have not added any child yet. Click the button above to add a
+              child
             </Text>
             <Image src={addFiles_img} w="20%" my={16} />
           </Box>

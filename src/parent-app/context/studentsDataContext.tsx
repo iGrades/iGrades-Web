@@ -2,84 +2,98 @@ import { createContext, useContext, useState, useEffect } from "react";
 import { supabase } from "@/lib/supabaseClient";
 import type { ReactNode } from "react";
 import type { Dispatch, SetStateAction } from "react";
-import { Alert } from "@chakra-ui/react";
 
-interface StudentsDataContextType {
-  studentsData: any[];
-  setStudentsData: Dispatch<SetStateAction<any[]>>;
-  getGraderDetails: () => Promise<void>;
+// Define proper types
+interface Student {
+  id: string;
+  firstname: string;
+  lastname: string;
+  grade_level: string;
+  // Add all other student fields you need
 }
 
-// Create context
+interface Alert {
+  type: "success" | "error";
+  message: string;
+}
+
+interface StudentsDataContextType {
+  studentsData: Student[];
+  loading: boolean;
+  error: Error | null;
+  alert: Alert | null;
+  setStudentsData: Dispatch<SetStateAction<Student[]>>;
+  getGraderDetails: () => Promise<void>;
+  clearAlert: () => void;
+}
+
+// Create context with strict typing
 const StudentsDataContext = createContext<StudentsDataContextType | undefined>(
   undefined
 );
 
 // Create provider component
 export const StudentsDataProvider = ({ children }: { children: ReactNode }) => {
-  const [studentsData, setStudentsData] = useState<any[]>([]);
-   const [alert, setAlert] = useState<{
-      type: "success" | "error";
-      message: string;
-    } | null>(null);
+  const [studentsData, setStudentsData] = useState<Student[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<Error | null>(null);
+  const [alert, setAlert] = useState<Alert | null>(null);
+
+  const clearAlert = () => setAlert(null);
 
   const getGraderDetails = async () => {
-    const { data: students, error } = await supabase
-      .from("students")
-      .select("*");
+    try {
+      setLoading(true);
+      setError(null);
 
-    if (error) {
-      setAlert({ type: "error", message: error.message });
-      return;
+      const { data: students, error: supabaseError } = await supabase
+        .from("students")
+        .select("*");
+
+      if (supabaseError) {
+        throw new Error(supabaseError.message);
+      }
+
+      // Ensure we always set an array, even if null
+      setStudentsData(students ?? []);
+    } catch (err) {
+      const message =
+        err instanceof Error ? err.message : "Failed to fetch students";
+      setError(new Error(message));
+      setAlert({ type: "error", message });
+    } finally {
+      setLoading(false);
     }
-
-    setStudentsData(students ?? []);
   };
+
   useEffect(() => {
-    // Initial fetch
     getGraderDetails();
-
-    // Realtime subscription to INSERT and DELETE
-    const channel = supabase
-      .channel("students_changes")
-      .on(
-        "postgres_changes",
-        { event: "*", schema: "public", table: "students" },
-        (payload) => {
-          console.log("Change received!", payload);
-          getGraderDetails(); // Refresh the list
-        }
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel); // Clean up on unmount
-    };
   }, []);
 
   return (
     <StudentsDataContext.Provider
-      value={{ studentsData, setStudentsData, getGraderDetails }}
+      value={{
+        studentsData,
+        loading,
+        error,
+        alert,
+        setStudentsData,
+        getGraderDetails,
+        clearAlert,
+      }}
     >
-      {alert && (
-        <Alert.Root status={alert.type} variant="subtle" mt={6}>
-          <Alert.Indicator />
-          <Alert.Content>
-            <Alert.Title>
-              {alert.type === "error" ? "Error!" : "Success!"}
-            </Alert.Title>
-            <Alert.Description>{alert.message}</Alert.Description>
-          </Alert.Content>
-        </Alert.Root>
-      )}
       {children}
     </StudentsDataContext.Provider>
   );
 };
 
-// Custom hook for easy access
-export const useStudentsData = () => {
+// Custom hook with proper type checking
+export const useStudentsData = (): StudentsDataContextType => {
   const context = useContext(StudentsDataContext);
-  if (!context) throw new Error("useUser must be used within UserProvider");
+  if (!context) {
+    throw new Error(
+      "useStudentsData must be used within a StudentsDataProvider"
+    );
+  }
   return context;
 };

@@ -1,7 +1,7 @@
 import React from "react";
 import { Box, Text, Image } from "@chakra-ui/react";
-import { useStudentsData } from "../context/studentsDataContext";
-import GraderTable from "./graderTable";
+import { useStudentsData } from "../../context/studentsDataContext";
+import GraderTable from "././graderTable";
 
 
 const GraderDetails = () => {

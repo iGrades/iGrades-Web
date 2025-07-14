@@ -1,15 +1,10 @@
-import React, { useState } from "react";
 import { Box, Icon, Text, Flex, IconButton } from "@chakra-ui/react";
-import { PiHouseLineDuotone } from "react-icons/pi";
 import { AiTwotoneSetting } from "react-icons/ai";
 import { PiStudentDuotone } from "react-icons/pi";
 import { TbHomeFilled } from "react-icons/tb";
-import { RiUserCommunityLine } from "react-icons/ri";
-import { useNavigationStore } from "../store/usenavigationStore";
+import { useNavigationStore } from "../../store/usenavigationStore";
 import type { IconType } from "react-icons";
-import type { Page } from "../store/usenavigationStore";
-
-type Props = [];
+import type { Page } from "../../store/usenavigationStore";
 
 const Sidebar = () => {
   const { currentPage, setCurrentPage } = useNavigationStore();

@@ -1,9 +1,9 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import SearchBar from "../components/searchBar";
 import { Flex, Box } from "@chakra-ui/react";
-import AddGraderBtn from "../components/addGraderBtn";
-import GraderDetails from "../components/graderDetails";
-import AddGraderPopup from "../components/addGraderPopover";
+import AddGraderBtn from "../components/grader/addGraderBtn";
+import GraderDetails from "../components/grader/graderDetails";
+import AddGraderPopup from "../components/grader/addGraderPopover";
 
 type Props = {};
 
@@ -31,7 +31,13 @@ const StudentPage = () => {
       </Flex>
       <Box>
         <GraderDetails />
-        {showBox && <AddGraderPopup showBox={showBox} setShowBox={setShowBox} onClose={() => setShowBox(false)} />}
+        {showBox && (
+          <AddGraderPopup
+            showBox={showBox}
+            setShowBox={setShowBox}
+            onClose={() => setShowBox(false)}
+          />
+        )}
       </Box>
     </Flex>
   );
