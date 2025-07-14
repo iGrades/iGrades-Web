@@ -10,7 +10,7 @@ const OtpInput = ({ length = 6, onChangeOtp }: OtpInputProps) => {
   const inputsRef = useRef<Array<HTMLInputElement | null>>([]);
 
   interface OtpInputEvent extends React.ChangeEvent<HTMLInputElement> {}
-  interface OtpInputKeyEvent extends React.KeyboardEvent<HTMLInputElement> {}
+  // interface OtpInputKeyEvent extends React.KeyboardEvent<HTMLInputElement> {}
 
   const handleChange = (e: OtpInputEvent, index: number) => {
     const value = e.target.value;

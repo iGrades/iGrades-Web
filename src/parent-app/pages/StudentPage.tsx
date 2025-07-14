@@ -5,7 +5,6 @@ import AddGraderBtn from "../components/grader/addGraderBtn";
 import GraderDetails from "../components/grader/graderDetails";
 import AddGraderPopup from "../components/grader/addGraderPopover";
 
-type Props = {};
 
 const StudentPage = () => {
   const [showBox, setShowBox] = useState(false);

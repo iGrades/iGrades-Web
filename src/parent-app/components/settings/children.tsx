@@ -3,9 +3,8 @@ import { useStudentsData } from "../../context/studentsDataContext";
 import AvatarComp from "@/components/avatar";
 import { MdOutlineKeyboardArrowRight } from "react-icons/md";
 
-type Props = {};
 
-const Children = (props: Props) => {
+const Children = () => {
   const { studentsData } = useStudentsData();
   return (
     <>

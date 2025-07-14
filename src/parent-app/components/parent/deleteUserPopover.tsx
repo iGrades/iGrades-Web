@@ -64,7 +64,7 @@ const DeleteUserPopover = ({
       if (error) throw error;
 
       // Sign out the user
-      const { data, error: signOutError } =
+      const { error: signOutError } =
         await supabase.auth.admin.deleteUser(parent[0].user_id);
       if (signOutError) throw signOutError;
 

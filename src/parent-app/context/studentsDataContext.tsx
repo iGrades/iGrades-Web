@@ -9,6 +9,9 @@ interface Student {
   firstname: string;
   lastname: string;
   grade_level: string;
+  profile_image: string;
+  school: string;
+  class: string;
   // Add all other student fields you need
 }
 

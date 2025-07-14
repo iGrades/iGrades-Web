@@ -9,11 +9,10 @@ import logo from "@/assets/logo.png";
 import AvatarComp from "../../components/avatar";
 
 type Props = {
-  showLogoutModal: boolean;
   setShowLogoutModal: Dispatch<SetStateAction<boolean>>;
 };
 
-const Navbar = ({showLogoutModal, setShowLogoutModal}: Props) => {
+const Navbar = ({setShowLogoutModal}: Props) => {
 const { parent, loading } = useUser();
 const { t } = useTranslation();
 const [value, setValue] = useState<string[]>([]);

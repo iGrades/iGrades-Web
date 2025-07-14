@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { Flex } from "@chakra-ui/react";
-import { Box, Text } from "@chakra-ui/react";
-import { useTranslation } from "react-i18next";
+import { Box } from "@chakra-ui/react";
 import { useNavigationStore } from "@/store/usenavigationStore";
 import { StudentsDataProvider } from "@/parent-app/context/studentsDataContext";
 import { UserProvider } from "@/parent-app/context/parentDataContext";
@@ -13,10 +12,8 @@ import DashboardLayout from "@/parent-app/dashboard";
 import Navbar from "@/parent-app/components/navbar";
 import LogoutPopover from "./components/logoutPopover";
 
-type Props = {};
 
-const Home = (props: Props) => {
-  const { t } = useTranslation();
+const Home = () => {
   const [showLogoutModal, setShowLogoutModal] = useState(false);
   const currentPage = useNavigationStore((state) => state.currentPage);
 
@@ -45,7 +42,7 @@ const Home = (props: Props) => {
             overflow="hidden"
             bg={{ base: "white", md: "textFieldColor" }}
           >
-            <Navbar showLogoutModal={showLogoutModal} setShowLogoutModal={setShowLogoutModal} />
+            <Navbar setShowLogoutModal={setShowLogoutModal} />
 
             <Flex flex="1" overflow="hidden">
               {/* Sidebar - will not scroll */}

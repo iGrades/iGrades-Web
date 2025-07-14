@@ -4,9 +4,7 @@ import { BiSolidNotification } from "react-icons/bi";
 // import { LiaToggleOnSolid } from "react-icons/lia";
 import { useState } from "react";
 
-type Props = {};
-
-const Notification = (props: Props) => {
+const Notification = () => {
   // const [notificationOn, setNotificationOn] = useState(false)
   const [checked, setChecked] = useState(false);
   return (

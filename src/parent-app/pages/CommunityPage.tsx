@@ -1,8 +1,6 @@
 
 
-type Props = {}
-
-const CommunityPage = (props: Props) => {
+const CommunityPage = () => {
   return (
     <div>CommunityPage</div>
   )

@@ -17,7 +17,6 @@ type DeleteStep = "warning" | "confirm" | "deleting" | "success";
 const DeleteGraderPopover = ({
   student,
   setStudent,
-  modal,
   setModal,
   onClose,
 }: Props) => {

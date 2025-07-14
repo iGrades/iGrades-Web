@@ -1,8 +1,6 @@
-import React from "react";
 import type { Dispatch, SetStateAction } from "react"
 import { Button } from "@chakra-ui/react";
 import { AiOutlineUserAdd } from "react-icons/ai";
-import { LiaUserTimesSolid } from "react-icons/lia";
 
 type Props = {
   showBox: boolean;
