@@ -36,7 +36,6 @@ function AddGrader({
   mdPageWidth,
   lgPageWidth,
   radius,
-  showBox,
   setShowBox
 }: AddGraderProps) {
 
@@ -111,7 +110,7 @@ function AddGrader({
     const fileName = `${Date.now()}.${fileExt}`;
     const filePath = `students/${fileName}`;
 
-    const { data, error } = await supabase.storage
+    const { error } = await supabase.storage
       .from("profile-photos")
       .upload(filePath, selectedFile);
 

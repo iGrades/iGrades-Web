@@ -9,7 +9,7 @@ type Props = {
   onSelect: (type: "edit" | "delete") => void;
 };
 
-const MenuModal = ({editText, deleteText, setModal, onSelect}: Props) => {
+const MenuModal = ({editText, deleteText, onSelect}: Props) => {
   return (
     <Menu.Root positioning={{ placement: "left-start" }}>
       <Menu.Trigger asChild>

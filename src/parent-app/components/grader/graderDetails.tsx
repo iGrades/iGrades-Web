@@ -1,5 +1,4 @@
-import React from "react";
-import { Box, Text, Image } from "@chakra-ui/react";
+import { Box } from "@chakra-ui/react";
 import { useStudentsData } from "../../context/studentsDataContext";
 import GraderTable from "././graderTable";
 

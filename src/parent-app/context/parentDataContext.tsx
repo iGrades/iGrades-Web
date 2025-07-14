@@ -44,7 +44,7 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
       setUser(user);
 
       // Get parent data
-      const { data: parents, error: parentError } = await supabase
+      const { data: parents } = await supabase
         .from("parents")
         .select("*")
         .eq("user_id", user?.id);

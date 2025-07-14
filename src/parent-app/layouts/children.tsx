@@ -1,4 +1,4 @@
-import { Box, Flex, Text, Image, Heading, EmptyState, VStack} from "@chakra-ui/react";
+import { Box, Flex, Text, Image, Heading } from "@chakra-ui/react";
 import childrenBox_ico from "../../assets/childrenBox_ico.png";
 import activeChildrenBox_ico from "../../assets/activeChildrenBox_ico.png";
 

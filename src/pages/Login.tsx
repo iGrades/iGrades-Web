@@ -73,13 +73,16 @@ export default function Login() {
       // This is just a placeholder, you can handle it as needed
     }
   };
+
+  console.log('The otp is: ', otp);
+  
   
 
   const handlePasswordLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true); // Start loading
 
-    const { data, error } = await supabase.auth.signInWithPassword({
+    const { error } = await supabase.auth.signInWithPassword({
       email,
       password,
     });
