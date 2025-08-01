@@ -15,7 +15,7 @@ import LogoutPopover from "./components/logoutPopover";
 
 const Home = () => {
   const [showLogoutModal, setShowLogoutModal] = useState(false);
-  const currentPage = useNavigationStore((state) => state.currentPage);
+  const currentPage = useNavigationStore((state) => state.currentParentPage);
 
   const renderPage = () => {
     switch (currentPage) {

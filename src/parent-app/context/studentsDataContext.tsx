@@ -12,7 +12,7 @@ interface Student {
   profile_image: string;
   school: string;
   class: string;
-  // Add all other student fields you need
+  // Add all other student fields needed
 }
 
 interface Alert {
@@ -44,6 +44,7 @@ export const StudentsDataProvider = ({ children }: { children: ReactNode }) => {
 
   const clearAlert = () => setAlert(null);
 
+  // fetch students details from database
   const getGraderDetails = async () => {
     try {
       setLoading(true);

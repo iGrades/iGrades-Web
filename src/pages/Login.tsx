@@ -1,9 +1,7 @@
 import { useState } from "react";
-import { supabase } from "../lib/supabaseClient";
 import { useNavigate } from "react-router-dom";
 import {
   Button,
-  Input,
   Alert,
   Box,
   Text,
@@ -11,44 +9,22 @@ import {
   Icon,
   Link,
   Heading,
-  Grid,
-  Field,
-  InputGroup,
-  Image
+  Image,
 } from "@chakra-ui/react";
-import { IoEyeOutline, IoEyeOffOutline } from "react-icons/io5";
-import { useTranslation } from "react-i18next";
+
 import icon from "../assets/human_ico.png";
-import OtpInput from "../components/otpInput";
-import sideImage from '../assets/undraw_sign-in_uva0-removebg-preview.png'
+import ParentLogin from "@/parent-app/auth/Login";
+import StudentLogin from "@/student-app/auth/Login";
+import sideImage from "../assets/undraw_sign-in_uva0-removebg-preview.png";
 
 export default function Login() {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [otp, setOtp] = useState("");
+  const navigate = useNavigate();
   const [alert, setAlert] = useState<{
     type: "success" | "error";
     message: string;
   } | null>(null);
-  const [showPassword, setShowPassword] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
+
   const [loginState, setLoginState] = useState("parent"); // "parent" or "children"
-
-  const navigate = useNavigate();
-  const { t } = useTranslation();
-
-  const parentFormFields = [
-    { name: "email", type: "email", placeholder: "Email" },
-    { name: "password", type: "password", placeholder: "Password" },
-  ];
-
-  const childFormFields = [
-    { name: "name", type: "text", placeholder: "Username" },
-  ];
-
-  const passIcons = () => {
-    setShowPassword((prev) => !prev);
-  };
 
   const userType = [
     { type: "iGrade Parent", state: "parent" },
@@ -58,46 +34,6 @@ export default function Login() {
   const handleUserTypeChange = (type: string) => {
     setLoginState(type);
   };
-
-  const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
-  ) => {
-    const {name, value} = e.target;
-
-    if (name === "email") {
-      setEmail(value);
-    } else if (name === "password") {
-      setPassword(value);
-    } else if (name === "name") {
-      // Handle child username input
-      // This is just a placeholder, you can handle it as needed
-    }
-  };
-
-  console.log('The otp is: ', otp);
-  
-  
-
-  const handlePasswordLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsLoading(true); // Start loading
-
-    const { error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
-
-    if (error) {
-      setAlert({ type: "error", message: error.message });
-      setIsLoading(false); // Stop loading on error
-      return;
-    }
-
-    setIsLoading(false); // Stop loading on success
-    navigate("/");
-  };
-  
-  
 
   return (
     <Flex
@@ -155,7 +91,7 @@ export default function Login() {
               color={"on_backgroudColor"}
               fontWeight={"bold"}
             >
-              {t("login_title")}
+              Login in to your iGrade
             </Heading>
             <Text
               fontSize={"md"}
@@ -163,7 +99,8 @@ export default function Login() {
               color={"mediumGrey"}
               my={5}
             >
-              {t("login_desc")}
+              Enter your email address and password to securely login to your
+              iGrade account
             </Text>
           </Box>
 
@@ -195,122 +132,23 @@ export default function Login() {
             ))}
           </Flex>
 
-          <form onSubmit={handlePasswordLogin}>
-            <Grid templateColumns={'base: "repeat(1, 1fr)"'} gap={"6"} my={5}>
-              {loginState === "parent"
-                ? parentFormFields.map((field) => (
-                    <Box key={field.name} className="">
-                      <Field.Root>
-                        <Field.Label
-                          color={"greyOthers"}
-                          fontSize={"sm"}
-                          fontWeight={"medium"}
-                          my={2}
-                        >
-                          {field.placeholder}
-                        </Field.Label>
-                      </Field.Root>
-                      <InputGroup
-                        endElement={
-                          (field.name === "password" ||
-                            field.name === "confirmPassword") && (
-                            <button type="button" onClick={passIcons}>
-                              {showPassword ? (
-                                <IoEyeOutline />
-                              ) : (
-                                <IoEyeOffOutline />
-                              )}
-                            </button>
-                          )
-                        }
-                      >
-                        <Input
-                          name={field.name}
-                          type={showPassword ? "text" : field.type}
-                          placeholder={field.placeholder}
-                          onChange={handleChange}
-                          required
-                          bg={"textFieldColor"}
-                          outline={"primaryColor"}
-                          border={"none"}
-                          css={{ "--focus-color": "primaryColor" }}
-                          _placeholder={{ color: "fieldTextColor" }}
-                        />
-                      </InputGroup>
-                    </Box>
-                  ))
-                : childFormFields.map((field) => (
-                    <Box key={field.name} className="">
-                      <Field.Root>
-                        <Field.Label
-                          color={"greyOthers"}
-                          fontSize={"sm"}
-                          fontWeight={"medium"}
-                          my={2}
-                        >
-                          {field.placeholder}
-                        </Field.Label>
-                      </Field.Root>
-                      <InputGroup>
-                        <Input
-                          name={field.name}
-                          type={showPassword ? "text" : field.type}
-                          placeholder={field.placeholder}
-                          onChange={handleChange}
-                          required
-                          bg={"textFieldColor"}
-                          outline={"primaryColor"}
-                          border={"none"}
-                          css={{ "--focus-color": "primaryColor" }}
-                          _placeholder={{ color: "fieldTextColor" }}
-                        />
-                      </InputGroup>
-                    </Box>
-                  ))}
-              {loginState === "children" && (
-                <Box w="full">
-                  <Text
-                    my={2}
-                    color="greyOthers"
-                    fontSize={"sm"}
-                    fontWeight={"medium"}
-                  >
-                    Passkey
-                  </Text>
-                  <OtpInput onChangeOtp={(value) => setOtp(value)} />
-                </Box>
-              )}
-            </Grid>
+          {loginState === "parent" ? (
+            <ParentLogin setAlert={setAlert} />
+          ) : (
+            <StudentLogin setAlert={setAlert} />
+          )}
 
-            {alert && (
-              <Alert.Root status={alert.type} variant="subtle" mt={6}>
-                <Alert.Indicator />
-                <Alert.Content>
-                  <Alert.Title>
-                    {alert.type === "error" ? "Error!" : "Success!"}
-                  </Alert.Title>
-                  <Alert.Description>{alert.message}</Alert.Description>
-                </Alert.Content>
-              </Alert.Root>
-            )}
-
-            <Flex justify={"center"} my={10}>
-              <Button
-                loading={isLoading}
-                loadingText="Logging in..."
-                spinnerPlacement="start"
-                type="submit"
-                fontWeight="semibold"
-                w={{base: '100%', lg:'100%'}}
-                p={6}
-                bg="blue.500"
-                color="white"
-                borderRadius="xl"
-              >
-                {t("login")}
-              </Button>
-            </Flex>
-          </form>
+          {alert && (
+            <Alert.Root status={alert.type} variant="subtle" mt={6}>
+              <Alert.Indicator />
+              <Alert.Content>
+                <Alert.Title>
+                  {alert.type === "error" ? "Error!" : "Success!"}
+                </Alert.Title>
+                <Alert.Description>{alert.message}</Alert.Description>
+              </Alert.Content>
+            </Alert.Root>
+          )}
         </Box>
       </Box>
     </Flex>

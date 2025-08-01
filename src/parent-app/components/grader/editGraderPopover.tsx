@@ -1,10 +1,12 @@
-import { useState } from "react";
-import { Box, Button, Flex, Heading, Text, Image } from "@chakra-ui/react";
+import { useState, useMemo } from "react";
+import { supabase } from "../../../lib/supabaseClient";
+import { Box, Button, Flex, Heading, Text, Image} from "@chakra-ui/react";
 import { LuArrowLeft } from "react-icons/lu";
 import { MdOutlineModeEditOutline } from "react-icons/md";
 import { MdDelete } from "react-icons/md";
 import { GiNotebook } from "react-icons/gi";
 import { MdOutlineKeyboardArrowRight } from "react-icons/md";
+import { usePassKey } from "@/parent-app/context/passkeyContext";
 import EditGrader from "./editGrader";
 import DeleteGraderPopover from "./deleteGraderPopover";
 import AvatarComp from "@/components/avatar";
@@ -25,6 +27,47 @@ const EditGraderPopup = ({
   setModal,
 }: Props) => {
   const [showEditBox, setShowEditBox] = useState(false);
+
+  const { handleGeneratePassKey, decrypt } =
+    usePassKey();
+
+    const encKey = import.meta.env.VITE_ENC_KEY;
+
+  const handleGenBtnClick = async () => {
+    try {
+      const { passkey, encrypted } = handleGeneratePassKey();
+
+      const { error } = await supabase
+        .from("students")
+        .update({ passcode: encrypted })
+        .eq("id", student.id)
+        .select();
+
+      console.log("To show to user:", passkey);
+      console.log("To store in DB:", encrypted);
+
+      if (error) {
+        console.error("Error updating passcode:", error);
+      }
+
+      // Update UI
+      setStudent((prev: any) => ({
+        ...prev,
+        passcode: encrypted,
+      }));
+    } catch (error) {
+      console.log("Error updating passcode from catch block:", error);
+    }
+  };
+
+
+
+const PassPlaceholder = useMemo(() => {
+  return student?.passcode ? decrypt(student.passcode, encKey) : "";
+}, [student?.passcode, encKey]);
+
+  console.log("The passcode placeholder is:", PassPlaceholder);
+  
 
   return (
     <>
@@ -165,7 +208,32 @@ const EditGraderPopup = ({
                   </Text>
                 </Box>
 
-                {/* Add more student info if needed */}
+                <Box
+                  bg="textFieldColor"
+                  w="90%"
+                  m="auto"
+                  p={3}
+                  rounded="lg"
+                  shadow="xs"
+                  my={2}
+                >
+                  <Text fontSize="xs" color="fieldTextColor">
+                    Passcode
+                  </Text>
+                  <Text fontSize="xs" fontWeight="500">
+                    {PassPlaceholder}
+                  </Text>
+                  {!student?.passcode && (
+                    <Button
+                      bg="bg.subtle"
+                      variant="outline"
+                      onClick={handleGenBtnClick}
+                    >
+                      Generate Passcode
+                    </Button>
+                  )}
+                  {/* </Group> */}
+                </Box>
               </Box>
 
               <Box my={10}>

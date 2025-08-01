@@ -2,6 +2,7 @@ import { useState } from "react";
 import { getParentId } from "../../utils/getParentId";
 import { supabase } from "../../../lib/supabaseClient";
 import { useStudentsData } from "../../context/studentsDataContext";
+
 import {
   Input,
   Button,
@@ -16,6 +17,7 @@ import {
   Select,
   Portal,
   Alert,
+  Group
 } from "@chakra-ui/react";
 import manikin from "@/assets/manikin.png";
 import addPix from "@/assets/addPix.png";
@@ -40,6 +42,7 @@ function AddGrader({
 }: AddGraderProps) {
 
   const {getGraderDetails} = useStudentsData()
+ 
 
   const [formData, setFormData] = useState({
     email: "",
@@ -52,10 +55,10 @@ function AddGrader({
     school: "",
     profile_image: "",
     subscription: "Basic",
+    passcode: "",
   });
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [showModal, setShowModal] = useState(false);
-  const [alert, setAlert] = useState<{
+  const [showModal, setShowModal] = useState(false);  const [alert, setAlert] = useState<{
     status: "success" | "error";
     message: string;
   } | null>(null);
@@ -167,9 +170,11 @@ function AddGrader({
         basic_language: "",
         school: "",
         profile_image: "",
-        subscription: "Basic"
+        subscription: "Basic",
+        passcode: "",
       });
       setSelectedFile(null);
+
       setShowModal(true);
       getGraderDetails()
     }
@@ -179,6 +184,11 @@ function AddGrader({
       setAlert(null);
     }, 5000);
   };
+
+
+
+
+
 
   return (
     <>
@@ -420,6 +430,7 @@ function AddGrader({
                 </Select.Positioner>
               </Portal>
             </Select.Root>
+
           </Grid>
           {/* alert */}
           {alert && (
@@ -453,7 +464,10 @@ function AddGrader({
       </Box>
 
       {showModal && (
-        <AddGraderSuccessPopover setShowBox={setShowBox} setShowModal={setShowModal} />
+        <AddGraderSuccessPopover
+          setShowBox={setShowBox}
+          setShowModal={setShowModal}
+        />
       )}
     </>
   );

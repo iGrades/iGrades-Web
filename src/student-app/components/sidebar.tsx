@@ -1,18 +1,25 @@
 import { Box, Icon, Text, Flex, IconButton } from "@chakra-ui/react";
 import { AiTwotoneSetting } from "react-icons/ai";
-import { PiStudentDuotone } from "react-icons/pi";
 import { TbHomeFilled } from "react-icons/tb";
+import { IoNewspaper } from "react-icons/io5";
+import { TbBrandYoutubeFilled } from "react-icons/tb";
 import { useNavigationStore } from "../../store/usenavigationStore";
 import type { IconType } from "react-icons";
-import type { ParentPage } from "../../store/usenavigationStore";
+import type { StudentPage } from "../../store/usenavigationStore";
 
 const Sidebar = () => {
-  const { currentParentPage, setCurrentParentPage } = useNavigationStore();
+  const { currentStudentPage, setCurrentStudentPage } = useNavigationStore();
 
-  const parentsAsideElem: { icon: IconType; label: string; value: ParentPage }[] = [
+  const parentsAsideElem: {
+    icon: IconType;
+    label: string;
+    value: StudentPage;
+  }[] = [
     { icon: TbHomeFilled, label: "Home", value: "home" },
-    { icon: PiStudentDuotone, label: "Students", value: "student" },
+    { icon: IoNewspaper, label: "Quiz", value: "quiz" },
+    { icon: TbBrandYoutubeFilled, label: "Learn", value: "learn" },
     { icon: AiTwotoneSetting, label: "Settings", value: "settings" },
+    // { icon: AiTwotoneSetting, label: "Community", value: "community" },
   ];
 
   return (
@@ -41,14 +48,14 @@ const Sidebar = () => {
             borderRadius="lg"
             cursor="pointer"
             color={
-              currentParentPage === item.value ? "primaryColor" : "fieldTextColor"
+              currentStudentPage === item.value ? "primaryColor" : "fieldTextColor"
             }
-            bg={currentParentPage === item.value ? "#206CE11A" : "transparent"}
-            fontWeight={"400"}
-            onClick={() => setCurrentParentPage(item.value)}
+            bg={currentStudentPage === item.value ? "#206CE11A" : "transparent"}
+            fontWeight={"600"}
+            onClick={() => setCurrentStudentPage(item.value)}
           >
             <Icon as={item.icon} size="sm" />
-            <Text mx={2} fontSize={"sm"} fontWeight={7100}>
+            <Text mx={2} fontSize={"sm"} fontWeight={600}>
               {item.label}
             </Text>
           </Box>
@@ -81,15 +88,15 @@ const Sidebar = () => {
               flex="1"
               p={1}
               fontWeight={"normal"}
-              onClick={() => setCurrentParentPage(value)}
+              onClick={() => setCurrentStudentPage(value)}
             >
               <IconButton
                 aria-label={label}
                 variant="ghost"
                 size="lg"
                 fontSize="xl"
-                color={currentParentPage === value ? "blue.700" : "fieldTextColor"}
-                bg={currentParentPage === value ? "blue.50" : "transparent"}
+                color={currentStudentPage === value ? "blue.700" : "fieldTextColor"}
+                bg={currentStudentPage === value ? "blue.50" : "transparent"}
                 borderRadius="xl"
               >
                 <Icon as={icon} />
