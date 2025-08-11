@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { supabase } from "../lib/supabaseClient";
+import { supabase } from "../../lib/supabaseClient";
 import { Link } from "react-router-dom";
 import {
   Box,
@@ -12,7 +12,7 @@ import {
   Heading,
 } from "@chakra-ui/react";
 
-export default function Verify() {
+export default function ParentVerify() {
   const [otp, setOtp] = useState<string[]>(Array(6).fill(""));
   const [status, setStatus] = useState<
     "idle" | "verifying" | "error" | "success"

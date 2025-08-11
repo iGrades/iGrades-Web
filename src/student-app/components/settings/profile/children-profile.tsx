@@ -20,7 +20,7 @@ const pageData = [
   "Phone Number",
 ];
 
-const Profile = () => {
+const ChildrenProfile = () => {
   const { authdStudent } = useAuthdStudentData();
 
   return (
@@ -105,4 +105,4 @@ const Profile = () => {
   );
 };
 
-export default Profile;
+export default ChildrenProfile;

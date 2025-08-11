@@ -4,12 +4,14 @@ import type { Dispatch, SetStateAction } from "react";
 
 interface Student {
   id: string;
+  email: string;
   firstname: string;
   lastname: string;
   grade_level: string;
   profile_image: string;
   school: string;
   class: string;
+  is_child: boolean | null;
 }
 
 interface Alert {
@@ -17,11 +19,15 @@ interface Alert {
   message: string;
 }
 
+
 interface AuthdStudentDataContextType {
   authdStudent: Student | null; // Changed to single student or null
   alert: Alert | null;
   setAuthdStudent: Dispatch<SetStateAction<Student | null>>;
   clearAlert: () => void;
+  logoutFunc: () => void;
+  isPopOver?: boolean;
+  setIsPopOver?: Dispatch<SetStateAction<boolean>>;
 }
 
 const AuthdStudentDataContext = createContext<
@@ -40,6 +46,8 @@ export const AuthdStudentDataProvider = ({
   });
 
   const [alert, setAlert] = useState<Alert | null>(null);
+  const [isPopOver, setIsPopOver] = useState<boolean>(false);
+
 
   // Update localStorage whenever authdStudent changes
   useEffect(() => {
@@ -50,11 +58,19 @@ export const AuthdStudentDataProvider = ({
     }
   }, [authdStudent]);
 
+  const logoutFunc = () => {
+    setAuthdStudent(null);
+    localStorage.removeItem("authdStudent");
+    setIsPopOver(false)
+    setAlert({ type: "success", message: "Logged out successfully." });
+    window.location.assign(`${window.location.origin}/login`);
+  }
+
   const clearAlert = () => setAlert(null);
 
   return (
     <AuthdStudentDataContext.Provider
-      value={{ authdStudent, setAuthdStudent, alert, clearAlert }}
+      value={{ authdStudent, setAuthdStudent, alert, clearAlert, logoutFunc, isPopOver, setIsPopOver }}
     >
       {children}
     </AuthdStudentDataContext.Provider>

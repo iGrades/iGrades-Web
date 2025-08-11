@@ -6,10 +6,12 @@ import { useTranslation } from "react-i18next";
 import { IoNotifications } from "react-icons/io5";
 import logo from "@/assets/logo.png";
 import AvatarComp from "../../components/avatar";
+import Popover from "../modals/popover"; // Adjust the import path as necessary
 
 const Navbar = () => {
   const { authdStudent } = useAuthdStudentData();
   const { t } = useTranslation();
+  const { logoutFunc, isPopOver, setIsPopOver } = useAuthdStudentData();
   // const [value, setValue] = useState<string[]>([]);
 
   // Get first student or empty object
@@ -68,7 +70,7 @@ const Navbar = () => {
               rounded="3xl"
               color="#525071"
               border={"1px solid #525071"}
-              textAlign='center'
+              textAlign="center"
             >
               <Text fontSize={"sm"}>{currentStudent?.class}</Text>
             </Box>
@@ -97,7 +99,9 @@ const Navbar = () => {
                   <Menu.Content>
                     <Menu.Item
                       value="logout"
-                      //   onClick={() => setShowLogoutModal(true)}
+                      onClick={
+                        setIsPopOver ? () => setIsPopOver(true) : undefined
+                      }
                     >
                       Logout
                     </Menu.Item>
@@ -108,6 +112,17 @@ const Navbar = () => {
           </Box>
         </Flex>
       </Flex>
+
+      {isPopOver && (
+        <Popover
+          head="Logout Student Request"
+          info="  You have clicked the button to logout. All sessions and cookies will be lost"
+          firstBtnText="Yes! logout"
+          secondBtnText="Cancel"
+          clickFunc={logoutFunc}
+          setIsPopOver={setIsPopOver}
+        />
+      )}
     </>
   );
 };

@@ -2,7 +2,7 @@ import type { RouteObject } from "react-router-dom";
 import Home from "@/student-app/Home";
 import Login from "@/pages/Login";
 import SignUp from "@/pages/SignUp";
-import Verify from "@/pages/Verify";
+import Verify from "@/student-app/auth/Verify";
 
 const studentRoutes: RouteObject[] = [
   {
@@ -18,9 +18,9 @@ const studentRoutes: RouteObject[] = [
     element: <SignUp />,
   },
   {
-    path: "/verify",
+    path: "/verify-student",
     element: <Verify />,
   },
 ];
 
-export default studentRoutes
+export default studentRoutes;

@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Flex } from "@chakra-ui/react";
 import SettingsNav from "../components/settings/settingsNav";
-import Profile from "../components/settings/profile";
+import Profile from "../components/settings/profile/profile";
 import Security from "../components/settings/security";
 import Notifications from "../components/settings/notifications";
 import Subscription from "../components/settings/subscription";

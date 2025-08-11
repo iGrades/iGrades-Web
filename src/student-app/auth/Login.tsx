@@ -22,7 +22,7 @@ type Props = {
   >;
 };
 
-const StudentLogin = ({ setAlert }: Props) => {
+const ChildrenLogin = ({ setAlert }: Props) => {
   const { encrypt } = usePassKey();
   const {  setAuthdStudent } = useAuthdStudentData();
   const navigate = useNavigate()
@@ -35,6 +35,7 @@ const StudentLogin = ({ setAlert }: Props) => {
    const handleLogin = async () => {
      setIsLoading(true);
      const encrypted = encrypt(passcode.join(""), encKey);
+     
 
      const { data, error } = await supabase.rpc("get_student_by_credentials", {
        p_email: email,
@@ -42,6 +43,8 @@ const StudentLogin = ({ setAlert }: Props) => {
      });
 
      if (error || !data || data.length === 0) {
+      console.error("Login error:", error);
+      
        setAlert({ type: "error", message: "Invalid email or passcode" });
        setIsLoading(false);
        return;
@@ -129,4 +132,4 @@ const StudentLogin = ({ setAlert }: Props) => {
   );
 };
 
-export default StudentLogin;
+export default ChildrenLogin;

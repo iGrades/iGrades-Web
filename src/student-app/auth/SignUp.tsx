@@ -1,15 +1,11 @@
 import { useState } from "react";
-import { getParentId } from "../../utils/getParentId";
-import { supabase } from "../../../lib/supabaseClient";
-import { useStudentsData } from "../../context/studentsDataContext";
-
+import { supabase } from "@/lib/supabaseClient";
+import { usePassKey } from "@/parent-app/context/passkeyContext";
 import {
   Input,
   Button,
   Box,
-  Heading,
   Text,
-  Image,
   Grid,
   Field,
   Flex,
@@ -17,33 +13,11 @@ import {
   Select,
   Portal,
   Alert,
-  Group
+  PinInput
 } from "@chakra-ui/react";
-import manikin from "@/assets/manikin.png";
-import addPix from "@/assets/addPix.png";
-import AddGraderSuccessPopover from "./addGraderSuccessPopover";
-import type { Dispatch, SetStateAction } from "react";
 
-interface AddGraderProps {
-  basePageWidth: number;
-  mdPageWidth: number;
-  lgPageWidth: number;
-  radius: string;
-  showBox: boolean;
-  setShowBox: Dispatch<SetStateAction<boolean>>;
-}
 
-function AddGrader({
-  basePageWidth,
-  mdPageWidth,
-  lgPageWidth,
-  radius,
-  setShowBox
-}: AddGraderProps) {
-
-  const {getGraderDetails} = useStudentsData()
- 
-
+function StudentSignUp() {
   const [formData, setFormData] = useState({
     email: "",
     firstname: "",
@@ -52,17 +26,19 @@ function AddGrader({
     gender: "",
     class: "",
     basic_language: "",
-    school: "",
     profile_image: "",
     subscription: "Basic",
-    is_child: true,
+    is_child: false,
     passcode: "",
   });
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [showModal, setShowModal] = useState(false);  const [alert, setAlert] = useState<{
+  const [passkey, setPassKey] = useState<string[]>([])
+  const [alert, setAlert] = useState<{
     status: "success" | "error";
     message: string;
   } | null>(null);
+
+  const { encrypt } = usePassKey();
+  const encKey = import.meta.env.VITE_ENC_KEY;
 
   const selectCollections = {
     genders: createListCollection({
@@ -82,14 +58,6 @@ function AddGrader({
 
     classes: createListCollection({
       items: [
-        { label: "Creche / Day Care", value: "creche" },
-        { label: "Kindergarten 1", value: "kindergarten 1" },
-        { label: "Kindergarten 2", value: "kindergarten 2" },
-        { label: "Primary 1", value: "primary 1" },
-        { label: "Primary 2", value: "primary 2" },
-        { label: "Primary 3", value: "primary 3" },
-        { label: "Primary 4", value: "primary 4" },
-        { label: "Primary 5", value: "primary 5" },
         { label: "Junior Secondary School 1", value: "JSS 1" },
         { label: "Junior Secondary School 2", value: "JSS 2" },
         { label: "Junior Secondary School 3", value: "JSS 3" },
@@ -106,90 +74,67 @@ function AddGrader({
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  // function handles image upload
-  const handleImageUpload = async (): Promise<string | null> => {
-    if (!selectedFile) return null;
+const handleSubmit = async (e: React.FormEvent) => {
+  e.preventDefault();
 
-    const fileExt = selectedFile.name.split(".").pop();
-    const fileName = `${Date.now()}.${fileExt}`;
-    const filePath = `students/${fileName}`;
+  setAlert(null); // Reset alert before submission
 
-    const { error } = await supabase.storage
-      .from("profile-photos")
-      .upload(filePath, selectedFile);
-
-    if (error) {
-      console.error("Upload error:", error);
-      return null;
-    }
-
-    const {
-      data: { publicUrl },
-    } = supabase.storage.from("profile-photos").getPublicUrl(filePath);
-
-    return publicUrl;
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setAlert({ status: "success", message: "Uploading image..." });
-
-    const parentId = await getParentId();
-    if (!parentId) {
-      setAlert({
-        status: "error",
-        message: "Parent not found or not authenticated.",
-      });
-      return;
-    }
-
-    const imageUrl = await handleImageUpload();
-    if (!imageUrl) {
-      setAlert({ status: "error", message: "Image upload failed." });
-      return;
-    }
-
-    setAlert({ status: "success", message: "Adding student..." });
-
-    const { error } = await supabase.from("students").insert({
-      ...formData,
-      profile_image: imageUrl,
-      parent_id: parentId,
+  try {
+    const { error } = await supabase.rpc("register_student", {
+      p_email: formData.email,
+      p_firstname: formData.firstname,
+      p_lastname: formData.lastname,
+      p_date_of_birth: formData.date_of_birth,
+      p_gender: formData.gender,
+      p_class: formData.class,
+      p_basic_language: formData.basic_language,
+      p_subscription: formData.subscription,
+      p_is_child: formData.is_child,
+      p_passcode: encrypt(passkey.join(""), encKey),
     });
 
     if (error) {
-      setAlert({ status: "error", message: "Error: " + error.message });
-    } else {
-      setAlert({ status: "success", message: "Student created successfully!" });
-      setFormData({
-        email: "",
-        firstname: "",
-        lastname: "",
-        date_of_birth: "",
-        gender: "",
-        class: "",
-        basic_language: "",
-        school: "",
-        profile_image: "",
-        subscription: "Basic",
-        is_child: true,
-        passcode: "",
-      });
-      setSelectedFile(null);
+      // user friendly error messages
+      let friendlyMessage = "An unexpected error occurred.";
 
-      setShowModal(true);
-      getGraderDetails()
+      if (error.message.includes("unique constraint")) {
+        friendlyMessage = "This email is already registered.";
+      } else if (error.message.includes("permission denied")) {
+        friendlyMessage = "You don't have permission to register a student.";
+      } else if (error.message.includes("null value in column")) {
+        friendlyMessage = "A required field is missing.";
+      }
+
+      throw new Error(friendlyMessage);
     }
+    
+    setAlert({
+      status: "success",
+      message: "Student created successfully!",
+    });
 
-    // Optional: Auto-dismiss alert after 5 seconds
-    setTimeout(() => {
-      setAlert(null);
-    }, 5000);
-  };
-
-
-
-
+    // Reset form
+    setFormData({
+      email: "",
+      firstname: "",
+      lastname: "",
+      date_of_birth: "",
+      gender: "",
+      class: "",
+      basic_language: "",
+      profile_image: "",
+      subscription: "Basic",
+      is_child: false,
+      passcode: "",
+    });
+    setPassKey([]);
+  } catch (error: any) {
+    setAlert({
+      status: "error",
+      message: error.message || "Something went wrong.",
+    });
+  }
+};
 
 
   return (
@@ -197,96 +142,26 @@ function AddGrader({
       <Box
         as="section"
         bg="white"
-        boxShadow="lg"
-        p={{ base: "5", md: "10" }}
+        px={{ base: "5", md: "5" }}
         m="auto"
-        w={{
-          base: `${basePageWidth}%`,
-          md: `${mdPageWidth}%`,
-          lg: `${lgPageWidth}%`,
-        }}
-        rounded={radius}
+        w="full"
         mb={{ base: "24", lg: "10" }}
       >
-        <Box w={{ base: "3/4", md: "1/2" }} m="auto" textAlign="center">
-          <Heading
-            as="h1"
-            fontSize="3xl"
-            color="backgroundColor2"
-            fontWeight={700}
-            mt={{ base: "24", md: "15" }}
-          >
-            Student Credentials
-          </Heading>
-          <Text fontSize="sm" my={1} color="on_containerColor" fontWeight={400}>
-            Please fill the field provided correctly
-          </Text>
-        </Box>
-
-        <Box w="1/2" m="auto" textAlign="center">
-          <Box position="relative" display="inline-block" mx="auto" mt={10}>
-            <Box
-              display="flex"
-              justifyContent="center"
-              alignItems="center"
-              bg="textFieldColor"
-              overflow="hidden"
-              w="90px"
-              h="90px"
-              borderRadius="2xl"
-            >
-              {selectedFile ? (
-                <Image
-                  src={URL.createObjectURL(selectedFile)}
-                  alt="profile preview"
-                  fit="cover"
-                  w="full"
-                  h="full"
-                  borderRadius="2xl"
-                />
-              ) : (
-                <Image src={manikin} alt="add profile photo" boxSize="40px" />
-              )}
-            </Box>
-
-            <label>
-              <Image
-                src={addPix}
-                alt="add button"
-                boxSize="30px"
-                position="absolute"
-                bottom="0"
-                right="0"
-                transform="translate(30%, 30%)"
-                borderRadius="full"
-                bg="textFieldColor"
-                p="1"
-                cursor="pointer"
-                boxShadow="md"
-              />
-              <Input
-                type="file"
-                accept="image/*"
-                hidden
-                onChange={(e) => {
-                  const file = e.target.files?.[0];
-                  if (file) setSelectedFile(file);
-                }}
-              />
-            </label>
-          </Box>
-        </Box>
-
         <form onSubmit={handleSubmit}>
           <Grid
             templateColumns={{ base: "repeat(1, 1fr)", md: "repeat(2, 1fr)" }}
             gap="6"
             my="10"
           >
-            {["firstname", "lastname", "email", "school", "date_of_birth"].map(
+            {["firstname", "lastname", "email", "date_of_birth"].map(
               (index, field) => (
                 <Field.Root key={field}>
-                  <Field.Label color="on_backgroundColor" fontSize="xs">
+                  <Field.Label
+                    color="gray.600"
+                    fontSize="xs"
+                    fontWeight="medium"
+                    my={1}
+                  >
                     {index
                       .replace(/_/g, " ")
                       .replace(/\b\w/g, (c) => c.toUpperCase())}
@@ -296,6 +171,7 @@ function AddGrader({
                     placeholder={index
                       .replace(/_/g, " ")
                       .replace(/\b\w/g, (c) => c.toUpperCase())}
+                    _placeholder={{ fontSize: "xs" }}
                     onChange={handleChange}
                     required
                     type={
@@ -305,9 +181,9 @@ function AddGrader({
                         ? "date"
                         : "text"
                     }
-                    border="none"
                     bg="textFieldColor"
                     fontSize="xs"
+                    border="1px solid #ccc"
                   />
                 </Field.Root>
               )
@@ -321,16 +197,25 @@ function AddGrader({
                 setFormData({ ...formData, gender: e.value[0] })
               }
             >
-              <label htmlFor="gender" style={{ fontSize: "0.75rem" }}>
+              <label
+                htmlFor="gender"
+                style={{
+                  fontSize: "0.75rem",
+                  fontWeight: "400",
+                  color: "#474256",
+                  marginTop: "8px",
+                }}
+              >
                 Gender
               </label>
               <Select.HiddenSelect name="gender" />
               <Select.Control>
                 <Select.Trigger
-                  border="none"
                   outline="none"
                   bg="textFieldColor"
                   cursor="pointer"
+                  fontSize="xs"
+                  border="1px solid #ccc"
                 >
                   <Select.ValueText placeholder="Select gender" fontSize="xs" />
                 </Select.Trigger>
@@ -360,16 +245,25 @@ function AddGrader({
                 setFormData({ ...formData, basic_language: e.value[0] })
               }
             >
-              <label htmlFor="language" style={{ fontSize: "0.75rem" }}>
+              <label
+                htmlFor="language"
+                style={{
+                  fontSize: "0.75rem",
+                  fontWeight: "400",
+                  color: "#474256",
+                  marginTop: "8px",
+                }}
+              >
                 Basic Language
               </label>
               <Select.HiddenSelect name="language" />
               <Select.Control>
                 <Select.Trigger
-                  border="none"
                   outline="none"
                   bg="textFieldColor"
                   cursor="pointer"
+                  fontSize="xs"
+                  border="1px solid #ccc"
                 >
                   <Select.ValueText
                     placeholder="Select Basic Language"
@@ -402,16 +296,25 @@ function AddGrader({
                 setFormData({ ...formData, class: e.value[0] })
               }
             >
-              <label htmlFor="class" style={{ fontSize: "0.75rem" }}>
+              <label
+                htmlFor="class"
+                style={{
+                  fontSize: "0.75rem",
+                  fontWeight: "400",
+                  color: "#474256",
+                  marginTop: "8px",
+                }}
+              >
                 Class
               </label>
               <Select.HiddenSelect name="class" />
               <Select.Control>
                 <Select.Trigger
-                  border="none"
                   outline="none"
-                  bg="textFieldColor"
                   cursor="pointer"
+                  bg="textFieldColor"
+                  fontSize="xs"
+                  border="1px solid #ccc"
                 >
                   <Select.ValueText placeholder="Select Class" fontSize="xs" />
                 </Select.Trigger>
@@ -432,7 +335,37 @@ function AddGrader({
                 </Select.Positioner>
               </Portal>
             </Select.Root>
+            <Box>
+              <label
+                htmlFor="class"
+                style={{
+                  fontSize: "0.75rem",
+                  fontWeight: "400",
+                  color: "#474256",
+                  marginTop: "8px",
+                }}
+              >
+                Passkey
+              </label>
 
+              <Flex justify="center" align="end" my={2}>
+                <PinInput.Root
+                  size="md"
+                  value={passkey}
+                  onValueChange={(e) => setPassKey(e.value)}
+                >
+                  <PinInput.HiddenInput />
+                  <PinInput.Control>
+                    <PinInput.Input index={0} bg="gray.50" />
+                    <PinInput.Input index={1} bg="gray.50" />
+                    <PinInput.Input index={2} bg="gray.50" />
+                    <PinInput.Input index={3} bg="gray.50" />
+                    <PinInput.Input index={4} bg="gray.50" />
+                    <PinInput.Input index={5} bg="gray.50" />
+                  </PinInput.Control>
+                </PinInput.Root>
+              </Flex>
+            </Box>
           </Grid>
           {/* alert */}
           {alert && (
@@ -458,21 +391,14 @@ function AddGrader({
               rounded="xl"
               bg="primaryColor"
             >
-              Add Child
+              Create an Account
             </Button>
           </Flex>
           <Text mt={2}>{status}</Text>
         </form>
       </Box>
-
-      {showModal && (
-        <AddGraderSuccessPopover
-          setShowBox={setShowBox}
-          setShowModal={setShowModal}
-        />
-      )}
     </>
   );
 }
 
-export default AddGrader;
+export default StudentSignUp;
