@@ -13,11 +13,14 @@ import {
   Select,
   Portal,
   Alert,
-  PinInput
+  PinInput,
 } from "@chakra-ui/react";
-
+import { groupBy } from "es-toolkit";
+import { useNavigate } from "react-router-dom";
+import { useAuthdStudentData } from "../context/studentDataContext";
 
 function StudentSignUp() {
+   const {  setAuthdStudent } = useAuthdStudentData();
   const [formData, setFormData] = useState({
     email: "",
     firstname: "",
@@ -31,42 +34,76 @@ function StudentSignUp() {
     is_child: false,
     passcode: "",
   });
-  const [passkey, setPassKey] = useState<string[]>([])
+  const [isLoading, setIsLoading] = useState(false);
+  const [passkey, setPassKey] = useState<string[]>([]);
   const [alert, setAlert] = useState<{
     status: "success" | "error";
     message: string;
   } | null>(null);
-
+  const navigate = useNavigate();
   const { encrypt } = usePassKey();
   const encKey = import.meta.env.VITE_ENC_KEY;
 
-  const selectCollections = {
-    genders: createListCollection({
-      items: [
-        { label: "Male", value: "male" },
-        { label: "Female", value: "female" },
-      ],
-    }),
+ const selectCollections = {
+   genders: createListCollection({
+     items: [
+       { label: "Male", value: "male" },
+       { label: "Female", value: "female" },
+     ],
+   }),
 
-    languages: createListCollection({
-      items: [
-        { label: "English", value: "english" },
-        { label: "Zulu", value: "zulu" },
-        { label: "Afrikaans", value: "afrikaans" },
-      ],
-    }),
+   languages: createListCollection({
+     items: [
+       { label: "English", value: "english" },
+       { label: "Zulu", value: "zulu" },
+       { label: "Afrikaans", value: "afrikaans" },
+     ],
+   }),
 
-    classes: createListCollection({
-      items: [
-        { label: "Junior Secondary School 1", value: "JSS 1" },
-        { label: "Junior Secondary School 2", value: "JSS 2" },
-        { label: "Junior Secondary School 3", value: "JSS 3" },
-        { label: "Senior Secondary School 1", value: "SSS 1" },
-        { label: "Senior Secondary School 2", value: "SSS 2" },
-        { label: "Senior Secondary School 3", value: "SSS 3" },
-      ],
-    }),
-  };
+   classes: createListCollection({
+     items: [
+       {
+         label: "Junior Secondary School 1",
+         value: "JSS 1",
+         category: "Junior School",
+       },
+       {
+         label: "Junior Secondary School 2",
+         value: "JSS 2",
+         category: "Junior School",
+       },
+       {
+         label: "Junior Secondary School 3",
+         value: "JSS 3",
+         category: "Junior School",
+       },
+       {
+         label: "Senior Secondary School 1",
+         value: "SSS 1",
+         category: "Senior School",
+       },
+       {
+         label: "Senior Secondary School 2",
+         value: "SSS 2",
+         category: "Senior School",
+       },
+       {
+         label: "Senior Secondary School 3",
+         value: "SSS 3",
+         category: "Senior School",
+       },
+     ],
+   }),
+ };
+
+  // group classes list for mapping
+  const classesCategories = Object.entries(
+    groupBy(
+      selectCollections.classes.items,
+      (item: { label: string; value: string; category?: string }) =>
+        item.category ?? "Uncategorized"
+    )
+  );
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
@@ -74,68 +111,91 @@ function StudentSignUp() {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-const handleSubmit = async (e: React.FormEvent) => {
-  e.preventDefault();
+  // function handles form submission
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsLoading(true);
+    setAlert(null); // Reset alert before submission
 
-  setAlert(null); // Reset alert before submission
+    try {
+      const { error } = await supabase.rpc("register_student", {
+        p_email: formData.email,
+        p_firstname: formData.firstname,
+        p_lastname: formData.lastname,
+        p_date_of_birth: formData.date_of_birth,
+        p_gender: formData.gender,
+        p_class: formData.class,
+        p_basic_language: formData.basic_language,
+        p_subscription: formData.subscription,
+        p_is_child: formData.is_child,
+        p_passcode: encrypt(passkey.join(""), encKey),
+      });
 
-  try {
-    const { error } = await supabase.rpc("register_student", {
-      p_email: formData.email,
-      p_firstname: formData.firstname,
-      p_lastname: formData.lastname,
-      p_date_of_birth: formData.date_of_birth,
-      p_gender: formData.gender,
-      p_class: formData.class,
-      p_basic_language: formData.basic_language,
-      p_subscription: formData.subscription,
-      p_is_child: formData.is_child,
-      p_passcode: encrypt(passkey.join(""), encKey),
-    });
+      if (error) {
+        console.error("Full error details:", error);
+        // user friendly error messages
+        let friendlyMessage = "An unexpected error occurred.";
 
-    if (error) {
-      // user friendly error messages
-      let friendlyMessage = "An unexpected error occurred.";
+        if (error.message.includes("unique constraint")) {
+          friendlyMessage = "This email is already registered.";
+        } else if (error.message.includes("permission denied")) {
+          friendlyMessage = "You don't have permission to register a student.";
+        } else if (error.message.includes("null value in column")) {
+          friendlyMessage = "A required field is missing.";
+        }
+        setIsLoading(false);
+        throw new Error(friendlyMessage);
+      }
+      setIsLoading(false);
+      setAlert({
+        status: "success",
+        message: "Student created successfully!",
+      });
 
-      if (error.message.includes("unique constraint")) {
-        friendlyMessage = "This email is already registered.";
-      } else if (error.message.includes("permission denied")) {
-        friendlyMessage = "You don't have permission to register a student.";
-      } else if (error.message.includes("null value in column")) {
-        friendlyMessage = "A required field is missing.";
+      // automatically login the user after registration
+      const {data, error: loginError} = await supabase.rpc("get_student_by_credentials", {
+        p_email: formData.email,
+        p_enc_passcode: encrypt(passkey.join(""), encKey)
+      })
+
+      if (loginError || !data || data.length === 0) {
+        console.error("Login error:", loginError);
+        setAlert({ status: "error", message: "Login failed after registration." });
+        return;
       }
 
-      throw new Error(friendlyMessage);
+      const student = data[0];
+      setAuthdStudent(student);
+
+       setAlert({
+         status: "success",
+         message: `Welcome ${student.firstname}! Your Profile has been created successfully.`,
+       });
+
+      setTimeout(() => navigate("/course-selection"), 2000);
+
+      // Reset form
+      setFormData({
+        email: "",
+        firstname: "",
+        lastname: "",
+        date_of_birth: "",
+        gender: "",
+        class: "",
+        basic_language: "",
+        profile_image: "",
+        subscription: "Basic",
+        is_child: false,
+        passcode: "",
+      });
+      setPassKey([]);
+    } catch (error: any) {
+      setAlert({
+        status: "error",
+        message: error.message || "Something went wrong.",
+      });
     }
-    
-    setAlert({
-      status: "success",
-      message: "Student created successfully!",
-    });
-
-    // Reset form
-    setFormData({
-      email: "",
-      firstname: "",
-      lastname: "",
-      date_of_birth: "",
-      gender: "",
-      class: "",
-      basic_language: "",
-      profile_image: "",
-      subscription: "Basic",
-      is_child: false,
-      passcode: "",
-    });
-    setPassKey([]);
-  } catch (error: any) {
-    setAlert({
-      status: "error",
-      message: error.message || "Something went wrong.",
-    });
-  }
-};
-
+  };
 
   return (
     <>
@@ -288,7 +348,8 @@ const handleSubmit = async (e: React.FormEvent) => {
               </Portal>
             </Select.Root>
 
-            {/* classes select */}
+
+            {/* Class select */}
             <Select.Root
               collection={selectCollections.classes}
               size="md"
@@ -325,11 +386,18 @@ const handleSubmit = async (e: React.FormEvent) => {
               <Portal>
                 <Select.Positioner>
                   <Select.Content>
-                    {selectCollections.classes.items.map((item) => (
-                      <Select.Item key={item.value} item={item}>
-                        {item.label}
-                        <Select.ItemIndicator />
-                      </Select.Item>
+                    {classesCategories.map(([category, items]) => (
+                      <Select.ItemGroup key={category}>
+                        <Select.ItemGroupLabel fontWeight={600}>
+                          {category}
+                        </Select.ItemGroupLabel>
+                        {items.map((item) => (
+                          <Select.Item item={item} key={item.value}>
+                            {item.label}
+                            <Select.ItemIndicator />
+                          </Select.Item>
+                        ))}
+                      </Select.ItemGroup>
                     ))}
                   </Select.Content>
                 </Select.Positioner>
@@ -385,11 +453,16 @@ const handleSubmit = async (e: React.FormEvent) => {
 
           <Flex justify="center" align="center" w="full">
             <Button
+              loading={isLoading}
+              loadingText="Creating your account..."
+              spinnerPlacement="start"
               type="submit"
-              w={{ base: "100%", md: "80%", lg: "80%" }}
-              m="auto"
-              rounded="xl"
-              bg="primaryColor"
+              fontWeight="semibold"
+              w={{ base: "100%", lg: "100%" }}
+              p={6}
+              bg="blue.500"
+              color="white"
+              borderRadius="3xl"
             >
               Create an Account
             </Button>

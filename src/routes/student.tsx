@@ -3,6 +3,7 @@ import Home from "@/student-app/Home";
 import Login from "@/pages/Login";
 import SignUp from "@/pages/SignUp";
 import Verify from "@/student-app/auth/Verify";
+import CourseSelectionPage from "@/student-app/pages/CourseSelectionPage";
 
 const studentRoutes: RouteObject[] = [
   {
@@ -20,6 +21,10 @@ const studentRoutes: RouteObject[] = [
   {
     path: "/verify-student",
     element: <Verify />,
+  },
+  {
+    path: "/course-selection",
+    element: <CourseSelectionPage />,
   },
 ];
 

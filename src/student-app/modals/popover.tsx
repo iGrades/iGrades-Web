@@ -1,6 +1,5 @@
 import { Box, Heading, Text, Button, Icon, Alert } from "@chakra-ui/react"
 import { LuLogOut } from "react-icons/lu";
-import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 
 type Props = {
@@ -18,8 +17,6 @@ const Popover = ({head, info, firstBtnText, secondBtnText, clickFunc, setIsPopOv
         message: string;
       } | null>(null);
     
-      const navigate = useNavigate();
-
   return (
     <>
       <Box

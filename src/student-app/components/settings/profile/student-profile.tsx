@@ -14,19 +14,13 @@ import { useAuthdStudentData } from "@/student-app/context/studentDataContext";
 import { supabase } from "@/lib/supabaseClient";
 import { IoIosAlert } from "react-icons/io";
 
-const pageData = [    
-  "First Name",
-  "Last Name",
-  "School",
-  "Class",
-  "Email",
-  "Phone Number",
-];
+const pageData = ["First Name", "Last Name", "Email", "Class"];
 
 const StudentProfile = () => {
-  const { authdStudent } = useAuthdStudentData();
+  const { authdStudent, setAuthdStudent } = useAuthdStudentData();
 
   const [formData, setFormData] = useState({
+    id: authdStudent?.id || "",
     firstname: authdStudent?.firstname || "",
     lastname: authdStudent?.lastname || "",
     class: authdStudent?.class || "",
@@ -37,69 +31,89 @@ const StudentProfile = () => {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const handleImageUpload = async (): Promise<string | null> => {
-    if (!selectedFile) return null;
 
-    const fileExt = selectedFile.name.split(".").pop();
-    const fileName = `${Date.now()}.${fileExt}`;
-    const filePath = `students/${fileName}`;
+// const handleImageUpload = async (): Promise<string | null> => {
+//   if (!selectedFile) return null;
 
-    const { error } = await supabase.storage
-      .from("profile-photos")
-      .upload(filePath, selectedFile);
+//   const fileExt = selectedFile.name.split(".").pop();
+//   const fileName = `${authdStudent?.id}.${fileExt}`; // use student table ID
+//   const filePath = `students/${fileName}`;
 
-    if (error) {
-      console.error("Upload error:", error);
-      return null;
-    }
+//   const { error } = await supabase.storage
+//     .from("profile-photos")
+//     .upload(filePath, selectedFile, { upsert: true }); // always overwrite
 
-    const {
-      data: { publicUrl },
-    } = supabase.storage.from("profile-photos").getPublicUrl(filePath);
+//   if (error) {
+//     console.error("Upload error:", error);
+//     return null;
+//   }
 
-    return publicUrl;
-  };
+//   const {
+//     data: { publicUrl },
+//   } = supabase.storage.from("profile-photos").getPublicUrl(filePath);
 
-  const handleEdit = async () => {
-    setIsLoading(true); // Start loading
+//   return publicUrl;
+// };
 
+
+const handleEdit = async () => {
+  setIsLoading(true);
+
+  try {
     let imageUrl = authdStudent?.profile_image;
 
+    // Upload and overwrite if a new file is selected
     if (selectedFile) {
-      const uploadedUrl = await handleImageUpload();
-      if (!uploadedUrl) {
-        console.error("Image upload failed");
+      const fileExt = selectedFile.name.split(".").pop();
+      const fileName = `${authdStudent?.id}.${fileExt}`; // always same name for this student
+      const filePath = `students/${fileName}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from("profile-photos")
+        .upload(filePath, selectedFile, { upsert: true }); // overwrite
+
+      if (uploadError) {
+        console.error("Upload error:", uploadError);
+        setIsLoading(false);
         return;
       }
-      imageUrl = uploadedUrl;
+
+      const {
+        data: { publicUrl },
+      } = supabase.storage.from("profile-photos").getPublicUrl(filePath);
+
+      imageUrl = publicUrl;
     }
 
+    // Update student record via RPC
+    const { data, error } = await supabase.rpc("update_student_profile", {
+      p_id: formData.id,
+      p_firstname: formData.firstname,
+      p_lastname: formData.lastname,
+      p_class: formData.class,
+      p_email: formData.email,
+      p_profile_image: imageUrl,
+    });
 
-const { data, error } = await supabase
-  .rpc("update_student_profile", {
-    p_id: authdStudent?.id,
-    p_firstname: formData.firstname,
-    p_lastname: formData.lastname,
-    p_class: formData.class,
-    p_email: formData.email,
-    p_profile_image: imageUrl,
-  })
-  .throwOnError();
+    if (error) throw error;
+    if (!data || data.length === 0) {
+      throw new Error("No data returned (possible RLS issue)");
+    }
 
+    // Update local context immediately
+    setAuthdStudent((prev) => ({
+      ...prev,
+      ...data[0],
+    }));
 
-if (error || !data || data.length === 0) {
-  console.error(
-    "Update failed:",
-    error?.message || "No data returned (possible RLS issue)"
-  );
-  setIsLoading(false);
-  return;
-}
+    console.log("Student updated successfully:", data[0]);
+  } catch (err: any) {
+    console.error("Update failed:", err.message || err);
+  } finally {
+    setIsLoading(false);
+  }
+};
 
-console.log("Student updated successfully");
-setIsLoading(false);
-
-  };
 
   return (
     <>
@@ -186,10 +200,12 @@ setIsLoading(false);
                 </Field.Root>
                 <Input
                   name={data}
-                  placeholder={
-                    authdStudent
-                      ? authdStudent[data.toLowerCase().replace(" ", "")]
-                      : ""
+                  value={formData[data.toLowerCase().replace(" ", "")] || ""}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      [data.toLowerCase().replace(" ", "")]: e.target.value,
+                    })
                   }
                   fontSize="xs"
                   p={6}
@@ -202,22 +218,22 @@ setIsLoading(false);
             </GridItem>
           ))}
         </Grid>
-         {/* Action Button */}
-                <Button
-                  loading={isLoading}
-                  loadingText="Updating..."
-                  spinnerPlacement="start"
-                  type="submit"
-                  fontWeight="semibold"
-                  w={{ base: "95%", lg: "95%" }}
-                  p={6}
-                  bg="blue.500"
-                  color="white"
-                  borderRadius="xl"
-                  onClick={handleEdit}
-                >
-                  Update
-                </Button>
+        {/* Action Button */}
+        <Button
+          loading={isLoading}
+          loadingText="Updating..."
+          spinnerPlacement="start"
+          type="submit"
+          fontWeight="semibold"
+          w={{ base: "95%", lg: "95%" }}
+          p={6}
+          bg="blue.500"
+          color="white"
+          borderRadius="xl"
+          onClick={handleEdit}
+        >
+          Update
+        </Button>
       </VStack>
     </>
   );

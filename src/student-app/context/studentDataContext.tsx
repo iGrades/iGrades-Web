@@ -11,6 +11,8 @@ interface Student {
   profile_image: string;
   school: string;
   class: string;
+  registered_courses?: string[];
+  active_classes?: string;
   is_child: boolean | null;
 }
 
@@ -63,7 +65,7 @@ export const AuthdStudentDataProvider = ({
     localStorage.removeItem("authdStudent");
     setIsPopOver(false)
     setAlert({ type: "success", message: "Logged out successfully." });
-    window.location.assign(`${window.location.origin}/login`);
+    window.location.assign(`${window.location.origin}/login`); // reassgn user to login page (with success alert)...
   }
 
   const clearAlert = () => setAlert(null);

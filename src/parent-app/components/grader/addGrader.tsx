@@ -2,7 +2,6 @@ import { useState } from "react";
 import { getParentId } from "../../utils/getParentId";
 import { supabase } from "../../../lib/supabaseClient";
 import { useStudentsData } from "../../context/studentsDataContext";
-
 import {
   Input,
   Button,
@@ -17,12 +16,16 @@ import {
   Select,
   Portal,
   Alert,
-  Group
 } from "@chakra-ui/react";
+import { groupBy } from "es-toolkit";
 import manikin from "@/assets/manikin.png";
 import addPix from "@/assets/addPix.png";
 import AddGraderSuccessPopover from "./addGraderSuccessPopover";
 import type { Dispatch, SetStateAction } from "react";
+
+// Import your existing course components
+import SeniorCourses from "../courses/seniorCourses";
+import JuniorCourses from "../courses/juniorCourses";
 
 interface AddGraderProps {
   basePageWidth: number;
@@ -38,11 +41,9 @@ function AddGrader({
   mdPageWidth,
   lgPageWidth,
   radius,
-  setShowBox
+  setShowBox,
 }: AddGraderProps) {
-
-  const {getGraderDetails} = useStudentsData()
- 
+  const { getGraderDetails } = useStudentsData();
 
   const [formData, setFormData] = useState({
     email: "",
@@ -54,12 +55,15 @@ function AddGrader({
     basic_language: "",
     school: "",
     profile_image: "",
+    registered_courses: [],
     subscription: "Basic",
     is_child: true,
     passcode: "",
   });
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [showModal, setShowModal] = useState(false);  const [alert, setAlert] = useState<{
+  const [selectedCourses, setSelectedCourses] = useState<string[]>([]);
+  const [showModal, setShowModal] = useState(false);
+  const [alert, setAlert] = useState<{
     status: "success" | "error";
     message: string;
   } | null>(null);
@@ -82,23 +86,52 @@ function AddGrader({
 
     classes: createListCollection({
       items: [
-        { label: "Creche / Day Care", value: "creche" },
-        { label: "Kindergarten 1", value: "kindergarten 1" },
-        { label: "Kindergarten 2", value: "kindergarten 2" },
-        { label: "Primary 1", value: "primary 1" },
-        { label: "Primary 2", value: "primary 2" },
-        { label: "Primary 3", value: "primary 3" },
-        { label: "Primary 4", value: "primary 4" },
-        { label: "Primary 5", value: "primary 5" },
-        { label: "Junior Secondary School 1", value: "JSS 1" },
-        { label: "Junior Secondary School 2", value: "JSS 2" },
-        { label: "Junior Secondary School 3", value: "JSS 3" },
-        { label: "Senior Secondary School 1", value: "SSS 1" },
-        { label: "Senior Secondary School 2", value: "SSS 2" },
-        { label: "Senior Secondary School 3", value: "SSS 3" },
+        {
+          label: "Junior Secondary School 1",
+          value: "JSS 1",
+          category: "Junior School",
+        },
+        {
+          label: "Junior Secondary School 2",
+          value: "JSS 2",
+          category: "Junior School",
+        },
+        {
+          label: "Junior Secondary School 3",
+          value: "JSS 3",
+          category: "Junior School",
+        },
+        {
+          label: "Senior Secondary School 1",
+          value: "SSS 1",
+          category: "Senior School",
+        },
+        {
+          label: "Senior Secondary School 2",
+          value: "SSS 2",
+          category: "Senior School",
+        },
+        {
+          label: "Senior Secondary School 3",
+          value: "SSS 3",
+          category: "Senior School",
+        },
       ],
     }),
   };
+
+  // group classes list for mapping
+  const classesCategories = Object.entries(
+    groupBy(
+      selectCollections.classes.items,
+      (item: { label: string; value: string; category?: string }) =>
+        item.category ?? "Uncategorized"
+    )
+  );
+
+  // Check if student is senior (SSS) or junior (JSS)
+  const isSeniorStudent = formData.class?.startsWith("SSS");
+  const isJuniorStudent = formData.class?.startsWith("JSS");
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
@@ -130,8 +163,24 @@ function AddGrader({
     return publicUrl;
   };
 
+  // function handles courses selection
+  const handleCourseSelection = (courses: string[]) => {
+    setSelectedCourses(courses);
+  };
+
+  // Function handles form submission
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    // Validate course selection
+    if (selectedCourses.length === 0 && (isSeniorStudent || isJuniorStudent)) {
+      setAlert({
+        status: "error",
+        message: "Please select at least one course",
+      });
+      return;
+    }
+
     setAlert({ status: "success", message: "Uploading image..." });
 
     const parentId = await getParentId();
@@ -155,6 +204,7 @@ function AddGrader({
       ...formData,
       profile_image: imageUrl,
       parent_id: parentId,
+      registered_courses: selectedCourses, // Add selected courses here
     });
 
     if (error) {
@@ -171,14 +221,19 @@ function AddGrader({
         basic_language: "",
         school: "",
         profile_image: "",
+        registered_courses: [],
         subscription: "Basic",
         is_child: true,
         passcode: "",
       });
       setSelectedFile(null);
+      setSelectedCourses([]); // Reset course selection
 
       setShowModal(true);
-      getGraderDetails()
+       setTimeout(() => {
+           getGraderDetails();
+       }, 2000); // Refresh grader details after 2 seconds
+    
     }
 
     // Optional: Auto-dismiss alert after 5 seconds
@@ -186,11 +241,6 @@ function AddGrader({
       setAlert(null);
     }, 5000);
   };
-
-
-
-
-
 
   return (
     <>
@@ -394,7 +444,7 @@ function AddGrader({
               </Portal>
             </Select.Root>
 
-            {/* classes select */}
+            {/* Class select */}
             <Select.Root
               collection={selectCollections.classes}
               size="md"
@@ -402,16 +452,25 @@ function AddGrader({
                 setFormData({ ...formData, class: e.value[0] })
               }
             >
-              <label htmlFor="class" style={{ fontSize: "0.75rem" }}>
+              <label
+                htmlFor="class"
+                style={{
+                  fontSize: "0.75rem",
+                  fontWeight: "400",
+                  color: "#474256",
+                  marginTop: "8px",
+                }}
+              >
                 Class
               </label>
               <Select.HiddenSelect name="class" />
               <Select.Control>
                 <Select.Trigger
-                  border="none"
                   outline="none"
-                  bg="textFieldColor"
                   cursor="pointer"
+                  bg="textFieldColor"
+                  fontSize="xs"
+                  border="1px solid #ccc"
                 >
                   <Select.ValueText placeholder="Select Class" fontSize="xs" />
                 </Select.Trigger>
@@ -422,18 +481,34 @@ function AddGrader({
               <Portal>
                 <Select.Positioner>
                   <Select.Content>
-                    {selectCollections.classes.items.map((item) => (
-                      <Select.Item key={item.value} item={item}>
-                        {item.label}
-                        <Select.ItemIndicator />
-                      </Select.Item>
+                    {classesCategories.map(([category, items]) => (
+                      <Select.ItemGroup key={category}>
+                        <Select.ItemGroupLabel fontWeight={600}>
+                          {category}
+                        </Select.ItemGroupLabel>
+                        {items.map((item) => (
+                          <Select.Item item={item} key={item.value}>
+                            {item.label}
+                            <Select.ItemIndicator />
+                          </Select.Item>
+                        ))}
+                      </Select.ItemGroup>
                     ))}
                   </Select.Content>
                 </Select.Positioner>
               </Portal>
             </Select.Root>
-
           </Grid>
+
+          {/* Course Selection - Only show after class is selected */}
+          {isSeniorStudent && (
+            <SeniorCourses onSelectionChange={handleCourseSelection} />
+          )}
+
+          {isJuniorStudent && (
+            <JuniorCourses onSelectionChange={handleCourseSelection} />
+          )}
+
           {/* alert */}
           {alert && (
             <Alert.Root

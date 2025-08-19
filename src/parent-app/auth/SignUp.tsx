@@ -4,8 +4,6 @@ import { useNavigate } from "react-router-dom";
 import {
   Button,
   Text,
-  Heading,
-  Link,
   Grid,
   Field,
   InputGroup,
@@ -13,13 +11,9 @@ import {
   Alert,
   Box,
   Flex,
-  Icon,
-  Image,
   Tag,
 } from "@chakra-ui/react";
 import { IoEyeOutline, IoEyeOffOutline } from "react-icons/io5";
-import icon from "../../assets/human_ico.png";
-import sideImage from "../../assets/undraw_sign-up_qamz-removebg-preview.png";
 import Verify from "./Verify";
 
 interface FormData {
