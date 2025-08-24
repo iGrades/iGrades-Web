@@ -10,10 +10,9 @@ import {
 import tutorImg from "../../assets/tutor-icon.png";
 import tutorIcon from "../../assets/cube_arrow_right.png";
 import quizIcon from "../../assets/quiz_check.png";
-import { BsJournalCheck } from "react-icons/bs";
-type Props = {};
 
-const RightCTA = (props: Props) => {
+
+const RightCTA = () => {
   return (
     <Box bg="white" boxShadow="md" borderRadius="lg" w="full" my={5} p={4}>
       {/* quiz box */}

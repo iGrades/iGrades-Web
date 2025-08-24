@@ -2,7 +2,6 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Button,
-  Alert,
   Box,
   Text,
   Flex,
@@ -17,14 +16,10 @@ import sideImage from "../assets/undraw_sign-up_qamz-removebg-preview.png";
 import ParentSignUp from "@/parent-app/auth/SignUp";
 import StudentSignUp from "@/student-app/auth/SignUp";
 
-type Props = {}
 
-const SignUp = (props: Props) => {
+const SignUp = () => {
       const navigate = useNavigate();
-      const [alert, setAlert] = useState<{
-        type: "success" | "error";
-        message: string;
-      } | null>(null);
+    
     
       const [registerState, setRegisterState] = useState("parent"); // "parent" or "children"
 
@@ -138,17 +133,6 @@ const SignUp = (props: Props) => {
 
           {registerState === "parent" ? <ParentSignUp /> : <StudentSignUp />}
 
-          {alert && (
-            <Alert.Root status={alert.type} variant="subtle" mt={6}>
-              <Alert.Indicator />
-              <Alert.Content>
-                <Alert.Title>
-                  {alert.type === "error" ? "Error!" : "Success!"}
-                </Alert.Title>
-                <Alert.Description>{alert.message}</Alert.Description>
-              </Alert.Content>
-            </Alert.Root>
-          )}
         </Box>
       </Box>
     </Flex>

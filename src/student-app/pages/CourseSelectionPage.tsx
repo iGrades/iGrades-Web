@@ -141,14 +141,12 @@ const CourseSelectionPage = () => {
             {/* Render appropriate course selection component */}
             {isSeniorStudent && (
               <SeniorCourses
-                classLevel={authdStudent.class}
                 onSelectionChange={handleCourseSelection}
               />
             )}
 
             {isJuniorStudent && (
               <JuniorCourses
-                classLevel={authdStudent.class}
                 onSelectionChange={handleCourseSelection}
               />
             )}

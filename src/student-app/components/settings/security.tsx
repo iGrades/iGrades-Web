@@ -1,8 +1,6 @@
-import React from 'react'
 
-type Props = {}
 
-const Security = (props: Props) => {
+const Security = () => {
   return (
     <div>Security</div>
   )

@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { supabase } from "../../lib/supabaseClient";
-import { useNavigate } from "react-router-dom";
 import {
   Button,
   Text,
@@ -45,7 +44,6 @@ export default function ParentSignUp() {
     message: string;
   } | null>(null);
 
-  const navigate = useNavigate();
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>

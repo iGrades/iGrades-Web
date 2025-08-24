@@ -1,4 +1,4 @@
-import { Progress, Stack, HStack, Text } from "@chakra-ui/react";
+import { Progress, HStack} from "@chakra-ui/react";
 import { RiCompassesLine } from "react-icons/ri";
 
 type ProgressBarPropType = {
@@ -13,9 +13,6 @@ type ProgressBarPropType = {
 const ProgressBar = ({
   value,
   size,
-  hasStripe,
-  isAnimated,
-  mb,
   text,
 }: ProgressBarPropType) => {
   return (

@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import {
   Box,
   Text,
@@ -12,12 +12,10 @@ import {
 } from "@chakra-ui/react";
 
 interface SeniorCoursesProps {
-  classLevel: string;
   onSelectionChange: (selectedCourses: string[]) => void;
 }
 
 const SeniorCourses = ({
-  classLevel,
   onSelectionChange,
 }: SeniorCoursesProps) => {
   const [selectedCourses, setSelectedCourses] = useState<string[]>([]);

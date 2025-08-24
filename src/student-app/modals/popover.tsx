@@ -1,6 +1,5 @@
-import { Box, Heading, Text, Button, Icon, Alert } from "@chakra-ui/react"
+import { Box, Heading, Text, Button, Icon } from "@chakra-ui/react"
 import { LuLogOut } from "react-icons/lu";
-import { useState } from "react";
 
 type Props = {
 head: string;
@@ -12,10 +11,10 @@ setIsPopOver?: React.Dispatch<React.SetStateAction<boolean>>;
 };
 
 const Popover = ({head, info, firstBtnText, secondBtnText, clickFunc, setIsPopOver }: Props) => {
-     const [alert, setAlert] = useState<{
-        type: "success" | "error";
-        message: string;
-      } | null>(null);
+    //  const [alert, setAlert] = useState<{
+    //     type: "success" | "error";
+    //     message: string;
+    //   } | null>(null);
     
   return (
     <>
@@ -121,7 +120,7 @@ const Popover = ({head, info, firstBtnText, secondBtnText, clickFunc, setIsPopOv
         </Box>
       </Box>
 
-      {alert && (
+      {/* {alert && (
         <Alert.Root status={alert.type} variant="subtle" mt={6}>
           <Alert.Indicator />
           <Alert.Content>
@@ -131,7 +130,7 @@ const Popover = ({head, info, firstBtnText, secondBtnText, clickFunc, setIsPopOv
             <Alert.Description>{alert.message}</Alert.Description>
           </Alert.Content>
         </Alert.Root>
-      )}
+      )} */}
     </>
   );
 };

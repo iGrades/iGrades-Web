@@ -31,31 +31,6 @@ const StudentProfile = () => {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
-
-// const handleImageUpload = async (): Promise<string | null> => {
-//   if (!selectedFile) return null;
-
-//   const fileExt = selectedFile.name.split(".").pop();
-//   const fileName = `${authdStudent?.id}.${fileExt}`; // use student table ID
-//   const filePath = `students/${fileName}`;
-
-//   const { error } = await supabase.storage
-//     .from("profile-photos")
-//     .upload(filePath, selectedFile, { upsert: true }); // always overwrite
-
-//   if (error) {
-//     console.error("Upload error:", error);
-//     return null;
-//   }
-
-//   const {
-//     data: { publicUrl },
-//   } = supabase.storage.from("profile-photos").getPublicUrl(filePath);
-
-//   return publicUrl;
-// };
-
-
 const handleEdit = async () => {
   setIsLoading(true);
 

@@ -1,11 +1,10 @@
-import { Box, Heading, Text } from "@chakra-ui/react";
+import { Box } from "@chakra-ui/react";
 import { useAuthdStudentData } from "@/student-app/context/studentDataContext";
 import ChildrenProfile from "./children-profile";
 import StudentProfile from "./student-profile";
 
-type Props = {};
 
-const Profile = (props: Props) => {
+const Profile = () => {
   const { authdStudent } = useAuthdStudentData();
   return (
     <Box>

@@ -12,12 +12,10 @@ import {
 } from "@chakra-ui/react";
 
 interface JuniorCoursesProps {
-  classLevel: string;
   onSelectionChange: (selectedCourses: string[]) => void;
 }
 
 const JuniorCourses = ({
-  classLevel,
   onSelectionChange,
 }: JuniorCoursesProps) => {
   const [selectedCourses, setSelectedCourses] = useState<string[]>([]);
