@@ -12,12 +12,12 @@ import { useAuthdStudentData } from "@/student-app/context/studentDataContext";
 import { IoIosAlert } from "react-icons/io";
 
 const pageData = [
-  "First Name",
-  "Last Name",
-  "School",
-  "Class",
-  "Email",
-  "Phone Number",
+  { label: "First Name", key: "first_name" },
+  { label: "Last Name", key: "last_name" },
+  { label: "School", key: "school" },
+  { label: "Class", key: "class" },
+  { label: "Email", key: "email" },
+  { label: "Phone Number", key: "phone_number" },
 ];
 
 const ChildrenProfile = () => {
@@ -42,7 +42,7 @@ const ChildrenProfile = () => {
           flexDirection="column"
           justifyContent="center"
           alignItems="center"
-          p={{base:1, md: 6}}
+          p={{ base: 1, md: 6 }}
         >
           <Image
             src={authdStudent?.profile_image}
@@ -53,7 +53,7 @@ const ChildrenProfile = () => {
           />
           <Alert.Root status="warning" variant="subtle" color="#474256" mt={5}>
             <Alert.Indicator color="orange.400">
-            <IoIosAlert />
+              <IoIosAlert />
             </Alert.Indicator>
             <Alert.Content>
               <Alert.Title fontSize="11px" fontWeight={700}>
@@ -78,15 +78,13 @@ const ChildrenProfile = () => {
               <Box key={index} w={{ base: "100%", md: "70%" }} m="auto">
                 <Field.Root>
                   <Field.Label fontSize="xs" textTransform="capitalize" my={2}>
-                    {data}
+                    {data.label}
                   </Field.Label>
                 </Field.Root>
                 <Input
-                  name={data}
+                  name={data.key}
                   placeholder={
-                    authdStudent
-                      ? authdStudent[data.toLowerCase().replace(" ", "")]
-                      : ""
+                    authdStudent ? (authdStudent as any)[data.key] ?? "" : ""
                   }
                   fontSize="xs"
                   p={6}

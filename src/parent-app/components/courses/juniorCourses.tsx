@@ -23,24 +23,23 @@ const JuniorCourses = ({
 
   // Junior courses - same for all JSS students
   const juniorCourses = [
-    { id: "math_jss", name: "Mathematics", category: "Core" },
-    { id: "english_jss", name: "English", category: "Core" },
-    { id: "basic_sci_jss", name: "Basic Science", category: "Core" },
-    { id: "basic_tech_jss", name: "Basic Technology", category: "Core" },
-    { id: "social_studies_jss", name: "Social Studies", category: "Core" },
-    { id: "civic_edu_jss", name: "Civic Education", category: "Core" },
-    { id: "business_studies_jss", name: "Business Studies", category: "Core" },
-    { id: "home_economics_jss", name: "Home Economics", category: "Core" },
-    { id: "agric_sci_jss", name: "Agricultural Science", category: "Core" },
-    { id: "physical_edu_jss", name: "Physical Education", category: "Core" },
+    { id: "juniorMath", name: "Mathematics", category: "Core" },
+    { id: "juniorEng", name: "English", category: "Core" },
+    { id: "basicScience", name: "Basic Science", category: "Core" },
+    { id: "basicTech", name: "Basic Technology", category: "Core" },
+    { id: "socialStudies", name: "Social Studies", category: "Core" },
+    { id: "civicEdu", name: "Civic Education", category: "Core" },
+    { id: "businessStudies", name: "Business Studies", category: "Core" },
+    { id: "homeEconomics", name: "Home Economics", category: "Core" },
+    { id: "juniorAgric", name: "Agricultural Science", category: "Core" },
+    { id: "physicalEdu", name: "Physical Education", category: "Core" },
     {
-      id: "computer_studies_jss",
+      id: "juniorComp",
       name: "Computer Studies",
       category: "Elective",
     },
-    { id: "creative_arts_jss", name: "Creative Arts", category: "Elective" },
-    { id: "french_jss", name: "French", category: "Elective" },
-    { id: "music_jss", name: "Music", category: "Elective" },
+    { id: "creativeArts", name: "Creative Arts", category: "Elective" },
+    { id: "music", name: "Music", category: "Elective" },
   ];
 
   const handleCourseChange = (courseId: string) => {

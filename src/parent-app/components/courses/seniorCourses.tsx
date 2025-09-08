@@ -19,16 +19,16 @@ const SeniorCourses = ({
   onSelectionChange,
 }: SeniorCoursesProps) => {
   const [selectedCourses, setSelectedCourses] = useState<string[]>([]);
-  const maxSelection = 6;
+  const maxSelection = 8;
 
   // Senior courses - available to all senior students
   const seniorCourses = [
-    { id: "math_sss", name: "Mathematics", category: "Core" },
-    { id: "english_sss", name: "English", category: "Core" },
+    { id: "seniorMath", name: "General Mathematics", category: "Core" },
+    { id: "seniorEng", name: "English", category: "Core" },
     { id: "physics", name: "Physics", category: "Science" },
     { id: "chemistry", name: "Chemistry", category: "Science" },
     { id: "biology", name: "Biology", category: "Science" },
-    { id: "further_math", name: "Further Maths", category: "Science" },
+    { id: "furtherMath", name: "Further Mathematics", category: "Science" },
     { id: "economics", name: "Economics", category: "Social Science" },
     { id: "accounting", name: "Accounting", category: "Social Science" },
     { id: "commerce", name: "Commerce", category: "Social Science" },
@@ -36,8 +36,8 @@ const SeniorCourses = ({
     { id: "literature", name: "Literature", category: "Arts" },
     { id: "history", name: "History", category: "Arts" },
     { id: "geography", name: "Geography", category: "Arts" },
-    { id: "fine_arts", name: "Fine Arts", category: "Arts" },
-    { id: "computer_sci", name: "Computer Science", category: "Elective" },
+    { id: "fineArts", name: "Fine Arts", category: "Arts" },
+    { id: "seniorComp", name: "Computer Science", category: "Elective" },
     { id: "french", name: "French", category: "Elective" },
   ];
 

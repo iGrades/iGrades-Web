@@ -95,9 +95,10 @@ const ChildrenLogin = ({ setAlert }: Props) => {
             Passkey
           </Text>
           <PinInput.Root
-            size="lg"
+            size="xl"
             value={passcode}
             onValueChange={(e) => setPasscode(e.value)}
+            gap={10}
           >
             <PinInput.HiddenInput />
             <PinInput.Control>

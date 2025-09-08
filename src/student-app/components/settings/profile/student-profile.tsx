@@ -143,7 +143,7 @@ const handleEdit = async () => {
               Change Photo
             </Button>
           </Box>
-          <Alert.Root status="warning" variant="subtle" color="#474256" mt={5}>
+          {/* <Alert.Root status="warning" variant="subtle" color="#474256" mt={5}>
             <Alert.Indicator color="orange.400">
               <IoIosAlert />
             </Alert.Indicator>
@@ -157,7 +157,7 @@ const handleEdit = async () => {
                 make changes to your profile
               </Alert.Description>
             </Alert.Content>
-          </Alert.Root>
+          </Alert.Root> */}
         </Box>
         <Grid
           templateColumns={{ base: "repeat(1, 1fr)", md: "repeat(2, 1fr)" }}
@@ -200,7 +200,8 @@ const handleEdit = async () => {
           spinnerPlacement="start"
           type="submit"
           fontWeight="semibold"
-          w={{ base: "95%", lg: "95%" }}
+          w={{ base: "95%", md:"81%" }}
+          my={5}
           p={6}
           bg="blue.500"
           color="white"

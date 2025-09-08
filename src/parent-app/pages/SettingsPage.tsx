@@ -6,7 +6,6 @@ import Security from "../components/settings/security";
 import Notification from "../components/settings/notification";
 import Support from "../components/settings/support";
 
-
 const SettingsPage = () => {
   const [settingsState, setSettingsState] = useState<string | null>("igrade");
   

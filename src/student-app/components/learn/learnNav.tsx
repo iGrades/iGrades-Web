@@ -2,16 +2,15 @@ import { Flex, Box, Text } from "@chakra-ui/react";
 import type React from "react";
 
 type Props = {
-  settingsState: string | null;
-  setSettingsState: React.Dispatch<React.SetStateAction<string | null>>;
+  learnState: string | null;
+  setLearnState: React.Dispatch<React.SetStateAction<string | null>>;
 };
 
-const SettingsNav = ({ settingsState, setSettingsState }: Props) => {
+const LearnNav = ({ learnState, setLearnState }: Props) => {
   const navItems = [
-    { text: "Profile", state: "profile" },
-    { text: "Security", state: "security" },
-    { text: "Notifications", state: "notification" },
-    { text: "Subscription", state: "subscription" },
+    { text: "Subjects", state: "subjects" },
+    { text: "Past Questions", state: "pqs" },
+    { text: "PDFs", state: "pdfs" },
   ];
   return (
     <Flex
@@ -30,13 +29,13 @@ const SettingsNav = ({ settingsState, setSettingsState }: Props) => {
       {navItems.map((item, idx) => (
         <Box
           key={idx}
-          bg={settingsState === item.state ? "#206CE11A" : 'transparent'}
+          bg={learnState === item.state ? "#206CE11A" : 'transparent'}
           p={2}
           rounded="md"
-          w={28}
+          w={32}
           textAlign="center"
           cursor="pointer"
-          onClick={() => setSettingsState(item.state)}
+          onClick={() => setLearnState(item.state)}
         >
           <Text color="primaryColor" fontSize="xs" fontWeight={600}>
             {item.text}
@@ -47,4 +46,4 @@ const SettingsNav = ({ settingsState, setSettingsState }: Props) => {
   );
 };
 
-export default SettingsNav;
+export default LearnNav;

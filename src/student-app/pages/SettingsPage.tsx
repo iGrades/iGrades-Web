@@ -10,6 +10,7 @@ import Subscription from "../components/settings/subscription";
 
 const SettingsPage = () => {
   const [settingsState, setSettingsState] = useState<string | null>("profile");
+
   
 
   return (
