@@ -48,7 +48,9 @@ const Sidebar = () => {
             borderRadius="lg"
             cursor="pointer"
             color={
-              currentStudentPage === item.value ? "primaryColor" : "fieldTextColor"
+              currentStudentPage === item.value
+                ? "primaryColor"
+                : "fieldTextColor"
             }
             bg={currentStudentPage === item.value ? "#206CE11A" : "transparent"}
             fontWeight={"600"}
@@ -95,7 +97,9 @@ const Sidebar = () => {
                 variant="ghost"
                 size="lg"
                 fontSize="xl"
-                color={currentStudentPage === value ? "blue.700" : "fieldTextColor"}
+                color={
+                  currentStudentPage === value ? "blue.700" : "fieldTextColor"
+                }
                 bg={currentStudentPage === value ? "blue.50" : "transparent"}
                 borderRadius="xl"
               >

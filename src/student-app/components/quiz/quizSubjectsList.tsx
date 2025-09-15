@@ -1,34 +1,24 @@
-import {
-  Grid,
-  Box,
-  Text,
-  Center,
-  useDisclosure,
-} from "@chakra-ui/react";
+import { Grid, Box, Text, Center, useDisclosure } from "@chakra-ui/react";
 import { useAuthdStudentData } from "@/student-app/context/studentDataContext";
 import { useState } from "react";
-import { supabase } from "@/lib/supabaseClient";
 import { IoIosCheckmarkCircle } from "react-icons/io";
 import type { Dispatch, SetStateAction } from "react";
-import acc_bgimg from "@/assets/courses/acc_bgimg.png";
-import agric_bgimg from "@/assets/courses/agric_bgimg.png";
-import basic_sci_bgimg from "@/assets/courses/basic-sci_bgimg.png";
-import basic_tech_bgimg from "@/assets/courses/basic-tech_bgimg.png";
-import bio_bgimg from "@/assets/courses/bio_bgimg.png";
-import bus_stu_bgimg from "@/assets/courses/bus-stu_bgimg.png";
-import chem_bgimg from "@/assets/courses/chem_bgimg.png";
-import com_sci_bgimg from "@/assets/courses/com-sci_bgimg.png";
-import econs_bgimg from "@/assets/courses/econs_bgimg.png";
-import geo_bgimg from "@/assets/courses/geo_bgimg.png";
-import govt_bgimg from "@/assets/courses/govt_bgimg.png";
-import math_bgimg from "@/assets/courses/math_bgimg.png";
-import eng_bgimg from "@/assets/courses/eng_bgimg.png";
-import phy_bgimg from "@/assets/courses/phy_bgimg.png";
+import {
+  useStudentData,
+  useSubjects,
+  useTopics,
+  useClasses,
+} from "@/student-app/context/dataContext";
 
 type Props = {
   selectedCourses: string[];
-  onCourseSelect: (course: string, topics?: Topic[]) => void;
+  onCourseSelect: (
+    course: string,
+    topics?: Topic[],
+    dbCourseName?: string
+  ) => void;
   setSelectedCourse: Dispatch<SetStateAction<string>>;
+  setSelectedTopicsId: Dispatch<SetStateAction<string>>;
 };
 
 interface Topic {
@@ -37,139 +27,116 @@ interface Topic {
   description?: string;
 }
 
-interface VideoResource {
-  id: string;
-  title: string;
-  url: string;
-  duration?: number;
-  type: string;
-  topic_id?: string;
-}
-
-const QuizSubjectsList = ({selectedCourses, onCourseSelect, setSelectedCourse}: Props) => {
+const QuizSubjectsList = ({
+  selectedCourses,
+  onCourseSelect,
+  setSelectedCourse,
+  setSelectedTopicsId,
+}: Props) => {
   const { authdStudent } = useAuthdStudentData();
   const [loading, setLoading] = useState(false);
+  const { onOpen } = useDisclosure();
 
-  const [videos, setVideos] = useState<VideoResource[]>([]);
-  const { open, onOpen, onClose } = useDisclosure();
+  // Use context hooks
+  const { subjectImages } = useStudentData();
+  const { getSubjectByName } = useSubjects();
+  const { getTopicsBySubjectId } = useTopics();
+  const { getClassByName } = useClasses();
 
-  // Create a mapping of database course names to display names, images and colors
-  const courseConfig: Record<
-    string,
-    { displayName: string; image: any; color: string }
-  > = {
+  // Create a mapping of database course names to display names and colors
+  const courseConfig: Record<string, { displayName: string; color: string }> = {
     // JUNIOR SECONDARY COURSES
     juniorMath: {
       displayName: "Mathematics",
-      image: math_bgimg,
       color: "#F26946",
     },
-    juniorEng: { displayName: "English", image: eng_bgimg, color: "#4ECDC4" },
+    juniorEng: { displayName: "English", color: "#4ECDC4" },
     basicScience: {
       displayName: "Basic Science",
-      image: basic_sci_bgimg,
       color: "#45B7D1",
     },
     basicTech: {
       displayName: "Basic Technology",
-      image: basic_tech_bgimg,
       color: "#F9A826",
     },
     socialStudies: {
       displayName: "Social Studies",
-      image: null,
       color: "#E84855",
     },
     civicEdu: {
       displayName: "Civic Education",
-      image: null,
       color: "#7D70BA",
     },
     businessStudies: {
       displayName: "Business Studies",
-      image: bus_stu_bgimg,
       color: "#2A9D8F",
     },
     homeEconomics: {
       displayName: "Home Economics",
-      image: null,
       color: "#E76F51",
     },
     juniorAgric: {
       displayName: "Agricultural Science",
-      image: agric_bgimg,
       color: "#2A9D8F",
     },
     physicalEdu: {
       displayName: "Physical Education",
-      image: null,
       color: "#E63946",
     },
     juniorComp: {
       displayName: "Computer Studies",
-      image: com_sci_bgimg,
       color: "#3A86FF",
     },
     creativeArts: {
       displayName: "Creative Arts",
-      image: null,
       color: "#8338EC",
     },
-    music: { displayName: "Music", image: null, color: "#FB5607" },
+    music: { displayName: "Music", color: "#FB5607" },
 
     // SENIOR SECONDARY COURSES
     seniorMath: {
       displayName: "General Mathematics",
-      image: math_bgimg,
       color: "#FF6B6B",
     },
-    seniorEng: { displayName: "English", image: eng_bgimg, color: "#4ECDC4" },
-    physics: { displayName: "Physics", image: phy_bgimg, color: "#F06595" },
+    seniorEng: { displayName: "English", color: "#4ECDC4" },
+    physics: { displayName: "Physics", color: "#F06595" },
     chemistry: {
       displayName: "Chemistry",
-      image: chem_bgimg,
       color: "#339AF0",
     },
-    biology: { displayName: "Biology", image: bio_bgimg, color: "#51CF66" },
+    biology: { displayName: "Biology", color: "#51CF66" },
     furtherMath: {
       displayName: "Further Mathematics",
-      image: math_bgimg,
       color: "#FF922B",
     },
     economics: {
       displayName: "Economics",
-      image: econs_bgimg,
       color: "#CC5DE8",
     },
     accounting: {
       displayName: "Accounting",
-      image: acc_bgimg,
       color: "#20C997",
     },
-    commerce: { displayName: "Commerce", image: null, color: "#FDA7DF" },
+    commerce: { displayName: "Commerce", color: "#FDA7DF" },
     government: {
       displayName: "Government",
-      image: govt_bgimg,
       color: "#D980FA",
     },
     literature: {
       displayName: "Literature",
-      image: null,
       color: "#B53471",
     },
-    history: { displayName: "History", image: null, color: "#EE5A24" },
+    history: { displayName: "History", color: "#EE5A24" },
     geography: {
       displayName: "Geography",
-      image: geo_bgimg,
       color: "#A3CB38",
     },
-    fineArts: { displayName: "Fine Arts", image: null, color: "#FFC312" },
+    fineArts: { displayName: "Fine Arts", color: "#FFC312" },
     seniorComp: {
       displayName: "Computer Science",
-      image: com_sci_bgimg,
       color: "#1289A7",
     },
-    french: { displayName: "French", image: null, color: "#6F1E51" },
+    french: { displayName: "French", color: "#6F1E51" },
   };
 
   // Helper function to convert registered_courses to an array
@@ -201,79 +168,70 @@ const QuizSubjectsList = ({selectedCourses, onCourseSelect, setSelectedCourse}: 
     return [String(registeredCourses)];
   };
 
- const isCourseSelected = (courseName: string) => {
-   return selectedCourses.includes(courseName);
- };
+  const isCourseSelected = (courseName: string) => {
+    return selectedCourses.includes(courseName);
+  };
 
- const handleCourseClick = async (courseName: string, dbCourseName: string) => {
-   setLoading(true);
-   setSelectedCourse(courseName);
+  const handleCourseClick = async (
+    courseName: string,
+    dbCourseName: string
+  ) => {
+    setLoading(true);
+    setSelectedCourse(courseName);
 
-   try {
-     console.log(
-       "Fetching topics for:",
-       courseName,
-       "in class:",
-       authdStudent?.class
-     );
+    try {
+      console.log(
+        "Fetching topics for:",
+        courseName,
+        "in class:",
+        authdStudent?.class
+      );
 
-     // First, class ID
-     const { data: classData, error: classError } = await supabase
-       .from("classes")
-       .select("id")
-       .eq("name", authdStudent?.class)
-       .single();
+      // Get class ID using context
+      const classData = getClassByName(authdStudent?.class || "");
+      if (!classData) {
+        console.log("No class found for:", authdStudent?.class);
+        setLoading(false);
+        return;
+      }
 
-     if (classError || !classData) {
-       console.log("No class found for:", authdStudent?.class);
-       setLoading(false);
-       return;
-     }
+      const classId = classData.id;
+      console.log("Found class ID:", classId);
 
-     const classId = classData.id;
-     console.log("Found class ID:", classId);
+      // Get subject ID using context
+      const subjectData = getSubjectByName(dbCourseName);
+      if (!subjectData) {
+        console.log("No subject found for:", courseName);
+        setLoading(false);
+        return;
+      }
 
-     // Get subject ID
-     const { data: subjectData, error: subjectError } = await supabase
-       .from("subjects")
-       .select("id")
-       .eq("name", dbCourseName)
-       .single();
+      const subjectId = subjectData.id;
+      console.log("Found subject ID:", subjectId);
 
-     if (subjectError || !subjectData) {
-       console.log("No subject found for:", courseName);
-       console.log("Here is the subject error: ", subjectError);
-       setLoading(false);
-       return;
-     }
+      // Get topics for this specific subject_id AND class_id using context
+      const allTopics = getTopicsBySubjectId(subjectId);
+      const classTopics = allTopics.filter(
+        (topic: any) => topic.class_id === classId
+      );
 
-     const subjectId = subjectData.id;
-     console.log("Found subject ID:", subjectId);
+      console.log("Topics found:", classTopics);
 
-     // Fetch topics for this specific subject_id AND class_id
-     const { data: topicsData, error: topicsError } = await supabase
-       .from("topics")
-       .select("id, name, description")
-       .eq("subject_id", subjectId)
-       .eq("class_id", classId)
-       .order("order_index");
+      // Set the first topic ID if available
+      if (classTopics.length > 0) {
+        setSelectedTopicsId(classTopics[0].id);
+      }
 
-     if (topicsError) {
-       console.error("Error fetching topics:", topicsError);
-     } else {
-       console.log("Topics found:", topicsData);
+      // Pass the course and its topics to the parent component
+      onCourseSelect(courseName, classTopics || [], dbCourseName);
 
-       // Pass the course and its topics to the parent component
-        onCourseSelect(courseName, topicsData || []);
-     }
-
-     onOpen();
-   } catch (error) {
-     console.error("Error:", error);
-   } finally {
-     setLoading(false);
-   }
- };
+      onOpen();
+    } catch (error) {
+      console.error("Error:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   // Get the student's registered courses as an array
   const registeredCoursesArray = getStudentCoursesArray();
@@ -283,14 +241,13 @@ const QuizSubjectsList = ({selectedCourses, onCourseSelect, setSelectedCourse}: 
     // Find the course in our config (exact match for database names)
     const config = courseConfig[dbCourseName] || {
       displayName: dbCourseName, // Fallback to database name if not found
-      image: null,
       color: "#718096", // Default gray color for unknown courses
     };
 
     return {
       dbName: dbCourseName, // Keep original database name for reference
       displayName: config.displayName,
-      image: config.image,
+      image: subjectImages[dbCourseName] || null, // Get image from context
       color: config.color,
     };
   });
@@ -319,8 +276,7 @@ const QuizSubjectsList = ({selectedCourses, onCourseSelect, setSelectedCourse}: 
               borderRadius="xl"
               p={6}
               textAlign="center"
-              boxShadow="xl"
-              minH="110px"
+              minH="100px"
               display="flex"
               flexDirection="column"
               justifyContent="center"
@@ -328,15 +284,9 @@ const QuizSubjectsList = ({selectedCourses, onCourseSelect, setSelectedCourse}: 
               transition="all 0.3s ease"
               _hover={{
                 transform: "translateY(-8px)",
-                boxShadow: "2xl",
               }}
-              background={
-                course.image
-                  ? `linear-gradient(rgba(0,0,0,0.1), rgba(0,0,0,0.1)), url(${course.image})`
-                  : course.color
-              }
+              background={course.image ? `url(${course.image})` : course.color}
               backgroundSize="contain"
-              backgroundPosition="right"
               backgroundRepeat="no-repeat"
               cursor="pointer"
               position="relative"
@@ -347,32 +297,18 @@ const QuizSubjectsList = ({selectedCourses, onCourseSelect, setSelectedCourse}: 
               opacity={loading ? 0.7 : 1}
               pointerEvents={loading ? "none" : "auto"}
             >
-              {/* Show color overlay for ALL courses (including those with images) */}
-              <Box
-                position="absolute"
-                top={0}
-                left={0}
-                right={0}
-                bottom={0}
-                bg={course.color}
-                opacity={course.image ? 0.5 : 1}
-                zIndex={1}
-                transition="opacity 0.3s ease"
-                _hover={{
-                  opacity: course.image ? 0.6 : 0.9,
-                }}
-              />
-
               <Center flexDirection="column" zIndex={2} position="relative">
-                <Text
-                  fontSize="lg"
-                  fontWeight="bold"
-                  color="white"
-                  textShadow="2px 2px 4px rgba(0,0,0,0.7)"
-                  mb={2}
-                >
-                  {course.displayName}
-                </Text>
+                {!course.image && (
+                  <Text
+                    fontSize="lg"
+                    fontWeight="bold"
+                    color="white"
+                    textShadow="2px 2px 4px rgba(0,0,0,0.7)"
+                    mb={2}
+                  >
+                    {course.displayName}
+                  </Text>
+                )}
                 {loading && (
                   <Text fontSize="sm" color="whiteAlpha.800">
                     Loading...

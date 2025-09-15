@@ -9,17 +9,20 @@ import { StrictMode } from "react";
 import { BrowserRouter } from 'react-router-dom';
 import { PasskeyProvider } from './parent-app/context/passkeyContext.tsx';
 import { AuthdStudentDataProvider } from './student-app/context/studentDataContext.tsx';
+import { DataProvider } from './student-app/context/dataContext.tsx';
 
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <PasskeyProvider>
       <AuthdStudentDataProvider>
-      <ChakraProvider value={system}>
-        <BrowserRouter>
-          <App />
-        </BrowserRouter>
-      </ChakraProvider>
+        <DataProvider>
+          <ChakraProvider value={system}>
+            <BrowserRouter>
+              <App />
+            </BrowserRouter>
+          </ChakraProvider>
+        </DataProvider>
       </AuthdStudentDataProvider>
     </PasskeyProvider>
   </StrictMode>

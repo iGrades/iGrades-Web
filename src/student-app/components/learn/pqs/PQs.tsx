@@ -1,5 +1,5 @@
 import { Box, Heading, Grid, Text, Image, Flex} from "@chakra-ui/react";
-import { useAuthdStudentData } from "@/student-app/context/studentDataContext";
+
 import { useState } from "react";
 import { GoArrowRight } from "react-icons/go";
 import waec_img from "@/assets/waec_logo.png";
@@ -10,7 +10,6 @@ import SubjectsList from "./subjectList";
 type Props = {};
 
 const PQs = (props: Props) => {
-  const { authdStudent } = useAuthdStudentData();
   const [selectedExam, setSelectedExam] = useState<string | null>(null);
   const [showSubjectList, setShowSubjectList] = useState(false);
 

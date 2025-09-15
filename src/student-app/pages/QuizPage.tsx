@@ -1,42 +1,56 @@
 import { useState } from "react";
-import {
-  Flex,
-  Box,
-  Alert,
-  Button,
-  Grid,
-  Badge,
-
-} from "@chakra-ui/react";
+import { Flex, Box, Alert, Button, Grid, Badge } from "@chakra-ui/react";
 import { IoIosAlert } from "react-icons/io";
 import { GoArrowRight, GoX } from "react-icons/go";
 import QuizSubjectsList from "../components/quiz/quizSubjectsList";
 import QuizTopicsList from "../components/quiz/quizTopicsList";
 import SearchBar from "../components/quiz/searchBar";
 
+type Props = {
+  showSideBar: boolean;
+  setShowSideBar: React.Dispatch<React.SetStateAction<boolean>>;
+};
+
 interface Topic {
   id: string;
   name: string;
   description?: string;
-  course: string; // Add course reference
+  course: string;
 }
 
-const QuizPage = () => {
+interface SubjectImage {
+  [key: string]: string;
+}
+
+interface SelectedCourse {
+  displayName: string;
+  dbName: string;
+}
+
+const QuizPage = ({showSideBar, setShowSideBar}: Props) => {
   const [topicList, setTopicList] = useState<Topic[]>([]);
   const [showTopicList, setShowTopicList] = useState(false);
   const [selectedCourse, setSelectedCourse] = useState<string>("");
-  const [selectedForQuiz, setSelectedForQuiz] = useState<string[]>([]);
+  const [selectedForQuiz, setSelectedForQuiz] = useState<SelectedCourse[]>([]);
+  const [selectedTopicsId, setSelectedTopicsId] = useState<string>('')
+  const [subjectImages, setSubjectImages] = useState<SubjectImage>({});
   const [showTick, setShowTick] = useState(false);
 
   // handles selection of courses
-  const handleCourseSelect = (course: string, courseTopics: Topic[] = []) => {
+  const handleCourseSelect = (
+    course: string,
+    courseTopics: Topic[] = [],
+    dbCourseName: string
+  ) => {
     setSelectedForQuiz((prev) => {
-      if (prev.includes(course)) {
+      const existingIndex = prev.findIndex((c) => c.displayName === course);
+
+      if (existingIndex >= 0) {
         // Remove course and its topics
         setTopicList((prevTopics) =>
           prevTopics.filter((topic) => topic.course !== course)
         );
-        return prev.filter((c) => c !== course);
+        return prev.filter((c) => c.displayName !== course);
       } else {
         // Add course and its topics
         const topicsWithCourse = courseTopics.map((topic) => ({
@@ -44,14 +58,14 @@ const QuizPage = () => {
           course: course,
         }));
         setTopicList((prev) => [...prev, ...topicsWithCourse]);
-        return [...prev, course];
+        return [...prev, { displayName: course, dbName: dbCourseName }];
       }
     });
   };
 
   const handleRemoveCourse = (courseToRemove: string) => {
     setSelectedForQuiz((prev) =>
-      prev.filter((course) => course !== courseToRemove)
+      prev.filter((course) => course.displayName !== courseToRemove)
     );
     setShowTick(false);
 
@@ -62,8 +76,8 @@ const QuizPage = () => {
   };
 
   const handleStartQuiz = () => {
-    if (selectedForQuiz.length < 4) {
-      alert("Please select at least 4 courses for the quiz");
+    if (selectedForQuiz.length < 1) {
+      alert("Please select at least 1 courses for the quiz");
       return;
     }
     // Start quiz logic here
@@ -78,6 +92,10 @@ const QuizPage = () => {
         <QuizTopicsList
           topicList={topicList}
           selectedCourses={selectedForQuiz}
+          setShowTopicList={setShowTopicList}
+          subjectImages={subjectImages}
+          selectedTopicsId={selectedTopicsId}
+          setShowSideBar={setShowSideBar}
         />
       ) : (
         <>
@@ -88,7 +106,7 @@ const QuizPage = () => {
             mb={4}
             mt={4}
           >
-            <Box w="80%">
+            <Box w='80%'>
               <SearchBar mb={5} placeholder="Search subject ..." />
               <Alert.Root
                 status="warning"
@@ -118,7 +136,7 @@ const QuizPage = () => {
               rounded="3xl"
               fontWeight="500"
               onClick={handleStartQuiz}
-              disabled={selectedForQuiz.length < 4}
+              disabled={selectedForQuiz.length < 1}
               display={{ base: "none", md: "flex" }}
             >
               Next <GoArrowRight />
@@ -149,11 +167,11 @@ const QuizPage = () => {
                     gap={1}
                     size={"lg"}
                   >
-                    {course}
+                    {course.displayName}
                     <GoX
                       size={12}
                       cursor="pointer"
-                      onClick={() => handleRemoveCourse(course)}
+                      onClick={() => handleRemoveCourse(course.displayName)}
                     />
                   </Badge>
                 ))}
@@ -167,7 +185,7 @@ const QuizPage = () => {
                   rounded="xl"
                   fontWeight="500"
                   onClick={handleStartQuiz}
-                  disabled={selectedForQuiz.length < 4}
+                  disabled={selectedForQuiz.length < 1}
                   display={{ base: "flex", md: "none" }}
                   alignItems="center"
                   gap={6}
@@ -182,7 +200,10 @@ const QuizPage = () => {
             <QuizSubjectsList
               onCourseSelect={handleCourseSelect}
               setSelectedCourse={setSelectedCourse}
-              selectedCourses={selectedForQuiz}
+              selectedCourses={selectedForQuiz.map((c) => c.displayName)}
+              subjectImages={subjectImages}
+              setSubjectImages={setSubjectImages}
+              setSelectedTopicsId={setSelectedTopicsId}
             />
           </Box>
         </>

@@ -1,5 +1,6 @@
 import { Box, Flex } from "@chakra-ui/react";
 import { useNavigationStore } from "@/store/usenavigationStore";
+import { useState } from "react";
 import Dashboard from "./layouts/dashboard";
 import Navbar from "./components/navbar";
 import Sidebar from "./components/sidebar";
@@ -10,13 +11,16 @@ import SettingsPage from "./pages/SettingsPage";
 
 const Home = () => {
   const currentPage = useNavigationStore((state) => state.currentStudentPage);
+  const [showSideBar, setShowSideBar] = useState<boolean>(true);
 
   const renderPage = () => {
     switch (currentPage) {
       case "home":
         return <Homepage />;
       case "quiz":
-        return <QuizPage />;
+        return (
+          <QuizPage showSideBar={showSideBar} setShowSideBar={setShowSideBar} />
+        );
       case "learn":
         return <LearnPage />;
       case "settings":
@@ -37,15 +41,16 @@ const Home = () => {
     >
       <Navbar />
       <Flex flex="1" overflow="hidden">
-        {/* Sidebar - will not scroll */}
-        <Box
-          position="relative"
-          flexShrink={0}
-          w={{ base: "0%", lg: "15%" }}
-          overflowY="auto"
-        >
-          <Sidebar />
-        </Box>
+        {showSideBar && (
+          <Box
+            position="relative"
+            flexShrink={0}
+            w={{ base: "0%", lg: "15%" }}
+            overflowY="auto"
+          >
+            <Sidebar />
+          </Box>
+        )}
 
         <Box
           flex="1"
