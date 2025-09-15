@@ -161,7 +161,7 @@ const EditGrader = ({ student, onClose }: Props) => {
           ))}
         </Grid>
 
-        {/* Action Buttons */}
+        {/* Action Button */}
         <Button
           loading={isLoading}
           loadingText="Updating..."

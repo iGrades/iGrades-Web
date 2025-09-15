@@ -1,6 +1,5 @@
 import { Box, Button } from "@chakra-ui/react";
 import { LiaUserTimesSolid } from "react-icons/lia";
-// import { IoClose } from "react-icons/io5";
 import AddGrader from "./addGrader";
 import type { Dispatch, SetStateAction } from "react";
 

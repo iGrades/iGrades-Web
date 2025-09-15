@@ -4,12 +4,12 @@ import { PiStudentDuotone } from "react-icons/pi";
 import { TbHomeFilled } from "react-icons/tb";
 import { useNavigationStore } from "../../store/usenavigationStore";
 import type { IconType } from "react-icons";
-import type { Page } from "../../store/usenavigationStore";
+import type { ParentPage } from "../../store/usenavigationStore";
 
 const Sidebar = () => {
-  const { currentPage, setCurrentPage } = useNavigationStore();
+  const { currentParentPage, setCurrentParentPage } = useNavigationStore();
 
-  const parentsAsideElem: { icon: IconType; label: string; value: Page }[] = [
+  const parentsAsideElem: { icon: IconType; label: string; value: ParentPage }[] = [
     { icon: TbHomeFilled, label: "Home", value: "home" },
     { icon: PiStudentDuotone, label: "Students", value: "student" },
     { icon: AiTwotoneSetting, label: "Settings", value: "settings" },
@@ -41,14 +41,14 @@ const Sidebar = () => {
             borderRadius="lg"
             cursor="pointer"
             color={
-              currentPage === item.value ? "primaryColor" : "fieldTextColor"
+              currentParentPage === item.value ? "primaryColor" : "fieldTextColor"
             }
-            bg={currentPage === item.value ? "#206CE11A" : "transparent"}
+            bg={currentParentPage === item.value ? "#206CE11A" : "transparent"}
             fontWeight={"400"}
-            onClick={() => setCurrentPage(item.value)}
+            onClick={() => setCurrentParentPage(item.value)}
           >
             <Icon as={item.icon} size="sm" />
-            <Text mx={2} fontSize={"sm"} fontWeight={400}>
+            <Text mx={2} fontSize={"sm"} fontWeight={7100}>
               {item.label}
             </Text>
           </Box>
@@ -81,15 +81,15 @@ const Sidebar = () => {
               flex="1"
               p={1}
               fontWeight={"normal"}
-              onClick={() => setCurrentPage(value)}
+              onClick={() => setCurrentParentPage(value)}
             >
               <IconButton
                 aria-label={label}
                 variant="ghost"
                 size="lg"
                 fontSize="xl"
-                color={currentPage === value ? "blue.700" : "fieldTextColor"}
-                bg={currentPage === value ? "blue.50" : "transparent"}
+                color={currentParentPage === value ? "blue.700" : "fieldTextColor"}
+                bg={currentParentPage === value ? "blue.50" : "transparent"}
                 borderRadius="xl"
               >
                 <Icon as={icon} />

@@ -12,7 +12,7 @@ const config = defineConfig({
         accentColor: { value: "#00A8E6" },
         backgrondColor: { value: "#FFFFFF" },
         backgrondColor2: { value: "#07052A" },
-        on_backgroundColor: { value: "##242E3E" },
+        on_backgroundColor: { value: "#242E3E" },
         on_containerColor: { value: "#474256" },
         successColor: { value: "#2DD4A5" },
         errorColor: { value: "#E43F40" },
@@ -27,6 +27,7 @@ const config = defineConfig({
         lightGrey: { value: "#EBEBF7" },
         mediumGrey: { value: "#464646" },
         greyOthers: { value: "#525071" },
+        faintYellow: { value: "#FFF9F3" },
       },
       cursor: {
         button: { value: "pointer" },
