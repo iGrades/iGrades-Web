@@ -3,7 +3,6 @@ import {
   Heading,
   Flex,
   Text,
-  VStack,
   Image,
   Button,
   Progress,
@@ -28,9 +27,12 @@ type Props = {
   examMode: string;
   selectedTopics: string[];
   topicsCount: number;
-  topicsByCourse: Record<string, Topic[]>;
   selectedCourses: SelectedCourse[];
+  setSelectedCourses: React.Dispatch<React.SetStateAction<SelectedCourse[]>>;
+  topicsByCourse: Record<string, Topic[]>;
+  subjectImages: Record<string, string>;
   setShowSideBar: React.Dispatch<React.SetStateAction<boolean>>;
+  setShowTopicList: React.Dispatch<React.SetStateAction<boolean>>;
   onBack: () => void;
 };
 
@@ -44,15 +46,17 @@ interface Topic {
 interface SelectedCourse {
   displayName: string;
   dbName: string;
-  id: string; // subject ID
+  id: string; 
 }
 
 const QuizInstructions = ({
   examMode,
   selectedTopics,
-  topicsCount,
   topicsByCourse,
   selectedCourses,
+   setSelectedCourses,
+  setShowSideBar,
+  setShowTopicList,
   onBack,
 }: Props) => {
   const { authdStudent } = useAuthdStudentData();
@@ -305,6 +309,9 @@ const QuizInstructions = ({
   const handleCancelQuiz = () => {
     setShowQuizAttempt(false);
     setQuizData(null);
+    setShowTopicList(false);
+     setSelectedCourses([]);
+    setShowSideBar(true);
   };
 
   console.log("This is the tpoics by course: ", topicsByCourse);
@@ -347,26 +354,36 @@ const QuizInstructions = ({
     );
   }
 
-  const sliderSettings = {
-    dots: true,
-    infinite: false,
-    speed: 500,
-    slidesToShow: 1,
-    slidesToScroll: 1,
-    arrows: true,
-    nextArrow: <SampleNextArrow />,
-    prevArrow: <SamplePrevArrow />,
-    responsive: [
-      {
-        breakpoint: 1024,
-
+const sliderSettings = {
+  dots: true,
+  infinite: false,
+  speed: 500,
+  slidesToShow: 1,
+  slidesToScroll: 1,
+  arrows: true,
+  nextArrow: <SampleNextArrow />,
+  prevArrow: <SamplePrevArrow />,
+  responsive: [
+    {
+      breakpoint: 1024,
+      settings: {
+        slidesToShow: 1,
+        slidesToScroll: 1,
+        infinite: false,
+        dots: true,
       },
-      {
-        breakpoint: 768,
- 
+    },
+    {
+      breakpoint: 768,
+      settings: {
+        slidesToShow: 1,
+        slidesToScroll: 1,
+        infinite: false,
+        dots: true,
       },
-    ],
-  };
+    },
+  ],
+};
 
   // Function to get selected topics for a specific course
   const getSelectedTopicsForCourse = (course: SelectedCourse) => {
@@ -401,6 +418,7 @@ const QuizInstructions = ({
           quizData={quizData}
           onComplete={handleQuizComplete}
           onCancel={handleCancelQuiz}
+          
         />
       ) : (
         <Box w="80%" m="auto">

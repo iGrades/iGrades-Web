@@ -3,17 +3,13 @@ import {
   Grid,
   Box,
   Text,
-  Flex,
-  VStack,
-  Button,
   Dialog,
   Portal,
   CloseButton,
-  HStack,
   Image,
   AspectRatio,
 } from "@chakra-ui/react";
-import { LuArrowLeft, LuX, LuPlay } from "react-icons/lu";
+import { LuArrowLeft, LuPlay } from "react-icons/lu";
 import { useState, useRef } from "react";
 import { supabase } from "@/lib/supabaseClient";
 

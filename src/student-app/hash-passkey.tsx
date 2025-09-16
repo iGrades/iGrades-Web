@@ -13,9 +13,9 @@ const generateNumericPasskey = (length = 6) => {
 const saltRounds = 10;
 
 const HashPasskey = () => {
-  const [passkey, setPasskey] = useState(""); // Shown to user
-  const [hashed, setHashed] = useState(""); // Stored in "DB"
-  const [input, setInput] = useState(""); // User-entered passkey
+  const [passkey, setPasskey] = useState(""); 
+  const [hashed, setHashed] = useState(""); 
+  const [input, setInput] = useState(""); 
   const [isMatch, setIsMatch] = useState<boolean | null>(null);
 
   const handleGenerate = async () => {

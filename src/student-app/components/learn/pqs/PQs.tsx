@@ -7,9 +7,8 @@ import jamb_img from "@/assets/jamb_logo.png";
 import neco_img from "@/assets/neco_logo.png";
 import SubjectsList from "./subjectList";
 
-type Props = {};
 
-const PQs = (props: Props) => {
+const PQs = () => {
   const [selectedExam, setSelectedExam] = useState<string | null>(null);
   const [showSubjectList, setShowSubjectList] = useState(false);
 

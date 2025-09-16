@@ -40,7 +40,7 @@ const Pdfs = () => {
   const { getSubjectByName } = useSubjects();
   const { getTopicsBySubjectId } = useTopics();
   const { getClassByName } = useClasses();
-  const { getResourcesByTopicId, getResourcesByType } = useResources();
+  const {getResourcesByType } = useResources();
 
   // Create a mapping of database course names to display names and colors
   const courseConfig: Record<string, { displayName: string; color: string }> = {

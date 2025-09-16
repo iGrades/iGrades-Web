@@ -44,6 +44,11 @@ function decrypt(cipher: string, key: string) {
     .join("");
 }
 
+type GeneratePassKey = {
+  passkey: string;
+  encrypted: string;
+}
+
 type PassKeyContextType = {
   plainPasskey: string;
   setPlainPasskey: React.Dispatch<React.SetStateAction<string>>;
@@ -52,7 +57,7 @@ type PassKeyContextType = {
   input: string;
   setInput: React.Dispatch<React.SetStateAction<string>>;
   isMatch: boolean | null;
-  handleGeneratePassKey: () => void;
+  handleGeneratePassKey: () => GeneratePassKey
   handlePassKeyCheck: () => void;
   decrypt: (cipher: string, key: string) => string;
   encrypt: (passkey: string, key: string) => string;
@@ -66,7 +71,7 @@ const PassKeyContext = createContext<PassKeyContextType>({
   input: "",
   setInput: () => {},
   isMatch: null,
-  handleGeneratePassKey: () => {},
+  handleGeneratePassKey: () => ({ passkey: "", encrypted: "" }),
   handlePassKeyCheck: () => {},
   decrypt: () => "",
   encrypt: () => "",

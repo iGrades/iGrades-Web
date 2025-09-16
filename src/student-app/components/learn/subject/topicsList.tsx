@@ -27,7 +27,6 @@ type Props = {
 };
 
 const TopicsList = ({
-  selectedCourse,
   setTopicList,
   topics,
   videos,
