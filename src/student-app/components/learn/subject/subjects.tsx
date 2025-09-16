@@ -10,7 +10,7 @@ import {
   useResources,
 } from "@/student-app/context/dataContext";
 
-type Props = {};
+
 
 interface Topic {
   id: string;
@@ -27,21 +27,21 @@ interface VideoResource {
   topic_id?: string;
 }
 
-const Subjects = (props: Props) => {
+const Subjects = () => {
   const { authdStudent } = useAuthdStudentData();
   const [loading, setLoading] = useState(false);
   const [topicList, setTopicList] = useState(false);
   const [selectedCourse, setSelectedCourse] = useState<string>("");
   const [topics, setTopics] = useState<Topic[]>([]);
   const [videos, setVideos] = useState<VideoResource[]>([]);
-  const { open, onOpen, onClose } = useDisclosure();
+  const { onOpen } = useDisclosure();
 
   // Use context hooks
   const { subjectImages } = useStudentData();
   const { getSubjectByName } = useSubjects();
-  const { getTopicsBySubjectId, getTopicsBySubjectName } = useTopics();
+  const { getTopicsBySubjectId} = useTopics();
   const { getClassByName } = useClasses();
-  const { getResourcesByTopicId, getResourcesByType } = useResources();
+  const { getResourcesByType } = useResources();
 
   // Create a mapping of database course names to display names and colors
   const courseConfig: Record<string, { displayName: string; color: string }> = {

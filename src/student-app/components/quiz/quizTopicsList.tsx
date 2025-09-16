@@ -26,6 +26,7 @@ import QuizInstructions from "./quizInstructions";
 type Props = {
   topicList: Topic[];
   selectedCourses: SelectedCourse[];
+  setSelectedCourses: React.Dispatch<React.SetStateAction<SelectedCourse[]>>;
   setShowTopicList: React.Dispatch<React.SetStateAction<boolean>>;
   selectedTopicsId: string;
   setShowSideBar: React.Dispatch<React.SetStateAction<boolean>>;
@@ -41,13 +42,14 @@ interface Topic {
 interface SelectedCourse {
   displayName: string;
   dbName: string;
+  id: string;
 }
 
 const QuizTopicsList = ({
   topicList,
   setShowTopicList,
   selectedCourses,
-  selectedTopicsId,
+  setSelectedCourses,
   setShowSideBar
 }: Props) => {
   const [selectedMode, setSelectedMode] = useState<string>("");
@@ -156,8 +158,11 @@ const QuizTopicsList = ({
           selectedTopics={selectedTopics}
           topicsCount={selectedTopics.length}
           selectedCourses={selectedCourses}
+          setSelectedCourses={setSelectedCourses}
           topicsByCourse={topicsByCourse}
           subjectImages={subjectImages}
+          setShowTopicList={setShowTopicList}
+          setShowSideBar={setShowSideBar}
           onBack={() => setShowInstructPage(false)}
         />
       ) : (
@@ -174,10 +179,7 @@ const QuizTopicsList = ({
                       return (
                         <Box key={index} textAlign="center">
                           {courseImage ? (
-                            <Image
-                              src={courseImage}
-                              alt={course.displayName}
-                            />
+                            <Image src={courseImage} alt={course.displayName} />
                           ) : (
                             <Box
                               bg="gray.200"
@@ -194,7 +196,6 @@ const QuizTopicsList = ({
                               </Text>
                             </Box>
                           )}
-                      
                         </Box>
                       );
                     })}

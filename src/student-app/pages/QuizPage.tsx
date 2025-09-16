@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Flex, Box, Alert, Button, Grid, Badge } from "@chakra-ui/react";
+import { Flex, Box, Alert, Button, Grid, Badge, Text } from "@chakra-ui/react";
 import { IoIosAlert } from "react-icons/io";
 import { GoArrowRight, GoX } from "react-icons/go";
 import QuizSubjectsList from "../components/quiz/quizSubjectsList";
@@ -7,7 +7,6 @@ import QuizTopicsList from "../components/quiz/quizTopicsList";
 import SearchBar from "../components/quiz/searchBar";
 
 type Props = {
-  showSideBar: boolean;
   setShowSideBar: React.Dispatch<React.SetStateAction<boolean>>;
 };
 
@@ -25,49 +24,58 @@ interface SubjectImage {
 interface SelectedCourse {
   displayName: string;
   dbName: string;
+  id: string;
 }
 
-const QuizPage = ({showSideBar, setShowSideBar}: Props) => {
+
+const QuizPage = ({ setShowSideBar }: Props) => {
   const [topicList, setTopicList] = useState<Topic[]>([]);
   const [showTopicList, setShowTopicList] = useState(false);
   const [selectedCourse, setSelectedCourse] = useState<string>("");
   const [selectedForQuiz, setSelectedForQuiz] = useState<SelectedCourse[]>([]);
-  const [selectedTopicsId, setSelectedTopicsId] = useState<string>('')
+  const [selectedTopicsId, setSelectedTopicsId] = useState<string>("");
   const [subjectImages, setSubjectImages] = useState<SubjectImage>({});
-  const [showTick, setShowTick] = useState(false);
 
   // handles selection of courses
-  const handleCourseSelect = (
-    course: string,
-    courseTopics: Topic[] = [],
-    dbCourseName: string
-  ) => {
-    setSelectedForQuiz((prev) => {
-      const existingIndex = prev.findIndex((c) => c.displayName === course);
+ const handleCourseSelect = (
+  course: string,
+  courseTopics?: Topic[],
+  dbCourseName?: string
+) => {
+  setSelectedForQuiz((prev) => {
+    const existingIndex = prev.findIndex((c) => c.displayName === course);
 
-      if (existingIndex >= 0) {
-        // Remove course and its topics
-        setTopicList((prevTopics) =>
-          prevTopics.filter((topic) => topic.course !== course)
-        );
-        return prev.filter((c) => c.displayName !== course);
-      } else {
-        // Add course and its topics
-        const topicsWithCourse = courseTopics.map((topic) => ({
-          ...topic,
-          course: course,
-        }));
-        setTopicList((prev) => [...prev, ...topicsWithCourse]);
-        return [...prev, { displayName: course, dbName: dbCourseName }];
-      }
-    });
-  };
+    if (existingIndex >= 0) {
+      // Remove course and its topics
+      setTopicList((prevTopics) =>
+        prevTopics.filter((topic) => topic.course !== course)
+      );
+      return prev.filter((c) => c.displayName !== course);
+    } else {
+      // Add course and its topics
+      const topicsWithCourse = (courseTopics ?? []).map((topic) => ({
+        ...topic,
+        course,
+      }));
+      setTopicList((prev) => [...prev, ...topicsWithCourse]);
+      // Ensure id is provided; fallback to dbCourseName or course if not available
+      return [
+        ...prev,
+        {
+          displayName: course,
+          dbName: dbCourseName ?? course,
+          id: dbCourseName ?? course,
+        },
+      ];
+    }
+  });
+};
+
 
   const handleRemoveCourse = (courseToRemove: string) => {
     setSelectedForQuiz((prev) =>
       prev.filter((course) => course.displayName !== courseToRemove)
     );
-    setShowTick(false);
 
     // Also remove topics associated with this course
     setTopicList((prev) =>
@@ -77,7 +85,7 @@ const QuizPage = ({showSideBar, setShowSideBar}: Props) => {
 
   const handleStartQuiz = () => {
     if (selectedForQuiz.length < 1) {
-      alert("Please select at least 1 courses for the quiz");
+      alert("Please select at least 1 course for the quiz");
       return;
     }
     // Start quiz logic here
@@ -92,8 +100,8 @@ const QuizPage = ({showSideBar, setShowSideBar}: Props) => {
         <QuizTopicsList
           topicList={topicList}
           selectedCourses={selectedForQuiz}
+          setSelectedCourses={setSelectedForQuiz}
           setShowTopicList={setShowTopicList}
-          subjectImages={subjectImages}
           selectedTopicsId={selectedTopicsId}
           setShowSideBar={setShowSideBar}
         />
@@ -106,7 +114,7 @@ const QuizPage = ({showSideBar, setShowSideBar}: Props) => {
             mb={4}
             mt={4}
           >
-            <Box w='80%'>
+            <Box w="80%">
               <SearchBar mb={5} placeholder="Search subject ..." />
               <Alert.Root
                 status="warning"
@@ -206,6 +214,8 @@ const QuizPage = ({showSideBar, setShowSideBar}: Props) => {
               setSelectedTopicsId={setSelectedTopicsId}
             />
           </Box>
+
+          <Text display="none">{selectedCourse}</Text>
         </>
       )}
     </>

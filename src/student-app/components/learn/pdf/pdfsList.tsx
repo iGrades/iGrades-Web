@@ -9,6 +9,7 @@ import {
   CloseButton,
   Image,
   Spinner,
+  Link,
 } from "@chakra-ui/react";
 import { LuArrowLeft } from "react-icons/lu";
 import { useState, useRef } from "react";
@@ -166,35 +167,39 @@ const PdfList = ({ topic, pdf, onBack }: Props) => {
                 align="center"
                 gap={{ base: 3, md: 6 }}
                 px={{ base: 2, md: 4 }}
-                py={{base: 4, md: 2}}
+                py={{ base: 4, md: 2 }}
               >
                 <Button
                   bg="white"
                   border="1px solid"
                   borderColor="primaryColor"
                   color="primaryColor"
-                  fontSize={{ base: "xs", md: "sm" }}
+                  fontSize={{ base: "xs", md: "xs" }}
                   w={{ base: "28", md: "32" }}
-                  p={{ base: 2, md: 4 }}
+                  p={{ base: 2, md: 3 }}
                   rounded={{ base: "lg", md: "3xl" }}
                   onClick={() => handlePdfClick(pdfFile)}
                 >
                   Preview
                 </Button>
-                <Button
-                  as="a"
+
+                <Link
                   href={getPdfUrl(pdfFile)}
                   target="_blank"
                   rel="noopener noreferrer"
                   bg="primaryColor"
-                  fontSize={{ base: "xs", md: "sm" }}
+                  color="white"
+                  textAlign="center"
+                  display="inline-block"
+                  textDecoration="none"
+                  fontSize={{ base: "xs", md: "xs" }}
                   w={{ base: "28", md: "32" }}
-                  p={{ base: 2, md: 4 }}
+                  p={{ base: 2, md: 3 }}
                   rounded={{ base: "lg", md: "3xl" }}
                   onClick={(e) => e.stopPropagation()}
                 >
                   Download
-                </Button>
+                </Link>
               </Flex>
             </Flex>
           ))}
@@ -269,18 +274,16 @@ const PdfList = ({ topic, pdf, onBack }: Props) => {
                       <Text fontSize="sm" color="gray.600" mb={2}>
                         Can't view the PDF?
                       </Text>
-                      <Button
-                        as="a"
+
+                      <Link
                         href={getPdfUrl(selectedPDF)}
                         target="_blank"
                         rel="noopener noreferrer"
-                        size="sm"
                         colorScheme="blue"
-                        variant="outline"
                         onClick={(e) => e.stopPropagation()}
                       >
-                        Download PDF
-                      </Button>
+                        Download
+                      </Link>
                     </Box>
                   </Box>
                 )}

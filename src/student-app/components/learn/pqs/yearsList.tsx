@@ -4,8 +4,8 @@ import {
   Grid,
   Text,
   Flex,
-  Button,
   VStack,
+  Link,
 } from "@chakra-ui/react";
 import { LuArrowLeft, LuDownload, LuEye } from "react-icons/lu";
 import { supabase } from "@/lib/supabaseClient";
@@ -60,11 +60,10 @@ const YearsList = ({
     setSelectedYear(year);
 
     try {
-
       // Now fetch past questions with the subject_id
       const { data: pqData, error: pqError } = await supabase
         .from("past_questions")
-        .select('*')
+        .select("*")
         .eq("exam_type", selectedExam)
         .eq("year", year)
         .eq("subject_id", subjectId)
@@ -136,23 +135,21 @@ const YearsList = ({
       {/* Display fetched Past Questions */}
       {fetchedPQs.length > 0 ? (
         <Box>
-
-
           <VStack gap={4} align="stretch">
             {fetchedPQs.map((pq) => (
               <Flex
                 key={pq.id}
+                direction={{ base: "column", md: "row" }}
                 p={4}
                 borderRadius="lg"
-                bg="gray.50"
-                border="1px solid"
-                borderColor="gray.200"
+                bg="textFieldColor"
                 justify="space-between"
-                align="center"
+                align={{ base: "flex-start", md: "center" }}
                 _hover={{ bg: "gray.100" }}
+                gap={4}
               >
                 <Box flex={1}>
-                  <Text fontWeight="bold" fontSize="lg" mb={1}>
+                  <Text fontWeight="500" fontSize="md" mb={1} color="on_backgroundColor">
                     {pq.subjects?.name || selectedCourse} - {pq.year}
                   </Text>
                   <Text fontSize="sm" color="gray.600">
@@ -162,29 +159,45 @@ const YearsList = ({
                 </Box>
 
                 <Flex gap={3}>
-                  <Button
-                    as="a"
+                  <Link
                     href={getFileUrl(pq.file_url)}
                     target="_blank"
                     rel="noopener noreferrer"
-                    leftIcon={<LuEye size={16} />}
-                    size="sm"
-                    colorScheme="blue"
-                    variant="outline"
-                    onClick={()=> window.open(getFileUrl(pq.file_url), '_blank')}
+                    bg="white"
+                    border="1px solid"
+                    borderColor="primaryColor"
+                    color="primaryColor"
+                    display="flex"
+                    justifyContent={"center"}
+                    textDecoration="none"
+                    fontSize={{ base: "xs", md: "xs" }}
+                    w={{ base: "28", md: "32" }}
+                    p={{ base: 2, md: 3 }}
+                    rounded={{ base: "lg", md: "3xl" }}
+                    onClick={() =>
+                      window.open(getFileUrl(pq.file_url), "_blank")
+                    }
                   >
-                    View
-                  </Button>
-                  <Button
-                    as="a"
+                    View <LuEye size={16} />
+                  </Link>
+
+                  <Link
                     href={getFileUrl(pq.file_url)}
-                    download
-                    leftIcon={<LuDownload size={16} />}
-                    size="sm"
-                    colorScheme="blue"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    bg="primaryColor"
+                    color="white"
+                    display="flex"
+                    justifyContent={"center"}
+                    textDecoration="none"
+                    fontSize={{ base: "xs", md: "xs" }}
+                    w={{ base: "28", md: "32" }}
+                    p={{ base: 2, md: 3 }}
+                    rounded={{ base: "lg", md: "3xl" }}
+                    onClick={(e) => e.stopPropagation()}
                   >
-                    Download
-                  </Button>
+                    Download <LuDownload size={16} />
+                  </Link>
                 </Flex>
               </Flex>
             ))}

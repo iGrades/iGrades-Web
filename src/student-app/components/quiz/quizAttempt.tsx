@@ -55,11 +55,6 @@ interface Question {
   quiz_id: string;
 }
 
-interface Attempt {
-  id: string;
-  subject_id: string;
-  status: string;
-}
 
 interface SubjectResult {
   correct: number;
@@ -724,7 +719,7 @@ const QuizAttempt = ({ quizData, onComplete, onCancel }: Props) => {
               onValueChange={(details) =>
                 handleAnswerSelect(
                   currentQuestion.id,
-                  details.value.toUpperCase()
+                  details.value ? details.value.toUpperCase() : ""
                 )
               }
               size="sm"

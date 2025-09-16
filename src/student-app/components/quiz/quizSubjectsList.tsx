@@ -14,17 +14,22 @@ type Props = {
   selectedCourses: string[];
   onCourseSelect: (
     course: string,
-    topics?: Topic[],
-    dbCourseName?: string
+    topics?: Topic[] | undefined,
+    dbCourseName?: string | undefined
   ) => void;
   setSelectedCourse: Dispatch<SetStateAction<string>>;
   setSelectedTopicsId: Dispatch<SetStateAction<string>>;
+  subjectImages: { [key: string]: string };
+  setSubjectImages: React.Dispatch<
+    React.SetStateAction<{ [key: string]: string }>
+  >;
 };
 
 interface Topic {
   id: string;
   name: string;
   description?: string;
+  course: string;
 }
 
 const QuizSubjectsList = ({
@@ -223,7 +228,11 @@ const QuizSubjectsList = ({
       }
 
       // Pass the course and its topics to the parent component
-      onCourseSelect(courseName, classTopics || [], dbCourseName);
+      const mappedTopics = (classTopics || []).map((topic: any) => ({
+        ...topic,
+        course: courseName,
+      }));
+      onCourseSelect(courseName, mappedTopics, dbCourseName);
 
       onOpen();
     } catch (error) {
