@@ -100,7 +100,7 @@ const Security = () => {
       // Encrypt the new passkey before storing
       const encryptedPassKey = encrypt(newPassKey, encKey);
 
-      const { data: updatedPassKeyData, error } = await supabase
+      const { error } = await supabase
         .from("students")
         .update({ passcode: encryptedPassKey })
         .eq("id", authdStudent?.id)
