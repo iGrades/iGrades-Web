@@ -7,6 +7,7 @@ import QuizTopicsList from "../components/quiz/quizTopicsList";
 import SearchBar from "../components/quiz/searchBar";
 
 type Props = {
+  showSideBar: boolean;
   setShowSideBar: React.Dispatch<React.SetStateAction<boolean>>;
 };
 

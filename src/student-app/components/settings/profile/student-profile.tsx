@@ -1,25 +1,32 @@
 import {
   Input,
-  Alert,
   Box,
   Image,
   VStack,
   Field,
   Grid,
   GridItem,
-  Button
+  Button,
 } from "@chakra-ui/react";
 import { useState, useRef } from "react";
 import { useAuthdStudentData } from "@/student-app/context/studentDataContext";
 import { supabase } from "@/lib/supabaseClient";
-import { IoIosAlert } from "react-icons/io";
 
-const pageData = ["First Name", "Last Name", "Email", "Class"];
+const pageData = ["firstname", "lastname", "email", "class"]; 
+
+interface FormData {
+  id: string;
+  firstname: string;
+  lastname: string;
+  class: string;
+  email: string;
+  school: string;
+}
 
 const StudentProfile = () => {
   const { authdStudent, setAuthdStudent } = useAuthdStudentData();
 
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<FormData>({
     id: authdStudent?.id || "",
     firstname: authdStudent?.firstname || "",
     lastname: authdStudent?.lastname || "",
@@ -31,64 +38,75 @@ const StudentProfile = () => {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
-const handleEdit = async () => {
-  setIsLoading(true);
+  const handleEdit = async () => {
+    setIsLoading(true);
 
-  try {
-    let imageUrl = authdStudent?.profile_image;
+    try {
+      let imageUrl = authdStudent?.profile_image;
 
-    // Upload and overwrite if a new file is selected
-    if (selectedFile) {
-      const fileExt = selectedFile.name.split(".").pop();
-      const fileName = `${authdStudent?.id}.${fileExt}`; // always same name for this student
-      const filePath = `students/${fileName}`;
+      // Upload and overwrite if a new file is selected
+      if (selectedFile) {
+        const fileExt = selectedFile.name.split(".").pop();
+        const fileName = `${authdStudent?.id}.${fileExt}`; // always same name for this student
+        const filePath = `students/${fileName}`;
 
-      const { error: uploadError } = await supabase.storage
-        .from("profile-photos")
-        .upload(filePath, selectedFile, { upsert: true }); // overwrite
+        const { error: uploadError } = await supabase.storage
+          .from("profile-photos")
+          .upload(filePath, selectedFile, { upsert: true }); // overwrite
 
-      if (uploadError) {
-        console.error("Upload error:", uploadError);
-        setIsLoading(false);
-        return;
+        if (uploadError) {
+          console.error("Upload error:", uploadError);
+          setIsLoading(false);
+          return;
+        }
+
+        const {
+          data: { publicUrl },
+        } = supabase.storage.from("profile-photos").getPublicUrl(filePath);
+
+        imageUrl = publicUrl;
       }
 
-      const {
-        data: { publicUrl },
-      } = supabase.storage.from("profile-photos").getPublicUrl(filePath);
+      // Update student record via RPC
+      const { data, error } = await supabase.rpc("update_student_profile", {
+        p_id: formData.id,
+        p_firstname: formData.firstname,
+        p_lastname: formData.lastname,
+        p_class: formData.class,
+        p_email: formData.email,
+        p_profile_image: imageUrl,
+      });
 
-      imageUrl = publicUrl;
+      if (error) throw error;
+      if (!data || data.length === 0) {
+        throw new Error("No data returned (possible RLS issue)");
+      }
+
+      // Update local context immediately
+      setAuthdStudent((prev) => ({
+        ...prev,
+        ...data[0],
+      }));
+
+      console.log("Student updated successfully:", data[0]);
+    } catch (err: any) {
+      console.error("Update failed:", err.message || err);
+    } finally {
+      setIsLoading(false);
     }
+  };
 
-    // Update student record via RPC
-    const { data, error } = await supabase.rpc("update_student_profile", {
-      p_id: formData.id,
-      p_firstname: formData.firstname,
-      p_lastname: formData.lastname,
-      p_class: formData.class,
-      p_email: formData.email,
-      p_profile_image: imageUrl,
-    });
-
-    if (error) throw error;
-    if (!data || data.length === 0) {
-      throw new Error("No data returned (possible RLS issue)");
-    }
-
-    // Update local context immediately
-    setAuthdStudent((prev) => ({
-      ...prev,
-      ...data[0],
-    }));
-
-    console.log("Student updated successfully:", data[0]);
-  } catch (err: any) {
-    console.error("Update failed:", err.message || err);
-  } finally {
-    setIsLoading(false);
-  }
-};
-
+  // Helper function to get display labels
+  const getDisplayLabel = (key: string): string => {
+    const labels: Record<string, string> = {
+      firstname: "First Name",
+      lastname: "Last Name",
+      email: "Email",
+      class: "Class",
+      school: "School",
+    };
+    return labels[key] || key;
+  };
 
   return (
     <>
@@ -116,7 +134,7 @@ const handleEdit = async () => {
               src={
                 selectedFile
                   ? URL.createObjectURL(selectedFile)
-                  : authdStudent?.profile_image
+                  : authdStudent?.profile_image || ""
               }
               alt="Profile"
               boxSize="80px"
@@ -143,21 +161,6 @@ const handleEdit = async () => {
               Change Photo
             </Button>
           </Box>
-          {/* <Alert.Root status="warning" variant="subtle" color="#474256" mt={5}>
-            <Alert.Indicator color="orange.400">
-              <IoIosAlert />
-            </Alert.Indicator>
-            <Alert.Content>
-              <Alert.Title fontSize="11px" fontWeight={700}>
-                Kindly note
-              </Alert.Title>
-              <Alert.Description fontSize="11px" fontWeight={400}>
-                Student profiile creation is managed and maintained by thier
-                parent or guardian account. Kindly go to your parent account to
-                make changes to your profile
-              </Alert.Description>
-            </Alert.Content>
-          </Alert.Root> */}
         </Box>
         <Grid
           templateColumns={{ base: "repeat(1, 1fr)", md: "repeat(2, 1fr)" }}
@@ -165,21 +168,21 @@ const handleEdit = async () => {
           w="95%"
         >
           {/* Input Fields */}
-          {pageData.map((data, index) => (
+          {pageData.map((dataKey, index) => (
             <GridItem key={index} w="100%">
               <Box key={index} w={{ base: "100%", md: "70%" }} m="auto">
                 <Field.Root>
                   <Field.Label fontSize="xs" textTransform="capitalize" my={2}>
-                    {data}
+                    {getDisplayLabel(dataKey)}
                   </Field.Label>
                 </Field.Root>
                 <Input
-                  name={data}
-                  value={formData[data.toLowerCase().replace(" ", "")] || ""}
+                  name={dataKey}
+                  value={formData[dataKey as keyof FormData] || ""}
                   onChange={(e) =>
                     setFormData({
                       ...formData,
-                      [data.toLowerCase().replace(" ", "")]: e.target.value,
+                      [dataKey]: e.target.value,
                     })
                   }
                   fontSize="xs"
@@ -200,7 +203,7 @@ const handleEdit = async () => {
           spinnerPlacement="start"
           type="submit"
           fontWeight="semibold"
-          w={{ base: "95%", md:"81%" }}
+          w={{ base: "95%", md: "81%" }}
           my={5}
           p={6}
           bg="blue.500"
