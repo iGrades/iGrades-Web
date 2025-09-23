@@ -1,12 +1,11 @@
 import { Flex, Image, Box, Icon, Heading, Text, Menu } from "@chakra-ui/react";
 import { Portal } from "@chakra-ui/react";
-// import { useState } from "react";
 import { useAuthdStudentData } from "../context/studentDataContext";
 import { useTranslation } from "react-i18next";
 import { IoNotifications } from "react-icons/io5";
 import logo from "@/assets/logo.png";
 import AvatarComp from "../../components/avatar";
-import Popover from "../modals/popover"; // Adjust the import path as necessary
+import Popover from "../modals/popover";
 
 const Navbar = () => {
   const { authdStudent } = useAuthdStudentData();

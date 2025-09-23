@@ -36,6 +36,15 @@ const config = defineConfig({
         body: { value: "'Helvetica Neue', Helvetica, Arial, sans-serif" },
         heading: { value: "'Space Grotesk Variable', sans-serif;" },
       },
+      animations: {
+        shakeX: { value: "shakeX 1s ease-in-out infinite" },
+      },
+    },
+    keyframes: {
+      shakeX: {
+        "0%, 100%": { transform: "translateX(-100%)" },
+        "50%": { transform: "translateX(100%)" },
+      },
     },
   },
 });
