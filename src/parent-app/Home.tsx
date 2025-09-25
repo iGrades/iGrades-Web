@@ -40,7 +40,7 @@ const Home = () => {
             minH="100vh"
             maxH="100vh"
             overflow="hidden"
-            bg={{ base: "white", md: "textFieldColor" }}
+            bg="textFieldColor"
           >
             <Navbar setShowLogoutModal={setShowLogoutModal} />
 

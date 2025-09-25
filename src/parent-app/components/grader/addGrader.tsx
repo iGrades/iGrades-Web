@@ -129,7 +129,7 @@ function AddGrader({
     )
   );
 
-  // Check if student is senior (SSS) or junior (JSS)
+  // Check if student is a senior (SSS) or junior (JSS)
   const isSeniorStudent = formData.class?.startsWith("SSS");
   const isJuniorStudent = formData.class?.startsWith("JSS");
 
@@ -194,7 +194,7 @@ function AddGrader({
 
     const imageUrl = await handleImageUpload();
     if (!imageUrl) {
-      setAlert({ status: "error", message: "Image upload failed." });
+      setAlert({ status: "error", message: "Image upload failed. Adding an image is required" });
       return;
     }
 
@@ -230,10 +230,9 @@ function AddGrader({
       setSelectedCourses([]); // Reset course selection
 
       setShowModal(true);
-       setTimeout(() => {
-           getGraderDetails();
-       }, 2000); // Refresh grader details after 2 seconds
-    
+      setTimeout(() => {
+        getGraderDetails();
+      }, 2000); // Refresh grader details after 2 seconds
     }
 
     // Optional: Auto-dismiss alert after 5 seconds
@@ -272,6 +271,8 @@ function AddGrader({
             Please fill the field provided correctly
           </Text>
         </Box>
+
+        
 
         <Box w="1/2" m="auto" textAlign="center">
           <Box position="relative" display="inline-block" mx="auto" mt={10}>
@@ -515,7 +516,7 @@ function AddGrader({
               status={alert.status}
               borderRadius="md"
               my={4}
-              fontSize="sm"
+              fontSize="12px"
             >
               <Alert.Indicator />
               <Alert.Title mr={2}>

@@ -42,7 +42,7 @@ const coursesCount = useMemo(() => {
               w={{ base: "full", lg: "48%" }}
               bg="textFieldColor"
               borderRadius="lg"
-              boxShadow='xs'
+              // boxShadow='xs'
               p={{ base: "5", md: "8", lg: "10" }}
               my={2}
             >
@@ -72,7 +72,7 @@ const coursesCount = useMemo(() => {
               w={{ base: "full", lg: "48%" }}
               bg="textFieldColor"
               borderRadius="lg"
-              shadow='xs'
+              // shadow='xs'
               p={{ base: "5", md: "8", lg: "10" }}
               my={2}
             >

@@ -21,15 +21,18 @@ const Sidebar = () => {
         as="aside"
         display={{ base: "none", lg: "block" }}
         width="full"
-        h="full"
+        h="88vh"
         overflow="hidden"
         bg="white"
-        p={4}
-        boxShadow="md"
+        px={4}
+        py={10}
+        shadow="md"
         left={0}
         position="sticky"
-        top="0"
+        top="0px"
         zIndex="1000"
+        // borderTop={"1px solid"}
+        // borderColor={"fieldTextColor"}
       >
         {parentsAsideElem.map((item, index) => (
           <Box
@@ -41,14 +44,17 @@ const Sidebar = () => {
             borderRadius="lg"
             cursor="pointer"
             color={
-              currentParentPage === item.value ? "primaryColor" : "fieldTextColor"
+              currentParentPage === item.value
+                ? "primaryColor"
+                : "fieldTextColor"
             }
-            bg={currentParentPage === item.value ? "#206CE11A" : "transparent"}
+            // bg={currentParentPage === item.value ? "#206CE11A" : "transparent"}
+            bg={currentParentPage === item.value ? " #f6f4ffff" : "transparent"}
             fontWeight={"400"}
             onClick={() => setCurrentParentPage(item.value)}
           >
             <Icon as={item.icon} size="sm" />
-            <Text mx={2} fontSize={"sm"} fontWeight={7100}>
+            <Text mx={2} fontSize={"sm"} fontWeight={500}>
               {item.label}
             </Text>
           </Box>
@@ -60,16 +66,17 @@ const Sidebar = () => {
         as="aside"
         display={{ base: "block", lg: "none" }}
         position="fixed"
-        bottom="4"
+        bottom={{ base: 0.5, md: 4 }}
         left="50%"
         transform="translateX(-50%)"
         bg="white"
-        borderRadius="2xl"
-        boxShadow="xl"
-        px={1}
-        py={1}
+        borderRadius={{ base: 'none', md: "2xl" }}
+        boxShadow={{base: 'none', md: 'xl'}}
+        px={{ base: 0, md: 1 }}
+        py={{ base: 0, md: 1 }}
+        mt={40}
         maxW="sm"
-        width="90%"
+        width={{ base: "100%", md: "90%" }}
         zIndex={1000}
       >
         <Flex justify="space-between" align="center">
@@ -88,7 +95,9 @@ const Sidebar = () => {
                 variant="ghost"
                 size="lg"
                 fontSize="xl"
-                color={currentParentPage === value ? "blue.700" : "fieldTextColor"}
+                color={
+                  currentParentPage === value ? "blue.700" : "fieldTextColor"
+                }
                 bg={currentParentPage === value ? "blue.50" : "transparent"}
                 borderRadius="xl"
               >

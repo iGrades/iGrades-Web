@@ -11,6 +11,10 @@ const publicRoutes: RouteObject[] = [
     element: <LandingPage />,
   },
   {
+    path: "/parent-dashboard",
+    element: <Home />,
+  },
+  {
     path: "/login",
     element: <Login />,
   },
@@ -19,7 +23,7 @@ const publicRoutes: RouteObject[] = [
     element: <SignUp />,
   },
   {
-    path: "/verify-parent",
+    path: "/verify",
     element: <Verify />,
   },
 ];

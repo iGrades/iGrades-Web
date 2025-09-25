@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { supabase } from "../../lib/supabaseClient";
 import {
   Button,
@@ -13,7 +14,7 @@ import {
   Tag,
 } from "@chakra-ui/react";
 import { IoEyeOutline, IoEyeOffOutline } from "react-icons/io5";
-import Verify from "./Verify";
+// import Verify from "./Verify";
 
 interface FormData {
   firstName: string;
@@ -35,7 +36,7 @@ export default function ParentSignUp() {
     confirmPassword: "",
     aboutUs: "",
   });
-  const [signUpState, setSignUpState] = useState<String | null>("signup");
+  // const [signUpState, setSignUpState] = useState<String | null>("signup");
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -43,6 +44,8 @@ export default function ParentSignUp() {
     type: "success" | "error";
     message: string;
   } | null>(null);
+
+  const navigate = useNavigate();
 
 
   const handleChange = (
@@ -73,19 +76,19 @@ export default function ParentSignUp() {
     }
 
     // Send OTP for signup
-    const { error } = await supabase.auth.signInWithOtp({
+    const { error: signupError } = await supabase.auth.signInWithOtp({
       email,
       options: {
         shouldCreateUser: true,
-        data: { firstName, lastName, phone, aboutUs, password },
+        data: { firstName, lastName, phone, aboutUs },
         emailRedirectTo: `${window.location.origin}/verify`,
       },
     });
 
-    if (error) {
+    if (signupError) {
       setAlert({
         type: "error",
-        message: error.message || "Failed to send OTP. Please try again.",
+        message: signupError.message || "Failed to send OTP. Please try again.",
       });
       setIsLoading(false);
       return;
@@ -105,8 +108,8 @@ export default function ParentSignUp() {
 
     // Redirect to verify page with email in state
     setTimeout(() => {
-      // navigate("/verify", { state: { email } });
-      setSignUpState("verify");
+      navigate("/verify", { state: { email } });
+      // setSignUpState("verify");
     }, 1000);
   };
 
@@ -130,8 +133,6 @@ export default function ParentSignUp() {
 
   return (
     <>
-  
-      {signUpState === "signup" ? (
         <Box bg="white">
         
             <form onSubmit={handleSubmit}>
@@ -270,9 +271,7 @@ export default function ParentSignUp() {
               </Flex>
             </form>
           </Box>
-      ) : (
-        <Verify />
-      )}
+   
     </>
   );
 }

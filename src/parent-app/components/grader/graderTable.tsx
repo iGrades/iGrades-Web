@@ -151,7 +151,7 @@ const GraderTable = ({ studentsData }: Props) => {
               You have not added any child yet. Click the button above to add a
               child
             </Text>
-            <Image src={addFiles_img} w="20%" my={16} />
+            <Image src={addFiles_img} w={{ md: "35%", lg: "20%" }} my={16} />
           </Box>
         )}
       </Box>

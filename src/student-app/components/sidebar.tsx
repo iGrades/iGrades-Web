@@ -28,14 +28,15 @@ const Sidebar = () => {
         as="aside"
         display={{ base: "none", lg: "block" }}
         width="full"
-        h="full"
+        h="88vh"
         overflow="hidden"
         bg="white"
-        p={4}
+        px={4}
+        py={10}
         boxShadow="md"
         left={0}
         position="sticky"
-        top="0"
+         top="0px"
         zIndex="1000"
       >
         {parentsAsideElem.map((item, index) => (
@@ -53,11 +54,12 @@ const Sidebar = () => {
                 : "fieldTextColor"
             }
             bg={currentStudentPage === item.value ? "#206CE11A" : "transparent"}
-            fontWeight={"600"}
+          
+            fontWeight={"400"}
             onClick={() => setCurrentStudentPage(item.value)}
           >
             <Icon as={item.icon} size="sm" />
-            <Text mx={2} fontSize={"sm"} fontWeight={600}>
+            <Text mx={2} fontSize={"sm"} fontWeight={500}>
               {item.label}
             </Text>
           </Box>
@@ -69,16 +71,17 @@ const Sidebar = () => {
         as="aside"
         display={{ base: "block", lg: "none" }}
         position="fixed"
-        bottom="4"
+       bottom={{ base: 0.5, md: 4 }}
         left="50%"
         transform="translateX(-50%)"
         bg="white"
-        borderRadius="2xl"
-        boxShadow="xl"
-        px={1}
-        py={1}
+        borderRadius={{ base: 'none', md: "2xl" }}
+       boxShadow={{base: 'none', md: 'xl'}}
+      px={{ base: 0, md: 1 }}
+        py={{ base: 0, md: 1 }}
+        mt={40}
         maxW="sm"
-        width="90%"
+        width={{ base: "100%", md: "90%" }}
         zIndex={1000}
       >
         <Flex justify="space-between" align="center">
