@@ -38,10 +38,9 @@ const currentParent = parent[0] || {};
     <>
       <Flex
         as="nav"
-        p={{ base: 2, md: 3, lg: 4 }}
         justify="flex-start"
         alignItems="center"
-        bg="white"
+        bg={"textFieldColor"}
         boxShadow="md"
         position="sticky"
         top="0"
@@ -52,19 +51,37 @@ const currentParent = parent[0] || {};
           display="flex"
           alignItems="center"
           bg="white"
+          shadow={"md"}
+          p={{ base: 6, md: 6, lg: 5 }}
           w={{ base: "25%", md: "15%" }}
-          mr={{ base: 4, md: 6, lg: 0 }}
+          mr='1px'
+          // borderRight={"1px solid"}
+          // borderColor={"fieldTextColor"}
         >
-          <Image src={logo} alt="Logo" width="150px" fit="cover" />
+          <Image
+            src={logo}
+            alt="Logo"
+            // width="120px"
+            w={{ md: "100%", lg: "70%" }}
+            fit="cover"
+          />
         </Box>
 
-        <Flex bg="white" w="85%" justify="space-between" alignItems="center">
+        <Flex
+          bg="white"
+          w="85%"
+          justify="space-between"
+          alignItems="center"
+          p={{ base: 2, md: 3, lg: 3.5 }}
+        >
           {/* welcome text */}
           <Box>
             <Heading
               as="h1"
               size={{ base: "lg", md: "xl", lg: "2xl" }}
               ml={1}
+              fontSize={{ base: "sm", md: "md", lg: "lg" }}
+              fontWeight="bold"
               color="on_backgroundColor"
             >
               {t("welcome")} {currentParent.firstname || "User"}, 🤗
@@ -77,9 +94,11 @@ const currentParent = parent[0] || {};
           <Box
             display="flex"
             // flexDirection={{ base: "column", md: "row" }}
+            justifyContent="space-between"
             alignItems="center"
-            mr={{ base: 2, md: 2, lg: 6 }}
+            mr={{ base: 4, md: 10, lg: 6 }}
             gap={4}
+            w="20%"
           >
             {/* select button */}
             <Select.Root
@@ -147,7 +166,6 @@ const currentParent = parent[0] || {};
           </Box>
         </Flex>
       </Flex>
-     
     </>
   );
 };

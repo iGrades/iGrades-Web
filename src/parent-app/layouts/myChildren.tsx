@@ -31,10 +31,10 @@ const MyChildren = ({ data }: Props) => {
           </Heading>
           <Grid
             templateColumns={{ base: "repeat(1, 1fr)", md: "repeat(2, 2fr)" }}
-            gap="4"
+            gap={{md: 6, lg: 10}}
             p={{ base: 3, md: 5 }}
             placeItems="center"
-            w={{ base: "full", md: "90%", lg: "80%" }}
+            w={{ base: "full", md: "100%", lg: "100%" }}
             m="auto"
           >
             {sortedData.length > 0 ? (
@@ -46,7 +46,7 @@ const MyChildren = ({ data }: Props) => {
                   w="full"
                   bg="textFieldColor"
                   borderRadius="lg"
-                  boxShadow="xs"
+                  // boxShadow="xs"
                   p={{ base: "4", md: "4", lg: "5" }}
                   my={2}
                   cursor="pointer"

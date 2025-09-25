@@ -24,6 +24,16 @@ const HomePage = () => {
         </Flex>
       ) : (
         // Only show empty state when not loading AND no data exists
+         <Box
+                borderRadius="lg"
+                boxShadow="md"
+                overflow="hidden"
+                p={6}
+                bg="white"
+                mb={10}
+                mt={5}
+                h={"85vh"}
+              >
         <Box
           w="full"
           display="flex"
@@ -35,7 +45,8 @@ const HomePage = () => {
             You have not added any child yet. Click the Students section to add
             a child
           </Text>
-          <Image src={addUser_img} w="50%" my={16} />
+          <Image src={addUser_img} w={{md:'45%', lg: '35%'}} my={16} />
+        </Box>
         </Box>
       )}
     </>

@@ -63,31 +63,6 @@ const Notification = () => {
           </Switch.Control>
           <Switch.Label />
         </Switch.Root>
-
-        {/* <Box>
-          {notificationOn ? (
-            <Icon
-              boxSize={{ base: "40px", md: "45px" }}
-              color="primaryColor"
-              rounded="lg"
-              p={2}
-              cursor="pointer"
-              fontSize="2xl"
-            >
-              <LiaToggleOnSolid onClick={() => setNotificationOn(false)} />
-            </Icon>
-          ) : (
-            <Icon
-              boxSize={{ base: "40px", md: "45px" }}
-              color="fieldTextColor"
-              rounded="lg"
-              p={2}
-              cursor="pointer"
-            >
-              <LiaToggleOffSolid onClick={() => setNotificationOn(true)} />
-            </Icon>
-          )}
-        </Box> */}
       </Flex>
     </Box>
   );

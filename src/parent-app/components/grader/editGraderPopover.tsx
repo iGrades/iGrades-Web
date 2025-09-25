@@ -168,7 +168,11 @@ const PassPlaceholder = useMemo(() => {
                   shadow="xs"
                   my={2}
                 >
-                  <Text fontSize="xs" color="fieldTextColor">
+                  <Text
+                    fontSize="xs"
+                    fontWeight={"semibold"}
+                    color="fieldTextColor"
+                  >
                     School
                   </Text>
                   <Text fontSize="xs" fontWeight="500">
@@ -184,7 +188,11 @@ const PassPlaceholder = useMemo(() => {
                   shadow="xs"
                   my={2}
                 >
-                  <Text fontSize="xs" color="fieldTextColor">
+                  <Text
+                    fontSize="xs"
+                    fontWeight={"semibold"}
+                    color="fieldTextColor"
+                  >
                     Class
                   </Text>
                   <Text fontSize="xs" fontWeight="500">
@@ -200,7 +208,11 @@ const PassPlaceholder = useMemo(() => {
                   shadow="xs"
                   my={2}
                 >
-                  <Text fontSize="xs" color="fieldTextColor">
+                  <Text
+                    fontSize="xs"
+                    fontWeight={"semibold"}
+                    color="fieldTextColor"
+                  >
                     Email
                   </Text>
                   <Text fontSize="xs" fontWeight="500">
@@ -217,7 +229,11 @@ const PassPlaceholder = useMemo(() => {
                   shadow="xs"
                   my={2}
                 >
-                  <Text fontSize="xs" color="fieldTextColor">
+                  <Text
+                    fontSize="xs"
+                    fontWeight={"semibold"}
+                    color="fieldTextColor"
+                  >
                     Passcode
                   </Text>
                   <Text fontSize="xs" fontWeight="500">
@@ -225,9 +241,11 @@ const PassPlaceholder = useMemo(() => {
                   </Text>
                   {!student?.passcode && (
                     <Button
-                      bg="bg.subtle"
+                      bg="primaryColor"
                       variant="outline"
                       onClick={handleGenBtnClick}
+                      color="white"
+                      my={2}
                     >
                       Generate Passcode
                     </Button>

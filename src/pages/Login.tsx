@@ -51,9 +51,10 @@ export default function Login() {
         src={sideImage}
         alt="login_image"
         display={{ base: "none", lg: "block" }}
-        w={{ base: "full", lg: "50%" }}
+        w={{ base: "full", lg: "35%" }}
+        mx="auto"
       />
-      <Box bg="white" h={"full"} w={{ base: "full", lg: "50%" }}>
+      <Box bg="white" h={"full"} w={{ base: "full", lg: "60%" }}>
         <Flex justify={"flex-end"}>
           <Flex
             align={"center"}
@@ -81,11 +82,11 @@ export default function Login() {
             </Link>
           </Flex>
         </Flex>
-        <Box w={{ base: "90%", md: "70%", lg: "90%" }} m={"auto"}>
-          <Box w={{ base: "90%", lg: "65%" }} m={"auto"} textAlign={"center"}>
+        <Box w={{ base: "90%", md: "70%", lg: "70%" }} m={"auto"}>
+          <Box w={{ base: "90%", lg: "70%" }} m={"auto"} textAlign={"center"}>
             <Heading
               as={"h1"}
-              fontSize={"4xl"}
+              fontSize={{ base: "3xl", md: "4xl" }}
               mt={10}
               mb={3}
               color={"on_backgroudColor"}
@@ -94,7 +95,7 @@ export default function Login() {
               Login in to your iGrade
             </Heading>
             <Text
-              fontSize={"md"}
+              fontSize={{ base: "sm", md: "md" }}
               fontWeight={"medium"}
               color={"mediumGrey"}
               my={5}
@@ -106,10 +107,12 @@ export default function Login() {
 
           <Flex
             bg="textFieldColor"
-            w="90%"
+            w={{base: '100%', lg: '90%'}}
             m="auto"
-            justify="space-between"
+            justify="space-around"
             my={10}
+            p={2}
+            rounded='md'
           >
             {userType.map((user) => (
               <Button
@@ -119,8 +122,7 @@ export default function Login() {
                 colorScheme={
                   loginState === user.state ? "primaryColor" : "textFieldColor"
                 }
-                mx={2}
-                w="1/2"
+                w={{base: '45%', md: '45%'}}
                 outline="none"
                 border="none"
                 bg={

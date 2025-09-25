@@ -1,10 +1,13 @@
+import { Box, Heading } from "@chakra-ui/react"
 
 
 const Subscription = () => {
 
   return (
-    <div>subscription Lorem ipsum, dolor sit amet consectetur adipisicing elit. Nesciunt ex tempora quos? Dolore ratione incidunt eius eum quisquam magnam velit cumque voluptatibus natus. Rerum, delectus impedit facilis at asperiores et!</div>
-  )
+    <Box bg="white" rounded="lg" shadow="lg" p={4} mb={20} h="75vh">
+      <Heading>Comming Soon...</Heading>
+    </Box>
+  );
 }
 
 export default Subscription

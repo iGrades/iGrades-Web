@@ -47,9 +47,10 @@ const SignUp = () => {
         src={sideImage}
         alt="login_image"
         display={{ base: "none", lg: "block" }}
-        w={{ base: "full", lg: "45%" }}
+        w={{ base: "full", lg: "35%" }}
+        mx="auto"
       />
-      <Box bg="white" h={"full"} w={{ base: "full", lg: "50%" }}>
+      <Box bg="white" h={"full"} w={{ base: "full", lg: "60%" }}>
         <Flex justify={"flex-end"}>
           <Flex
             align={"center"}
@@ -77,8 +78,8 @@ const SignUp = () => {
             </Link>
           </Flex>
         </Flex>
-        <Box w={{ base: "90%", md: "70%", lg: "90%" }} m={"auto"}>
-          <Box w={{ base: "90%", lg: "65%" }} m={"auto"} textAlign={"center"}>
+        <Box w={{ base: "90%", md: "70%", lg: "70%" }} m={"auto"}>
+          <Box w={{ base: "90%", lg: "70%" }} m={"auto"} textAlign={"center"}>
             <Heading
               as={"h1"}
               fontSize={"4xl"}
@@ -132,7 +133,6 @@ const SignUp = () => {
           </Flex>
 
           {registerState === "parent" ? <ParentSignUp /> : <StudentSignUp />}
-
         </Box>
       </Box>
     </Flex>

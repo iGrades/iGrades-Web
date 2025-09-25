@@ -16,15 +16,18 @@ const Homepage = () => {
       >
         <Box w={{ base: "full", lg: "80%" }} mb={{ base: 5, lg: 0 }}>
           <MyClasses />
-          <Flex>
+          <Flex direction={{ base: "column", md: "row" }}>
             <HomeChart />
             <Analytics />
           </Flex>
         </Box>
-        <Box w={{ base: "full", lg: "20%" }} mt={{ base: 5, lg: 0 }}>
+        <Box
+          w={{ base: "full", lg: "20%" }}
+          mt={{ base: 5, lg: 0 }}
+          mb={{ base: 20, lg: 0 }}
+        >
           <RightCTA />
         </Box>
-
       </Flex>
     </>
   );

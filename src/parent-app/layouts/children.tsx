@@ -11,7 +11,7 @@ type Prop ={
 const Children = ({data}: Prop) => {
 
   return (
-    <Flex w="full">
+    <Flex w="full" >
         <Box bg="white" boxShadow="md" borderRadius="lg" w="full" my={5} p={4}>
           <Heading as="h1" my={2}>
             Children
@@ -28,7 +28,7 @@ const Children = ({data}: Prop) => {
               w={{ base: "full", lg: "48%" }}
               bg="textFieldColor"
               borderRadius="lg"
-              boxShadow='xs'
+              // boxShadow='xs'
               p={{ base: "5", md: "8", lg: "10" }}
               my={2}
             >
@@ -58,7 +58,7 @@ const Children = ({data}: Prop) => {
               w={{ base: "full", lg: "48%" }}
               bg="textFieldColor"
               borderRadius="lg"
-              shadow='xs'
+              // shadow='xs'
               p={{ base: "5", md: "8", lg: "10" }}
               my={2}
             >

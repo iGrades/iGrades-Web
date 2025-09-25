@@ -1,12 +1,11 @@
 import { Flex, Image, Box, Icon, Heading, Text, Menu } from "@chakra-ui/react";
 import { Portal } from "@chakra-ui/react";
-// import { useState } from "react";
 import { useAuthdStudentData } from "../context/studentDataContext";
 import { useTranslation } from "react-i18next";
 import { IoNotifications } from "react-icons/io5";
 import logo from "@/assets/logo.png";
 import AvatarComp from "../../components/avatar";
-import Popover from "../modals/popover"; // Adjust the import path as necessary
+import Popover from "../modals/popover";
 
 const Navbar = () => {
   const { authdStudent } = useAuthdStudentData();
@@ -21,10 +20,10 @@ const Navbar = () => {
     <>
       <Flex
         as="nav"
-        p={{ base: 2, md: 3, lg: 4 }}
+        // p={{ base: 2, md: 3, lg: 4 }}
         justify="flex-start"
         alignItems="center"
-        bg="white"
+         bg={"textFieldColor"}
         boxShadow="md"
         position="sticky"
         top="0"
@@ -35,19 +34,24 @@ const Navbar = () => {
           display="flex"
           alignItems="center"
           bg="white"
+          shadow={"md"}
+          p={{ base: 6, md: 6, lg: 5 }}
           w={{ base: "25%", md: "15%" }}
-          mr={{ base: 4, md: 6, lg: 0 }}
+          mr='1px'
         >
-          <Image src={logo} alt="Logo" width="150px" fit="cover" />
+          <Image src={logo} alt="Logo"  w={{ md: "100%", lg: "70%" }}
+            fit="cover" />
         </Box>
 
-        <Flex bg="white" w="85%" justify="space-between" alignItems="center">
+        <Flex bg="white" w="85%" justify="space-between" alignItems="center"  p={{ base: 2, md: 3, lg: 3.5 }}>
           {/* welcome text */}
           <Box>
             <Heading
               as="h1"
               size={{ base: "lg", md: "xl", lg: "2xl" }}
               ml={1}
+              fontSize={{ base: "sm", md: "md", lg: "lg" }}
+              fontWeight="bold"
               color="on_backgroundColor"
             >
               {t("welcome")} {currentStudent?.firstname || "User"}, 🤗
@@ -61,8 +65,10 @@ const Navbar = () => {
             display="flex"
             // flexDirection={{ base: "column", md: "row" }}
             alignItems="center"
-            mr={{ base: 2, md: 2, lg: 6 }}
+            justifyContent="space-between"
+              mr={{ base: 4, md: 10, lg: 6 }}
             gap={4}
+            w="40%"
           >
             <Box
               w={{ base: "70px", md: "75px", lg: "100px" }}

@@ -1,4 +1,3 @@
-// src/components/settings/myIgrade.tsx
 import { SkeletonText } from "@chakra-ui/react";
 import { useState } from "react";
 import { Flex, Box, Image, Heading, Text, Grid, Alert } from "@chakra-ui/react";
@@ -68,21 +67,27 @@ const MyIgrade = () => {
     <>
       <Flex
         direction="column"
-        justify="space-around"
+        justify="space-between"
+        gap={6}
         alignItems="center"
         w={{ base: "100%", lg: "80%" }}
         m="auto"
       >
         {/* Profile header section */}
         <Flex
-          direction={{ base: "column", md: "row" }}
           my={5}
           align="center"
-          justify="space-between"
-          gap={6}
-          w="30%"
+          justify="center"
+          gap={{ md: 6}}
+          w="90%"
         >
-          <Box w={{ base: "100%", md: "50%" }} m="auto" textAlign="center">
+          <Box
+            w={"40%"}
+            textAlign="center"
+            display="flex"
+            justifyContent={{base:'center', md: 'flex-end'}}
+            alignItems="center"
+          >
             <Box
               display="flex"
               justifyContent="center"
@@ -108,7 +113,7 @@ const MyIgrade = () => {
               )}
             </Box>
           </Box>
-          <Box w="100%">
+          <Box w="40%">
             <Heading as="h1" my={2}>
               {parent[0].firstname} {parent[0].lastname}
             </Heading>
@@ -118,6 +123,7 @@ const MyIgrade = () => {
               p={1}
               rounded="2xl"
               textAlign="center"
+              w={{base: '100%', md:'50%'}}
             >
               iGrade Parent
             </Text>

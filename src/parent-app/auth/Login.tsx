@@ -62,7 +62,7 @@ const ParentLogin = ({ setAlert }: Props) => {
     }
 
     setIsLoading(false); // Stop loading on success
-    navigate("/");
+     navigate("/parent-dashboard");
   };
 
   const passIcons = () => {
@@ -71,7 +71,12 @@ const ParentLogin = ({ setAlert }: Props) => {
 
   return (
     <form onSubmit={handlePasswordLogin}>
-      <Grid templateColumns={'base: "repeat(1, 1fr)"'} gap={"6"} my={5}>
+      <Grid
+        templateColumns={'base: "repeat(1, 1fr)"'}
+        gap={"6"}
+        my={5}
+        px={{ md: 8 }}
+      >
         {parentFormFields.map((field) => (
           <Box key={field.name} className="">
             <Field.Root>
