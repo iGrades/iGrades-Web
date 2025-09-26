@@ -1,4 +1,4 @@
-import { Box, Flex, Button, Image, Grid } from "@chakra-ui/react";
+import { Box } from "@chakra-ui/react";
 import NavBar from "./navBar";
 import Hero from "./hero";
 import Services from "./services";
