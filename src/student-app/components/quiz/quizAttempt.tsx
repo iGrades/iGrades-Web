@@ -55,7 +55,6 @@ interface Question {
   quiz_id: string;
 }
 
-
 interface SubjectResult {
   correct: number;
   total: number;
@@ -639,10 +638,21 @@ const QuizAttempt = ({ quizData, onComplete, onCancel }: Props) => {
   }
 
   return (
-    <Box w="80%" m="auto">
+    <Box w={{ lg: "80%" }} m="auto">
       {/* Header */}
-      <Flex justify="space-between" align="center" mb={6}>
-        <Flex align="center" gap={3}>
+      <Flex
+        justify="space-between"
+        align="center"
+        mt={{ base: 4, md: 0 }}
+        mb={6}
+      >
+        <Flex
+          align="center"
+          gap={3}
+          w={{ base: "35%", md: "25%", lg: "20%" }}
+          bg="green.200"
+        >
+          {" "}
           {currentSubjectImage ? (
             <Image src={currentSubjectImage} alt={currentSubject.displayName} />
           ) : (
@@ -661,7 +671,13 @@ const QuizAttempt = ({ quizData, onComplete, onCancel }: Props) => {
           )}
         </Flex>
 
-        <Flex justify='space-between' gap={4} align="center" w='50%'>
+        <Flex
+          justify="space-between"
+          gap={4}
+          align="center"
+          w={{ base: "55%", md: "50%" }}
+          // bg="blue.300"
+        >
           <Badge>
             <Image src={timerImage} alt="timer" height="25px" />
             <Heading
@@ -672,21 +688,24 @@ const QuizAttempt = ({ quizData, onComplete, onCancel }: Props) => {
               {formatTime(subjectTimeLeft[currentSubjectIndex] || 0)}
             </Heading>
           </Badge>
-         
-          <Badge colorScheme={isSubjectCompleted ? "green" : "blue"}>
+
+          <Badge
+            display={{ base: "none", md: "block" }}
+            colorScheme={isSubjectCompleted ? "green" : "blue"}
+          >
             {isSubjectCompleted ? "Completed" : "In Progress"}
           </Badge>
           <Button
             bg="primaryColor"
             size="sm"
-            w="48"
-            p={6}
-            rounded="3xl"
+            w={{ base: 28, md: 36, lg: 48 }}
+            p={{ base: 5, md: 5, lg: 6 }}
+            rounded={{ base: "lg", md: "xl", lg: "3xl" }}
             fontWeight="500"
             onClick={handleSubmitAll}
             loading={isSubmitting}
           >
-            Submit Quiz <GoArrowRight />
+            Submit <GoArrowRight />
           </Button>
         </Flex>
       </Flex>
@@ -698,10 +717,11 @@ const QuizAttempt = ({ quizData, onComplete, onCancel }: Props) => {
         </Heading>
         {/* Question Content */}
         <Flex
+          direction={{ base: "column", md: "row" }}
           justify="space-between"
           align="center"
           my={6}
-          px={4}
+          px={{ base: 0, md: 4 }}
           color="on_backgroundColor"
         >
           <Box>
@@ -710,7 +730,7 @@ const QuizAttempt = ({ quizData, onComplete, onCancel }: Props) => {
             </Text>
           </Box>
 
-          <Box w="50%">
+          <Box w={{ base: "95%", md: "50%" }}>
             <Heading my={2} fontSize="md">
               Select only one answer
             </Heading>
@@ -723,7 +743,7 @@ const QuizAttempt = ({ quizData, onComplete, onCancel }: Props) => {
                 )
               }
               size="sm"
-              colorPalette='blue'
+              colorPalette="blue"
             >
               <VStack align="stretch" gap={6}>
                 {["A", "B", "C", "D"].map((option) => (
@@ -783,7 +803,7 @@ const QuizAttempt = ({ quizData, onComplete, onCancel }: Props) => {
                   fontWeight={isCurrent ? "semibold" : "normal"}
                   color={isCurrent ? "primaryColor" : "white"}
                 >
-                  <Heading fontSize='xs'>{index + 1}</Heading>
+                  <Heading fontSize="xs">{index + 1}</Heading>
                 </Button>
               );
             })}
@@ -794,31 +814,34 @@ const QuizAttempt = ({ quizData, onComplete, onCancel }: Props) => {
               border="1px solid"
               borderColor="primaryColor"
               rounded="3xl"
-              w="45%"
-              p={4}
+              w="40%"
+              p={3}
               color="primaryColor"
               fontWeight={500}
-              fontSize="sm"
+              fontSize="xs"
               onClick={handlePreviousQuestion}
               disabled={currentQuestionIndex === 0}
             >
               <GoArrowLeft />
-              Previous
+              <Text display={{ base: "none", md: "inline" }}>Prev</Text>
             </Button>
             <Button
               variant="outline"
               border="1px solid"
               borderColor="primaryColor"
               rounded="3xl"
-              w="45%"
-              p={4}
+              w="40%"
+              p={3}
               color="primaryColor"
               fontWeight={500}
-              fontSize="sm"
+              fontSize="xs"
               onClick={handleNextQuestion}
               disabled={isSubjectCompleted}
             >
-              {isLastQuestionInSubject ? "Completed" : "Next"} <GoArrowRight />
+              <Text display={{ base: "none", md: "inline" }}>
+                {isLastQuestionInSubject ? "Completed" : "Next"}
+              </Text>
+              <GoArrowRight />
             </Button>
           </Flex>
         </Flex>
@@ -846,8 +869,8 @@ const QuizAttempt = ({ quizData, onComplete, onCancel }: Props) => {
                   currentSubjectIndex === index
                     ? "primaryColor"
                     : completedSubjects.has(index)
-                    ? "green"
-                    : "#1FBA79"
+                    ? "green.400"
+                    : 'primaryColor'
                 }
                 variant={currentSubjectIndex === index ? "solid" : "outline"}
                 onClick={() => handleSubjectChange(index)}

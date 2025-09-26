@@ -37,7 +37,7 @@ const Home = () => {
       minH="100vh"
       maxH="100vh"
       overflow="hidden"
-      bg={{ base: "white", md: "textFieldColor" }}
+      bg='textFieldColor'
     >
       <Navbar />
       <Flex flex="1" overflow="hidden">

@@ -40,7 +40,7 @@ const Analytics = () => {
             key={idx}
             value={course.progress}
             size="sm"
-            hasStripe
+            hasStripe={true}
             isAnimated
             mb={4}
             text={""}
