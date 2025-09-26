@@ -15,7 +15,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
 }) => {
   return (
     <InputGroup
-      w={{ base: "100%", md: "50%", lg: "40%" }}
+      w={{ base: "100%", lg: "40%" }}
       startElement={
         <Icon w="20px" h="20px">
           <IoIosSearch color="#BDBDBD" />
@@ -26,16 +26,18 @@ const SearchBar: React.FC<SearchBarProps> = ({
         type="search"
         placeholder={placeholder}
         _placeholder={{ color: "#BDBDBD" }}
-        color='gray.500'
+        color='gray.600'
         fontSize="xs"
         variant="subtle"
         bg="white"
         p={6}
         w="full"
         outline="none"
-        border="none"
+        
+        // border="1px solid"
+        // borderColor='fieldTextColor'
         rounded="md"
-        boxShadow='md'
+        // boxShadow='md'
         {...rest}
       />
     </InputGroup>

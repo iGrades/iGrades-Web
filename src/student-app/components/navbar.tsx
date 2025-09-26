@@ -23,7 +23,7 @@ const Navbar = () => {
         // p={{ base: 2, md: 3, lg: 4 }}
         justify="flex-start"
         alignItems="center"
-         bg={"textFieldColor"}
+        bg={"textFieldColor"}
         boxShadow="md"
         position="sticky"
         top="0"
@@ -35,15 +35,26 @@ const Navbar = () => {
           alignItems="center"
           bg="white"
           shadow={"md"}
-          p={{ base: 6, md: 6, lg: 5 }}
+          px={{ base: 3, md: 4, lg: 5 }}
+          py={{ base: 7, md: 7, lg: 5 }}
           w={{ base: "25%", md: "15%" }}
-          mr='1px'
+          mr="1px"
         >
-          <Image src={logo} alt="Logo"  w={{ md: "100%", lg: "70%" }}
-            fit="cover" />
+          <Image
+            src={logo}
+            alt="Logo"
+            w={{ md: "100%", lg: "70%" }}
+            fit="cover"
+          />
         </Box>
 
-        <Flex bg="white" w="85%" justify="space-between" alignItems="center"  p={{ base: 2, md: 3, lg: 3.5 }}>
+        <Flex
+          bg="white"
+          w="85%"
+          justify="space-between"
+          alignItems="center"
+          p={{ base: 2, md: 3, lg: 3.5 }}
+        >
           {/* welcome text */}
           <Box>
             <Heading
@@ -66,9 +77,9 @@ const Navbar = () => {
             // flexDirection={{ base: "column", md: "row" }}
             alignItems="center"
             justifyContent="space-between"
-              mr={{ base: 4, md: 10, lg: 6 }}
+            mr={{ base: 4, md: 10, lg: 6 }}
             gap={4}
-            w="40%"
+            w="20%"
           >
             <Box
               w={{ base: "70px", md: "75px", lg: "100px" }}

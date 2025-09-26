@@ -167,10 +167,10 @@ const QuizTopicsList = ({
         />
       ) : (
         <>
-          {(selectedMode || selectedTopics.length > 0) && (
+          {/* {(selectedMode || selectedTopics.length > 0) && ( */}
             <Box p={4} borderRadius="md">
               <Flex justify="space-between" align="center">
-                <Box width="50%">
+                <Box width={{base: '45%', md: '50%'}}>
                   <Slider {...settings}>
                     {selectedCourses.map((course, index) => {
                       // Get the image for this course from the context
@@ -203,9 +203,9 @@ const QuizTopicsList = ({
                 </Box>
                 <Button
                   bg="primaryColor"
-                  w="60"
+                  w={{base: '40', md: '60'}}
                   p={6}
-                  rounded="3xl"
+                  rounded={{base: 'xl', md: '3xl'}}
                   fontWeight="500"
                   onClick={handleStartQuiz}
                   disabled={!selectedMode || selectedTopics.length === 0}
@@ -214,7 +214,7 @@ const QuizTopicsList = ({
                 </Button>
               </Flex>
             </Box>
-          )}
+          {/* )} */}
 
           <Box mb={4} mt={4} bg="white" shadow="xl" rounded="md" p={4}>
             <RadioGroup.Root
@@ -294,9 +294,9 @@ const QuizTopicsList = ({
                 No topics available for the selected courses.
               </Text>
             ) : (
-              <VStack gap={2} align="stretch">
+              <VStack gap={2} align="stretch" mb={{base: 24, lg: 0}}>
                 {Object.entries(topicsByCourse).map(([course, topics]) => (
-                  <Box key={course} bg="white" rounded="lg" shadow="lg" p={4}>
+                  <Box key={course} rounded="lg" shadow="lg" p={4}>
                     <Flex justify="space-between" align="center" mb={5}>
                       <Heading size="sm">{course} Topics</Heading>
                       <Button

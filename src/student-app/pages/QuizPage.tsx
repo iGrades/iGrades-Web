@@ -1,6 +1,6 @@
 import { useState } from "react";
-import { Flex, Box, Alert, Button, Grid, Badge, Text } from "@chakra-ui/react";
-import { IoIosAlert } from "react-icons/io";
+import { Flex, Box, Button, Grid, Badge, Text } from "@chakra-ui/react";
+// import { IoIosAlert } from "react-icons/io";
 import { GoArrowRight, GoX } from "react-icons/go";
 import QuizSubjectsList from "../components/quiz/quizSubjectsList";
 import QuizTopicsList from "../components/quiz/quizTopicsList";
@@ -109,15 +109,16 @@ const QuizPage = ({ setShowSideBar }: Props) => {
       ) : (
         <>
           <Flex
-            direction={{ base: "column", md: "row" }}
+            // direction={{ base: "column", md: "row" }}
             justify="space-between"
             align="center"
             mb={4}
             mt={4}
+            // bg='red.100'
           >
-            <Box w="80%">
-              <SearchBar mb={5} placeholder="Search subject ..." />
-              <Alert.Root
+            <Box w={{base: '55%', md: '50%', lg: '80%'}}>
+              <SearchBar placeholder="Search subject ..." />
+              {/* <Alert.Root
                 status="warning"
                 variant="subtle"
                 color="#474256"
@@ -135,18 +136,18 @@ const QuizPage = ({ setShowSideBar }: Props) => {
                     on.
                   </Alert.Description>
                 </Alert.Content>
-              </Alert.Root>
+              </Alert.Root> */}
             </Box>
 
             <Button
               bg="primaryColor"
-              w="60"
+              w={{base: 36, md: 60}}
               p={6}
-              rounded="3xl"
+              rounded={{base: 'lg', md: '3xl'}}
               fontWeight="500"
               onClick={handleStartQuiz}
               disabled={selectedForQuiz.length < 1}
-              display={{ base: "none", md: "flex" }}
+              // display={{ base: "none", md: "flex" }}
             >
               Next <GoArrowRight />
             </Button>
@@ -186,7 +187,7 @@ const QuizPage = ({ setShowSideBar }: Props) => {
                 ))}
               </Grid>
               {/* start quiz button */}
-              <Flex w="full" mt={5} justify="flex-end" align="center">
+              {/* <Flex w="full" mt={5} justify="flex-end" align="center">
                 <Button
                   bg="primaryColor"
                   w="47%"
@@ -201,7 +202,7 @@ const QuizPage = ({ setShowSideBar }: Props) => {
                 >
                   Next <GoArrowRight />
                 </Button>
-              </Flex>
+              </Flex> */}
             </Box>
           )}
 

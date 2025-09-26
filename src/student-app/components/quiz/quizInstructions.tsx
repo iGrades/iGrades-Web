@@ -46,7 +46,7 @@ interface Topic {
 interface SelectedCourse {
   displayName: string;
   dbName: string;
-  id: string; 
+  id: string;
 }
 
 const QuizInstructions = ({
@@ -54,7 +54,7 @@ const QuizInstructions = ({
   selectedTopics,
   topicsByCourse,
   selectedCourses,
-   setSelectedCourses,
+  setSelectedCourses,
   setShowSideBar,
   setShowTopicList,
   onBack,
@@ -310,7 +310,7 @@ const QuizInstructions = ({
     setShowQuizAttempt(false);
     setQuizData(null);
     setShowTopicList(false);
-     setSelectedCourses([]);
+    setSelectedCourses([]);
     setShowSideBar(true);
   };
 
@@ -354,36 +354,36 @@ const QuizInstructions = ({
     );
   }
 
-const sliderSettings = {
-  dots: true,
-  infinite: false,
-  speed: 500,
-  slidesToShow: 1,
-  slidesToScroll: 1,
-  arrows: true,
-  nextArrow: <SampleNextArrow />,
-  prevArrow: <SamplePrevArrow />,
-  responsive: [
-    {
-      breakpoint: 1024,
-      settings: {
-        slidesToShow: 1,
-        slidesToScroll: 1,
-        infinite: false,
-        dots: true,
+  const sliderSettings = {
+    dots: true,
+    infinite: false,
+    speed: 500,
+    slidesToShow: 1,
+    slidesToScroll: 1,
+    arrows: true,
+    nextArrow: <SampleNextArrow />,
+    prevArrow: <SamplePrevArrow />,
+    responsive: [
+      {
+        breakpoint: 1024,
+        settings: {
+          slidesToShow: 1,
+          slidesToScroll: 1,
+          infinite: false,
+          dots: true,
+        },
       },
-    },
-    {
-      breakpoint: 768,
-      settings: {
-        slidesToShow: 1,
-        slidesToScroll: 1,
-        infinite: false,
-        dots: true,
+      {
+        breakpoint: 768,
+        settings: {
+          slidesToShow: 1,
+          slidesToScroll: 1,
+          infinite: false,
+          dots: true,
+        },
       },
-    },
-  ],
-};
+    ],
+  };
 
   // Function to get selected topics for a specific course
   const getSelectedTopicsForCourse = (course: SelectedCourse) => {
@@ -418,17 +418,28 @@ const sliderSettings = {
           quizData={quizData}
           onComplete={handleQuizComplete}
           onCancel={handleCancelQuiz}
-          
         />
       ) : (
-        <Box w="80%" m="auto">
-          <Flex justify="flex-end" align="center" mb={4}>
-            <Flex justify="space-between" w="50%">
+        <Box w={{ base: "100%", lg: "80%" }} m="auto">
+          <Flex
+            justify="flex-end"
+            align="center"
+            mt={{ base: 4, md: 0 }}
+            mb={4}
+          >
+            <Flex
+              justify="space-between"
+              w={{ base: "70%", md: "60%", lg: "50%" }}
+            >
               <HStack>
-                <Image src={timerImage} alt="timer" height="35px" />
+                <Image
+                  src={timerImage}
+                  alt="timer"
+                  height={{ base: "30px", md: "35px" }}
+                />
                 <Heading
                   color="on_backgroundColor"
-                  fontSize="3xl"
+                  fontSize={{ base: "2xl", md: "3xl" }}
                   fontWeight="semibold"
                 >
                   {allocatedTime}:00
@@ -437,11 +448,11 @@ const sliderSettings = {
 
               <Button
                 bg="primaryColor"
-                mx={6}
+                mx={{ lg: 6 }}
                 size="lg"
-                w="60"
-                p={6}
-                rounded="3xl"
+                w={{ base: 36, md: 48, lg: 60 }}
+                p={{ base: 4, md: 6 }}
+                rounded={{ base: "lg", md: "3xl" }}
                 fontWeight="500"
                 onClick={handleStartQuiz}
                 loading={loading || fetchingQuestions}
@@ -493,7 +504,7 @@ const sliderSettings = {
               align="flex-start"
               gap={6}
             >
-              <Box w={{ base: "100%", md: "40%" }} p={4}>
+              <Box w={{ base: "100%", md:'50%', lg: "40%" }} p={4}>
                 <Slider {...sliderSettings}>
                   {selectedCourses.map((course) => {
                     const courseImage = subjectImages[course.dbName];
@@ -505,10 +516,15 @@ const sliderSettings = {
                         key={course.dbName}
                         mb={6}
                         position="relative"
-                        px={8}
                       >
                         {/* Course Image */}
-                        <Flex align="center" gap={3} mb={4}>
+                        <Flex
+                          align="center"
+                          gap={3}
+                          mb={4}
+                          w={{ base: "70%", md: "65%", lg: "60%" }}
+                          m="auto"
+                        >
                           {courseImage ? (
                             <Image src={courseImage} alt={course.displayName} />
                           ) : (
@@ -547,7 +563,10 @@ const sliderSettings = {
 
                         {/* Selected Topics */}
                         {selectedCourseTopics.length > 0 && (
-                          <Box w="83%">
+                          <Box
+                            w={{ base: "70%", md: "65%", lg: "60%" }}
+                            m="auto"
+                          >
                             {selectedCourseTopics.map((topic) => (
                               <Box key={topic.id} py={2}>
                                 <Box
@@ -593,13 +612,13 @@ const sliderSettings = {
                 </Slider>
               </Box>
 
-              <Box w={{ base: "100%", md: "50%" }} p={6}>
+              <Box w={{ base: "100%", md: "50%", lg: "50%" }} p={6}>
                 <Heading size="xl" mb={6} color="on_backgroundColor">
                   Instructions
                 </Heading>
 
                 <Text
-                  fontSize="md"
+                  fontSize={{ base: "md", md: "sm", lg: "md" }}
                   fontWeight={500}
                   lineHeight="tall"
                   mb={4}
@@ -614,7 +633,7 @@ const sliderSettings = {
                 </Text>
 
                 <Text
-                  fontSize="md"
+                  fontSize={{ base: "md", md: "sm", lg: "md" }}
                   fontWeight={500}
                   lineHeight="tall"
                   color="on_backgroundColor"
