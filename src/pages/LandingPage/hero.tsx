@@ -2,7 +2,7 @@ import { Box, Flex, Heading, Text, Button, Image } from "@chakra-ui/react";
 import { FaPlay } from "react-icons/fa6";
 import headerPic from "@/assets/landing-page/header-pic.png";
 import orangeBlob from "@/assets/landing-page/orange_line.png";
-
+// import AnimatedSection from "./animatedSection";
 
 const Hero = () => {
   const stats = [
@@ -12,7 +12,7 @@ const Hero = () => {
     { id: 4, value: "5K+", label: "Acreditted Quizzes" },
   ];
   return (
-    <Box mb={{base: 10, md: 20}}>
+    <Box mb={{ base: 10, md: 20 }}>
       <Flex
         as="section"
         direction={{ base: "column-reverse", md: "row" }}
@@ -93,6 +93,7 @@ const Hero = () => {
         </Box>
 
         {/* Hero image */}
+
         <Box w={{ base: "100%", md: "50%" }} flex="1">
           <Image
             src={headerPic}
@@ -108,7 +109,6 @@ const Hero = () => {
         w="100%"
         overflowX="auto"
         flex="1"
-        
       >
         <Flex
           w={"150%"}
@@ -118,7 +118,6 @@ const Hero = () => {
           justify="space-around"
           gap={4}
           align="start"
-          
         >
           {stats.map((stat) => (
             <Box
@@ -126,8 +125,7 @@ const Hero = () => {
               flex="1"
               textAlign="left"
               ml={2}
-              
-              w='200px'
+              w="200px"
               // borderRight={stat.id !== stats.length ? "1px solid" : "none"}
               // borderColor="gray.200"
             >

@@ -46,7 +46,29 @@ export default function Login() {
       backgroundPosition="center"
       bg={{ lg: "textFieldColor" }}
       h="100vh"
+      position="relative" 
     >
+      {/* Alert positioned at top right */}
+      {alert && (
+        <Box
+          position="absolute"
+          top={{ base: "10px", md: "20px" }}
+          right={{ base: "10px", md: "20px" }}
+          width={{ base: "90%", sm: "80%", md: "400px" }}
+          zIndex="10"
+        >
+          <Alert.Root status={alert.type} variant="subtle">
+            <Alert.Indicator />
+            <Alert.Content>
+              <Alert.Title>
+                {alert.type === "error" ? "Error!" : "Success!"}
+              </Alert.Title>
+              <Alert.Description>{alert.message}</Alert.Description>
+            </Alert.Content>
+          </Alert.Root>
+        </Box>
+      )}
+
       <Image
         src={sideImage}
         alt="login_image"
@@ -107,12 +129,12 @@ export default function Login() {
 
           <Flex
             bg="textFieldColor"
-            w={{base: '100%', lg: '90%'}}
+            w={{ base: "100%", lg: "90%" }}
             m="auto"
             justify="space-around"
             my={10}
             p={2}
-            rounded='md'
+            rounded="md"
           >
             {userType.map((user) => (
               <Button
@@ -122,7 +144,7 @@ export default function Login() {
                 colorScheme={
                   loginState === user.state ? "primaryColor" : "textFieldColor"
                 }
-                w={{base: '45%', md: '45%'}}
+                w={{ base: "45%", md: "45%" }}
                 outline="none"
                 border="none"
                 bg={
@@ -138,18 +160,6 @@ export default function Login() {
             <ParentLogin setAlert={setAlert} />
           ) : (
             <StudentLogin setAlert={setAlert} />
-          )}
-
-          {alert && (
-            <Alert.Root status={alert.type} variant="subtle" mt={6}>
-              <Alert.Indicator />
-              <Alert.Content>
-                <Alert.Title>
-                  {alert.type === "error" ? "Error!" : "Success!"}
-                </Alert.Title>
-                <Alert.Description>{alert.message}</Alert.Description>
-              </Alert.Content>
-            </Alert.Root>
           )}
         </Box>
       </Box>

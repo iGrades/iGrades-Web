@@ -149,7 +149,7 @@ const MyIgrade = () => {
               m="auto"
               p={6}
               rounded="lg"
-              shadow="xs"
+              // shadow="xs"
               cursor="pointer"
               onClick={() => setProfileState(item.head as ProfileState)}
             >
