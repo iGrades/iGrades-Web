@@ -9,6 +9,7 @@ import {
   Image,
   AspectRatio,
 } from "@chakra-ui/react";
+import { useAuthdStudentData } from "@/student-app/context/studentDataContext";
 import { LuArrowLeft, LuPlay } from "react-icons/lu";
 import { useState, useRef } from "react";
 import { supabase } from "@/lib/supabaseClient";
@@ -35,6 +36,7 @@ type Props = {
 };
 
 const VideosList = ({ topic, videos, onBack }: Props) => {
+  const { authdStudent } = useAuthdStudentData();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [selectedVideo, setSelectedVideo] = useState<VideoResource | null>(
     null
@@ -94,6 +96,49 @@ const VideosList = ({ topic, videos, onBack }: Props) => {
     return `https://placehold.co/320x180/3B82F6/white?text=${encodeURIComponent(
       video.title
     )}`;
+  };
+
+  // Add this function to your VideosList component to track video progress
+  const trackVideoProgress = async (
+    videoId: string,
+    progress: number,
+    completed: boolean = false
+  ) => {
+    if (!authdStudent?.id) return;
+
+    try {
+      const { error } = await supabase.from("video_progress").upsert(
+        {
+          student_id: authdStudent.id,
+          video_id: videoId,
+          progress: progress,
+          completed: completed,
+          last_watched: new Date().toISOString(),
+        },
+        {
+          onConflict: "student_id,video_id",
+        }
+      );
+
+      if (error) {
+        console.error("Error tracking video progress:", error);
+      }
+    } catch (error) {
+      console.error("Error in trackVideoProgress:", error);
+    }
+  };
+
+  // Event listeners to track video progress
+  const handleTimeUpdate = (video: VideoResource) => {
+    if (!videoRef.current) return;
+
+    const videoElement = videoRef.current;
+    const progress = (videoElement.currentTime / videoElement.duration) * 100;
+
+    // Track progress every 10% or when completed
+    if (progress % 10 === 0 || progress === 100) {
+      trackVideoProgress(video.id, progress, progress === 100);
+    }
   };
 
   return (
@@ -164,12 +209,11 @@ const VideosList = ({ topic, videos, onBack }: Props) => {
                   >
                     <LuPlay size={24} color="white" />
                   </Box>
-
                 </Box>
 
                 {/* Video Info */}
                 <Box flex={1} p={4}>
-                  <Text fontWeight='300' fontSize="sm" mb={2}>
+                  <Text fontWeight="300" fontSize="sm" mb={2}>
                     {video.title}
                   </Text>
                 </Box>
@@ -216,6 +260,13 @@ const VideosList = ({ topic, videos, onBack }: Props) => {
                           borderRadius: "12px",
                           backgroundColor: "#000",
                         }}
+                        onTimeUpdate={() =>
+                          selectedVideo && handleTimeUpdate(selectedVideo)
+                        }
+                        onEnded={() =>
+                          selectedVideo &&
+                          trackVideoProgress(selectedVideo.id, 100, true)
+                        }
                       >
                         <source
                           src={getVideoUrl(selectedVideo)}

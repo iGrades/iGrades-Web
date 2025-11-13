@@ -26,7 +26,7 @@ const MyChildren = ({ data }: Props) => {
     <>
       <Flex w="full" mb={{ base: "24", lg: "10" }}>
         <Box bg="white" boxShadow="md" borderRadius="lg" w="full" my={5} p={4}>
-          <Heading as="h1" my={2}>
+          <Heading as="h1" fontSize='lg' my={2}>
             My Children
           </Heading>
           <Grid
@@ -65,7 +65,7 @@ const MyChildren = ({ data }: Props) => {
                     <Box mx={5}>
                       <Heading
                         as="h2"
-                        fontSize={{ base: "sm", md: "md", lg: "lg" }}
+                        fontSize={{ base: "xs", md: "sm", lg: "md" }}
                         color="#333951"
                       >
                         {student.firstname} {student.lastname}

@@ -261,85 +261,85 @@ const Subjects = () => {
   });
 
   return (
-    <>
-      {!topicList ? (
-        <Grid
-          templateColumns={{
-            base: "repeat(auto-fill, minmax(150px, 1fr))",
-            md: "repeat(auto-fill, minmax(200px, 1fr))",
-            lg: "repeat(auto-fill, minmax(225px, 1fr))",
-          }}
-          gap={{ base: 4, md: 6 }}
-          py={{ base: 4, md: 6 }}
-        >
-          {studentCourses.length === 0 ? (
-            <Box textAlign="center" gridColumn="1 / -1" py={10}>
-              <Text fontSize="xl" color="gray.500">
-                No courses registered yet.
-              </Text>
-            </Box>
-          ) : (
-            studentCourses.map((course, index) => (
-              <Box
-                key={index}
-                borderRadius="xl"
-                p={6}
-                textAlign="center"
-                minH="100px"
-                display="flex"
-                flexDirection="column"
-                justifyContent="center"
-                alignItems="center"
-                transition="all 0.3s ease"
-                _hover={{
-                  transform: "translateY(-8px)",
-                }}
-                background={
-                  course.image ? `url(${course.image})` : course.color
-                }
-                backgroundSize="contain"
-                backgroundRepeat="no-repeat"
-                cursor="pointer"
-                position="relative"
-                overflow="hidden"
-                onClick={() =>
-                  handleCourseClick(course.displayName, course.dbName)
-                }
-                opacity={loading ? 0.7 : 1}
-                pointerEvents={loading ? "none" : "auto"}
-              >
-                <Center flexDirection="column" zIndex={2} position="relative">
-                  {!course.image && (
-                    <Text
-                      fontSize="lg"
-                      fontWeight="bold"
-                      color="white"
-                      textShadow="2px 2px 4px rgba(0,0,0,0.7)"
-                      mb={2}
-                    >
-                      {course.displayName}
-                    </Text>
-                  )}
-                  {loading && (
-                    <Text fontSize="sm" color="whiteAlpha.800">
-                      Loading...
-                    </Text>
-                  )}
-                </Center>
+      <Box bg="white" rounded="lg" shadow="lg" p={4} mb={20} h="75vh">
+        {!topicList ? (
+          <Grid
+            templateColumns={{
+              base: "repeat(auto-fill, minmax(150px, 1fr))",
+              md: "repeat(auto-fill, minmax(200px, 1fr))",
+              lg: "repeat(auto-fill, minmax(225px, 1fr))",
+            }}
+            gap={{ base: 4, md: 6 }}
+            py={{ base: 4, md: 6 }}
+          >
+            {studentCourses.length === 0 ? (
+              <Box textAlign="center" gridColumn="1 / -1" py={10}>
+                <Text fontSize="xl" color="gray.500">
+                  No courses registered yet.
+                </Text>
               </Box>
-            ))
-          )}
-        </Grid>
-      ) : (
-        <TopicsList
-          selectedCourse={selectedCourse}
-          topics={topics}
-          videos={videos}
-          setTopicList={setTopicList}
-          courseName={selectedCourse}
-        />
-      )}
-    </>
+            ) : (
+              studentCourses.map((course, index) => (
+                <Box
+                  key={index}
+                  borderRadius="xl"
+                  p={6}
+                  textAlign="center"
+                  minH="100px"
+                  display="flex"
+                  flexDirection="column"
+                  justifyContent="center"
+                  alignItems="center"
+                  transition="all 0.3s ease"
+                  _hover={{
+                    transform: "translateY(-8px)",
+                  }}
+                  background={
+                    course.image ? `url(${course.image})` : course.color
+                  }
+                  backgroundSize="contain"
+                  backgroundRepeat="no-repeat"
+                  cursor="pointer"
+                  position="relative"
+                  overflow="hidden"
+                  onClick={() =>
+                    handleCourseClick(course.displayName, course.dbName)
+                  }
+                  opacity={loading ? 0.7 : 1}
+                  pointerEvents={loading ? "none" : "auto"}
+                >
+                  <Center flexDirection="column" zIndex={2} position="relative">
+                    {!course.image && (
+                      <Text
+                        fontSize="lg"
+                        fontWeight="bold"
+                        color="white"
+                        textShadow="2px 2px 4px rgba(0,0,0,0.7)"
+                        mb={2}
+                      >
+                        {course.displayName}
+                      </Text>
+                    )}
+                    {loading && (
+                      <Text fontSize="sm" color="whiteAlpha.800">
+                        Loading...
+                      </Text>
+                    )}
+                  </Center>
+                </Box>
+              ))
+            )}
+          </Grid>
+        ) : (
+          <TopicsList
+            selectedCourse={selectedCourse}
+            topics={topics}
+            videos={videos}
+            setTopicList={setTopicList}
+            courseName={selectedCourse}
+          />
+        )}
+      </Box>
   );
 };
 

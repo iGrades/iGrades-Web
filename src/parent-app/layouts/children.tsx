@@ -13,7 +13,7 @@ const Children = ({data}: Prop) => {
   return (
     <Flex w="full" >
         <Box bg="white" boxShadow="md" borderRadius="lg" w="full" my={5} p={4}>
-          <Heading as="h1" my={2}>
+          <Heading as="h1" fontSize='lg' mb={2}>
             Children
           </Heading>
           <Flex
@@ -29,7 +29,7 @@ const Children = ({data}: Prop) => {
               bg="textFieldColor"
               borderRadius="lg"
               // boxShadow='xs'
-              p={{ base: "5", md: "8", lg: "10" }}
+               p={{ base: "3", md: "6", lg: "8" }}
               my={2}
             >
               <Image src={childrenBox_ico} boxSize="60px" />
@@ -43,7 +43,7 @@ const Children = ({data}: Prop) => {
                 </Text>
                 <Heading
                   as="h2"
-                  fontSize={{ base: "xl", md: "2xl", lg: "3xl" }}
+                   fontSize={{ base: "lg", md: "xl", lg: "2xl" }}
                   color="#333951"
                 >
                   {data.length}
@@ -59,7 +59,7 @@ const Children = ({data}: Prop) => {
               bg="textFieldColor"
               borderRadius="lg"
               // shadow='xs'
-              p={{ base: "5", md: "8", lg: "10" }}
+              p={{ base: "3", md: "6", lg: "8" }}
               my={2}
             >
               <Image src={activeChildrenBox_ico} boxSize="60px" />

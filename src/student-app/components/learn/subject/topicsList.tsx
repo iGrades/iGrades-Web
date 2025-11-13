@@ -53,7 +53,7 @@ const TopicsList = ({
   };
 
   return (
-    <Box bg="white" rounded="lg" shadow="lg" p={4} mb={20} h="75vh">
+    <>
       {videoList && selectedTopic ? (
         <VideosList
           topic={selectedTopic}
@@ -121,7 +121,7 @@ const TopicsList = ({
           )}
         </>
       )}
-    </Box>
+    </>
   );
 };
 

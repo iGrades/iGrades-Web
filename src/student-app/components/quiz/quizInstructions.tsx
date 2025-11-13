@@ -21,7 +21,7 @@ import Slider from "react-slick";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
 import timerImage from "@/assets/timer.png";
-import QuizAttempt from "./quizAttempt";
+import QuizAttempt from "./quizApp/quizAttempt";
 
 type Props = {
   examMode: string;
