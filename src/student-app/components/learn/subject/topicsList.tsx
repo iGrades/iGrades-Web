@@ -1,4 +1,4 @@
-import { Heading, Box, Text, Flex } from "@chakra-ui/react";
+import { Heading, Text, Flex } from "@chakra-ui/react";
 import { LuArrowLeft } from "react-icons/lu";
 import { useState } from "react";
 import VideosList from "./videosList";

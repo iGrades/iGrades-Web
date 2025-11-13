@@ -77,7 +77,7 @@ import { Box, Flex } from "@chakra-ui/react";
 import { useNavigationStore } from "@/store/usenavigationStore";
 import { useState, useEffect } from "react";
 import { useAuthdStudentData } from "@/student-app/context/studentDataContext";
-import { useParams, useNavigate, useLocation } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import Dashboard from "./layouts/dashboard";
 import Navbar from "./components/navbar";
 import Sidebar from "./components/sidebar";

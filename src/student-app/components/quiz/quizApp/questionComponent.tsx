@@ -1,5 +1,5 @@
 import { Box, Heading, Text, Flex, RadioGroup, VStack } from "@chakra-ui/react";
-import type { QuestionComponentProps, Question } from "./types";
+import type { QuestionComponentProps } from "./types";
 
 export const QuestionComponent = ({
   currentQuestion,

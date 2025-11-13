@@ -939,8 +939,8 @@
 // export default QuizAttempt;
 
 
-import { useState, useEffect } from "react";
-import { Box, Flex, Alert } from "@chakra-ui/react";
+import { useEffect } from "react";
+import { Box, Alert } from "@chakra-ui/react";
 import { supabase } from "@/lib/supabaseClient";
 import { useAuthdStudentData } from "@/student-app/context/studentDataContext";
 import type { QuizAttemptProps } from "./types";
@@ -967,11 +967,9 @@ import { useQuizAttempt } from "./useQuizAttempt";
     isSubmitting,
     error,
     completedSubjects,
-    attemptIds,
     isLoading,
     showResults,
     quizResults,
-    setCurrentSubjectIndex,
     setCurrentQuestionIndex,
     setError,
     setIsLoading,

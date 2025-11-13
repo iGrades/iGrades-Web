@@ -193,12 +193,25 @@ const MyClasses = () => {
         const subjectActivity = new Map<string, string>();
 
         videoProgress?.forEach((progress) => {
-          const subjectName = progress.resources?.topics?.subjects?.name;
-          if (subjectName && registeredCourses.includes(subjectName)) {
-            const currentLatest = subjectActivity.get(subjectName);
-            if (!currentLatest || progress.last_watched > currentLatest) {
-              subjectActivity.set(subjectName, progress.last_watched);
-            }
+          // Iterate through resources array if it exists
+          if (Array.isArray(progress.resources)) {
+            progress.resources.forEach((resource) => {
+              if (Array.isArray(resource.topics)) {
+                resource.topics.forEach((topic) => {
+                  if (Array.isArray(topic.subjects)) {
+                    topic.subjects.forEach((subject) => {
+                      const subjectName = subject.name;
+                      if (subjectName && registeredCourses.includes(subjectName)) {
+                        const currentLatest = subjectActivity.get(subjectName);
+                        if (!currentLatest || progress.last_watched > currentLatest) {
+                          subjectActivity.set(subjectName, progress.last_watched);
+                        }
+                      }
+                    });
+                  }
+                });
+              }
+            });
           }
         });
 
@@ -253,19 +266,19 @@ const MyClasses = () => {
   };
 
   // Format relative time
-  const formatRelativeTime = (dateString: string) => {
-    const date = new Date(dateString);
-    const now = new Date();
-    const diffInDays = Math.floor(
-      (now.getTime() - date.getTime()) / (1000 * 60 * 60 * 24)
-    );
+  // const formatRelativeTime = (dateString: string) => {
+  //   const date = new Date(dateString);
+  //   const now = new Date();
+  //   const diffInDays = Math.floor(
+  //     (now.getTime() - date.getTime()) / (1000 * 60 * 60 * 24)
+  //   );
 
-    if (diffInDays === 0) return "Today";
-    if (diffInDays === 1) return "Yesterday";
-    if (diffInDays < 7) return `${diffInDays} days ago`;
-    if (diffInDays < 30) return `${Math.floor(diffInDays / 7)} weeks ago`;
-    return `${Math.floor(diffInDays / 30)} months ago`;
-  };
+  //   if (diffInDays === 0) return "Today";
+  //   if (diffInDays === 1) return "Yesterday";
+  //   if (diffInDays < 7) return `${diffInDays} days ago`;
+  //   if (diffInDays < 30) return `${Math.floor(diffInDays / 7)} weeks ago`;
+  //   return `${Math.floor(diffInDays / 30)} months ago`;
+  // };
 
   const displayActiveClasses = isLoading ? "..." : activeClassesCount;
 
