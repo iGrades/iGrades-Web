@@ -51,6 +51,8 @@ export interface QuizHeaderProps {
   isSubjectCompleted: boolean;
   onSubmit: () => void;
   isSubmitting: boolean;
+  mode: string;
+  disableActions?: boolean;
 }
 
 export interface SubjectNavigationProps {
@@ -58,6 +60,7 @@ export interface SubjectNavigationProps {
   quizzes: any[];
   currentSubjectIndex: number;
   completedSubjects: Set<number>;
+  disabledSubjects?: boolean[];
   onSubjectChange: (index: number) => void;
 }
 
@@ -66,6 +69,7 @@ export interface QuestionComponentProps {
   currentQuestionIndex: number;
   totalQuestions: number;
   selectedAnswer: string;
+  disabled?: boolean;
   onAnswerSelect: (questionId: string, answer: string) => void;
 }
 
@@ -74,6 +78,7 @@ export interface QuizNavigationProps {
   currentQuestionIndex: number;
   answers: Record<string, string>;
   isSubjectCompleted: boolean;
+  disabled?: boolean;
   onQuestionSelect: (index: number) => void;
   onPrevious: () => void;
   onNext: () => void;

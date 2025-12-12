@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/lib/supabaseClient";
 import { useAuthdStudentData } from "@/student-app/context/studentDataContext";
 import type { QuizAttemptProps, QuizResults, SubjectResult } from "./types";
@@ -42,6 +42,48 @@ export const useQuizAttempt = (quizData: QuizAttemptProps["quizData"]) => {
   const hasQuizzesForCurrentSubject = quizData.quizzes.some(
     (quiz) => quiz.subject_id === currentSubject?.id
   );
+  
+  const saveAnswersForCurrentSubject = useCallback(async () => {
+    try {
+      const attemptId = attemptIds[currentSubject.id];
+      if (!attemptId) {
+        console.error("No attempt ID found for subject:", currentSubject.id);
+        return;
+      }
+
+      const currentSubjectAnswers = Object.entries(answers)
+        .filter(([questionId]) => {
+          const question = quizData.questions.find((q) => q.id === questionId);
+          return question && question.subject_id === currentSubject.id;
+        })
+        .map(([questionId, selected_option]) => ({
+          attempt_id: attemptId,
+          question_id: questionId,
+          selected_option,
+          student_id: authdStudent?.id,
+          subject_id: currentSubject.id,
+          created_at: new Date().toISOString(),
+        }));
+
+      if (currentSubjectAnswers.length > 0) {
+        const { error: saveError } = await supabase
+          .from("attempt_answers")
+          .insert(currentSubjectAnswers);
+
+        if (saveError) {
+          console.error("Error saving answers:", saveError);
+        }
+      }
+    } catch (error) {
+      console.error("Error in saveAnswersForCurrentSubject:", error);
+    }
+  }, [answers, authdStudent, currentSubject, attemptIds, quizData.questions]);
+  
+  const handleAutoSubmitSubject = useCallback(async () => {
+      if (isSubjectCompleted) return;
+      setCompletedSubjects((prev) => new Set(prev).add(currentSubjectIndex));
+      await saveAnswersForCurrentSubject();
+    }, [currentSubjectIndex, saveAnswersForCurrentSubject, isSubjectCompleted]);
 
   // Timer for current subject only
   useEffect(() => {
@@ -69,6 +111,7 @@ export const useQuizAttempt = (quizData: QuizAttemptProps["quizData"]) => {
     subjectTimeLeft,
     isSubjectCompleted,
     hasQuizzesForCurrentSubject,
+    handleAutoSubmitSubject,
   ]);
 
   const handleAnswerSelect = (questionId: string, answer: string) => {
@@ -108,56 +151,14 @@ export const useQuizAttempt = (quizData: QuizAttemptProps["quizData"]) => {
     setCurrentSubjectIndex(subjectIndex);
     setCurrentQuestionIndex(0);
   };
-
-  const handleAutoSubmitSubject = async () => {
-    if (isSubjectCompleted) return;
-    setCompletedSubjects((prev) => new Set(prev).add(currentSubjectIndex));
-    await saveAnswersForCurrentSubject();
-  };
-
-  const saveAnswersForCurrentSubject = async () => {
-    try {
-      const attemptId = attemptIds[currentSubject.id];
-      if (!attemptId) {
-        console.error("No attempt ID found for subject:", currentSubject.id);
-        return;
-      }
-
-      const currentSubjectAnswers = Object.entries(answers)
-        .filter(([questionId]) => {
-          const question = quizData.questions.find((q) => q.id === questionId);
-          return question && question.subject_id === currentSubject.id;
-        })
-        .map(([questionId, selected_option]) => ({
-          attempt_id: attemptId,
-          question_id: questionId,
-          selected_option,
-          student_id: authdStudent?.id,
-          subject_id: currentSubject.id,
-          created_at: new Date().toISOString(),
-        }));
-
-      if (currentSubjectAnswers.length > 0) {
-        const { error: saveError } = await supabase
-          .from("attempt_answers")
-          .insert(currentSubjectAnswers);
-
-        if (saveError) {
-          console.error("Error saving answers:", saveError);
-        }
-      }
-    } catch (error) {
-      console.error("Error in saveAnswersForCurrentSubject:", error);
-    }
-  };
-
+  
   const updateAttemptStatus = async (
     attemptId: string,
     status: string,
     score?: number
   ) => {
     try {
-      const updateData: any = {
+      const updateData: { status: string; completed_at?: string | null; score?: number } = {
         status,
         completed_at: status === "completed" ? new Date().toISOString() : null,
       };
@@ -178,52 +179,6 @@ export const useQuizAttempt = (quizData: QuizAttemptProps["quizData"]) => {
       console.error("Error in updateAttemptStatus:", error);
     }
   };
-
-  // const handleSubmitAll = async () => {
-  //   setIsSubmitting(true);
-  //   try {
-  //     const allAnswers = Object.entries(answers)
-  //       .map(([questionId, selected_option]) => {
-  //         const question = quizData.questions.find((q) => q.id === questionId);
-  //         return {
-  //           attempt_id: attemptIds[question?.subject_id || ""],
-  //           question_id: questionId,
-  //           selected_option,
-  //           student_id: authdStudent?.id,
-  //           subject_id: question?.subject_id,
-  //           created_at: new Date().toISOString(),
-  //         };
-  //       })
-  //       .filter((answer) => answer.attempt_id);
-
-  //     if (allAnswers.length > 0) {
-  //       const { error: saveError } = await supabase
-  //         .from("attempt_answers")
-  //         .insert(allAnswers);
-
-  //       if (saveError) {
-  //         console.error("Error saving all answers:", saveError);
-  //       }
-  //     }
-
-  //     const results = await calculateResults();
-  //     setQuizResults(results);
-
-  //     for (const [subjectId, result] of Object.entries(
-  //       results.subjectResults
-  //     )) {
-  //       const attemptId = attemptIds[subjectId];
-  //       if (attemptId) {
-  //         await updateAttemptStatus(attemptId, "completed", result.percentage);
-  //       }
-  //     }
-
-  //     setShowResults(true);
-  //   } catch (error) {
-  //     console.error("Error in handleSubmitAll:", error);
-  //     setIsSubmitting(false);
-  //   }
-  // };
 
   const handleSubmitAll = async () => {
     setIsSubmitting(true);
@@ -277,7 +232,7 @@ export const useQuizAttempt = (quizData: QuizAttemptProps["quizData"]) => {
     }
   };
 
-  // Add this function to save quiz scores
+// save quiz scores
   const saveQuizScore = async (
     attemptId: string,
     subjectId: string,

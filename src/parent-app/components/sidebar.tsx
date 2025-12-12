@@ -21,18 +21,16 @@ const Sidebar = () => {
         as="aside"
         display={{ base: "none", lg: "block" }}
         width="full"
-        h="88vh"
+        h="87vh"
         overflow="hidden"
         bg="white"
         px={4}
         py={10}
-        shadow="md"
+        boxShadow="md"
         left={0}
         position="sticky"
-        top="0px"
+        top="1px"
         zIndex="1000"
-        // borderTop={"1px solid"}
-        // borderColor={"fieldTextColor"}
       >
         {parentsAsideElem.map((item, index) => (
           <Box
@@ -70,8 +68,8 @@ const Sidebar = () => {
         left="50%"
         transform="translateX(-50%)"
         bg="white"
-        borderRadius={{ base: 'none', md: "2xl" }}
-        boxShadow={{base: 'none', md: 'xl'}}
+        borderRadius={{ base: "none", md: "2xl" }}
+        boxShadow={{ base: "none", md: "xl" }}
         px={{ base: 0, md: 1 }}
         py={{ base: 0, md: 1 }}
         mt={40}

@@ -1,5 +1,6 @@
 import type { RouteObject } from "react-router-dom";
 import LandingPage from "@/pages/LandingPage/index";
+import CMS from "@/pages/CMS";  
 import Home from "../parent-app/Home";
 import Login from "@/pages/Login";
 import SignUp from "@/pages/SignUp";
@@ -13,6 +14,10 @@ const publicRoutes: RouteObject[] = [
   {
     path: "/parent-dashboard",
     element: <Home />,
+  },
+  {
+    path: "/upload-content",
+    element: <CMS />,
   },
   {
     path: "/login",

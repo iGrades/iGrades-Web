@@ -28,7 +28,7 @@ const Sidebar = () => {
         as="aside"
         display={{ base: "none", lg: "block" }}
         width="full"
-        h="88vh"
+        h="87vh"
         overflow="hidden"
         bg="white"
         px={4}
@@ -36,7 +36,7 @@ const Sidebar = () => {
         boxShadow="md"
         left={0}
         position="sticky"
-         top="0px"
+        top="1px"
         zIndex="1000"
       >
         {parentsAsideElem.map((item, index) => (

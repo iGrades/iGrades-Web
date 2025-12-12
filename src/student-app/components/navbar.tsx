@@ -24,7 +24,7 @@ const Navbar = () => {
         justify="flex-start"
         alignItems="center"
         bg={"textFieldColor"}
-        boxShadow="md"
+        boxShadow="xs"
         position="sticky"
         top="0"
         zIndex="1000"
@@ -34,11 +34,10 @@ const Navbar = () => {
           display="flex"
           alignItems="center"
           bg="white"
-          shadow={"md"}
           px={{ base: 3, md: 4, lg: 5 }}
-          py={{ base: 7, md: 7, lg: 5 }}
+          py={{ base: 7, md: 7, lg: 6 }}
           w={{ base: "25%", md: "15%" }}
-          mr="1px"
+          mr="2px"
         >
           <Image
             src={logo}

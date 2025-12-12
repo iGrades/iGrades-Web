@@ -10,6 +10,7 @@ export const QuizHeader = ({
   isSubjectCompleted,
   onSubmit,
   isSubmitting,
+  mode,
 }: QuizHeaderProps) => {
   const { subjectImages } = useStudentData();
   const currentSubjectImage = subjectImages[currentSubject?.dbName] || null;
@@ -26,7 +27,6 @@ export const QuizHeader = ({
         align="center"
         gap={3}
         w={{ base: "35%", md: "25%", lg: "20%" }}
-        bg="green.200"
       >
         {currentSubjectImage ? (
           <Image src={currentSubjectImage} alt={currentSubject.displayName} />
@@ -52,16 +52,19 @@ export const QuizHeader = ({
         align="center"
         w={{ base: "55%", md: "50%" }}
       >
-        <Badge>
-          <Image src={timerImage} alt="timer" height="25px" />
-          <Heading
-            color="on_backgroundColor"
-            fontSize="2xl"
-            fontWeight="semibold"
-          >
-            {formatTime(timeLeft)}
-          </Heading>
-        </Badge>
+        {/* display timer only if in examination mode */}
+        {mode === "examination" && (
+          <Badge>
+            <Image src={timerImage} alt="timer" height="25px" />
+            <Heading
+              color="on_backgroundColor"
+              fontSize="2xl"
+              fontWeight="semibold"
+            >
+              {formatTime(timeLeft)}
+            </Heading>
+          </Badge>
+        )}
 
         <Badge
           display={{ base: "none", md: "block" }}

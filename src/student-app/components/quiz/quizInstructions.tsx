@@ -68,13 +68,10 @@ const QuizInstructions = ({
   const [timePerSubject, setTimePerSubject] = useState(0);
   const [error, setError] = useState<string | null>(null);
 
-  const allocatedTime =
-    examMode === "examination"
-      ? selectedCourses.length * 60
-      : selectedCourses.length * 10;
+  const allocatedTime = selectedCourses.length * 45; // 45 minutes per subject
 
   useEffect(() => {
-    setTimePerSubject(examMode === "examination" ? 60 : 10);
+    setTimePerSubject(allocatedTime / selectedCourses.length);
   }, [examMode, selectedCourses.length]);
 
   const fetchQuizQuestions = async () => {
@@ -181,8 +178,7 @@ const QuizInstructions = ({
           console.log("Found class ID:", classId);
         }
       }
-
-      // 6. Continue with the rest of your function using validSelectedCourses instead of selectedCourses
+      // 6. Check existing quizzes for selected subjects and topics
       console.log("Checking existing quizzes...");
       const { data: existingQuizzes, error: quizzesError } = await supabase
         .from("quizzes")
@@ -200,42 +196,7 @@ const QuizInstructions = ({
 
       console.log("Existing quizzes:", existingQuizzes);
 
-      // 3. Create missing quizzes
-      const quizzesToCreate = [];
-      for (const course of validSelectedCourses) {
-        for (const topicId of validTopics) {
-          const exists = existingQuizzes?.some(
-            (quiz) => quiz.subject_id === course.id && quiz.topic_id === topicId
-          );
-
-          if (!exists) {
-            quizzesToCreate.push({
-              subject_id: course.id,
-              topic_id: topicId,
-              class_id: classId,
-            });
-          }
-        }
-      }
-
       let allQuizzes = [...(existingQuizzes || [])];
-
-      if (quizzesToCreate.length > 0) {
-        console.log("Creating new quizzes:", quizzesToCreate);
-        const { data: newQuizzes, error: createError } = await supabase
-          .from("quizzes")
-          .insert(quizzesToCreate)
-          .select("id, subject_id, topic_id");
-
-        if (createError) {
-          console.error("Error creating quizzes:", createError);
-          throw new Error(`Quiz creation error: ${createError.message}`);
-        }
-
-        if (newQuizzes) {
-          allQuizzes = [...allQuizzes, ...newQuizzes];
-        }
-      }
 
       console.log("All quizzes:", allQuizzes);
 
@@ -431,20 +392,23 @@ const QuizInstructions = ({
               justify="space-between"
               w={{ base: "70%", md: "60%", lg: "50%" }}
             >
-              <HStack>
-                <Image
-                  src={timerImage}
-                  alt="timer"
-                  height={{ base: "30px", md: "35px" }}
-                />
-                <Heading
-                  color="on_backgroundColor"
-                  fontSize={{ base: "2xl", md: "3xl" }}
-                  fontWeight="semibold"
-                >
-                  {allocatedTime}:00
-                </Heading>
-              </HStack>
+              {/* display timer only if in examination mode */}
+              {examMode === "examination" && (
+                <HStack>
+                  <Image
+                    src={timerImage}
+                    alt="timer"
+                    height={{ base: "30px", md: "35px" }}
+                  />
+                  <Heading
+                    color="on_backgroundColor"
+                    fontSize={{ base: "2xl", md: "3xl" }}
+                    fontWeight="semibold"
+                  >
+                    {allocatedTime}:00
+                  </Heading>
+                </HStack>
+              )}
 
               <Button
                 bg="primaryColor"
@@ -504,7 +468,7 @@ const QuizInstructions = ({
               align="flex-start"
               gap={6}
             >
-              <Box w={{ base: "100%", md:'50%', lg: "40%" }} p={4}>
+              <Box w={{ base: "100%", md: "50%", lg: "40%" }} p={4}>
                 <Slider {...sliderSettings}>
                   {selectedCourses.map((course) => {
                     const courseImage = subjectImages[course.dbName];
@@ -512,11 +476,7 @@ const QuizInstructions = ({
                       getSelectedTopicsForCourse(course);
 
                     return (
-                      <Box
-                        key={course.dbName}
-                        mb={6}
-                        position="relative"
-                      >
+                      <Box key={course.dbName} mb={6} position="relative">
                         {/* Course Image */}
                         <Flex
                           align="center"
@@ -627,8 +587,7 @@ const QuizInstructions = ({
                   {examMode === "examination"
                     ? `The quiz duration is ${timePerSubject} minutes per subject,
                      60 multiple choice questions each. Pass mark is 55%.`
-                    : `The quiz duration is ${allocatedTime} minutes total,
-                     with 25 multiple choice questions distributed across subjects.
+                    : `The quick test is not timed. There will be 25 multiple choice questions for each subject.
                      Pass mark is 55%.`}
                 </Text>
 

@@ -1,5 +1,6 @@
 import { createRoot } from 'react-dom/client'
 import { ChakraProvider } from '@chakra-ui/react';
+import { Toaster } from './components/ui/toaster.tsx';
 import system  from './theme'
 import '@fontsource-variable/space-grotesk';
 import './index.css'
@@ -18,6 +19,7 @@ createRoot(document.getElementById("root")!).render(
       <AuthdStudentDataProvider>
         <DataProvider>
           <ChakraProvider value={system}>
+            <Toaster />
             <BrowserRouter>
               <App />
             </BrowserRouter>
