@@ -17,28 +17,24 @@ interface JuniorCoursesProps {
 
 const JuniorCourses = ({ onSelectionChange }: JuniorCoursesProps) => {
   const [selectedCourses, setSelectedCourses] = useState<string[]>([]);
-  const maxSelection = 8; // Maximum courses for junior students
+  const maxSelection = 8;
 
-  // Junior courses - same for all JSS students
-  const juniorCourses = [
-    { id: "juniorMath", name: "Mathematics", category: "Core" },
-    { id: "juniorEng", name: "English", category: "Core" },
-    { id: "basicScience", name: "Basic Science", category: "Core" },
-    { id: "basicTech", name: "Basic Technology", category: "Core" },
-    { id: "socialStudies", name: "Social Studies", category: "Core" },
-    { id: "civicEdu", name: "Civic Education", category: "Core" },
-    { id: "businessStudies", name: "Business Studies", category: "Core" },
-    { id: "homeEconomics", name: "Home Economics", category: "Core" },
-    { id: "juniorAgric", name: "Agricultural Science", category: "Core" },
-    { id: "physicalEdu", name: "Physical Education", category: "Core" },
-    {
-      id: "juniorComp",
-      name: "Computer Studies",
-      category: "Elective",
-    },
-    { id: "creativeArts", name: "Creative Arts", category: "Elective" },
-    { id: "music", name: "Music", category: "Elective" },
-  ];
+  // IDs to match generic database naming
+    const juniorCourses = [
+        { id: "mathematics", name: "Mathematics", category: "Core" },
+        { id: "english", name: "English", category: "Core" },
+        { id: "basic science", name: "Basic Science", category: "Core" },
+        { id: "basic technology", name: "Basic Technology", category: "Core" },
+        { id: "social studies", name: "Social Studies", category: "Core" },
+        { id: "civic education", name: "Civic Education", category: "Core" },
+        { id: "business studies", name: "Business Studies", category: "Core" },
+        { id: "home economics", name: "Home Economics", category: "Core" },
+        { id: "agricultural science", name: "Agricultural Science", category: "Core" },
+        { id: "physical education", name: "Physical Education", category: "Core" },
+        { id: "computer studies", name: "Computer Studies", category: "Elective" },
+        { id: "creative arts", name: "Creative Arts", category: "Elective" },
+        { id: "music", name: "Music", category: "Elective" },
+      ];
 
   const handleCourseChange = (courseId: string) => {
     if (selectedCourses.includes(courseId)) {
@@ -63,14 +59,14 @@ const JuniorCourses = ({ onSelectionChange }: JuniorCoursesProps) => {
         mb={10}
         mx="auto"
         borderRadius="md"
-        w={{ base: "full", md: "1/2" }}
+        w={{ base: "full", md: "70%" }}
       >
         <Alert.Description fontSize="xs">
           You are only allowed to select a maximum of {maxSelection} courses.
         </Alert.Description>
       </Alert.Root>
 
-      <Text fontSize="sm" color="gray.600" mb={5}>
+      <Text fontSize="xs" color="gray.600" mb={5}>
         Selected: {selectedCourses.length}/{maxSelection}
       </Text>
 
@@ -98,7 +94,7 @@ const JuniorCourses = ({ onSelectionChange }: JuniorCoursesProps) => {
       <CheckboxGroup colorScheme="blue" value={selectedCourses}>
         <Grid
           templateColumns={{ base: "repeat(1, 1fr)", md: "repeat(3, 1fr)" }}
-          gap="6"
+          gap="5"
           my={6}
         >
           {juniorCourses.map((course) => (
@@ -111,7 +107,7 @@ const JuniorCourses = ({ onSelectionChange }: JuniorCoursesProps) => {
                 !selectedCourses.includes(course.id) &&
                 selectedCourses.length >= maxSelection
               }
-              fontSize="xs"
+              fontSize="0.75em"
               size={"sm"}
               variant={
                 selectedCourses.includes(course.id) ? "subtle" : "outline"
@@ -123,7 +119,7 @@ const JuniorCourses = ({ onSelectionChange }: JuniorCoursesProps) => {
               <Checkbox.HiddenInput />
               <Checkbox.Control cursor="pointer" />
               {course.name}
-              <Checkbox.Label as="span" fontSize="xs" color="gray.500" ml={2}>
+              <Checkbox.Label as="span" fontSize="0.75em" color="gray.500" ml={2}>
                 ({course.category})
               </Checkbox.Label>
             </Checkbox.Root>

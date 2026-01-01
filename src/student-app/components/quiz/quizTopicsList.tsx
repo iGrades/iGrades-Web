@@ -33,6 +33,7 @@ type Props = {
   setShowTopicList: React.Dispatch<React.SetStateAction<boolean>>;
   selectedTopicsId: string;
   setShowSideBar: React.Dispatch<React.SetStateAction<boolean>>;
+  setShowNavBar: React.Dispatch<React.SetStateAction<boolean>>;
 };
 
 interface Topic {
@@ -58,6 +59,7 @@ const QuizTopicsList = ({
   selectedCourses,
   setSelectedCourses,
   setShowSideBar,
+  setShowNavBar,
 }: Props) => {
   const [selectedMode, setSelectedMode] = useState<string>("");
   const [selectedTopics, setSelectedTopics] = useState<string[]>([]);
@@ -288,6 +290,7 @@ const QuizTopicsList = ({
           subjectImages={subjectImages}
           setShowTopicList={setShowTopicList}
           setShowSideBar={setShowSideBar}
+          setShowNavBar={setShowNavBar}
           onBack={() => setShowInstructPage(false)}
         />
       ) : (
@@ -302,15 +305,15 @@ const QuizTopicsList = ({
 
           {loadingAvailableTopics && (
             <Box mb={4} p={4} bg="blue.50" borderRadius="md">
-              <Text mb={2} fontWeight="bold">
+              <Text mb={2} fontSize='xs' fontWeight="semibold">
                 Loading available topics...
               </Text>
-              <Progress.Root value={50} size="sm">
+              <Progress.Root value={50} colorPalette={"blue"} size="sm">
                 <Progress.Track>
                   <Progress.Range />
                 </Progress.Track>
               </Progress.Root>
-              <Text mt={2} fontSize="sm">
+              <Text mt={2} fontSize="xs">
                 Checking which topics have available quizzes
               </Text>
             </Box>

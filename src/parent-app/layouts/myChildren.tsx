@@ -4,6 +4,7 @@ import { MdOutlineKeyboardArrowRight } from "react-icons/md";
 import AvatarComp from "@/components/avatar";
 import AddGraderBtn from "../components/grader/addGraderBtn";
 import AddGraderPopup from "../components/grader/addGraderPopover";
+import EditGraderPopup from "../components/grader/editGraderPopover";
 
 type Props = {
   data: any[];
@@ -11,9 +12,11 @@ type Props = {
 
 const MyChildren = ({ data }: Props) => {
   const [myChildrenShowBox, setMyChildrenShowBox] = useState(false);
+  const [showStudentModal, setShowStudentModal] = useState(false);
+  const [selectedStudent, setSelectedStudent] = useState<any>(null);
 
   // Sort data by created_at (or id) and take the last 4 entries
-  const sortedData = data
+  const sortedData = [...data]
     .sort((a, b) => {
       // Use created_at if available, otherwise use id
       const dateA = a.created_at ? new Date(a.created_at).getTime() : a.id || 0;
@@ -26,12 +29,12 @@ const MyChildren = ({ data }: Props) => {
     <>
       <Flex w="full" mb={{ base: "24", lg: "10" }}>
         <Box bg="white" boxShadow="md" borderRadius="lg" w="full" my={5} p={4}>
-          <Heading as="h1" fontSize='lg' my={2}>
+          <Heading as="h1" fontSize="lg" my={2}>
             My Children
           </Heading>
           <Grid
             templateColumns={{ base: "repeat(1, 1fr)", md: "repeat(2, 2fr)" }}
-            gap={{md: 6, lg: 10}}
+            gap={{ md: 6, lg: 10 }}
             p={{ base: 3, md: 5 }}
             placeItems="center"
             w={{ base: "full", md: "100%", lg: "100%" }}
@@ -50,6 +53,10 @@ const MyChildren = ({ data }: Props) => {
                   p={{ base: "4", md: "4", lg: "5" }}
                   my={2}
                   cursor="pointer"
+                  onClick={() => {
+                    setSelectedStudent(student);
+                    setShowStudentModal(true);
+                  }}
                 >
                   <Box
                     display="flex"
@@ -103,6 +110,19 @@ const MyChildren = ({ data }: Props) => {
           onClose={() => setMyChildrenShowBox(false)}
           showBox={myChildrenShowBox}
           setShowBox={setMyChildrenShowBox}
+        />
+      )}
+
+      {showStudentModal && (
+        <EditGraderPopup
+          student={selectedStudent}
+          setStudent={setSelectedStudent}
+          showEditBtn={false}
+          showDeleteBtn={false}
+          onClose={() => {
+            setShowStudentModal(false);
+            setSelectedStudent(null);
+          }}
         />
       )}
     </>

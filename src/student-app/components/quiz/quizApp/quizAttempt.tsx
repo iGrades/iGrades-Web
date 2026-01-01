@@ -1,14 +1,6 @@
-import { useCallback, useEffect } from "react";
-import {
-  Box,
-  Alert,
-  Flex,
-  Text,
-  Button,
-  Dialog,
-  VStack,
-  HStack,
-} from "@chakra-ui/react";
+import { useCallback, useEffect, memo } from "react";
+import { Box, Alert, Text, Button, Dialog, VStack } from "@chakra-ui/react";
+import { toaster } from "@/components/ui/toaster";
 import { supabase } from "@/lib/supabaseClient";
 import { useAuthdStudentData } from "@/student-app/context/studentDataContext";
 import type { QuizAttemptProps } from "./types";
@@ -17,10 +9,10 @@ import { SubjectNavigation } from "./subjectNavigation";
 import { QuestionComponent } from "./questionComponent";
 import { QuizNavigation } from "./quizNavigation";
 import { ResultsPage } from "./resultsPage";
-import { LoadingState } from "./loadingState";
-import { ErrorState } from "./errorState";
-import { NoQuizAvailable } from "./noQuizAvialable";
-import { CheatingProgressBar } from "./CheatingProgressBar";
+// import { LoadingState } from "./loadingState";
+// import { ErrorState } from "./errorState";
+// import { NoQuizAvailable } from "./noQuizAvialable";
+import { MonitoringView } from "./monitoringView";
 import { useQuizAttempt } from "./useQuizAttempt";
 import { useMonitoring } from "@/hooks/useMonitoring";
 import { useCheatingMonitor } from "@/hooks/useCheatingMonitor";
@@ -29,16 +21,88 @@ import { useAudioMonitoring } from "@/hooks/useAudioMonitoring";
 import { useScreenshotDetection } from "@/hooks/useScreenshotDetection";
 import { useScreenRecordingDetection } from "@/hooks/useScreenRecordingDetection";
 
-const QuizAttempt = ({ quizData, onComplete, onCancel }: QuizAttemptProps) => {
+const MemoizedMonitoring = memo(
+  ({
+    hasWebcamAccess,
+    hasScreenAccess,
+    hasAudioAccess,
+    showMonitoring,
+    setWebcamNode,
+    setScreenNode,
+    toggleMonitoring,
+    handleManualPlay,
+    // reportInfraction,
+  }: any) => {
+    return (
+      <>
+        {!hasWebcamAccess && (
+          <Alert.Root status="warning" size="sm" mb={2}>
+            <Alert.Indicator />
+            <Alert.Description fontSize="xs">
+              Webcam disconnected. Please refresh the page and grant access
+              again.
+            </Alert.Description>
+          </Alert.Root>
+        )}
+
+        {!hasScreenAccess && (
+          <Alert.Root status="warning" size="sm" mb={2}>
+            <Alert.Indicator />
+            <Alert.Description fontSize="xs">
+              Screen sharing stopped. Please refresh the page and grant access
+              again.
+            </Alert.Description>
+          </Alert.Root>
+        )}
+
+        {showMonitoring && (hasWebcamAccess || hasScreenAccess) && (
+          <>
+            <MonitoringView
+              hasWebcamAccess={hasWebcamAccess}
+              hasScreenAccess={hasScreenAccess}
+              hasAudioAccess={hasAudioAccess}
+              showMonitoring={showMonitoring}
+              setWebcamNode={setWebcamNode}
+              setScreenNode={setScreenNode}
+              toggleMonitoring={toggleMonitoring}
+              handleManualPlay={handleManualPlay}
+            />
+
+            {/*<Button
+            mt={2}
+            size="sm"
+            onClick={() => reportInfraction("tab_switch")}
+          >
+            Test Infraction
+          </Button>*/}
+          </>
+        )}
+      </>
+    );
+  },
+);
+
+const QuizAttempt = ({
+  quizData,
+  onComplete,
+  onCancel,
+  setShowSideBar,
+  setShowNavBar,
+}: QuizAttemptProps) => {
+  // device detection logic
+  const isMobile =
+    /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
+      navigator.userAgent,
+    );
   const {
     currentSubjectIndex,
     currentQuestionIndex,
     answers,
     subjectTimeLeft,
     isSubmitting,
-    error,
+    // error,
     completedSubjects,
-    isLoading,
+    // isLoading,
     showResults,
     quizResults,
     setCurrentQuestionIndex,
@@ -54,20 +118,14 @@ const QuizAttempt = ({ quizData, onComplete, onCancel }: QuizAttemptProps) => {
     currentSubject,
     currentSubjectQuestions,
     isSubjectCompleted,
-    hasQuizzesForCurrentSubject,
+    // hasQuizzesForCurrentSubject,
   } = useQuizAttempt(quizData);
 
-  const { cheatingScore, reportInfraction } = useCheatingMonitor(handleSubmitAll);
-  
-  useTabSwitchDetection(reportInfraction);
-  useScreenshotDetection(reportInfraction);
-  useScreenRecordingDetection(reportInfraction);
-
   const { authdStudent } = useAuthdStudentData();
-
-  // useMonitoring hook
   const {
     videoRef,
+    setScreenNode,
+    setWebcamNode,
     screenVideoRef,
     hasWebcamAccess,
     hasScreenAccess,
@@ -85,8 +143,17 @@ const QuizAttempt = ({ quizData, onComplete, onCancel }: QuizAttemptProps) => {
     toggleMonitoring,
   } = useMonitoring();
   
-  // Pass report and stream
-  useAudioMonitoring(reportInfraction, audioStream);
+  // indicate monitoring should be inactive
+  const isMonitoringDisabled = showResults || isSubmitting;
+  
+  const { cheatingScore, reportInfraction } =
+    useCheatingMonitor(handleSubmitAll, isMonitoringDisabled);
+  
+  // Monitoring hooks
+  useAudioMonitoring(reportInfraction, audioStream, isMonitoringDisabled);
+  useTabSwitchDetection(reportInfraction, isMonitoringDisabled);
+  useScreenshotDetection(reportInfraction, isMonitoringDisabled);
+  useScreenRecordingDetection(reportInfraction,isMonitoringDisabled);
 
   // Auto-submit when time runs out
   useEffect(() => {
@@ -107,37 +174,71 @@ const QuizAttempt = ({ quizData, onComplete, onCancel }: QuizAttemptProps) => {
 
   // Stop monitoring when quiz is completed
   useEffect(() => {
-    if (showResults) stopAllMonitoring();
+    if (showResults){
+      stopAllMonitoring();
+    } 
   }, [showResults, stopAllMonitoring]);
-
+  
   const createAttemptRecord = useCallback(
     async (subjectId: string): Promise<string | null> => {
       try {
         const quiz = quizData.quizzes.find((q) => q.subject_id === subjectId);
         if (!quiz) return null;
-
-        const { data, error } = await supabase
+  
+        // 1. Define the time range for the current month
+        const now = new Date();
+        const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
+        const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59).toISOString();
+  
+        // 2. Check if an attempt already exists for this student + subject this month
+        const { data: existingAttempt, error: fetchError } = await supabase
           .from("attempts")
-          .insert({
-            student_id: authdStudent?.id,
-            subject_id: subjectId,
-            quiz_id: quiz.id,
-            mode: quizData.mode,
-            started_at: new Date().toISOString(),
-            status: "in_progress",
-            total_questions: quizData.questions.filter(
-              (q) => q.subject_id === subjectId,
-            ).length,
-            webcam_monitoring: hasWebcamAccess,
-            screen_sharing: hasScreenAccess,
-            audio_monitoring: hasAudioAccess,
-          })
-          .select()
-          .single();
-
-        if (error) return null;
-        return data.id;
-      } catch {
+          .select("id")
+          .eq("student_id", authdStudent?.id)
+          .eq("subject_id", subjectId)
+          .gte("started_at", startOfMonth)
+          .lte("started_at", endOfMonth)
+          .maybeSingle();
+  
+        if (fetchError) throw fetchError;
+  
+        const attemptData = {
+          student_id: authdStudent?.id,
+          subject_id: subjectId,
+          quiz_id: quiz.id,
+          mode: quizData.mode,
+          status: "in_progress",
+          total_questions: quizData.questions.filter((q) => q.subject_id === subjectId).length,
+          webcam_monitoring: hasWebcamAccess,
+          screen_sharing: hasScreenAccess,
+          audio_monitoring: hasAudioAccess,
+          // If we are updating, we might want to keep the original started_at 
+          // but update the "last_active" if you have that column
+          started_at: existingAttempt ? undefined : new Date().toISOString(),
+        };
+  
+        if (existingAttempt) {
+          // 3. UPDATE existing record
+          const { error: updateError } = await supabase
+            .from("attempts")
+            .update(attemptData)
+            .eq("id", existingAttempt.id);
+  
+          if (updateError) throw updateError;
+          return existingAttempt.id;
+        } else {
+          // 4. INSERT new record
+          const { data: newAttempt, error: insertError } = await supabase
+            .from("attempts")
+            .insert(attemptData)
+            .select()
+            .single();
+  
+          if (insertError) throw insertError;
+          return newAttempt.id;
+        }
+      } catch (err) {
+        console.error("Error in createAttemptRecord:", err);
         return null;
       }
     },
@@ -145,37 +246,43 @@ const QuizAttempt = ({ quizData, onComplete, onCancel }: QuizAttemptProps) => {
       authdStudent?.id,
       hasWebcamAccess,
       hasScreenAccess,
+      hasAudioAccess,
       quizData.mode,
       quizData.questions,
       quizData.quizzes,
-      hasAudioAccess,
-    ],
+    ]
   );
 
-  // Create attempt records when BOTH permissions are granted
   useEffect(() => {
     if (hasWebcamAccess && hasScreenAccess) {
       const createAttemptRecords = async () => {
         try {
           setIsLoading(true);
           const newAttemptIds: Record<string, string> = {};
-
-          for (const subject of quizData.subjects) {
-            const hasQuizzes = quizData.quizzes.some(
-              (quiz) => quiz.subject_id === subject.id,
-            );
-
-            if (hasQuizzes) {
-              const attemptId = await createAttemptRecord(subject.id);
-              if (attemptId) {
-                newAttemptIds[subject.id] = attemptId;
-              }
+      
+          // 1. Filter only subjects that have quizzes
+          const subjectsWithQuizzes = quizData.subjects.filter((subject) =>
+            quizData.quizzes.some((quiz) => quiz.subject_id === subject.id)
+          );
+      
+          // 2. Run all database checks/creations at the SAME time
+          const results = await Promise.all(
+            subjectsWithQuizzes.map(async (subject) => ({
+              id: subject.id,
+              attemptId: await createAttemptRecord(subject.id),
+            }))
+          );
+      
+          // 3. Map the results back to your state object
+          results.forEach(({ id, attemptId }) => {
+            if (attemptId) {
+              newAttemptIds[id] = attemptId;
             }
-          }
-
+          });
+      
           setAttemptIds(newAttemptIds);
         } catch (error) {
-          setError("Failed to initialize quiz. Please try again.", error);
+          setError("Failed to initialize quiz. Please try again.");
         } finally {
           setIsLoading(false);
         }
@@ -187,18 +294,15 @@ const QuizAttempt = ({ quizData, onComplete, onCancel }: QuizAttemptProps) => {
     hasWebcamAccess,
     hasScreenAccess,
     createAttemptRecord,
-    showResults,
-    stopAllMonitoring,
     quizData.quizzes,
     quizData.subjects,
-    quizData,
     setAttemptIds,
     setError,
     setIsLoading,
   ]);
 
-  // Manual play function for testing
-  const handleManualPlay = () => {
+  // Manual Play function
+  const handleManualPlay = useCallback(() => {
     if (videoRef.current && videoRef.current.srcObject) {
       videoRef.current
         .play()
@@ -209,9 +313,66 @@ const QuizAttempt = ({ quizData, onComplete, onCancel }: QuizAttemptProps) => {
         .play()
         .catch((err) => console.log("Manual screen play failed:", err));
     }
-  };
+  }, [videoRef, screenVideoRef]);
 
+  useEffect(() => {
+      if (isSubjectCompleted) {
+        toaster.create({
+          description: `You have completed all questions for ${currentSubject.displayName}. You can now select another subject or submit all answers.`,
+          type: "success",
+          closable: true,
+        });
+      }
+    }, [isSubjectCompleted, currentSubject.displayName])                                
+  
+  
   // ---------- Render ----------
+  // handle mobile block render
+  if (isMobile) {
+    return (
+      <Box
+        h="100vh"
+        display="flex"
+        alignItems="center"
+        justifyContent="center"
+        bg="gray.50"
+        p={6}
+      >
+        <VStack
+          maxW="md"
+          p={8}
+          bg="white"
+          borderRadius="xl"
+          boxShadow="lg"
+          textAlign="center"
+          gap={6}
+        >
+          <Box fontSize="5xl">🚫</Box>
+          <VStack gap={2}>
+            <Text fontSize="xl" fontWeight="bold">
+              Mobile Access Restricted
+            </Text>
+            <Text color="gray.600">
+              For security and monitoring purposes, this quiz can only be taken
+              on a<b> Desktop or Laptop computer</b>
+            </Text>
+          </VStack>
+          <Alert.Root status="info" size="sm">
+            <Alert.Indicator />
+            <Alert.Description>
+              Screen sharing and advanced proctoring features are not supported
+              on mobile browsers. To access quiz on your mobile device
+              <br /> <br />
+              <b> Download mobile app </b>
+            </Alert.Description>
+          </Alert.Root>
+          <Button width="full" bg="primaryColor" onClick={onCancel}>
+            Return to Dashboard
+          </Button>
+        </VStack>
+      </Box>
+    );
+  }
   if (showResults && quizResults) {
     return (
       <ResultsPage
@@ -219,6 +380,8 @@ const QuizAttempt = ({ quizData, onComplete, onCancel }: QuizAttemptProps) => {
         quizData={quizData}
         onComplete={onComplete}
         onCancel={onCancel}
+        setShowSideBar={setShowSideBar}
+        setShowNavBar={setShowNavBar}
       />
     );
   }
@@ -242,10 +405,18 @@ const QuizAttempt = ({ quizData, onComplete, onCancel }: QuizAttemptProps) => {
             <Dialog.Body>
               <VStack align="stretch" gap={4}>
                 <Text>
-                  To ensure academic integrity, this quiz requires webcam, microphone, and screen sharing access.
+                  To ensure academic integrity, this quiz requires webcam,
+                  microphone, and screen sharing access.
                 </Text>
 
-                {(webcamError || screenError) && (
+                <Alert.Root status="info" size="sm">
+                  <Alert.Indicator />
+                  <Alert.Description>
+                    Please ensure to share your entire screen
+                  </Alert.Description>
+                </Alert.Root>
+
+                {(webcamError || screenError || audioError) && (
                   <Alert.Root status="error">
                     <Alert.Indicator />
                     <Alert.Title>Access Error</Alert.Title>
@@ -276,166 +447,21 @@ const QuizAttempt = ({ quizData, onComplete, onCancel }: QuizAttemptProps) => {
     );
   }
 
-  // ---------- Monitoring Section ----------
-  const MonitoringSection = () => (
-    <Box
-      mb={4}
-      p={4}
-      bg="gray.50"
-      borderRadius="md"
-      border="1px solid"
-      borderColor="gray.200"
-    >
-      <Flex justify="space-between" align="center" mb={showMonitoring ? 3 : 0}>
-        <HStack>
-          <Text fontSize="sm" fontWeight="bold" color="gray.700">
-            📹 Monitoring
-          </Text>
-          <HStack gap={4}>
-            <Text
-              fontSize="xs"
-              color={hasWebcamAccess ? "green.500" : "red.500"}
-            >
-              Webcam: {hasWebcamAccess ? "✅" : "❌"}
-            </Text>
-            <Text
-              fontSize="xs"
-              color={hasScreenAccess ? "green.500" : "red.500"}
-            >
-              Screen: {hasScreenAccess ? "✅" : "❌"}
-            </Text>
-            <Text
-              fontSize="xs"
-              color={hasAudioAccess ? "green.500" : "red.500"}
-            >
-              Audio: {hasAudioAccess ? "✅" : "❌"}
-            </Text>
-          </HStack>
-        </HStack>
-        <HStack>
-          <Button size="sm" variant="outline" onClick={toggleMonitoring}>
-            {showMonitoring ? "Hide" : "Show"} Monitoring
-          </Button>
-          <Button size="sm" variant="ghost" onClick={handleManualPlay}>
-            ▶️ Manual Play
-          </Button>
-        </HStack>
-      </Flex>
-
-      {!hasWebcamAccess && (
-        <Alert.Root status="warning" size="sm" mb={2}>
-          <Alert.Indicator />
-          <Alert.Description fontSize="xs">
-            Webcam disconnected. Please refresh the page and grant access again.
-          </Alert.Description>
-        </Alert.Root>
-      )}
-
-      {!hasScreenAccess && (
-        <Alert.Root status="warning" size="sm" mb={2}>
-          <Alert.Indicator />
-          <Alert.Description fontSize="xs">
-            Screen sharing stopped. Please refresh the page and grant access
-            again.
-          </Alert.Description>
-        </Alert.Root>
-      )}
-
-      {showMonitoring && (hasWebcamAccess || hasScreenAccess) && (
-        <>
-          <Flex gap={4} direction={{ base: "column", md: "row" }}>
-            {hasWebcamAccess && (
-              <Box flex={1}>
-                <Text fontSize="xs" fontWeight="medium" mb={1}>
-                  Webcam
-                </Text>
-                <Box
-                  position="relative"
-                  bg="black"
-                  borderRadius="md"
-                  overflow="hidden"
-                  height="240px"
-                >
-                  <video
-                    ref={videoRef}
-                    autoPlay
-                    playsInline
-                    muted
-                    style={{
-                      width: "100%",
-                      height: "100%",
-                      objectFit: "cover",
-                      display: "block",
-                    }}
-                  />
-                </Box>
-              </Box>
-            )}
-            {hasScreenAccess && (
-              <Box flex={2}>
-                <Text fontSize="xs" fontWeight="medium" mb={1}>
-                  Screen Share
-                </Text>
-                <Box
-                  position="relative"
-                  bg="black"
-                  borderRadius="md"
-                  overflow="hidden"
-                  height="240px"
-                >
-                  <video
-                    ref={screenVideoRef}
-                    autoPlay
-                    playsInline
-                    muted
-                    style={{
-                      width: "100%",
-                      height: "100%",
-                      objectFit: "contain",
-                      display: "block",
-                    }}
-                  />
-                </Box>
-              </Box>
-            )}
-          </Flex>
-
-          <CheatingProgressBar cheatingScore={cheatingScore} />
-
-          <Button
-            mt={2}
-            size="sm"
-            onClick={() => reportInfraction("tab_switch")}
-          >
-            Test Infraction
-          </Button>
-        </>
-      )}
-    </Box>
-  );
-
-  // ---------- Main Render ----------
-  if (isLoading) {
-    return <LoadingState />;
-  }
-
-  if (error) {
-    return <ErrorState error={error} onContinue={() => setError(null)} />;
-  }
-
-  if (!hasQuizzesForCurrentSubject) {
-    return <NoQuizAvailable subject={currentSubject} onCancel={onCancel} />;
-  }
-
-  if (!currentSubjectQuestions[currentQuestionIndex]) {
-    return <LoadingState message="Loading questions..." />;
-  }
-
   return (
-    <Box w={{ lg: "80%" }} m="auto">
-      <MonitoringSection />
+    <Box w={{ lg: "100%" }} m="auto">
+      <MemoizedMonitoring
+        hasWebcamAccess={hasWebcamAccess}
+        hasScreenAccess={hasScreenAccess}
+        hasAudioAccess={hasAudioAccess}
+        showMonitoring={showMonitoring}
+        setWebcamNode={setWebcamNode}
+        setScreenNode={setScreenNode}
+        toggleMonitoring={toggleMonitoring}
+        handleManualPlay={handleManualPlay}
+        cheatingScore={cheatingScore}
+        reportInfraction={reportInfraction}
+      />
 
-      {/* Rest of your quiz UI */}
       {subjectTimeLeft[currentSubjectIndex] !== undefined &&
         subjectTimeLeft[currentSubjectIndex] <= 0 && (
           <Alert.Root status="warning" my={4}>
@@ -458,18 +484,15 @@ const QuizAttempt = ({ quizData, onComplete, onCancel }: QuizAttemptProps) => {
         isSubmitting={isSubmitting}
         mode={quizData.mode}
         disableActions={
-          subjectTimeLeft[currentSubjectIndex] !== undefined &&
-          subjectTimeLeft[currentSubjectIndex] <= 0
+          isSubmitting || // prevents user interaction during DB sync
+          (subjectTimeLeft[currentSubjectIndex] !== undefined &&
+            subjectTimeLeft[currentSubjectIndex] <= 0)
         }
+        cheatingScore={cheatingScore}
+        // hasWebcamAccess={hasWebcamAccess}
+        // hasScreenAccess={hasScreenAccess}
+        // hasAudioAccess={hasAudioAccess}
       />
-
-      {isSubjectCompleted && (
-        <Alert.Root status="success" my={4} fontSize="xs">
-          <Alert.Indicator />
-          You have completed all questions for {currentSubject.displayName}. You
-          can now select another subject or submit all answers.
-        </Alert.Root>
-      )}
 
       <SubjectNavigation
         subjects={quizData.subjects}

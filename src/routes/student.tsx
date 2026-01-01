@@ -6,7 +6,7 @@ import Verify from "@/student-app/auth/Verify";
 import CourseSelectionPage from "@/student-app/pages/CourseSelectionPage";
 
 const studentRoutes: RouteObject[] = [
-  // Dynamic routes for student dashboard with names
+  // dynamic routes for student dashboard with names
   {
     path: "/student-dashboard/:studentName",
     element: <Home />,

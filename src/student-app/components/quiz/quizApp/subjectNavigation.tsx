@@ -9,7 +9,7 @@ export const SubjectNavigation = ({
   onSubjectChange,
 }: SubjectNavigationProps) => {
   return (
-    <Flex gap={2} mb={6} wrap="wrap">
+    <Flex align='center' justify='space-around' gap={2} m='auto' my={4} wrap="wrap" bg='white' p={2} rounded='lg' w='80%' >
       {subjects.map((subject, index) => {
         const hasQuizzes = quizzes.some(
           (quiz) => quiz.subject_id === subject.id
@@ -18,14 +18,21 @@ export const SubjectNavigation = ({
           <Button
             key={subject.id}
             size="sm"
+            fontSize='xs'
+            w='20%'
             bg={
               currentSubjectIndex === index
-                ? "primaryColor"
+                ? "blue.100"
                 : completedSubjects.has(index)
-                ? "green.400"
-                : "primaryColor"
+                ? "gray.200"
+                : "white"
             }
-            variant={currentSubjectIndex === index ? "solid" : "outline"}
+            color={ currentSubjectIndex === index
+              ? "primaryColor"
+              : completedSubjects.has(index)
+              ? "black"
+              : "black"}
+            variant={currentSubjectIndex === index ? "solid" : "ghost"}
             onClick={() => onSubjectChange(index)}
             disabled={
               (!completedSubjects.has(currentSubjectIndex) &&

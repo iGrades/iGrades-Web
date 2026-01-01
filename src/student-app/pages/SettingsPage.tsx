@@ -11,10 +11,8 @@ import Subscription from "../components/settings/subscription";
 const SettingsPage = () => {
   const [settingsState, setSettingsState] = useState<string | null>("profile");
 
-  
-
   return (
-    <Flex w={{ base: "full", md: "95%" }} m="auto" mb={10} direction="column">
+    <Flex w={{ base: "full", md: "95%" }} m="auto" mb={{base: 10, lg: 0}} direction="column">
       <SettingsNav
         settingsState={settingsState}
         setSettingsState={setSettingsState}

@@ -9,7 +9,7 @@ export const QuestionComponent = ({
   onAnswerSelect,
 }: QuestionComponentProps) => {
   return (
-    <Box p={6} bg="white" borderRadius="lg" minH="75vh">
+    <Box p={6} bg="white" borderRadius="lg" minH="50vh" w='80%' m='auto'>
       <Heading my={2} fontSize="md">
         Question {currentQuestionIndex + 1} of {totalQuestions}
       </Heading>

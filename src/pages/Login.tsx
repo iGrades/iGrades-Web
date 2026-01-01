@@ -48,7 +48,7 @@ export default function Login() {
       h="100vh"
       position="relative" 
     >
-      {/* Alert positioned at top right */}
+      {/* Alert */}
       {alert && (
         <Box
           position="absolute"

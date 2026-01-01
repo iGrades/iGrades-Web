@@ -23,7 +23,7 @@ interface Alert {
 
 
 interface AuthdStudentDataContextType {
-  authdStudent: Student | null; // Changed to single student or null
+  authdStudent: Student | null; // single student or null
   alert: Alert | null;
   setAuthdStudent: Dispatch<SetStateAction<Student | null>>;
   clearAlert: () => void;

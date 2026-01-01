@@ -94,7 +94,7 @@ const EditGrader = ({ student, onClose }: Props) => {
           Cancel
         </Button>
         {/* Image Preview */}
-        <Box position="relative">
+        <Box position="relative"  display="flex" flexDirection="column" alignItems="center">
           <Image
             src={
               selectedFile

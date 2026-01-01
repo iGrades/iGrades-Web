@@ -32,6 +32,7 @@ type Props = {
   topicsByCourse: Record<string, Topic[]>;
   subjectImages: Record<string, string>;
   setShowSideBar: React.Dispatch<React.SetStateAction<boolean>>;
+  setShowNavBar: React.Dispatch<React.SetStateAction<boolean>>;
   setShowTopicList: React.Dispatch<React.SetStateAction<boolean>>;
   onBack: () => void;
 };
@@ -56,6 +57,7 @@ const QuizInstructions = ({
   selectedCourses,
   setSelectedCourses,
   setShowSideBar,
+  setShowNavBar,
   setShowTopicList,
   onBack,
 }: Props) => {
@@ -72,12 +74,12 @@ const QuizInstructions = ({
 
   useEffect(() => {
     setTimePerSubject(allocatedTime / selectedCourses.length);
-  }, [examMode, selectedCourses.length]);
+  }, [examMode, allocatedTime, selectedCourses.length]);
 
   const fetchQuizQuestions = async () => {
     setFetchingQuestions(true);
     setError(null);
-
+    setShowNavBar(false)
     try {
       if (!authdStudent?.id) throw new Error("Student not authenticated.");
 
@@ -196,7 +198,7 @@ const QuizInstructions = ({
 
       console.log("Existing quizzes:", existingQuizzes);
 
-      let allQuizzes = [...(existingQuizzes || [])];
+      const allQuizzes = [...(existingQuizzes || [])];
 
       console.log("All quizzes:", allQuizzes);
 
@@ -273,6 +275,7 @@ const QuizInstructions = ({
     setShowTopicList(false);
     setSelectedCourses([]);
     setShowSideBar(true);
+    setShowNavBar(true);
   };
 
   console.log("This is the tpoics by course: ", topicsByCourse);
@@ -379,6 +382,8 @@ const QuizInstructions = ({
           quizData={quizData}
           onComplete={handleQuizComplete}
           onCancel={handleCancelQuiz}
+           setShowSideBar={setShowSideBar}
+           setShowNavBar={setShowNavBar}
         />
       ) : (
         <Box w={{ base: "100%", lg: "80%" }} m="auto">

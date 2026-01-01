@@ -2,8 +2,11 @@
 
 import { useEffect } from "react";
 
-export const useTabSwitchDetection = (reportInfraction: (type: "tab_switch", customMessage?: string) => void) => {
+export const useTabSwitchDetection = (reportInfraction: (type: "tab_switch", customMessage?: string) => void, disabled: boolean) => {
   useEffect(() => {
+    // If the quiz is finished or in results mode, don't attach listeners
+    if (disabled) return;
+    
     let switchCount = 0;
     let lastSwitchTime = 0;
     const gracePeriod = 1000; // 1 second grace before counting as infraction
@@ -27,5 +30,5 @@ export const useTabSwitchDetection = (reportInfraction: (type: "tab_switch", cus
     return () => {
       document.removeEventListener("visibilitychange", handleVisibilityChange);
     };
-  }, [reportInfraction]);
+  }, [reportInfraction, disabled]);
 };

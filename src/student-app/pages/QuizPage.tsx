@@ -1,6 +1,6 @@
 import { useState } from "react";
-import { Flex, Box, Button, Grid, Badge, Text } from "@chakra-ui/react";
-// import { IoIosAlert } from "react-icons/io";
+import { Flex, Box, Button, Grid, Badge, Text} from "@chakra-ui/react";
+  // import { IoIosAlert } from "react-icons/io";
 import { GoArrowRight, GoX } from "react-icons/go";
 import QuizSubjectsList from "../components/quiz/quizSubjectsList";
 import QuizTopicsList from "../components/quiz/quizTopicsList";
@@ -8,7 +8,9 @@ import SearchBar from "../components/quiz/searchBar";
 
 type Props = {
   showSideBar: boolean;
+  showNavBar: boolean;
   setShowSideBar: React.Dispatch<React.SetStateAction<boolean>>;
+  setShowNavBar: React.Dispatch<React.SetStateAction<boolean>>;
 };
 
 interface Topic {
@@ -29,13 +31,14 @@ interface SelectedCourse {
 }
 
 
-const QuizPage = ({ setShowSideBar }: Props) => {
+const QuizPage = ({ setShowSideBar, setShowNavBar }: Props) => {
   const [topicList, setTopicList] = useState<Topic[]>([]);
   const [showTopicList, setShowTopicList] = useState(false);
   const [selectedCourse, setSelectedCourse] = useState<string>("");
   const [selectedForQuiz, setSelectedForQuiz] = useState<SelectedCourse[]>([]);
   const [selectedTopicsId, setSelectedTopicsId] = useState<string>("");
   const [subjectImages, setSubjectImages] = useState<SubjectImage>({});
+  const [searchResult, setSearchResult] = useState([])
 
   // handles selection of courses
  const handleCourseSelect = (
@@ -105,6 +108,7 @@ const QuizPage = ({ setShowSideBar }: Props) => {
           setShowTopicList={setShowTopicList}
           selectedTopicsId={selectedTopicsId}
           setShowSideBar={setShowSideBar}
+          setShowNavBar={setShowNavBar}
         />
       ) : (
         <>
@@ -117,8 +121,8 @@ const QuizPage = ({ setShowSideBar }: Props) => {
             // bg='red.100'
           >
             <Box w={{base: '55%', md: '50%', lg: '80%'}}>
-              <SearchBar placeholder="Search subject ..." />
-              {/* <Alert.Root
+              <SearchBar placeholder="Search subject ..." searchResult={searchResult} setSearchResult={setSearchResult} />
+               {/*<Alert.Root
                 status="warning"
                 variant="subtle"
                 color="#474256"
@@ -206,7 +210,7 @@ const QuizPage = ({ setShowSideBar }: Props) => {
             </Box>
           )}
 
-          <Box bg="white" rounded="lg" shadow="lg" p={4} mb={20} h="75vh">
+          <Box bg="white" rounded="lg" shadow="lg" p={4} mb={20} h={{base: 'auto', lg: '75vh'}}>
             <QuizSubjectsList
               onCourseSelect={handleCourseSelect}
               setSelectedCourse={setSelectedCourse}

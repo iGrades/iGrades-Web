@@ -14,30 +14,55 @@ export const QuizNavigation = ({
   const isLastQuestionInSubject = currentQuestionIndex === questions.length - 1;
 
   return (
-    <Box mt={6}>
-      <Flex justify="space-between" align="center" mb={4}>
-        <HStack gap={2} wrap="wrap" justify="center">
+    <Box m="auto" mt={6} w="80%">
+      <Flex justify="space-between" gap={8} align="center" mb={4}>
+        <HStack gap={2} wrap="wrap" justify="start" w="55%">
           {questions.map((_, index) => {
             const isAnswered = answers[questions[index].id] !== undefined;
             const isCurrent = index === currentQuestionIndex;
+
+            // --- logic fir color conditionals ---
+            let bg = "white";
+            let color = "on_backgroundColor";
+            let border = "none";
+
+            if (isAnswered && isCurrent) {
+              // if isAnswered && isCurrent, bg: primaryColor, border: none, color: white
+              bg = "primaryColor";
+              color = "white";
+              border = "none";
+            } else if (isCurrent) {
+              // if isCurrent, bg: white, border: 1px solid primaryColor, color: primaryColor
+              bg = "white";
+              color = "primaryColor";
+              border = "1px solid";
+            } else if (isAnswered) {
+              // if isAnswered, bg: primaryColor, color: white, border: none
+              bg = "primaryColor";
+              color = "white";
+              border = "none";
+            } else {
+              // if !isAnswered or !isCurrent (Default)
+              bg = "white";
+              color = "on_backgroundColor";
+              border = "none";
+            }
 
             return (
               <Button
                 key={index}
                 size="sm"
-                bg={[
-                  isAnswered ? "primaryColor" : "white",
-                  isCurrent ? "white" : "primaryColor",
-                ]}
+                bg={bg}
+                color={color}
+                border={border}
+                borderColor="primaryColor" // Only visible if border is "1px solid"
                 onClick={() => onQuestionSelect(index)}
+                fontWeight={isCurrent ? "semibold" : "normal"}
                 minW="30px"
                 h="30px"
                 p={0}
-                border="1px solid"
-                borderColor="primaryColor"
                 borderRadius="md"
-                fontWeight={isCurrent ? "semibold" : "normal"}
-                color={isCurrent ? "primaryColor" : "white"}
+                _hover={{ opacity: 0.8 }}
               >
                 <Heading fontSize="xs">{index + 1}</Heading>
               </Button>

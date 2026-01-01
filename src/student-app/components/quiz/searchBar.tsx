@@ -4,9 +4,12 @@ import {
 } from "@chakra-ui/react";
 import type { InputProps } from "@chakra-ui/react"
 import { IoIosSearch } from "react-icons/io";
+// import { useSubjects } from "@/student-app/context/dataContext";
 
 interface SearchBarProps extends InputProps {
   placeholder?: string;
+  searchResult: never[]
+  setSearchResult: React.Dispatch<React.SetStateAction<never[]>>
 }
 
 const SearchBar: React.FC<SearchBarProps> = ({
@@ -34,8 +37,8 @@ const SearchBar: React.FC<SearchBarProps> = ({
         w="full"
         outline="none"
         
-        // border="1px solid"
-        // borderColor='fieldTextColor'
+        border="1px solid"
+        borderColor='fieldTextColor'
         rounded="md"
         // boxShadow='md'
         {...rest}

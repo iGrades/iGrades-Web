@@ -6,9 +6,7 @@ const Notifications = () => {
   // const [notificationOn, setNotificationOn] = useState(false)
   const [checked, setChecked] = useState(false);
   return (
-    <Box bg="white" rounded="lg" shadow="lg" p={4} mb={20} h="75vh">
-
-
+    <Box bg="white" rounded="lg" shadow="sm" p={4} mb={20} h="75vh">
       <Flex
         justify="space-between"
         align="center"

@@ -1,108 +1,3 @@
-// import {useMemo} from "react";
-// import { Box, Flex, Text, Image, Heading } from "@chakra-ui/react";
-// import childrenBox_ico from "../../assets/childrenBox_ico.png";
-// import activeChildrenBox_ico from "../../assets/activeChildrenBox_ico.png";
-// import { useAuthdStudentData } from "../context/studentDataContext";
-// const MyClasses = () => {
-// const { authdStudent } = useAuthdStudentData();
-
-// // convert registered_courses to an array if it's a string
-// const coursesCount = useMemo(() => {
-//   const courses = authdStudent?.registered_courses;
-//   if (!courses) return 0;
-
-//   if (Array.isArray(courses)) return courses.length;
-
-//   if (typeof courses === "string") {
-//     try {
-//       const parsed = JSON.parse(courses);
-//       return Array.isArray(parsed) ? parsed.length : 0;
-//     } catch {
-//       return 0;
-//     }
-//   }
-
-//   return 0;
-// }, [authdStudent?.registered_courses]);
-//   return (
-//     <Flex w="full">
-//         <Box bg="white" boxShadow="md" borderRadius="lg" w="full" my={5} p={4}>
-//           <Heading as="h1" my={2}>
-//             My Classes
-//           </Heading>
-//           <Flex
-//             direction={{ base: "column", lg: "row" }}
-//             justify="space-between"
-//             alignItems="center"
-//           >
-//             <Box
-//               display="flex"
-//               justifyItems="space-between"
-//               alignItems="center"
-//               w={{ base: "full", lg: "48%" }}
-//               bg="textFieldColor"
-//               borderRadius="lg"
-//               // boxShadow='xs'
-//               p={{ base: "5", md: "8", lg: "10" }}
-//               my={2}
-//             >
-//               <Image src={childrenBox_ico} boxSize="60px" />
-//               <Box mx={5}>
-//                 <Text
-//                   fontSize={{ base: "md", lg: "lg" }}
-//                   mb={1}
-//                   color="#333951"
-//                 >
-//                   Registered Courses
-//                 </Text>
-//                 <Heading
-//                   as="h2"
-//                   fontSize={{ base: "xl", md: "2xl", lg: "3xl" }}
-//                   color="#333951"
-//                 >
-//                   {coursesCount || 0}
-//                 </Heading>
-//               </Box>
-//             </Box>
-
-//             <Box
-//               display="flex"
-//               justifyItems="space-between"
-//               alignItems="center"
-//               w={{ base: "full", lg: "48%" }}
-//               bg="textFieldColor"
-//               borderRadius="lg"
-//               // shadow='xs'
-//               p={{ base: "5", md: "8", lg: "10" }}
-//               my={2}
-//             >
-//               <Image src={activeChildrenBox_ico} boxSize="60px" />
-//               <Box mx={5}>
-//                 <Text
-//                   fontSize={{ base: "md", lg: "lg" }}
-//                   mb={1}
-//                   color="#333951"
-//                 >
-//                   Active Classes
-//                 </Text>
-//                 <Heading
-//                   as="h2"
-//                   fontSize={{ base: "xl", md: "2xl", lg: "3xl" }}
-//                   color="#333951"
-//                 >
-//                   {authdStudent?.active_classes || 0}
-//                 </Heading>
-//               </Box>
-//             </Box>
-//           </Flex>
-//         </Box>
-//     </Flex>
-//   );
-// };
-
-// export default MyClasses;
-
-
 import { useMemo, useEffect, useState } from "react";
 import { Box, Flex, Text, Image, Heading } from "@chakra-ui/react";
 import { Tooltip } from "@/components/ui/tooltip";
@@ -156,7 +51,7 @@ const MyClasses = () => {
           return;
         }
 
-        // Get video progress for this student in the last 30 days
+        // Get video progress for specific student in the last 30 days
         const thirtyDaysAgo = new Date();
         thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
 
@@ -189,32 +84,26 @@ const MyClasses = () => {
           return;
         }
 
+        
         // Track active subjects and their latest activity
         const subjectActivity = new Map<string, string>();
-
-        videoProgress?.forEach((progress) => {
-          // Iterate through resources array if it exists
-          if (Array.isArray(progress.resources)) {
-            progress.resources.forEach((resource) => {
-              if (Array.isArray(resource.topics)) {
-                resource.topics.forEach((topic) => {
-                  if (Array.isArray(topic.subjects)) {
-                    topic.subjects.forEach((subject) => {
-                      const subjectName = subject.name;
-                      if (subjectName && registeredCourses.includes(subjectName)) {
-                        const currentLatest = subjectActivity.get(subjectName);
-                        if (!currentLatest || progress.last_watched > currentLatest) {
-                          subjectActivity.set(subjectName, progress.last_watched);
-                        }
-                      }
-                    });
-                  }
-                });
+        
+        videoProgress?.forEach((progress: any) => {
+          const subjectObj = progress.resources?.topics?.subjects;
+          
+          if (subjectObj && subjectObj.name) {
+            const subjectName = subjectObj.name;
+        
+            // Check if the subject is in the student's registered list
+            if (registeredCourses.includes(subjectName)) {
+              const currentLatest = subjectActivity.get(subjectName);
+              if (!currentLatest || progress.last_watched > currentLatest) {
+                subjectActivity.set(subjectName, progress.last_watched);
               }
-            });
+            }
           }
         });
-
+        
         setActiveClassesCount(subjectActivity.size);
 
         // Convert to array for display
@@ -372,8 +261,8 @@ const MyClasses = () => {
     
       </Box>
     </Flex>
-        {/* Detailed Activity Breakdown */}
-        {/* {!isLoading && recentActivity.length > 0 && (
+         {/* Detailed Activity Breakdown */}
+         {/*{!isLoading && recentActivity.length > 0 && (
           <Box  p={2} bg="green.100" borderRadius="md">
             <Text fontSize="xs" fontWeight="medium" color="green.800" mb={2}>
               Recent Activity:

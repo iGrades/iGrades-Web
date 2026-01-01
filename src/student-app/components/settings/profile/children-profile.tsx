@@ -28,7 +28,7 @@ const ChildrenProfile = () => {
       <VStack
         gap={4}
         mb={20}
-        shadow={{ base: "none", md: "md" }}
+        shadow={{ base: "none", md: "sm" }}
         p={{ base: 1, md: 10, lg: 20 }}
         rounded="md"
         w="full"
@@ -67,6 +67,7 @@ const ChildrenProfile = () => {
             </Alert.Content>
           </Alert.Root>
         </Box>
+        
         <Grid
           templateColumns={{ base: "repeat(1, 1fr)", md: "repeat(2, 1fr)" }}
           gap="1"

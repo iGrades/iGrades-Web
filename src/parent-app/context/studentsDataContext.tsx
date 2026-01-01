@@ -30,7 +30,7 @@ interface StudentsDataContextType {
   clearAlert: () => void;
 }
 
-// Create context with strict typing
+// Create context 
 const StudentsDataContext = createContext<StudentsDataContextType | undefined>(
   undefined
 );

@@ -1,4 +1,4 @@
-import { useState} from "react";
+import { useState } from "react";
 import {
   Box,
   Text,
@@ -15,31 +15,29 @@ interface SeniorCoursesProps {
   onSelectionChange: (selectedCourses: string[]) => void;
 }
 
-const SeniorCourses = ({
-  onSelectionChange,
-}: SeniorCoursesProps) => {
+const SeniorCourses = ({ onSelectionChange }: SeniorCoursesProps) => {
   const [selectedCourses, setSelectedCourses] = useState<string[]>([]);
   const maxSelection = 8;
 
-  // Senior courses - available to all senior students
+  // IDs to match generic database naming
   const seniorCourses = [
-    { id: "seniorMath", name: "General Mathematics", category: "Core" },
-    { id: "seniorEng", name: "English", category: "Core" },
-    { id: "physics", name: "Physics", category: "Science" },
-    { id: "chemistry", name: "Chemistry", category: "Science" },
-    { id: "biology", name: "Biology", category: "Science" },
-    { id: "furtherMath", name: "Further Mathematics", category: "Science" },
-    { id: "economics", name: "Economics", category: "Social Science" },
-    { id: "accounting", name: "Accounting", category: "Social Science" },
-    { id: "commerce", name: "Commerce", category: "Social Science" },
-    { id: "government", name: "Government", category: "Social Science" },
-    { id: "literature", name: "Literature", category: "Arts" },
-    { id: "history", name: "History", category: "Arts" },
-    { id: "geography", name: "Geography", category: "Arts" },
-    { id: "fineArts", name: "Fine Arts", category: "Arts" },
-    { id: "seniorComp", name: "Computer Science", category: "Elective" },
-    { id: "french", name: "French", category: "Elective" },
-  ];
+      { id: "mathematics", name: "Mathematics", category: "Core" },
+      { id: "english", name: "English", category: "Core" },
+      { id: "physics", name: "Physics", category: "Science" },
+      { id: "chemistry", name: "Chemistry", category: "Science" },
+      { id: "biology", name: "Biology", category: "Science" },
+      { id: "further mathematics", name: "Further Mathematics", category: "Science" },
+      { id: "economics", name: "Economics", category: "Social Science" },
+      { id: "accounting", name: "Accounting", category: "Social Science" },
+      { id: "commerce", name: "Commerce", category: "Social Science" },
+      { id: "government", name: "Government", category: "Social Science" },
+      { id: "literature", name: "Literature", category: "Arts" },
+      { id: "history", name: "History", category: "Arts" },
+      { id: "geography", name: "Geography", category: "Arts" },
+      { id: "fine arts", name: "Fine Arts", category: "Arts" },
+      { id: "computer science", name: "Computer Science", category: "Elective" },
+      { id: "french", name: "French", category: "Elective" },
+    ];
 
   const handleCourseChange = (courseId: string) => {
     if (selectedCourses.includes(courseId)) {

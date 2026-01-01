@@ -22,18 +22,25 @@ export interface SubjectResult {
   total: number;
   percentage: number;
   passed: boolean;
+  grade: string;     
+  gradeLabel: string;
 }
 
 export interface QuizResults {
   subjectResults: Record<string, SubjectResult>;
-  overallPassed: boolean;
-  timestamp: string;
-  attemptIds: Record<string, string>;
+    overallPassed: boolean;
+    overallGrade: string;      
+    overallGradeLabel: string; 
+    timestamp: string;
+    attemptIds: Record<string, string>;
+    studentAnswers: Record<string, string>;
 }
 
 export interface QuizAttemptProps {
   quizData: {
     mode: string;
+    score: number;
+    status: string;
     subjects: Subject[];
     topics: string[];
     quizzes: any[];
@@ -43,6 +50,8 @@ export interface QuizAttemptProps {
   };
   onComplete: (results: any) => void;
   onCancel: () => void;
+  setShowSideBar: React.Dispatch<React.SetStateAction<boolean>>;
+  setShowNavBar: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
 export interface QuizHeaderProps {
@@ -53,6 +62,7 @@ export interface QuizHeaderProps {
   isSubmitting: boolean;
   mode: string;
   disableActions?: boolean;
+  cheatingScore: number;
 }
 
 export interface SubjectNavigationProps {
@@ -90,4 +100,6 @@ export interface ResultsPageProps {
   quizData: QuizAttemptProps["quizData"];
   onComplete: (results: any) => void;
   onCancel: () => void;
+  setShowSideBar: React.Dispatch<React.SetStateAction<boolean>>;
+  setShowNavBar: React.Dispatch<React.SetStateAction<boolean>>;
 }

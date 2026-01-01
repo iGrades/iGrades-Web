@@ -9,10 +9,15 @@ import type { ParentPage } from "../../store/usenavigationStore";
 const Sidebar = () => {
   const { currentParentPage, setCurrentParentPage } = useNavigationStore();
 
-  const parentsAsideElem: { icon: IconType; label: string; value: ParentPage }[] = [
+  const parentsAsideElem: {
+    icon: IconType;
+    label: string;
+    value: ParentPage;
+  }[] = [
     { icon: TbHomeFilled, label: "Home", value: "home" },
     { icon: PiStudentDuotone, label: "Students", value: "student" },
     { icon: AiTwotoneSetting, label: "Settings", value: "settings" },
+    // { icon: AiTwotoneSetting, label: "Community", value: "community" },
   ];
 
   return (
@@ -21,7 +26,7 @@ const Sidebar = () => {
         as="aside"
         display={{ base: "none", lg: "block" }}
         width="full"
-        h="87vh"
+        h="88vh"
         overflow="hidden"
         bg="white"
         px={4}
@@ -46,8 +51,7 @@ const Sidebar = () => {
                 ? "primaryColor"
                 : "fieldTextColor"
             }
-            // bg={currentParentPage === item.value ? "#206CE11A" : "transparent"}
-            bg={currentParentPage === item.value ? " #f6f4ffff" : "transparent"}
+            bg={currentParentPage === item.value ? "#206CE11A" : "transparent"}
             fontWeight={"400"}
             onClick={() => setCurrentParentPage(item.value)}
           >

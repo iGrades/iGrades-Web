@@ -50,7 +50,7 @@ const Security = () => {
     try {
       const decryptedPassKey = decrypt(passKeyData.passcode, encKey);
       setCurrentPasskey(decryptedPassKey);
-      setPasskey(decryptedPassKey.split("").slice(0, 6)); // Ensure only 6 digits
+      setPasskey(decryptedPassKey.split("").slice(0, 6)); 
     } catch (error) {
       console.error("Error decrypting passkey:", error);
       toaster.create({
@@ -149,7 +149,7 @@ const Security = () => {
   };
 
   return (
-    <Box bg="white" rounded="lg" shadow="lg" p={4} mb={20} h="75vh">
+    <Box bg="white" rounded="lg" shadow="sm" p={4} mb={20} h="75vh">
       {/* Header with back button */}
       <Heading
         as="h3"

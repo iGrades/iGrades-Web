@@ -5,15 +5,14 @@ import { useTranslation } from "react-i18next";
 import { IoNotifications } from "react-icons/io5";
 import logo from "@/assets/logo.png";
 import AvatarComp from "../../components/avatar";
-import Popover from "../modals/popover";
 
 const Navbar = () => {
   const { authdStudent } = useAuthdStudentData();
   const { t } = useTranslation();
-  const { logoutFunc, isPopOver, setIsPopOver } = useAuthdStudentData();
+  const { setIsPopOver } = useAuthdStudentData();
   // const [value, setValue] = useState<string[]>([]);
 
-  // Get first student or empty object
+  // get student
   const currentStudent = authdStudent ? authdStudent : null;
 
   return (
@@ -52,7 +51,7 @@ const Navbar = () => {
           w="85%"
           justify="space-between"
           alignItems="center"
-          p={{ base: 2, md: 3, lg: 3.5 }}
+          p={{ base: 4, lg: 4.5 }}
         >
           {/* welcome text */}
           <Box>
@@ -76,25 +75,26 @@ const Navbar = () => {
             // flexDirection={{ base: "column", md: "row" }}
             alignItems="center"
             justifyContent="space-between"
-            mr={{ base: 4, md: 10, lg: 6 }}
-            gap={4}
-            w="20%"
+            mr={{ base: 0, md: 10, lg: 6 }}
+            gap={{base: 2, md: 4}}
+            w={{base: "55%", md: "25%", lg:"15%"}}
+            
           >
             <Box
               w={{ base: "70px", md: "75px", lg: "100px" }}
-              p={2}
+              p={{ base: 1, md: 2}}
               rounded="3xl"
               color="#525071"
               border={"1px solid #525071"}
               textAlign="center"
             >
-              <Text fontSize={"sm"}>{currentStudent?.class}</Text>
+              <Text fontSize={{base: 'xs', md: 'sm'}}>{currentStudent?.class}</Text>
             </Box>
 
             {/* notifiaction bell */}
             <Icon
               // display={{ base: "none", md: "block" }}
-              size="md"
+              size={{base: "md", md: "md"}}
               color="greyOthers"
               cursor="pointer"
             >
@@ -128,17 +128,6 @@ const Navbar = () => {
           </Box>
         </Flex>
       </Flex>
-
-      {isPopOver && (
-        <Popover
-          head="Logout Student Request"
-          info="  You have clicked the button to logout. All sessions and cookies will be lost"
-          firstBtnText="Yes! logout"
-          secondBtnText="Cancel"
-          clickFunc={logoutFunc}
-          setIsPopOver={setIsPopOver}
-        />
-      )}
     </>
   );
 };

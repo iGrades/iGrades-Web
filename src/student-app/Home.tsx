@@ -1,78 +1,3 @@
-// import { Box, Flex } from "@chakra-ui/react";
-// import { useNavigationStore } from "@/store/usenavigationStore";
-// import { useState } from "react";
-// import Dashboard from "./layouts/dashboard";
-// import Navbar from "./components/navbar";
-// import Sidebar from "./components/sidebar";
-// import Homepage from "./pages/Homepage";
-// import QuizPage from "./pages/QuizPage";
-// import LearnPage from "./pages/LearnPage";
-// import SettingsPage from "./pages/SettingsPage";
-
-// const Home = () => {
-//   const currentPage = useNavigationStore((state) => state.currentStudentPage);
-//   const [showSideBar, setShowSideBar] = useState<boolean>(true);
-
-//   const renderPage = () => {
-//     switch (currentPage) {
-//       case "home":
-//         return <Homepage />;
-//       case "quiz":
-//         return (
-//           <QuizPage showSideBar={showSideBar} setShowSideBar={setShowSideBar} />
-//         );
-//       case "learn":
-//         return <LearnPage />;
-//       case "settings":
-//         return <SettingsPage />;
-//       default:
-//         return <Homepage />;
-//     }
-//   };
-//   return (
-//     <Box
-//       as="main"
-//       display="flex"
-//       flexDirection="column"
-//       minH="100vh"
-//       maxH="100vh"
-//       overflow="hidden"
-//       bg='textFieldColor'
-//     >
-//       <Navbar />
-//       <Flex flex="1" overflow="hidden">
-//         {showSideBar && (
-//           <Box
-//             position="relative"
-//             flexShrink={0}
-//             w={{ base: "0%", lg: "15%" }}
-//             overflowY="auto"
-//           >
-//             <Sidebar />
-//           </Box>
-//         )}
-
-//         <Box
-//           flex="1"
-//           overflowY="auto"
-//           css={{
-//             "&::-webkit-scrollbar": {
-//               display: "none",
-//             },
-//             MsOverflowStyle: "none", // IE and Edge
-//             scrollbarWidth: "none", // Firefox
-//           }}
-//         >
-//           <Dashboard renderPage={renderPage} />
-//         </Box>
-//       </Flex>
-//     </Box>
-//   );
-// };
-
-// export default Home;
-
-
 import { Box, Flex } from "@chakra-ui/react";
 import { useNavigationStore } from "@/store/usenavigationStore";
 import { useState, useEffect } from "react";
@@ -81,6 +6,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import Dashboard from "./layouts/dashboard";
 import Navbar from "./components/navbar";
 import Sidebar from "./components/sidebar";
+import Popover from "./modals/popover";
 import Homepage from "./pages/Homepage";
 import QuizPage from "./pages/QuizPage";
 import LearnPage from "./pages/LearnPage";
@@ -92,7 +18,8 @@ const Home = () => {
     (state) => state.setCurrentStudentPage
   );
   const [showSideBar, setShowSideBar] = useState<boolean>(true);
-  const { authdStudent } = useAuthdStudentData();
+  const [showNavBar, setShowNavBar] = useState<boolean>(true);
+  const { authdStudent, logoutFunc, isPopOver, setIsPopOver  } = useAuthdStudentData();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -141,7 +68,7 @@ const Home = () => {
     if (mappedPage !== currentPage) {
       setCurrentPage(mappedPage);
     }
-  }, []); // Only run on mount
+  }, []); // only run on mount
 
   // Update URL only when page changes (not from URL updates)
   useEffect(() => {
@@ -152,7 +79,7 @@ const Home = () => {
         const urlFriendlyName = createUrlFriendlyName(studentFullName);
         document.title = `${studentFullName} - Student Dashboard`;
 
-        // Map current page to URL path
+        // map current page to URL path
         const pageMap: Record<string, string> = {
           home: "",
           quiz: "quizzes",
@@ -180,7 +107,7 @@ const Home = () => {
         return <Homepage />;
       case "quiz":
         return (
-          <QuizPage showSideBar={showSideBar} setShowSideBar={setShowSideBar} />
+          <QuizPage showSideBar={showSideBar} setShowSideBar={setShowSideBar} showNavBar={showNavBar} setShowNavBar={setShowNavBar} />
         );
       case "learn":
         return <LearnPage />;
@@ -192,43 +119,56 @@ const Home = () => {
   };
 
   return (
-    <Box
-      as="main"
-      display="flex"
-      flexDirection="column"
-      minH="100vh"
-      maxH="100vh"
-      overflow="hidden"
-      bg="textFieldColor"
-    >
-      <Navbar />
-      <Flex flex="1" overflow="hidden">
-        {showSideBar && (
-          <Box
-            position="relative"
-            flexShrink={0}
-            w={{ base: "0%", lg: "15%" }}
-            overflowY="auto"
-          >
-            <Sidebar />
-          </Box>
-        )}
-
+<>
+  <Box
+    as="main"
+    display="flex"
+    flexDirection="column"
+    minH="100vh"
+    maxH="100vh"
+    overflow="hidden"
+    bg="textFieldColor"
+  >
+   {showNavBar &&  <Navbar />}
+    <Flex flex="1" overflow="hidden">
+      {showSideBar && (
         <Box
-          flex="1"
+          position="relative"
+          flexShrink={0}
+          w={{ base: "0%", lg: "15%" }}
           overflowY="auto"
-          css={{
-            "&::-webkit-scrollbar": {
-              display: "none",
-            },
-            MsOverflowStyle: "none",
-            scrollbarWidth: "none",
-          }}
         >
-          <Dashboard renderPage={renderPage} />
+          <Sidebar />
         </Box>
-      </Flex>
-    </Box>
+      )}
+
+      <Box
+        flex="1"
+        overflowY="auto"
+        css={{
+          "&::-webkit-scrollbar": {
+            display: "none",
+          },
+          MsOverflowStyle: "none",
+          scrollbarWidth: "none",
+        }}
+      >
+        <Dashboard renderPage={renderPage} />
+      </Box>
+    </Flex>
+  </Box>
+  {isPopOver && (
+    // <LogoutPopover setShowLogoutModal={setShowLogoutModal} />
+    <Popover
+      head="Logout Student Request"
+      info="  You have clicked the button to logout. All sessions and cookies will be lost"
+      firstBtnText="Yes! logout"
+      secondBtnText="Cancel"
+      clickFunc={logoutFunc}
+      setIsPopOver={setIsPopOver}
+    />
+  )}
+</>
   );
 };
 

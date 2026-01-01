@@ -1,7 +1,5 @@
 import { Box, Heading, Flex, Text, Icon, Switch } from "@chakra-ui/react";
 import { BiSolidNotification } from "react-icons/bi";
-// import { LiaToggleOffSolid } from "react-icons/lia";
-// import { LiaToggleOnSolid } from "react-icons/lia";
 import { useState } from "react";
 
 const Notification = () => {

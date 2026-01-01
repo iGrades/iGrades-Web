@@ -15,31 +15,29 @@ interface SeniorCoursesProps {
   onSelectionChange: (selectedCourses: string[]) => void;
 }
 
-const SeniorCourses = ({
-  onSelectionChange,
-}: SeniorCoursesProps) => {
+const SeniorCourses = ({ onSelectionChange }: SeniorCoursesProps) => {
   const [selectedCourses, setSelectedCourses] = useState<string[]>([]);
   const maxSelection = 8;
 
-  // Senior courses - available to all senior students
+  // Updated IDs to match generic database naming
   const seniorCourses = [
-    { id: "seniorMath", name: "General Mathematics", category: "Core" },
-    { id: "seniorEng", name: "English", category: "Core" },
-    { id: "physics", name: "Physics", category: "Science" },
-    { id: "chemistry", name: "Chemistry", category: "Science" },
-    { id: "biology", name: "Biology", category: "Science" },
-    { id: "furtherMath", name: "Further Mathematics", category: "Science" },
-    { id: "economics", name: "Economics", category: "Social Science" },
-    { id: "accounting", name: "Accounting", category: "Social Science" },
-    { id: "commerce", name: "Commerce", category: "Social Science" },
-    { id: "government", name: "Government", category: "Social Science" },
-    { id: "literature", name: "Literature", category: "Arts" },
-    { id: "history", name: "History", category: "Arts" },
-    { id: "geography", name: "Geography", category: "Arts" },
-    { id: "fineArts", name: "Fine Arts", category: "Arts" },
-    { id: "seniorComp", name: "Computer Science", category: "Elective" },
-    { id: "french", name: "French", category: "Elective" },
-  ];
+      { id: "mathematics", name: "Mathematics", category: "Core" },
+      { id: "english", name: "English", category: "Core" },
+      { id: "physics", name: "Physics", category: "Science" },
+      { id: "chemistry", name: "Chemistry", category: "Science" },
+      { id: "biology", name: "Biology", category: "Science" },
+      { id: "further mathematics", name: "Further Mathematics", category: "Science" },
+      { id: "economics", name: "Economics", category: "Social Science" },
+      { id: "accounting", name: "Accounting", category: "Social Science" },
+      { id: "commerce", name: "Commerce", category: "Social Science" },
+      { id: "government", name: "Government", category: "Social Science" },
+      { id: "literature", name: "Literature", category: "Arts" },
+      { id: "history", name: "History", category: "Arts" },
+      { id: "geography", name: "Geography", category: "Arts" },
+      { id: "fine arts", name: "Fine Arts", category: "Arts" },
+      { id: "computer science", name: "Computer Science", category: "Elective" },
+      { id: "french", name: "French", category: "Elective" },
+    ];
 
   const handleCourseChange = (courseId: string) => {
     if (selectedCourses.includes(courseId)) {
@@ -71,7 +69,7 @@ const SeniorCourses = ({
         </Alert.Description>
       </Alert.Root>
 
-      <Text fontSize="sm" color="gray.600" mb={2}>
+      <Text fontSize="xs" color="gray.600" mb={2}>
         Selected: {selectedCourses.length}/{maxSelection}
       </Text>
 
@@ -99,7 +97,7 @@ const SeniorCourses = ({
       <CheckboxGroup colorScheme="blue" value={selectedCourses}>
         <Grid
           templateColumns={{ base: "repeat(1, 1fr)", md: "repeat(3, 1fr)" }}
-          gap="6"
+          gap="5"
           my={6}
         >
           {seniorCourses.map((course) => (
@@ -112,7 +110,7 @@ const SeniorCourses = ({
                 !selectedCourses.includes(course.id) &&
                 selectedCourses.length >= maxSelection
               }
-              fontSize="xs"
+              fontSize="0.75em"
               size={"sm"}
               variant={
                 selectedCourses.includes(course.id) ? "subtle" : "outline"
@@ -124,7 +122,7 @@ const SeniorCourses = ({
               <Checkbox.HiddenInput />
               <Checkbox.Control cursor="pointer" />
               {course.name}
-              <Checkbox.Label as="span" fontSize="sm" color="gray.500" ml={2}>
+              <Checkbox.Label as="span" fontSize="0.75em" color="gray.500" ml={2}>
                 ({course.category})
               </Checkbox.Label>
             </Checkbox.Root>

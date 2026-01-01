@@ -1,21 +1,12 @@
-// /** For documentation sake - This hook handles the following:
-//  * webcam permission request
-//  * screen share permission request
-//  * managing media streams
-//  * auto-cleanup when component unmounts
-//   **/
-// Updated useMonitoring hook
-
-
-import { useEffect, useRef, useState, useCallback } from "react";
+import { useState, useCallback, useRef } from "react";
 
 export const useMonitoring = () => {
-  const videoRef = useRef<HTMLVideoElement>(null);
-  const screenVideoRef = useRef<HTMLVideoElement>(null);
-  const audioStreamRef = useRef<MediaStream | null>(null);
+  const videoRef = useRef<HTMLVideoElement | null>(null);
+  const screenVideoRef = useRef<HTMLVideoElement | null>(null);
 
-  const webcamStreamRef = useRef<MediaStream | null>(null);
-  const screenStreamRef = useRef<MediaStream | null>(null);
+  const [webcamStream, setWebcamStream] = useState<MediaStream | null>(null);
+  const [screenStream, setScreenStream] = useState<MediaStream | null>(null);
+  const [audioStream, setAudioStream] = useState<MediaStream | null>(null);
 
   const [hasWebcamAccess, setHasWebcamAccess] = useState(false);
   const [hasScreenAccess, setHasScreenAccess] = useState(false);
@@ -30,258 +21,121 @@ export const useMonitoring = () => {
 
   const [showMonitoring, setShowMonitoring] = useState(true);
 
-  // Function to play video safely
-  const playVideo = useCallback((videoElement: HTMLVideoElement | null) => {
-    if (!videoElement || !videoElement.srcObject) return;
-
-    const playPromise = videoElement.play();
-    if (playPromise !== undefined) {
-      playPromise.catch((e) => {
-        // Don't log common autoplay policy errors
-        if (!e.message.includes("user gesture") && !e.message.includes("pause")) {
-          console.error("Video play error:", e);
-        }
-      });
-    }
-  }, []);
-
-  // Assign webcam stream when available
-  useEffect(() => {
-    const video = videoRef.current;
-    if (!video) return;
-
-    if (webcamStreamRef.current) {
-      video.srcObject = webcamStreamRef.current;
-
-      // Set up event listeners
-      const handleLoadedMetadata = () => {
-        console.log('Webcam metadata loaded');
-        playVideo(video);
-      };
-
-      const handleCanPlay = () => {
-        console.log('Webcam can play');
-        playVideo(video);
-      };
-
-      video.addEventListener('loadedmetadata', handleLoadedMetadata);
-      video.addEventListener('canplay', handleCanPlay);
-
-      // Try to play immediately if already loaded
-      if (video.readyState >= 1) {
-        // HAVE_ENOUGH_DATA
-        playVideo(video);
+  
+  // comparing node.srcObject to avoid unnecessary re-assignments (which can cause the live video to blink)
+  const setWebcamNode = useCallback((node: HTMLVideoElement | null) => {
+    if (node && webcamStream) {
+      if (node.srcObject !== webcamStream) {
+        node.srcObject = webcamStream;
+        node.muted = true;
+        node.play().catch(err => {
+          if (err.name !== "AbortError") console.error("Webcam play error:", err);
+        });
       }
-
-      return () => {
-        video.removeEventListener('loadedmetadata', handleLoadedMetadata);
-        video.removeEventListener('canplay', handleCanPlay);
-      };
-    } else {
-      video.srcObject = null;
+      videoRef.current = node;
+    } else if (node === null) {
+      videoRef.current = null;
     }
-  }, [hasWebcamAccess, playVideo]);
+  }, [webcamStream]);
 
-  // Assign screen stream when available
-  useEffect(() => {
-    const video = screenVideoRef.current;
-    if (!video) return;
-
-    if (screenStreamRef.current) {
-      video.srcObject = screenStreamRef.current;
-
-      // Set up event listeners
-      const handleLoadedMetadata = () => {
-        console.log('Screen metadata loaded');
-        playVideo(video);
-      };
-
-      const handleCanPlay = () => {
-        console.log('Screen can play');
-        playVideo(video);
-      };
-
-      video.addEventListener('loadedmetadata', handleLoadedMetadata);
-      video.addEventListener('canplay', handleCanPlay);
-
-      // Try to play immediately if already loaded
-      if (video.readyState >= 1) {
-        playVideo(video);
+  const setScreenNode = useCallback((node: HTMLVideoElement | null) => {
+    if (node && screenStream) {
+      if (node.srcObject !== screenStream) {
+        node.srcObject = screenStream;
+        node.muted = true;
+        node.play().catch(err => {
+          if (err.name !== "AbortError") console.error("Screen play error:", err);
+        });
       }
-
-      return () => {
-        video.removeEventListener('loadedmetadata', handleLoadedMetadata);
-        video.removeEventListener('canplay', handleCanPlay);
-      };
-    } else {
-      video.srcObject = null;
+      screenVideoRef.current = node;
+    } else if (node === null) {
+      screenVideoRef.current = null;
     }
-  }, [hasScreenAccess, playVideo]);
+  }, [screenStream]);
 
-  // Initialize webcam
-  const initializeWebcam = async (): Promise<boolean> => {
+  const initializeWebcam = useCallback(async () => {
     try {
       setIsWebcamLoading(true);
-      setWebcamError(null);
-
-      // Stop existing stream if any
-      if (webcamStreamRef.current) {
-        webcamStreamRef.current.getTracks().forEach(track => track.stop());
-      }
-
       const stream = await navigator.mediaDevices.getUserMedia({
-        video: {
-          width: { ideal: 640 },
-          height: { ideal: 480 },
-          facingMode: "user",
-        },
+        video: { width: 640, height: 480, facingMode: "user" },
         audio: false,
       });
-
-      webcamStreamRef.current = stream;
+      setWebcamStream(stream);
       setHasWebcamAccess(true);
-
-      // Handle track ending
-      stream.getTracks().forEach(track => {
-        track.onended = () => {
-          console.log('Webcam track ended');
-          setHasWebcamAccess(false);
-          setWebcamError("Webcam disconnected");
-        };
-      });
-
-      console.log('Webcam stream acquired');
       return true;
     } catch (err: any) {
-      setWebcamError(err.message || "Failed to access webcam");
-      setHasWebcamAccess(false);
-      console.error('Webcam init error:', err);
+      setWebcamError(err.message);
       return false;
     } finally {
       setIsWebcamLoading(false);
     }
-  };
+  }, []);
 
-  // Initialize screen sharing
-  const initializeScreenShare = async (): Promise<boolean> => {
+  const initializeScreenShare = useCallback(async () => {
     try {
       setIsScreenLoading(true);
-      setScreenError(null);
-
-      // Stop existing stream if any
-      if (screenStreamRef.current) {
-        screenStreamRef.current.getTracks().forEach(track => track.stop());
-      }
-
-      const stream = await navigator.mediaDevices.getDisplayMedia({
-        video: true,
-        audio: false,
-      });
-
-      // Handle when user stops the screen sharing
-      stream.getTracks().forEach((track) => {
-        track.onended = () => {
-          setHasScreenAccess(false);
-          setScreenError("Screen sharing stopped");
-          console.log('Screen track ended');
-        };
-      });
-
-      screenStreamRef.current = stream;
+      const stream = await navigator.mediaDevices.getDisplayMedia({ video: true });
+      setScreenStream(stream);
       setHasScreenAccess(true);
-      console.log('Screen stream acquired');
       return true;
     } catch (err: any) {
-      setScreenError(err.message || "Failed to access screen share");
-      setHasScreenAccess(false);
-      console.error('Screen init error:', err);
+      setScreenError(err.message);
       return false;
     } finally {
       setIsScreenLoading(false);
     }
-  };
+  }, []);
 
-  // Initialize microphone
-    const initializeAudio = async (): Promise<boolean> => {
-      try {
-        const stream = await navigator.mediaDevices.getUserMedia({
-          audio: true,
-        });
+  const initializeAudio = useCallback(async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      setAudioStream(stream);
+      setHasAudioAccess(true);
+      return true;
+    } catch (err: any) {
+      setAudioError(err.message);
+      return false;
+    }
+  }, []);
 
-        audioStreamRef.current = stream;
-        setHasAudioAccess(true);
-        console.log('Audio stream acquired:', stream);
-        return true;
-      } catch (err: any) {
-        setAudioError(err.message || "Failed to access microphone");
-        setHasAudioAccess(false);
-        console.error('Audio init error:', err);
-        return false;
-      }
-    };
+  // Wrapping this in useCallback to prevents parent re-renders from changing the function identity
+  const handleStartMonitoring = useCallback(async () => {
+    const w = await initializeWebcam();
+    const s = await initializeScreenShare();
+    const a = await initializeAudio();
+    return w && s && a;
+  }, [initializeWebcam, initializeScreenShare, initializeAudio]);
 
-  // Combined start
-  const handleStartMonitoring = async () => {
-    const webcamSuccess = await initializeWebcam();
-    const screenSuccess = await initializeScreenShare();
-    const audioSuccess = await initializeAudio();
-
-    return webcamSuccess && screenSuccess && audioSuccess;
-  };
-
-  // Stop monitoring
   const stopAllMonitoring = useCallback(() => {
-    if (webcamStreamRef.current) {
-      webcamStreamRef.current.getTracks().forEach((t) => t.stop());
-      webcamStreamRef.current = null;
-    }
-    if (screenStreamRef.current) {
-      screenStreamRef.current.getTracks().forEach((t) => t.stop());
-      screenStreamRef.current = null;
-    }
-    if (audioStreamRef.current) {
-          audioStreamRef.current.getTracks().forEach((t) => t.stop());
-          audioStreamRef.current = null;
-        }
-
-    // clear srcObject
+    [webcamStream, screenStream, audioStream].forEach(s => s?.getTracks().forEach(t => t.stop()));
+    setWebcamStream(null);
+    setScreenStream(null);
+    setAudioStream(null);
     setHasWebcamAccess(false);
     setHasScreenAccess(false);
     setHasAudioAccess(false);
-    console.log('Monitoring stopped');
-  }, []);
+  }, [webcamStream, screenStream, audioStream]);
 
-  const toggleMonitoring = () => setShowMonitoring((p) => !p);
-
-  const showAccessDialog = !(hasWebcamAccess && hasScreenAccess && hasAudioAccess);
+  const toggleMonitoring = useCallback(() => setShowMonitoring(p => !p), []);
 
   return {
-    // refs
     videoRef,
     screenVideoRef,
-    audioStream: audioStreamRef.current,
-
-    // states
+    setWebcamNode,
+    setScreenNode,
+    audioStream,
     hasWebcamAccess,
     hasScreenAccess,
-     hasAudioAccess,
+    hasAudioAccess,
     isWebcamLoading,
     isScreenLoading,
     webcamError,
     screenError,
-     audioError,
+    audioError,
     showMonitoring,
-    showAccessDialog,
-
-    // actions
-    initializeWebcam,
-    initializeScreenShare,
+    showAccessDialog: !(hasWebcamAccess && hasScreenAccess && hasAudioAccess),
     handleStartMonitoring,
     stopAllMonitoring,
     toggleMonitoring,
-    
-    
-   
-   
   };
 };

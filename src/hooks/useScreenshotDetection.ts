@@ -3,7 +3,7 @@
 
 import { useEffect, useRef } from "react";
 
-export const useScreenshotDetection = (reportInfraction: (type: "screenshot", customMessage?: string) => void) => {
+export const useScreenshotDetection = (reportInfraction: (type: "screenshot", customMessage?: string) => void, disabled: boolean) => {
   const lastInfractionTime = useRef(0);
   const knownImageHashes = useRef<Set<string>>(new Set()); // Track unique images by hash
   const pollIntervalRef = useRef<NodeJS.Timeout | null>(null);
@@ -11,7 +11,10 @@ export const useScreenshotDetection = (reportInfraction: (type: "screenshot", cu
   const imageHashTimeout = 60000; // Clear hashes after 1 min (user might clear clipboard)
 
   useEffect(() => {
-    // Keydown for plain PrtSc (fallback) - NO CHANGE NEEDED HERE
+    // If the quiz is finished or in results mode, don't attach listeners
+    if (disabled) return;
+    
+    // Keydown for plain PrtSc (fallback) 
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'PrintScreen' || event.keyCode === 44 || event.code === 'PrintScreen') {
         const now = Date.now();
@@ -30,7 +33,7 @@ export const useScreenshotDetection = (reportInfraction: (type: "screenshot", cu
         // Read the Blob data into an ArrayBuffer
         const buffer = await imageBlob.arrayBuffer();
         
-        // Use the Web Crypto API to compute SHA-256 hash
+        // Using Web Crypto API to compute SHA-256 hash
         const hashBuffer = await crypto.subtle.digest('SHA-256', buffer);
         
         // Convert the ArrayBuffer to a hexadecimal string
@@ -87,7 +90,7 @@ export const useScreenshotDetection = (reportInfraction: (type: "screenshot", cu
             } catch (err) {
               console.error('Clipboard read error:', err);
             }
-          }, 2000); // Poll every 2s
+          }, 5000); // Poll every 5s
         } else {
           console.warn('Clipboard permission denied');
         }
@@ -98,7 +101,7 @@ export const useScreenshotDetection = (reportInfraction: (type: "screenshot", cu
 
     const timer = setTimeout(startPolling, 1000);
 
-    // Fallback check on focus
+    // Fallback clipboard check on focus
     const checkClipboardOnFocus = async () => {
       const now = Date.now();
       if (now - lastInfractionTime.current < debouncePeriod) return;
@@ -140,5 +143,5 @@ export const useScreenshotDetection = (reportInfraction: (type: "screenshot", cu
       window.removeEventListener("keydown", handleKeyDown);
       window.removeEventListener('focus', checkClipboardOnFocus);
     };
-  }, [reportInfraction]);
+  }, [reportInfraction, disabled]);
 };

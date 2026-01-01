@@ -113,7 +113,7 @@ const StudentProfile = () => {
       <VStack
         gap={4}
         mb={20}
-        shadow={{ base: "none", md: "md" }}
+        shadow={{ base: "none", md: "sm" }}
         p={{ base: 1, md: 10, lg: 20 }}
         rounded="md"
         w="full"
@@ -128,8 +128,9 @@ const StudentProfile = () => {
           justifyContent="center"
           alignItems="center"
           p={{ base: 1, md: 6 }}
+          
         >
-          <Box position="relative">
+          <Box position="relative" alignItems="center" display="flex" flexDirection="column">
             <Image
               src={
                 selectedFile
@@ -162,17 +163,20 @@ const StudentProfile = () => {
             </Button>
           </Box>
         </Box>
+        
+        
         <Grid
           templateColumns={{ base: "repeat(1, 1fr)", md: "repeat(2, 1fr)" }}
           gap="1"
           w="95%"
+          
         >
           {/* Input Fields */}
           {pageData.map((dataKey, index) => (
             <GridItem key={index} w="100%">
-              <Box key={index} w={{ base: "100%", md: "70%" }} m="auto">
+              <Box key={index} w={{ base: "100%", md: "90%" }} m="auto">
                 <Field.Root>
-                  <Field.Label fontSize="xs" textTransform="capitalize" my={2}>
+                  <Field.Label fontSize="xs" textTransform="capitalize" my={2} mx={1}>
                     {getDisplayLabel(dataKey)}
                   </Field.Label>
                 </Field.Root>
@@ -203,7 +207,7 @@ const StudentProfile = () => {
           spinnerPlacement="start"
           type="submit"
           fontWeight="semibold"
-          w={{ base: "95%", md: "81%" }}
+          w={{ base: "95%", md: "90%" }}
           my={5}
           p={6}
           bg="blue.500"

@@ -14,7 +14,6 @@ import { LuArrowLeft } from "react-icons/lu";
 import manikin from "../../../assets/manikin.png";
 import EditParent from "../parent/editParent";
 import Children from "./children";
-// import DeleteUserPopover from "../deleteUserPopover";
 import DeleteUserPopover from "../parent/deleteUserPopover";
 
 // Define the possible profile view states
@@ -54,7 +53,7 @@ const MyIgrade = () => {
         return <Children />;
       case "Quiz Report":
       case "Refer a Friend":
-        return <Text>Coming soon</Text>; // Placeholder for future views
+        return <Text>Coming soon</Text>; 
       case "igrade":
       default:
         return renderMainView();
@@ -78,8 +77,9 @@ const MyIgrade = () => {
           my={5}
           align="center"
           justify="center"
-          gap={{ md: 6}}
+          gap={{ md: 4}}
           w="90%"
+          
         >
           <Box
             w={"40%"}
@@ -94,8 +94,8 @@ const MyIgrade = () => {
               alignItems="center"
               bg="textFieldColor"
               overflow="hidden"
-              w="85px"
-              h="85px"
+              w="75px"
+              h="75px"
               borderRadius="2xl"
               boxShadow="xs"
             >
@@ -113,17 +113,13 @@ const MyIgrade = () => {
               )}
             </Box>
           </Box>
-          <Box w="40%">
-            <Heading as="h1" my={2}>
+          <Box w="40%" >
+            <Heading as="h1" mt={1} fontSize='md'>
               {parent[0].firstname} {parent[0].lastname}
             </Heading>
             <Text
               fontSize="xs"
-              bg="textFieldColor"
-              p={1}
-              rounded="2xl"
-              textAlign="center"
-              w={{base: '100%', md:'50%'}}
+              w={{base: '100%', md:'45%'}}
             >
               iGrade Parent
             </Text>
@@ -221,6 +217,7 @@ const MyIgrade = () => {
         mb={5}
         mx={2}
         cursor="pointer"
+        fontSize={{ base: "lg", md: "lg" }}
       >
         {profileState !== "igrade" && <LuArrowLeft onClick={handleBack} />}
         {profileState === "igrade" ? "Settings" : profileState}

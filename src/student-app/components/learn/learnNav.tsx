@@ -20,10 +20,11 @@ const LearnNav = ({ learnState, setLearnState }: Props) => {
       gap={4}
       p={4}
       bg="white"
-      shadow="md"
+      shadow="sm"
       rounded="md"
       w="full"
       m="auto"
+      mt={2}
       mb={5}
     >
       {navItems.map((item, idx) => (

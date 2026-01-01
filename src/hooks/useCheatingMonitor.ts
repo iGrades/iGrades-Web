@@ -1,16 +1,15 @@
-
 import { useState, useCallback } from "react";
 import { toaster } from "@/components/ui/toaster";
 
 export type CheatingType =
-  | "tab_switch" // 5 points
-  | "multiple_persons" // 20 points
-  | "eye_tracking" // 10 points (e.g., looking away from screen frequently)
-  | "audio_anomaly" // 15 points (e.g., background noise, multiple voices)
-  | "phone_detection" // 20 points
-  | "screenshot" // 10 points
-  | "screen_recording" // 15 points
-  | "face_mismatch"; // 25 points (face recognition fails)
+  | "tab_switch"
+  | "multiple_persons" // non functional
+  | "eye_tracking" // non functional
+  | "audio_anomaly"
+  | "phone_detection" // non functional
+  | "screenshot"
+  | "screen_recording"
+  | "face_mismatch"; // non functional
 
 const getPointsForType = (type: CheatingType): number => {
   switch (type) {
@@ -31,54 +30,54 @@ const getPointsForType = (type: CheatingType): number => {
     case "face_mismatch":
       return 25;
     default:
-      return 10; 
+      return 10;
   }
 };
 
-export const useCheatingMonitor = (handleSubmitAll: () => void) => {
+export const useCheatingMonitor = (
+  handleSubmitAll: () => void,
+  disabled: boolean,
+) => {
   const [cheatingScore, setCheatingScore] = useState(0);
 
-  // WRAP reportInfraction IN useCallback AND USE FUNCTIONAL UPDATE
   const reportInfraction = useCallback(
     (type: CheatingType, customMessage?: string) => {
-      const points = getPointsForType(type);
+      // If monitoring is disabled (quiz ended), exit immediately
+      if (disabled) return;
 
-      // Use functional update (prevScore) 
-      setCheatingScore((prevScore) => {
-        const newScore = prevScore + points;
+      setTimeout(() => {
+        const points = getPointsForType(type);
 
-        const pointsLeft = Math.max(100 - newScore, 0);
-        const defaultMessage = `Infraction detected: ${type.replace(
-          "_",
-          " "
-        )}. +${points} points.`;
-        const message = customMessage || defaultMessage;
-        const warning =
-          pointsLeft > 0
-            ? `Points left before auto-submit: ${pointsLeft}`
-            : "Score reached 100! Final warning - quiz will auto-submit in 5 seconds.";
+        setCheatingScore((prevScore) => {
+          const newScore = prevScore + points;
+          const pointsLeft = Math.max(100 - newScore, 0);
 
-        // Show toast with the calculated newScore/pointsLeft
-        toaster.create({
-          title: "Cheating Alert",
-          description: `${message} ${warning}`,
-          type: pointsLeft > 0 ? "warning" : "error",
-          duration: 5000,
-          closable: true,
+          const defaultMessage = `Infraction detected: ${type.replace("_", " ")}. +${points} points.`;
+          const message = customMessage || defaultMessage;
+          const warning =
+            pointsLeft > 0
+              ? `Points left before auto-submit: ${pointsLeft}`
+              : "Score reached 100! Final warning - quiz will auto-submit in 5 seconds.";
+
+          toaster.create({
+            title: "Cheating Alert",
+            description: `${message} ${warning}`,
+            type: pointsLeft > 0 ? "warning" : "error",
+            duration: 5000,
+            closable: true,
+          });
+
+          if (newScore >= 100) {
+            setTimeout(() => {
+              handleSubmitAll();
+            }, 5000);
+          }
+
+          return newScore;
         });
-
-        if (newScore >= 100) {
-          setTimeout(() => {
-            handleSubmitAll();
-          }, 5000);
-        }
-
-        // Return the actual new score to update the state
-        return newScore;
-      });
-      // -------------------------------------------------------------------
+      }, 0);
     },
-    [handleSubmitAll] // Depend on handleSubmitAll
+    [handleSubmitAll, disabled],
   );
 
   return {
@@ -86,8 +85,3 @@ export const useCheatingMonitor = (handleSubmitAll: () => void) => {
     reportInfraction,
   };
 };
-
-
-
-
-

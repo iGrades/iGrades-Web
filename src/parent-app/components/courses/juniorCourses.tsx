@@ -15,32 +15,26 @@ interface JuniorCoursesProps {
   onSelectionChange: (selectedCourses: string[]) => void;
 }
 
-const JuniorCourses = ({
-  onSelectionChange,
-}: JuniorCoursesProps) => {
+const JuniorCourses = ({ onSelectionChange }: JuniorCoursesProps) => {
   const [selectedCourses, setSelectedCourses] = useState<string[]>([]);
-  const maxSelection = 8; // Maximum courses for junior students
+  const maxSelection = 8;
 
-  // Junior courses - same for all JSS students
+  // IDs to match generic database naming
   const juniorCourses = [
-    { id: "juniorMath", name: "Mathematics", category: "Core" },
-    { id: "juniorEng", name: "English", category: "Core" },
-    { id: "basicScience", name: "Basic Science", category: "Core" },
-    { id: "basicTech", name: "Basic Technology", category: "Core" },
-    { id: "socialStudies", name: "Social Studies", category: "Core" },
-    { id: "civicEdu", name: "Civic Education", category: "Core" },
-    { id: "businessStudies", name: "Business Studies", category: "Core" },
-    { id: "homeEconomics", name: "Home Economics", category: "Core" },
-    { id: "juniorAgric", name: "Agricultural Science", category: "Core" },
-    { id: "physicalEdu", name: "Physical Education", category: "Core" },
-    {
-      id: "juniorComp",
-      name: "Computer Studies",
-      category: "Elective",
-    },
-    { id: "creativeArts", name: "Creative Arts", category: "Elective" },
-    { id: "music", name: "Music", category: "Elective" },
-  ];
+      { id: "mathematics", name: "Mathematics", category: "Core" },
+      { id: "english", name: "English", category: "Core" },
+      { id: "basic science", name: "Basic Science", category: "Core" },
+      { id: "basic technology", name: "Basic Technology", category: "Core" },
+      { id: "social studies", name: "Social Studies", category: "Core" },
+      { id: "civic education", name: "Civic Education", category: "Core" },
+      { id: "business studies", name: "Business Studies", category: "Core" },
+      { id: "home economics", name: "Home Economics", category: "Core" },
+      { id: "agricultural science", name: "Agricultural Science", category: "Core" },
+      { id: "physical education", name: "Physical Education", category: "Core" },
+      { id: "computer studies", name: "Computer Studies", category: "Elective" },
+      { id: "creative arts", name: "Creative Arts", category: "Elective" },
+      { id: "music", name: "Music", category: "Elective" },
+    ];
 
   const handleCourseChange = (courseId: string) => {
     if (selectedCourses.includes(courseId)) {
@@ -65,7 +59,7 @@ const JuniorCourses = ({
         mb={10}
         mx="auto"
         borderRadius="md"
-        w={{base: 'full', md: '70%'}}
+        w={{ base: "full", md: "70%" }}
       >
         <Alert.Description fontSize="xs">
           You are only allowed to select a maximum of {maxSelection} courses.

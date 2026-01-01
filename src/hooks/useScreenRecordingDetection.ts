@@ -1,9 +1,9 @@
-// hook for heuristic screen recording detection
+// heuristic screen recording detection
 // This function isn't working for OS level commands that can trigger screen recording (e.g Win + Alt + R, Snipping tool, etc...)
 
 import { useEffect, useRef, useState } from "react";
 
-export const useScreenRecordingDetection = (reportInfraction: (type: "screen_recording", customMessage?: string) => void) => {
+export const useScreenRecordingDetection = (reportInfraction: (type: "screen_recording", customMessage?: string) => void, disabled: boolean) => {
   const [longTaskCount, setLongTaskCount] = useState(0);
   const lastInfractionTime = useRef(0);
   const debouncePeriod = 30000;  // 30s debounce between infractions
@@ -11,6 +11,9 @@ export const useScreenRecordingDetection = (reportInfraction: (type: "screen_rec
   const checkIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
+    // If the quiz is finished or in results mode, don't attach listeners
+    if (disabled) return;
+    
     let taskStartTimes: number[] = [];  // Track recent long task timestamps
 
     const observer = new PerformanceObserver((list) => {
@@ -41,5 +44,5 @@ export const useScreenRecordingDetection = (reportInfraction: (type: "screen_rec
       observer.disconnect();
       if (checkIntervalRef.current) clearInterval(checkIntervalRef.current);
     };
-  }, [reportInfraction, longTaskCount, cpuThreshold, debouncePeriod]);
+  }, [reportInfraction, longTaskCount, cpuThreshold, debouncePeriod, disabled]);
 };

@@ -12,7 +12,7 @@ type Props = {
 };
 
 const GraderTable = ({ studentsData }: Props) => {
-  const [modal, setModal] = useState<"" | "edit" | "delete">("");
+  const [modal, setModal] = useState<"" | "edit" | "delete" >("");
   const [selectedStudent, setSelectedStudent] = useState<any | null>(null);
   return (
     <>
@@ -162,6 +162,8 @@ const GraderTable = ({ studentsData }: Props) => {
           setStudent={setSelectedStudent}
           modal={modal}
           setModal={setModal}
+          showEditBtn={true}
+          showDeleteBtn={true}
           onClose={() => {
             setModal("");
             setSelectedStudent(null);

@@ -30,7 +30,7 @@ const SettingsNav = ({ settingsState, setSettingsState }: Props) => {
       {navItems.map((item, idx) => (
         <Box
           key={idx}
-          bg={settingsState === item.state ? "#f6f4ffff" : "transparent"}
+          bg={settingsState === item.state ? "#206CE11A" : "transparent"}
           p={2}
           rounded="md"
           w={28}

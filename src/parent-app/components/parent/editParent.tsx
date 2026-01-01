@@ -60,9 +60,9 @@ const EditParent = () => {
       return;
     }
 
-    setIsLoading(true); // Start loading
+    setIsLoading(true); 
 
-    let imageUrl = parentData.profile_image; // Use parentData instead of parent
+    let imageUrl = parentData.profile_image; 
 
     if (selectedFile) {
       const uploadedUrl = await handleImageUpload();
@@ -76,7 +76,7 @@ const EditParent = () => {
     const { error } = await supabase
       .from("parents")
       .update({ ...formData, profile_image: imageUrl })
-      .eq("id", parentData.id) // Use parentData.id
+      .eq("id", parentData.id) 
       .select();
 
     if (error) {
@@ -90,9 +90,9 @@ const EditParent = () => {
 
   return (
     <>
-      <VStack gap={4} mb={10} px={40}>
+      <VStack gap={4} mb={10} px={20}>
         {/* Image Preview */}
-        <Box position="relative">
+        <Box position="relative" >
           <Image
             src={
               selectedFile
@@ -100,9 +100,10 @@ const EditParent = () => {
                 : parentData.profile_image
             }
             alt="Profile"
-            boxSize="100px"
+            boxSize="90px"
             borderRadius="xl"
             objectFit="cover"
+            m='auto'
           />
           <Input
             type="file"
@@ -124,11 +125,13 @@ const EditParent = () => {
             Change Photo
           </Button>
         </Box>
+        
         <Grid
           templateColumns={{ base: "repeat(1, 1fr)", md: "repeat(2, 1fr)" }}
           gap="4"
           my={4}
-          w="95%"
+          w="100%"
+          
         >
           {/* Input Fields */}
           {Object.entries(formData).map(([key, val]) => (
@@ -169,7 +172,7 @@ const EditParent = () => {
           spinnerPlacement="start"
           type="submit"
           fontWeight="semibold"
-          w={{ base: "95%", lg: "95%" }}
+          w={{ base: "100%", lg: "100%" }}
           p={6}
           bg="blue.500"
           color="white"

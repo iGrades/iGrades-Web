@@ -3,6 +3,15 @@ import { supabase } from "@/lib/supabaseClient";
 import { useAuthdStudentData } from "@/student-app/context/studentDataContext";
 import type { QuizAttemptProps, QuizResults, SubjectResult } from "./types";
 
+const getGradeInfo = (percentage: number) => {
+  if (percentage >= 80) return { grade: "A", label: "Excellent", color: "green.500" };
+  if (percentage >= 70) return { grade: "B", label: "Very Good", color: "blue.500" };
+  if (percentage >= 55) return { grade: "C", label: "Good", color: "yellow.500" };
+  if (percentage >= 40) return { grade: "D", label: "Fair", color: "orange.500" };
+  if (percentage >= 30) return { grade: "E", label: "Poor", color: "pink.500" };
+  return { grade: "F", label: "Fail", color: "red.500" };
+};
+
 export const useQuizAttempt = (quizData: QuizAttemptProps["quizData"]) => {
   const [currentSubjectIndex, setCurrentSubjectIndex] = useState(0);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
@@ -46,11 +55,8 @@ export const useQuizAttempt = (quizData: QuizAttemptProps["quizData"]) => {
   const saveAnswersForCurrentSubject = useCallback(async () => {
     try {
       const attemptId = attemptIds[currentSubject.id];
-      if (!attemptId) {
-        console.error("No attempt ID found for subject:", currentSubject.id);
-        return;
-      }
-
+      if (!attemptId) return;
+  
       const currentSubjectAnswers = Object.entries(answers)
         .filter(([questionId]) => {
           const question = quizData.questions.find((q) => q.id === questionId);
@@ -64,15 +70,19 @@ export const useQuizAttempt = (quizData: QuizAttemptProps["quizData"]) => {
           subject_id: currentSubject.id,
           created_at: new Date().toISOString(),
         }));
-
+  
       if (currentSubjectAnswers.length > 0) {
+        // DELETE old answers for this attempt before inserting new ones
+        await supabase
+          .from("attempt_answers")
+          .delete()
+          .eq("attempt_id", attemptId);
+  
         const { error: saveError } = await supabase
           .from("attempt_answers")
           .insert(currentSubjectAnswers);
-
-        if (saveError) {
-          console.error("Error saving answers:", saveError);
-        }
+  
+        if (saveError) console.error("Error saving answers:", saveError);
       }
     } catch (error) {
       console.error("Error in saveAnswersForCurrentSubject:", error);
@@ -183,7 +193,7 @@ export const useQuizAttempt = (quizData: QuizAttemptProps["quizData"]) => {
   const handleSubmitAll = async () => {
     setIsSubmitting(true);
     try {
-      // Save all answers first
+      // 1. Prepare all answers
       const allAnswers = Object.entries(answers)
         .map(([questionId, selected_option]) => {
           const question = quizData.questions.find((q) => q.id === questionId);
@@ -197,107 +207,129 @@ export const useQuizAttempt = (quizData: QuizAttemptProps["quizData"]) => {
           };
         })
         .filter((answer) => answer.attempt_id);
-
+  
       if (allAnswers.length > 0) {
+        // 2. Clear out ALL existing answers for these specific attempts 
+        // This prevents duplicate rows if the student retakes the quiz in the same month
+        const uniqueAttemptIds = [...new Set(allAnswers.map(a => a.attempt_id))];
+        
+        await supabase
+          .from("attempt_answers")
+          .delete()
+          .in("attempt_id", uniqueAttemptIds);
+  
+        // 3. Insert the fresh, final set of answers
         const { error: saveError } = await supabase
           .from("attempt_answers")
           .insert(allAnswers);
-
-        if (saveError) {
-          console.error("Error saving all answers:", saveError);
-        }
+  
+        if (saveError) throw saveError;
       }
-
-      // Calculate and save results
+  
+      // 4. Calculate results
       const results = await calculateResults();
       setQuizResults(results);
-
-      // Update all attempt statuses to completed with scores
-      for (const [subjectId, result] of Object.entries(
-        results.subjectResults
-      )) {
-        const attemptId = attemptIds[subjectId];
-        if (attemptId) {
-          await updateAttemptStatus(attemptId, "completed", result.percentage);
-
-          // Also save to quiz_scores table for better tracking
-          await saveQuizScore(attemptId, subjectId, result.percentage);
+  
+      // 5. Update attempts and UPSERT scores
+      const updatePromises = Object.entries(results.subjectResults).map(
+        async ([subjectId, result]) => {
+          const attemptId = attemptIds[subjectId];
+          if (attemptId) {
+            // Update status to completed
+            await updateAttemptStatus(attemptId, "completed", result.percentage);
+            // Upsert the score (Update if exists, Insert if new)
+            await saveQuizScore(attemptId, subjectId, result.percentage);
+          }
         }
-      }
-
+      );
+  
+      await Promise.all(updatePromises);
       setShowResults(true);
+  
     } catch (error) {
-      console.error("Error in handleSubmitAll:", error);
+      console.error("Critical error in handleSubmitAll:", error);
+      setError("Failed to save quiz results. Please check your connection.");
+    } finally {
       setIsSubmitting(false);
     }
   };
 
 // save quiz scores
-  const saveQuizScore = async (
-    attemptId: string,
-    subjectId: string,
-    score: number
-  ) => {
-    try {
-      const { error } = await supabase.from("quiz_scores").insert({
+const saveQuizScore = async (
+  attemptId: string,
+  subjectId: string,
+  score: number
+) => {
+  try {
+    // .upsert will update the row if attempt_id already exists
+    const { error } = await supabase.from("quiz_scores").upsert(
+      {
         attempt_id: attemptId,
         student_id: authdStudent?.id,
         subject_id: subjectId,
         score: score,
         completed_at: new Date().toISOString(),
-      });
-
-      if (error) {
-        console.error("Error saving quiz score:", error);
-      }
-    } catch (error) {
-      console.error("Error in saveQuizScore:", error);
-    }
-  };
-
-  const calculateResults = async (): Promise<QuizResults> => {
-    const subjectResults: Record<string, SubjectResult> = {};
-
-    quizData.subjects.forEach((subject) => {
-      const subjectQuestions = quizData.questions.filter(
-        (q) => q.subject_id === subject.id
-      );
-      const subjectAnswers = Object.entries(answers).filter(([questionId]) =>
-        subjectQuestions.some((q) => q.id === questionId)
-      );
-
-      let correctAnswers = 0;
-      subjectAnswers.forEach(([questionId, userAnswer]) => {
-        const question = subjectQuestions.find((q) => q.id === questionId);
-        if (question && userAnswer === question.correct_option) {
-          correctAnswers++;
-        }
-      });
-
-      const totalQuestions = subjectQuestions.length;
-      const percentage =
-        totalQuestions > 0 ? (correctAnswers / totalQuestions) * 100 : 0;
-      const passed = percentage >= 55;
-
-      subjectResults[subject.id] = {
-        correct: correctAnswers,
-        total: totalQuestions,
-        percentage: Math.round(percentage),
-        passed,
-      };
-    });
-
-    const overallPassed = Object.values(subjectResults).every(
-      (result) => result.passed
+      },
+      { onConflict: 'attempt_id' } 
     );
 
-    return {
-      subjectResults,
-      overallPassed,
-      timestamp: new Date().toISOString(),
-      attemptIds,
+    if (error) console.error("Error upserting quiz score:", error);
+  } catch (error) {
+    console.error("Error in saveQuizScore:", error);
+  }
+};
+
+const calculateResults = async (): Promise<QuizResults> => {
+  const subjectResults: Record<string, SubjectResult> = {};
+
+  quizData.subjects.forEach((subject) => {
+    const subjectQuestions = quizData.questions.filter(
+      (q) => q.subject_id === subject.id
+    );
+    const subjectAnswers = Object.entries(answers).filter(([questionId]) =>
+      subjectQuestions.some((q) => q.id === questionId)
+    );
+
+    let correctAnswers = 0;
+    subjectAnswers.forEach(([questionId, userAnswer]) => {
+      const question = subjectQuestions.find((q) => q.id === questionId);
+      if (question && userAnswer === question.correct_option) {
+        correctAnswers++;
+      }
+    });
+
+    const totalQuestions = subjectQuestions.length;
+    const percentage = totalQuestions > 0 ? (correctAnswers / totalQuestions) * 100 : 0;
+    const roundedPercentage = Math.round(percentage);
+    
+    const gradeData = getGradeInfo(roundedPercentage);
+
+    subjectResults[subject.id] = {
+      correct: correctAnswers,
+      total: totalQuestions,
+      percentage: roundedPercentage,
+      grade: gradeData.grade,
+      gradeLabel: gradeData.label,
+      passed: roundedPercentage >= 40,
     };
+  });
+
+  const resultsArray = Object.values(subjectResults);
+  const totalPercentage = resultsArray.reduce((acc, curr) => acc + curr.percentage, 0);
+  const averagePercentage = resultsArray.length > 0 ? Math.round(totalPercentage / resultsArray.length) : 0;
+  
+  const overallGradeData = getGradeInfo(averagePercentage);
+
+  return {
+    subjectResults,
+    overallPassed: averagePercentage >= 40,
+    overallGrade: overallGradeData.grade,
+    overallGradeLabel: overallGradeData.label,
+    timestamp: new Date().toISOString(), // This will be the unique 'completed_at' mark
+    attemptIds,
+    studentAnswers: answers,
   };
+};
 
   // Return all the necessary functions and state
   return {

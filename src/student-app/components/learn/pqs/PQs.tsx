@@ -34,7 +34,7 @@ const PQs = () => {
      {showSubjectList ? (
       <SubjectsList onBack={() => setShowSubjectList(false)} selectedExam={selectedExam} />
      ) : (
-       <Box bg="white" rounded="lg" shadow="lg" p={4} mb={20} h="75vh">
+       <Box bg="white" rounded="lg" shadow="sm"  p={4} mb={20} h={{base: 'auto', lg: '75vh'}}>
         <Heading color="#333951">Select Exam Type</Heading>
 
         <Grid
@@ -53,7 +53,7 @@ const PQs = () => {
               key={exam.type}
               p={4}
               w={{ base: "100%", lg: "90%" }}
-              h={{ base: "auto", md: "auto", lg: "96" }}
+              h={{ base: "auto", md: "72", lg: "96" }}
               bg="textFieldColor"
               borderWidth="1px"
               borderRadius="lg"
@@ -64,7 +64,7 @@ const PQs = () => {
               <Heading fontSize="xl" color="#333951" mb={2}>
                 {exam.type}
               </Heading>
-              <Text color="#333951" w={40}>
+              <Text color="#333951" w={{md: 40}}>
                 {exam.name}
               </Text>
               <Flex
@@ -76,13 +76,13 @@ const PQs = () => {
                 <Image
                   src={exam.img}
                   alt={exam.type}
-                  height="200px"
-                  mt={6}
+                  height={{base: "200px", md: "170px", lg: "200px"}}
+                  mt={{base: 6, md: -4, lg: 6}}
                   objectFit="cover"
                   p={{ base: 4, md: 5, lg: 3 }}
                 />
               </Flex>
-              <Flex justify="flex-end" align="center" my={4} fontWeight="500">
+              <Flex justify="flex-end" align="center" my={{base: 4, md: -6, lg: 4}} fontWeight="500">
                 <GoArrowRight size={24} color="#206CE1" />
               </Flex>
             </Box>

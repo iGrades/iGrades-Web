@@ -1,125 +1,3 @@
-// import { Box, Heading, Icon, Text, Flex, Button } from "@chakra-ui/react";
-// import { GiPriceTag } from "react-icons/gi";
-// import { IoIosCheckmarkCircle } from "react-icons/io";
-
-// const Subscription = () => {
-//   const subscriptionPlans = [
-//     {
-//       id: "basic",
-//       name: "Basic",
-//       text: "Ideal for beginners starting their learning journey.",
-//       price: "Zero Fee",
-//       desc: [
-//         "Basic Feature 1",
-//         "Basic Feature 2",
-//         "Basic Feature 3",
-//         "Basic Feature 4",
-//       ],
-//     },
-//     {
-//       id: "Standard",
-//       name: "Standard",
-//       text: "Perfect for regular learners seeking more features.",
-//       price: "₦15,000",
-//       desc: [
-//         "All Basic Features Inclusive",
-//         "Standard Feature 2",
-//         "Standard Feature 3",
-//         "Standard Feature 4",
-//       ],
-//     },
-//     {
-//       id: "premium",
-//       name: "Premium",
-//       text: "Best for dedicated learners wanting the full experience.",
-//       price: "₦25,000",
-//       desc: [
-//         "All Standard Features Inclusive",
-//         "Premium 2",
-//         "Premium 3",
-//         "Premium 4",
-//       ],
-//     },
-//   ];
-
-//   return (
-//     <Box
-//       bg="white"
-//       rounded="lg"
-//       shadow="lg"
-//       p={4}
-//       mb={20}
-//       h={{ base: "auto", md: "75vh" }}
-//     >
-//       <Flex
-//         direction={{ base: "column", md: "row" }}
-//         justify="space-around"
-//         align="center"
-//         gap={5}
-//         mt={10}
-//       >
-//         {subscriptionPlans.map((plan) => (
-//           <Box
-//             key={plan.id}
-//             border="1px"
-//             borderColor="gray.200"
-//             p={4}
-//             rounded="xl"
-//             shadow="sm"
-//             textAlign="center"
-//           >
-//             <Heading color="on_backgroundColor" my={1}>
-//               {plan.name}
-//             </Heading>
-//             <Text fontSize="xs" color="fieldTextColor">
-//               {plan.text}
-//             </Text>
-//             <Heading my={4} fontSize="2xl" color="on_backgroundColor">
-//               {plan.price}
-//             </Heading>
-//             <Button
-//               w="full"
-//               my={2}
-//               p={4}
-//               bg="primaryColor"
-//               color="on_primaryColor"
-//               rounded="xl"
-//             >
-//               Get {plan.name}
-//             </Button>
-//             <Text
-//               textAlign="left"
-//               mt={4}
-//               fontSize="xs"
-//               fontWeight="semibold"
-//               color="gray.500"
-//             >
-//               {plan.name} plan for all users
-//             </Text>
-//             {plan.desc.map((feature, index) => (
-//               <Flex align="center" key={index} gap={2} mt={2}>
-//                 <Icon>
-//                   <IoIosCheckmarkCircle color="green" size="14px" />
-//                 </Icon>
-//                 <Text key={index} fontSize="xs" color="gray.500">
-//                   {" "}
-//                   {feature}
-//                 </Text>
-//               </Flex>
-//             ))}
-//           </Box>
-//         ))}
-//       </Flex>
-//     </Box>
-//   );
-// };
-
-// export default Subscription;
-
-
-
-
-
 import React from "react";
 import {
   Box,
@@ -129,8 +7,8 @@ import {
   Flex,
   Button,
 } from "@chakra-ui/react";
-import { toaster } from "@/components/ui/toaster";
-import { GiPriceTag } from "react-icons/gi";
+// import { toaster } from "@/components/ui/toaster";
+// import { GiPriceTag } from "react-icons/gi";
 import { IoIosCheckmarkCircle } from "react-icons/io";
 import { usePaystack } from "@/hooks/usePaystack";
 import { useAuthdStudentData } from "@/student-app/context/studentDataContext";
@@ -170,7 +48,7 @@ const Subscription: React.FC = () => {
     {
       id: "premium",
       name: "Premium",
-      text: "Best for dedicated learners wanting the full experience.",
+      text: "Best for dedicated learners wanting full experience.",
       price: "₦25,000",
       amount: 2500000, // 25,000 Naira in kobo
       desc: [
@@ -202,10 +80,10 @@ const Subscription: React.FC = () => {
   return (
     <Box
       bg="white"
-      rounded="lg"
-      shadow="lg"
+      rounded="md"
+      shadow="sm"
       p={4}
-      mb={20}
+      mb={10}
       h={{ base: "auto", md: "75vh" }}
     >
       <Flex
@@ -224,7 +102,7 @@ const Subscription: React.FC = () => {
             rounded="xl"
             shadow='sm'
             textAlign="center"
-            w={{ base: "100%", md: "30%" }}
+            w={{ base: "100%", md: '40%', lg: "30%" }}
           >
             <Heading color="on_backgroundColor" my={1}>
               {plan.name}

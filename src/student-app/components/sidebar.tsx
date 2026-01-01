@@ -21,7 +21,6 @@ const Sidebar = () => {
     { icon: AiTwotoneSetting, label: "Settings", value: "settings" },
     // { icon: AiTwotoneSetting, label: "Community", value: "community" },
   ];
-
   return (
     <>
       <Box
@@ -71,16 +70,16 @@ const Sidebar = () => {
         as="aside"
         display={{ base: "block", lg: "none" }}
         position="fixed"
-       bottom={{ base: 0, md: 2 }}
+        bottom={{ base: 0, md: 2 }}
         left="50%"
         transform="translateX(-50%)"
         bg="white"
         borderRadius={{ base: 'none', md: "2xl" }}
-       boxShadow={{base: 'none', md: 'xl'}}
-      px={{ base: 0, md: 1 }}
+        boxShadow={{base: 'none', md: 'xl'}}
+        px={{ base: 0, md: 1 }}
         py={{ base: 0, md: 1 }}
         mt={40}
-        maxW="md"
+        maxW="lg"
         width={{ base: "100%", md: "90%" }}
         zIndex={1000}
       >
