@@ -152,7 +152,7 @@ const CMS = () => {
       .substring(2)}_${Date.now()}.${fileExt}`;
     const filePath = `${folder}/${fileName}`;
 
-    const { data, error } = await supabase.storage
+    const {  error } = await supabase.storage
       .from("test-resource")
       .upload(filePath, file);
 
@@ -189,7 +189,7 @@ const CMS = () => {
       const fileUrl = await uploadFileToSupabase(file, fileType[0]);
 
       // Create resource record in the database
-      const { data, error } = await supabase
+      const {  error } = await supabase
         .from("resources")
         .insert([
           {

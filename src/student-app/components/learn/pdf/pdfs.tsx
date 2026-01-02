@@ -28,7 +28,7 @@ interface PDFsResource {
 
 const Pdfs = () => {
   const { authdStudent } = useAuthdStudentData();
-  const [loading, setLoading] = useState(false);
+  const [ setLoading] = useState(false);
   const [topicList, setTopicList] = useState(false);
   const [selectedCourse, setSelectedCourse] = useState<string>("");
   const [topics, setTopics] = useState<Topic[]>([]);

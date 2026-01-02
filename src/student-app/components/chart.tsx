@@ -41,28 +41,16 @@ const HomeChart = () => {
     courseConfig[dbName.toLowerCase()]?.color || "#718096";
 
   const getAllStudentSubjects = (): SubjectData[] => {
-    const registeredCourses = authdStudent?.registered_courses;
-    if (!registeredCourses) return [];
+    const registeredCourses: string[] | undefined = authdStudent?.registered_courses;
     
-    let coursesArray: string[] = [];
-    if (Array.isArray(registeredCourses)) {
-      coursesArray = registeredCourses;
-    } else if (typeof registeredCourses === "string") {
-      try {
-        const parsed = JSON.parse(registeredCourses);
-        coursesArray = Array.isArray(parsed) ? parsed : [registeredCourses];
-      } catch {
-        coursesArray = registeredCourses.split(",").map((c: string) => c.trim());
-      }
-    } else {
-      coursesArray = [String(registeredCourses)];
-    }
-
-    return coursesArray.map((dbName) => ({
+    if (!registeredCourses) return [];
+  
+    return registeredCourses.map((dbName) => ({
       name: getSubjectDisplayName(dbName),
       color: getSubjectColor(dbName),
     }));
   };
+
   
   const processQuizProgress = (attempts: any[]) => {
     const monthlyData: Record<string, QuizProgressData> = {};
