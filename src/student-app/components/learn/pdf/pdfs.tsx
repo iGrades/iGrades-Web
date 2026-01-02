@@ -28,7 +28,7 @@ interface PDFsResource {
 
 const Pdfs = () => {
   const { authdStudent } = useAuthdStudentData();
-  const [ setLoading] = useState(false);
+  // const [ setLoading] = useState(false);
   const [topicList, setTopicList] = useState(false);
   const [selectedCourse, setSelectedCourse] = useState<string>("");
   const [topics, setTopics] = useState<Topic[]>([]);
@@ -55,7 +55,7 @@ const Pdfs = () => {
   };
 
   const handleCourseClick = async (courseName: string, dbCourseId: string) => {
-    setLoading(true);
+    // setLoading(true);
     setSelectedCourse(courseName);
 
     try {
@@ -84,7 +84,7 @@ const Pdfs = () => {
     } catch (error) {
       console.error(error);
     } finally {
-      setLoading(false);
+      // setLoading(false);
     }
   };
 

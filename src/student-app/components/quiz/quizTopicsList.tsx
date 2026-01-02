@@ -128,14 +128,14 @@ const QuizTopicsList = ({
 
         // Get class ID
         // let classId = null;
-        if (authdStudent?.class) {
-          const { data } = await supabase
-            .from("classes")
-            .select("id")
-            .eq("name", authdStudent.class)
-            .single();
-          // classId = classData?.id || null;
-        }
+        // if (authdStudent?.class) {
+        //   const { data } = await supabase
+        //     .from("classes")
+        //     .select("id")
+        //     .eq("name", authdStudent.class)
+        //     .single();
+        //   // classId = classData?.id || null;
+        // }
 
         // Get all topic IDs from the topicList
         const allTopicIds = topicList.map((topic) => topic.id);
