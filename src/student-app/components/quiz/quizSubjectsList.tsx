@@ -33,6 +33,7 @@ interface Topic {
   course: string;
 }
 
+
 const QuizSubjectsList = ({
   selectedCourses,
   onCourseSelect,
@@ -64,14 +65,19 @@ const QuizSubjectsList = ({
   //   }
   //   return [String(registered)];
   // };
-  
-  // this function assumes registered_courses is already an array or undefined
+  // 
   const getStudentCoursesArray = (): string[] => {
-    const registered: string[] | undefined = authdStudent?.registered_courses;
-    return registered ?? [];
+    const registered = authdStudent?.registered_courses;
+    if (!registered) return [];
+    if (Array.isArray(registered)) return registered;
+    try {
+      const parsed = JSON.parse(registered);
+      return Array.isArray(parsed) ? parsed : [registered];
+    } catch {
+      return String(registered).split(",").map(c => c.trim());
+    }
   };
-
-
+  
   const isCourseSelected = (courseName: string) => {
     return selectedCourses.includes(courseName);
   };

@@ -43,26 +43,18 @@ const Subjects = () => {
   const { getResourcesByType } = useResources();
 
   // Helper function to convert registered_courses to an array
-  // const getStudentCoursesArray = (): string[] => {
-  //   const registered = authdStudent?.registered_courses;
-  //   if (!registered) return [];
-  //   if (Array.isArray(registered)) return registered;
-  //   if (typeof registered === "string") {
-  //     try {
-  //       const parsed = JSON.parse(registered);
-  //       return Array.isArray(parsed) ? parsed : [registered];
-  //     } catch {
-  //       return registered.split(",").map((course: string) => course.trim());
-  //     }
-  //   }
-  //   return [String(registered)];
-  // };
-  
   const getStudentCoursesArray = (): string[] => {
-    const registered: string[] | undefined = authdStudent?.registered_courses;
-    return registered ?? [];
+    const registered = authdStudent?.registered_courses;
+    if (!registered) return [];
+    if (Array.isArray(registered)) return registered;
+    try {
+      const parsed = JSON.parse(registered);
+      return Array.isArray(parsed) ? parsed : [registered];
+    } catch {
+      return String(registered).split(",").map(c => c.trim());
+    }
   };
-
+  
   const handleCourseClick = async (
     courseName: string,
     dbCourseId: string

@@ -4,6 +4,7 @@ import { useState } from "react";
 import { LuArrowLeft } from "react-icons/lu";
 import YearsList from "./yearsList";
 import { useStudentData, useSubjects } from "@/student-app/context/dataContext";
+import { courseConfig } from "@/student-app/utils/courseConstants";
 
 type Props = {
   onBack: () => void;
@@ -21,129 +22,17 @@ const SubjectsList = ({ onBack, selectedExam }: Props) => {
   const { subjectImages } = useStudentData();
   const { getSubjectByName } = useSubjects();
 
-  // Create a mapping of database course names to display names and colors
-  const courseConfig: Record<string, { displayName: string; color: string }> = {
-    // JUNIOR SECONDARY COURSES
-    juniorMath: {
-      displayName: "Mathematics",
-      color: "#F26946",
-    },
-    juniorEng: { displayName: "English", color: "#4ECDC4" },
-    basicScience: {
-      displayName: "Basic Science",
-      color: "#45B7D1",
-    },
-    basicTech: {
-      displayName: "Basic Technology",
-      color: "#F9A826",
-    },
-    socialStudies: {
-      displayName: "Social Studies",
-      color: "#E84855",
-    },
-    civicEdu: {
-      displayName: "Civic Education",
-      color: "#7D70BA",
-    },
-    businessStudies: {
-      displayName: "Business Studies",
-      color: "#2A9D8F",
-    },
-    homeEconomics: {
-      displayName: "Home Economics",
-      color: "#E76F51",
-    },
-    juniorAgric: {
-      displayName: "Agricultural Science",
-      color: "#2A9D8F",
-    },
-    physicalEdu: {
-      displayName: "Physical Education",
-      color: "#E63946",
-    },
-    juniorComp: {
-      displayName: "Computer Studies",
-      color: "#3A86FF",
-    },
-    creativeArts: {
-      displayName: "Creative Arts",
-      color: "#8338EC",
-    },
-    music: { displayName: "Music", color: "#FB5607" },
-
-    // SENIOR SECONDARY COURSES
-    seniorMath: {
-      displayName: "General Mathematics",
-      color: "#FF6B6B",
-    },
-    seniorEng: { displayName: "English", color: "#4ECDC4" },
-    physics: { displayName: "Physics", color: "#F06595" },
-    chemistry: {
-      displayName: "Chemistry",
-      color: "#339AF0",
-    },
-    biology: { displayName: "Biology", color: "#51CF66" },
-    furtherMath: {
-      displayName: "Further Mathematics",
-      color: "#FF922B",
-    },
-    economics: {
-      displayName: "Economics",
-      color: "#CC5DE8",
-    },
-    accounting: {
-      displayName: "Accounting",
-      color: "#20C997",
-    },
-    commerce: { displayName: "Commerce", color: "#FDA7DF" },
-    government: {
-      displayName: "Government",
-      color: "#D980FA",
-    },
-    literature: {
-      displayName: "Literature",
-      color: "#B53471",
-    },
-    history: { displayName: "History", color: "#EE5A24" },
-    geography: {
-      displayName: "Geography",
-      color: "#A3CB38",
-    },
-    fineArts: { displayName: "Fine Arts", color: "#FFC312" },
-    seniorComp: {
-      displayName: "Computer Science",
-      color: "#1289A7",
-    },
-    french: { displayName: "French", color: "#6F1E51" },
-  };
-
   // Helper function to convert registered_courses to an array
-  const getStudentCoursesArray = () => {
-    const registeredCourses = authdStudent?.registered_courses;
-
-    if (!registeredCourses) return [];
-
-    // If it's already an array, return it
-    if (Array.isArray(registeredCourses)) {
-      return registeredCourses;
+  const getStudentCoursesArray = (): string[] => {
+    const registered = authdStudent?.registered_courses;
+    if (!registered) return [];
+    if (Array.isArray(registered)) return registered;
+    try {
+      const parsed = JSON.parse(registered);
+      return Array.isArray(parsed) ? parsed : [registered];
+    } catch {
+      return String(registered).split(",").map(c => c.trim());
     }
-
-    // If it's a string, try to parse it as JSON or split by commas
-    if (typeof registeredCourses === "string") {
-      try {
-        // Try to parse as JSON first
-        const parsed = JSON.parse(registeredCourses);
-        return Array.isArray(parsed) ? parsed : [registeredCourses];
-      } catch {
-        // If JSON parsing fails, try splitting by commas
-        return (registeredCourses as string)
-          .split(",")
-          .map((course: string) => course.trim());
-      }
-    }
-
-    // If it's some other type, convert to array
-    return [String(registeredCourses)];
   };
 
   const handleCourseClick = async (
@@ -177,24 +66,24 @@ const SubjectsList = ({ onBack, selectedExam }: Props) => {
     console.log("Selected Exam:", selectedExam);
   };
 
-  // Get the student's registered courses as an array
+  // MAP COURSES USING THE CENTRAL CONFIG
   const registeredCoursesArray = getStudentCoursesArray();
 
-  // Map courses with display names, images, and colors from our config
-  const studentCourses = registeredCoursesArray.map((dbCourseName) => {
-    // Find the course in our config (exact match for database names)
-    const config = courseConfig[dbCourseName] || {
-      displayName: dbCourseName, // Fallback to database name if not found
-      color: "#718096", // Default gray color for unknown courses
+  const studentCourses = registeredCoursesArray.map((id) => {
+    // Look up the ID (e.g., "mathematics") in our central config
+    const config = courseConfig[id.toLowerCase()] || {
+      displayName: id, 
+      color: "#718096",
     };
 
     return {
-      dbName: dbCourseName, // Keep original database name for reference
+      dbName: id,
       displayName: config.displayName,
-      image: subjectImages[dbCourseName] || null, // Get image from context
+      image: subjectImages[id] || null,
       color: config.color,
     };
-  });
+  }
+  );
 
   return (
     <>
