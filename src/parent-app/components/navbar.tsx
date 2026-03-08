@@ -12,19 +12,16 @@ type Props = {
   setShowLogoutModal: Dispatch<SetStateAction<boolean>>;
 };
 
-const Navbar = ({setShowLogoutModal}: Props) => {
-const { parent, loading } = useUser();
-const { t } = useTranslation();
-const [value, setValue] = useState<string[]>([]);
+const Navbar = ({ setShowLogoutModal }: Props) => {
+  const { parent, loading } = useUser();
+  const { t } = useTranslation();
+  const [value, setValue] = useState<string[]>([]);
 
+  if (loading) {
+    return <SkeletonText noOfLines={1} gap="4" p={4} />;
+  }
 
-if (loading) {
-  return <SkeletonText noOfLines={1} gap="4" />; 
-}
-
-// Get first parent or empty object
-const currentParent = parent[0] || {};
-  
+  const currentParent = parent[0] || {};
 
   const languages = createListCollection({
     items: [
@@ -41,70 +38,70 @@ const currentParent = parent[0] || {};
         justify="flex-start"
         alignItems="center"
         bg={"textFieldColor"}
-        boxShadow="md"
+        boxShadow="xs"
         position="sticky"
         top="0"
         zIndex="1000"
+        h={{ base: "70px", md: "80px" }} 
       >
-        {/* logo image */}
+        {/* logo image container */}
         <Box
           display="flex"
           alignItems="center"
+          justifyContent="center"
           bg="white"
           shadow={"md"}
-          p={{ base: 6, md: 6, lg: 6 }}
-          w={{ base: "25%", md: "15%" }}
-          mr='1px'
-          // borderRight={"1px solid"}
-          // borderColor={"fieldTextColor"}
+          p={{ base: 4, md: 6 }}
+          w={{ base: "70px", md: "15%", lg: "12%" }} 
+          h="full"
+          mr="1px"
         >
           <Image
             src={logo}
             alt="Logo"
-            // width="120px"
-            w={{ md: "100%", lg: "70%" }}
-            fit="cover"
+            w={{ base: "40px", md: "100%", lg: "70%" }}
+            fit="contain"
           />
         </Box>
 
         <Flex
           bg="white"
-          w="85%"
+          flex="1" 
           justify="space-between"
           alignItems="center"
-          p={{ base: 2, md: 3, lg: 3.5 }}
+          h="full"
+          px={{ base: 3, md: 6 }}
         >
           {/* welcome text */}
-          <Box>
+          <Box minW="0"> 
             <Heading
               as="h1"
-              size={{ base: "lg", md: "xl", lg: "2xl" }}
-              ml={1}
-              fontSize={{ base: "sm", md: "md", lg: "lg" }}
+              size={{ base: "sm", md: "md" }}
+              fontSize={{ base: "14px", md: "16px", lg: "18px" }}
               fontWeight="bold"
               color="on_backgroundColor"
             >
               {t("welcome")} {currentParent.firstname || "User"}, 🤗
             </Heading>
-            <Text ml={1} fontSize="xs" color="greyOthers">
+            <Text 
+              fontSize={{ base: "10px", md: "xs" }} 
+              color="greyOthers"
+              display={{ base: "none", sm: "block" }} 
+            >
               {t("welcome_complement")}
             </Text>
           </Box>
 
-          <Box
-            display="flex"
-            // flexDirection={{ base: "column", md: "row" }}
-            justifyContent="space-between"
+          <Flex
             alignItems="center"
-            mr={{ base: 4, md: 10, lg: 6 }}
-            gap={4}
-            w="20%"
+            gap={{ base: 3, md: 6 }}
+            ml={2}
           >
-            {/* select button */}
+            {/* select button - Hidden on mobile */}
             <Select.Root
               display={{ base: "none", md: "block" }}
               collection={languages}
-              width="100px"
+              width={{ md: "110px", lg: "130px" }}
               value={value}
               onValueChange={(e) => setValue(e.value)}
             >
@@ -113,9 +110,6 @@ const currentParent = parent[0] || {};
                 <Select.Trigger>
                   <Select.ValueText placeholder={t("langEn")} />
                 </Select.Trigger>
-                <Select.IndicatorGroup>
-                  <Select.Indicator />
-                </Select.IndicatorGroup>
               </Select.Control>
               <Portal>
                 <Select.Positioner>
@@ -131,24 +125,26 @@ const currentParent = parent[0] || {};
               </Portal>
             </Select.Root>
 
-            {/* notifiaction bell */}
+            {/* notification bell */}
             <Icon
-              // display={{ base: "none", md: "block" }}
               size="md"
               color="greyOthers"
               cursor="pointer"
+              _active={{ transform: "scale(0.95)" }}
             >
-              <IoNotifications />
+              <IoNotifications size="20px" />
             </Icon>
 
-            <Menu.Root positioning={{ placement: "right-end" }}>
-              <Menu.Trigger rounded="full" cursor="pointer">
-                <AvatarComp
-                  username={`${currentParent.firstname ?? ""} ${
-                    currentParent.lastname ?? ""
-                  }`.trim()}
-                  profileImage={currentParent.profile_image}
-                />
+            <Menu.Root positioning={{ placement: "bottom-end" }}>
+              <Menu.Trigger rounded="full" cursor="pointer" asChild>
+                <Box>
+                  <AvatarComp
+                    username={`${currentParent.firstname ?? ""} ${
+                      currentParent.lastname ?? ""
+                    }`.trim()}
+                    profileImage={currentParent.profile_image}
+                  />
+                </Box>
               </Menu.Trigger>
               <Portal>
                 <Menu.Positioner>
@@ -156,6 +152,7 @@ const currentParent = parent[0] || {};
                     <Menu.Item
                       value="logout"
                       onClick={() => setShowLogoutModal(true)}
+                      color="red.500"
                     >
                       Logout
                     </Menu.Item>
@@ -163,7 +160,7 @@ const currentParent = parent[0] || {};
                 </Menu.Positioner>
               </Portal>
             </Menu.Root>
-          </Box>
+          </Flex>
         </Flex>
       </Flex>
     </>

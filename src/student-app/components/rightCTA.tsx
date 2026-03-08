@@ -53,7 +53,7 @@ const RightCTA = () => {
         </ProgressCircle.Root>
 
         <Text fontSize="xs" color="white" mt={{base: 4, md: 2, lg: 4}}>
-          Lorem ipsum dolor sit amet consectetur adipisicing elit.
+          Access your results and evaluate your performance instantly.
         </Text>
       </Flex>
       
@@ -86,7 +86,7 @@ const RightCTA = () => {
         <Image src={tutorImg} height={{base: "100px", md: "80px", lg: "100px"}} />
 
         <Text fontSize="xs" color="black" mt={{base: 4, md: 2, lg: 4}}>
-          Lorem ipsum dolor sit amet consectetur adipisicing elit.
+          Connect with a qualified tutor and start learning immediately.
         </Text>
       </Flex>
       
@@ -119,7 +119,7 @@ const RightCTA = () => {
         <Image src={tutorImg} height={{base: "100px", md: "80px", lg: "100px"}} />
 
         <Text fontSize="xs" color="black" mt={{base: 4, md: 2, lg: 4}}>
-          Lorem ipsum dolor sit amet consectetur adipisicing elit.
+          Access engaging video lessons designed to simplify complex topics and enhance understanding.
         </Text>
       </Flex>
     </Box>

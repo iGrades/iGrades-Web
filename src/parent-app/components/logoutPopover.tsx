@@ -1,4 +1,4 @@
-import { Box, Heading, Text, Button, Icon, Alert } from "@chakra-ui/react"
+import { Box, Heading, Text, Button, Icon, Alert, VStack } from "@chakra-ui/react"
 import { LuLogOut } from "react-icons/lu";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/lib/supabaseClient";
@@ -9,23 +9,24 @@ type Props = {
 };
 
 const LogoutPopover = ({ setShowLogoutModal }: Props) => {
-     const [alert, setAlert] = useState<{
-        type: "success" | "error";
-        message: string;
-      } | null>(null);
-    
-      const navigate = useNavigate();
-    
-      const handleLogout = async () => {
-        let { error } = await supabase.auth.signOut();
-    
-        if (error) {
-          setAlert({ type: "error", message: error.message });
-          return;
-        }
-        navigate("/login");
-        setAlert({ type: "success", message: "Logged out successfully!" });
-      };
+  const [alert, setAlert] = useState<{
+    type: "success" | "error";
+    message: string;
+  } | null>(null);
+
+  const navigate = useNavigate();
+
+  const handleLogout = async () => {
+    let { error } = await supabase.auth.signOut();
+
+    if (error) {
+      setAlert({ type: "error", message: error.message });
+      return;
+    }
+    navigate("/login");
+    setAlert({ type: "success", message: "Logged out successfully!" });
+  };
+
   return (
     <>
       <Box
@@ -34,116 +35,101 @@ const LogoutPopover = ({ setShowLogoutModal }: Props) => {
         left={0}
         w="100vw"
         h="100vh"
-        bg="rgba(0, 0, 0, 0.6)"
-        zIndex={1000}
+        bg="rgba(0, 0, 0, 0.7)"   
+        zIndex={7000} 
         display="flex"
         justifyContent="center"
         alignItems="center"
-        p={{ base: "2", md: "4" }}
+        p={{ base: 4, md: 6 }}
       >
         <Box
           position="relative"
-          width={{ base: "95%", md: "80%", lg: "50%" }}
+          width={{ base: "100%", sm: "85%", md: "60%", lg: "35%" }}
           maxH="90vh"
-          overflowY="auto"
           bg="white"
-          borderRadius="2xl"
-          boxShadow="lg"
-          p={{ base: "5", md: "10" }}
+          borderRadius="3xl"
+          boxShadow="2xl"
+          p={{ base: 6, md: 10 }}
+          textAlign="center"
         >
-          {/* warning texts */}
-          <Box
-            display="flex"
-            flexDirection="column"
-            justifyContent="space-around"
-            alignItems="center"
-          >
+          {/* Content Section */}
+          <VStack spacing={4} align="center">
             <Icon
-              bg="blue.100"
-              boxSize="70px"
+              bg="blue.50"
+              boxSize={{ base: "60px", md: "70px" }}
               color="primaryColor"
               rounded="full"
-              mb={5}
-              p={2}
+              p={4}
             >
-              <LuLogOut />
+              <LuLogOut size="100%" />
             </Icon>
-            <Heading as="h1" color="backgroundColor2" my={2}>
-              Logout Parent Request
-            </Heading>
-            <Text
-              fontSize="xs"
-              color="on_containerColor"
-              textAlign="center"
-              w={{ base: "100%", md: "80%" }}
-              mb="2"
+            
+            <Heading 
+              as="h1" 
+              fontSize={{ base: "xl", md: "2xl" }} 
+              color="backgroundColor2"
+              lineHeight="1.2"
             >
-              You have clicked the button to logout. All sessions and cookies
-              will be lost
+              Logout Request
+            </Heading>
+            
+            <Text
+              fontSize={{ base: "sm", md: "xs" }}
+              color="gray.600"
+              maxW="90%"
+              lineHeight="tall"
+            >
+              You are about to logout. All active sessions and unsaved data for this session will be cleared.
             </Text>
-          </Box>
+          </VStack>
 
-          {/* Buttons */}
-          <Box
-            display="flex"
-            flexDirection="column"
-            justifyContent="space between"
-            alignItems="center"
-            w={{ base: "100%", md: "90%" }}
-            m="auto"
-            my={5}
-            gap={4}
-          >
-            {/* Logout button */}
+          {/* Buttons Section */}
+          <VStack spacing={3} mt={8} w="full">
             <Button
-              bg="white"
-              color="primaryColor"
-              borderColor="primaryColor"
+              bg="primaryColor"
+              color="white"
               borderRadius="3xl"
-              outline="none"
-              p={6}
-              w={"100%"}
-              fontSize={"sm"}
-              fontWeight={500}
-              _hover={{ bg: "primaryColor", color: "white" }}
+              h="55px" 
+              w="full"
+              fontSize="sm"
+              fontWeight="bold"
+              _active={{ transform: "scale(0.97)" }}
               onClick={handleLogout}
             >
               Yes, logout
             </Button>
 
-            {/* Cancel button */}
             <Button
-              bg="white"
+              variant="outline"
               color="blue.600"
-              borderColor="blue.600"
+              borderColor="blue.200"
               borderRadius="3xl"
-              outline="none"
-              p={6}
-              w={"100%"}
-              fontSize={"sm"}
-              fontWeight={500}
-              _hover={{ bg: "primaryColor", color: "white" }}
+              h="55px"
+              w="full"
+              fontSize="sm"
+              fontWeight="medium"
+              _active={{ transform: "scale(0.97)" }}
               onClick={() => setShowLogoutModal(false)}
             >
               Cancel
             </Button>
-          </Box>
+          </VStack>
+
+          {alert && (
+            <Alert.Root status={alert.type} variant="subtle" mt={6} borderRadius="lg">
+              <Alert.Indicator />
+              <Alert.Content fontSize="xs">
+                <Alert.Title>
+                  {alert.type === "error" ? "Error" : "Success"}
+                </Alert.Title>
+                <Alert.Description>{alert.message}</Alert.Description>
+              </Alert.Content>
+            </Alert.Root>
+          )}
         </Box>
       </Box>
-
-      {alert && (
-        <Alert.Root status={alert.type} variant="subtle" mt={6}>
-          <Alert.Indicator />
-          <Alert.Content>
-            <Alert.Title>
-              {alert.type === "error" ? "Error!" : "Success!"}
-            </Alert.Title>
-            <Alert.Description>{alert.message}</Alert.Description>
-          </Alert.Content>
-        </Alert.Root>
-      )}
     </>
   );
 };
 
-export default LogoutPopover
+export default LogoutPopover;

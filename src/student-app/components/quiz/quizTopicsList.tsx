@@ -64,13 +64,10 @@ const QuizTopicsList = ({
   const [selectedMode, setSelectedMode] = useState<string>("");
   const [selectedTopics, setSelectedTopics] = useState<string[]>([]);
   const [showInstructPage, setShowInstructPage] = useState(false);
-  const [availableTopics, setAvailableTopics] = useState<TopicWithQuizStatus[]>(
-    []
-  );
+  const [availableTopics, setAvailableTopics] = useState<TopicWithQuizStatus[]>([]);
   const [loadingAvailableTopics, setLoadingAvailableTopics] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Use the context hook to get subjectImages
   const { subjectImages } = useStudentData();
   const { authdStudent } = useAuthdStudentData();
 
@@ -91,7 +88,11 @@ const QuizTopicsList = ({
     },
   ];
 
-  // Fetch available topics with quizzes when component mounts or courses change
+  // Stable serialised keys so the effect only re-fires when content actually changes,
+  // not just because the parent handed us a new array reference on re-render.
+  const selectedCoursesKey = JSON.stringify(selectedCourses);
+  const topicListKey = JSON.stringify(topicList.map((t) => t.id));
+
   useEffect(() => {
     const fetchAvailableTopics = async () => {
       if (selectedCourses.length === 0 || topicList.length === 0) {
@@ -103,7 +104,6 @@ const QuizTopicsList = ({
       setError(null);
 
       try {
-        // Get subject IDs from database
         const dbNames = selectedCourses.map((course) => course.dbName);
         const { data: subjectsData, error: subjectsError } = await supabase
           .from("subjects")
@@ -126,69 +126,40 @@ const QuizTopicsList = ({
           })
           .filter((course) => course.id);
 
-        // Get class ID
-        // let classId = null;
-        // if (authdStudent?.class) {
-        //   const { data } = await supabase
-        //     .from("classes")
-        //     .select("id")
-        //     .eq("name", authdStudent.class)
-        //     .single();
-        //   // classId = classData?.id || null;
-        // }
+        // Deduplicate topicList by id — this is the main fix for the duplication bug.
+        // If the parent passes the same topic more than once (e.g. due to re-renders
+        // that append instead of replace), Map deduplication keeps only the first
+        // occurrence of each id.
+        const uniqueTopics = Array.from(
+          new Map(topicList.map((t) => [t.id, t])).values()
+        );
 
-        // Get all topic IDs from the topicList
-        const allTopicIds = topicList.map((topic) => topic.id);
+        const allTopicIds = uniqueTopics.map((t) => t.id);
 
-        // Fetch all quizzes for these subjects and topics
         const { data: existingQuizzes, error: quizzesError } = await supabase
           .from("quizzes")
           .select("id, subject_id, topic_id")
-          .in(
-            "subject_id",
-            coursesWithIds.map((course) => course.id)
-          )
+          .in("subject_id", coursesWithIds.map((c) => c.id))
           .in("topic_id", allTopicIds);
 
         if (quizzesError) throw quizzesError;
 
-        // Create a Set of topic IDs that have quizzes
         const topicsWithQuizzes = new Set(
           existingQuizzes?.map((quiz) => quiz.topic_id) || []
         );
 
-        console.log("Topics with available quizzes:", topicsWithQuizzes);
-        console.log("Total topics from list:", allTopicIds.length);
-        console.log("Topics with quizzes count:", topicsWithQuizzes.size);
-
-        // Filter topics to only include those with quizzes
-        const filteredAvailableTopics = topicList
-          .map((topic) => ({
-            ...topic,
-            hasQuiz: topicsWithQuizzes.has(topic.id),
-          }))
-          .filter((topic) => topic.hasQuiz); // Only keep topics with quizzes
+        // Build the filtered list from the deduplicated array only
+        const filteredAvailableTopics = uniqueTopics
+          .map((topic) => ({ ...topic, hasQuiz: topicsWithQuizzes.has(topic.id) }))
+          .filter((topic) => topic.hasQuiz);
 
         setAvailableTopics(filteredAvailableTopics);
 
-        // Log topics without quizzes for debugging
-        const topicsWithoutQuizzes = topicList.filter(
-          (topic) => !topicsWithQuizzes.has(topic.id)
+        // Drop any selected topics that no longer have quizzes
+        const validSelectedTopics = selectedTopics.filter((id) =>
+          topicsWithQuizzes.has(id)
         );
-        if (topicsWithoutQuizzes.length > 0) {
-          console.warn(
-            "Topics without available quizzes:",
-            topicsWithoutQuizzes
-          );
-        }
-
-        // Clear any previously selected topics that don't have quizzes
-        const validSelectedTopics = selectedTopics.filter((topicId) =>
-          topicsWithQuizzes.has(topicId)
-        );
-
         if (validSelectedTopics.length !== selectedTopics.length) {
-          console.warn("Clearing invalid selected topics");
           setSelectedTopics(validSelectedTopics);
         }
       } catch (err) {
@@ -201,23 +172,17 @@ const QuizTopicsList = ({
     };
 
     fetchAvailableTopics();
-  }, [selectedCourses, topicList, authdStudent?.class]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedCoursesKey, topicListKey]);
 
   const handleRadioChange = (value: string | null) => {
-    if (value) {
-      setSelectedMode(value);
-      console.log("Selected mode:", value);
-    }
+    if (value) setSelectedMode(value);
   };
 
   const handleTopicSelect = (topicId: string) => {
-    setSelectedTopics((prev) => {
-      if (prev.includes(topicId)) {
-        return prev.filter((id) => id !== topicId);
-      } else {
-        return [...prev, topicId];
-      }
-    });
+    setSelectedTopics((prev) =>
+      prev.includes(topicId) ? prev.filter((id) => id !== topicId) : [...prev, topicId]
+    );
   };
 
   const handleSelectAll = (course: string) => {
@@ -226,15 +191,12 @@ const QuizTopicsList = ({
       .map((topic) => topic.id);
 
     setSelectedTopics((prev) => {
-      // If all topics for this course are already selected, deselect all
       const allSelected = courseTopicIds.every((id) => prev.includes(id));
       if (allSelected) {
         return prev.filter((id) => !courseTopicIds.includes(id));
-      } else {
-        // Add all course topics that aren't already selected
-        const newTopics = courseTopicIds.filter((id) => !prev.includes(id));
-        return [...prev, ...newTopics];
       }
+      const newTopics = courseTopicIds.filter((id) => !prev.includes(id));
+      return [...prev, ...newTopics];
     });
   };
 
@@ -247,21 +209,13 @@ const QuizTopicsList = ({
       alert("Please select a quiz mode");
       return;
     }
-    console.log("Starting quiz with:", {
-      mode: selectedMode,
-      topics: selectedTopics,
-      selectedTopicsCount: selectedTopics.length,
-      availableTopicsCount: availableTopics.length,
-    });
     setShowInstructPage(true);
     setShowSideBar(false);
   };
 
-  // Group available topics by course (only topics with quizzes)
+  // Group deduplicated availableTopics by course
   const topicsByCourse = availableTopics.reduce((acc, topic) => {
-    if (!acc[topic.course]) {
-      acc[topic.course] = [];
-    }
+    if (!acc[topic.course]) acc[topic.course] = [];
     acc[topic.course].push(topic);
     return acc;
   }, {} as Record<string, TopicWithQuizStatus[]>);
@@ -305,10 +259,10 @@ const QuizTopicsList = ({
 
           {loadingAvailableTopics && (
             <Box mb={4} p={4} bg="blue.50" borderRadius="md">
-              <Text mb={2} fontSize='xs' fontWeight="semibold">
+              <Text mb={2} fontSize="xs" fontWeight="semibold">
                 Loading available topics...
               </Text>
-              <Progress.Root value={50} colorPalette={"blue"} size="sm">
+              <Progress.Root value={50} colorPalette="blue" size="sm">
                 <Progress.Track>
                   <Progress.Range />
                 </Progress.Track>
@@ -319,15 +273,12 @@ const QuizTopicsList = ({
             </Box>
           )}
 
-          {/* {(selectedMode || selectedTopics.length > 0) && ( */}
           <Box p={4} borderRadius="md">
             <Flex justify="space-between" align="center">
               <Box width={{ base: "45%", md: "50%" }}>
                 <Slider {...settings}>
                   {selectedCourses.map((course, index) => {
-                    // Get the image for this course from the context
                     const courseImage = subjectImages[course.dbName];
-
                     return (
                       <Box key={index} textAlign="center">
                         {courseImage ? (
@@ -360,17 +311,12 @@ const QuizTopicsList = ({
                 rounded={{ base: "xl", md: "3xl" }}
                 fontWeight="500"
                 onClick={handleStartQuiz}
-                disabled={
-                  !selectedMode ||
-                  selectedTopics.length === 0 ||
-                  loadingAvailableTopics
-                }
+                disabled={!selectedMode || selectedTopics.length === 0 || loadingAvailableTopics}
               >
                 Continue <GoArrowRight />
               </Button>
             </Flex>
           </Box>
-          {/* )} */}
 
           <Box mb={4} mt={4} bg="white" shadow="xl" rounded="md" p={4}>
             <RadioGroup.Root
@@ -399,11 +345,7 @@ const QuizTopicsList = ({
                         flex="1"
                         cursor="pointer"
                         border="2px solid"
-                        borderColor={
-                          selectedMode === item.value
-                            ? "blue.300"
-                            : "transparent"
-                        }
+                        borderColor={selectedMode === item.value ? "blue.300" : "transparent"}
                         _hover={{ borderColor: "blue.300" }}
                         transition="all 0.2s"
                       >
@@ -437,13 +379,12 @@ const QuizTopicsList = ({
                 style={{ cursor: "pointer" }}
                 onClick={() => setShowTopicList(false)}
               />
-              <Heading size="sm"> Select Topics for Quiz</Heading>
+              <Heading size="sm">Select Topics for Quiz</Heading>
             </HStack>
             <VStack align="end" gap={1}>
               <Text color="gray.600" fontSize="xs">
                 {selectedTopics.length} topic(s) selected
               </Text>
-        
             </VStack>
           </Flex>
 
@@ -459,23 +400,19 @@ const QuizTopicsList = ({
             ) : (
               <VStack gap={2} align="stretch" mb={{ base: 24, lg: 0 }}>
                 {Object.entries(topicsByCourse).map(([course, topics]) => (
-                  <Box key={course} >
+                  <Box key={course}>
                     <Flex justify="space-between" align="center" mb={5}>
                       <Heading size="sm">{course} Topics</Heading>
-                      <VStack align="end" gap={1}>
-                        <Button
-                          size="sm"
-                          fontSize="xs"
-                          variant="subtle"
-                          onClick={() => handleSelectAll(course)}
-                        >
-                          {topics.every((topic) =>
-                            selectedTopics.includes(topic.id)
-                          )
-                            ? "Deselect All"
-                            : "Select All"}
-                        </Button>
-                      </VStack>
+                      <Button
+                        size="sm"
+                        fontSize="xs"
+                        variant="subtle"
+                        onClick={() => handleSelectAll(course)}
+                      >
+                        {topics.every((topic) => selectedTopics.includes(topic.id))
+                          ? "Deselect All"
+                          : "Select All"}
+                      </Button>
                     </Flex>
                     <Grid
                       templateColumns={{
@@ -495,27 +432,17 @@ const QuizTopicsList = ({
                           onCheckedChange={() => handleTopicSelect(topic.id)}
                         >
                           <Box
-                            bg={
-                              selectedTopics.includes(topic.id)
-                                ? "blue.50"
-                                : "gray.50"
-                            }
+                            bg={selectedTopics.includes(topic.id) ? "blue.50" : "gray.50"}
                             p={3}
                             borderRadius="md"
                             border="1px solid"
                             borderColor={
-                              selectedTopics.includes(topic.id)
-                                ? "blue.300"
-                                : "textFieldColor"
+                              selectedTopics.includes(topic.id) ? "blue.300" : "textFieldColor"
                             }
                             minW={{ base: "175px", md: "225px", lg: "250px" }}
                             cursor="pointer"
                           >
-                            <Flex
-                              justify="space-between"
-                              align="center"
-                              gap={3}
-                            >
+                            <Flex justify="space-between" align="center" gap={3}>
                               <Text fontSize="xs">{topic.name}</Text>
                               <Checkbox.HiddenInput />
                               <Checkbox.Control cursor="pointer" />

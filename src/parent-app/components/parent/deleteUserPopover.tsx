@@ -8,6 +8,7 @@ import {
   Button,
   Text,
   Alert,
+  VStack,
 } from "@chakra-ui/react";
 import { MdErrorOutline } from "react-icons/md";
 import { useNavigate } from "react-router-dom";
@@ -32,52 +33,55 @@ const DeleteUserPopover = ({
   const [isDeleting, setIsDeleting] = useState(false);
   const navigate = useNavigate();
 
-  const deleteUser = async () => {
-    if (!parent[0]?.id) return;
-
-    setIsDeleting(true);
-    try {
-      // Delete profile image if exists
-      if (parent[0].profile_image) {
-        const publicUrl = parent[0].profile_image;
-        const parts = publicUrl.split("/");
-        const bucketIndex = parts.findIndex(
-          (part: string) => part === "profile-photos"
-        );
-
-        if (bucketIndex > -1) {
-          const filePath = parts.slice(bucketIndex + 1).join("/");
-          const { error: storageError } = await supabase.storage
-            .from("profile-photos")
-            .remove([filePath]);
-
-          if (storageError) throw storageError;
+    const deleteUser = async () => {
+      if (!parent[0]?.id) return;
+  
+      setIsDeleting(true);
+      try {
+        // Delete profile image if exists
+        if (parent[0].profile_image) {
+          const publicUrl = parent[0].profile_image;
+          const parts = publicUrl.split("/");
+          const bucketIndex = parts.findIndex(
+            (part: string) => part === "profile-photos"
+          );
+  
+          if (bucketIndex > -1) {
+            const filePath = parts.slice(bucketIndex + 1).join("/");
+            const { error: storageError } = await supabase.storage
+              .from("profile-photos")
+              .remove([filePath]);
+  
+            if (storageError) throw storageError;
+          }
         }
+  
+        // Delete user record
+        const { error } = await supabase
+          .from("parents")
+          .delete()
+          .eq("id", parent[0].id);
+  
+        if (error) throw error;
+  
+        // Sign out the user
+        const { error: signOutError } =
+          await supabase.auth.admin.deleteUser(parent[0].user_id);
+        if (signOutError) throw signOutError;
+  
+        setAlert({ type: "success", message: "Account deleted successfully" });
+        navigate("/login");
+      } catch (error) {
+        console.error("Delete error:", error);
+        setAlert({ type: "error", message: "Failed to delete account" });
+      } finally {
+        setIsDeleting(false);
+        setShowDeleteConfirm(false);
       }
+    };
+  
+    if (!showDeleteConfirm) return null;
 
-      // Delete user record
-      const { error } = await supabase
-        .from("parents")
-        .delete()
-        .eq("id", parent[0].id);
-
-      if (error) throw error;
-
-      // Sign out the user
-      const { error: signOutError } =
-        await supabase.auth.admin.deleteUser(parent[0].user_id);
-      if (signOutError) throw signOutError;
-
-      setAlert({ type: "success", message: "Account deleted successfully" });
-      navigate("/login");
-    } catch (error) {
-      console.error("Delete error:", error);
-      setAlert({ type: "error", message: "Failed to delete account" });
-    } finally {
-      setIsDeleting(false);
-      setShowDeleteConfirm(false);
-    }
-  };
 
   if (!showDeleteConfirm) return null;
 
@@ -88,107 +92,95 @@ const DeleteUserPopover = ({
       left={0}
       w="100vw"
       h="100vh"
-      bg="rgba(0, 0, 0, 0.6)"
-      zIndex={1000}
+      bg="rgba(0, 0, 0, 0.7)"
+      zIndex={6000} 
       display="flex"
       justifyContent="center"
       alignItems="center"
-      p={{ base: "2", md: "4" }}
+      p={{ base: 4, md: 6 }}
     >
       <Box
         position="relative"
-        width={{ base: "95%", md: "70%", lg: "40%" }}
+        width={{ base: "100%", sm: "85%", md: "70%", lg: "35%" }}
         maxH="90vh"
         overflowY="auto"
         bg="white"
-        borderRadius="2xl"
-        boxShadow="lg"
-        p={{ base: "5", md: "10" }}
+        borderRadius="3xl"
+        boxShadow="2xl"
+        p={{ base: 6, md: 10 }}
       >
         {/* Warning Content */}
-        <Box
-          display="flex"
-          flexDirection="column"
-          justifyContent="space-around"
-          alignItems="center"
-        >
+        <VStack gap={4} textAlign="center">
           <Icon
-            bg="red.100"
-            boxSize="70px"
-            color="red.400"
+            bg="red.50"
+            boxSize={{ base: "60px", md: "70px" }}
+            color="red.500"
             rounded="full"
-            mb={5}
+            p={4}
           >
-            <MdErrorOutline />
+            <MdErrorOutline size="100%" />
           </Icon>
-          <Heading as="h1" fontSize="2xl" color="backgroundColor2" my={2}>
-            Delete Account Request
+          
+          <Heading 
+            as="h1" 
+            fontSize={{ base: "xl", md: "2xl" }} 
+            color="red.600" 
+          >
+            Delete Account?
           </Heading>
+          
           <Text
-            fontSize="xs"
-            color="on_containerColor"
-            textAlign="center"
-            w={{ base: "100%", md: "80%" }}
-            mb="2"
+            fontSize={{ base: "sm", md: "xs" }}
+            color="gray.600"
+            maxW="90%"
+            lineHeight="tall"
           >
             This will permanently delete your account and all associated data.
-            This action cannot be undone.
+            <strong> This action cannot be undone.</strong>
           </Text>
-        </Box>
+        </VStack>
 
-        {/* Buttons */}
-        <Box
-          display="flex"
-          flexDirection="column"
-          justifyContent="space between"
-          alignItems="center"
-          w={{ base: "100%", md: "90%" }}
-          m="auto"
-          my={5}
-          gap={4}
-        >
+        {/* Action Buttons */}
+        <VStack gap={3} mt={8} w="full">
           <Button
-            bg="white"
-            color="primaryColor"
-            borderColor="primaryColor"
+            bg="red.500" 
             borderRadius="3xl"
-            outline="none"
-            p={6}
-            w={"100%"}
-            fontSize={"sm"}
-            fontWeight={500}
-            _hover={{ bg: "primaryColor", color: "white" }}
+            h="55px"
+            w="full"
+            fontSize="sm"
+            fontWeight="bold"
+            _hover={{ bg: "red.600" }}
+            _active={{ transform: "scale(0.98)" }}
             onClick={deleteUser}
             loading={isDeleting}
-            loadingText="Deleting..."
+            loadingText="Deleting Account..."
           >
             Yes, delete permanently
           </Button>
 
           <Button
-            bg="white"
-            color="blue.600"
-            borderColor="blue.600"
+            variant="outline"
+            color="gray.600"
+            borderColor="gray.300"
             borderRadius="3xl"
-            outline="none"
-            p={6}
-            w={"100%"}
-            fontSize={"sm"}
-            fontWeight={500}
-            _hover={{ bg: "primaryColor", color: "white" }}
+            h="55px"
+            w="full"
+            fontSize="sm"
+            fontWeight="medium"
+            _active={{ transform: "scale(0.98)" }}
             onClick={() => setShowDeleteConfirm(false)}
             disabled={isDeleting}
           >
             Cancel
           </Button>
-        </Box>
+        </VStack>
 
         {alert && (
-          <Alert.Root status={alert.type} variant="subtle" mt={6}>
+          <Alert.Root status={alert.type} variant="subtle" mt={6} borderRadius="lg">
             <Alert.Indicator />
-            <Alert.Content>
+            <Alert.Content fontSize="xs">
               <Alert.Title>
-                {alert.type === "error" ? "Error!" : "Success!"}
+                {alert.type === "error" ? "Error" : "Success"}
               </Alert.Title>
               <Alert.Description>{alert.message}</Alert.Description>
             </Alert.Content>

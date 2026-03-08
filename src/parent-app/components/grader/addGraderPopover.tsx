@@ -1,4 +1,4 @@
-import { Box, Button } from "@chakra-ui/react";
+import { Box, Button, Icon } from "@chakra-ui/react";
 import { LiaUserTimesSolid } from "react-icons/lia";
 import AddGrader from "./addGrader";
 import type { Dispatch, SetStateAction } from "react";
@@ -18,24 +18,26 @@ const AddGraderPopup = ({ onClose, showBox, setShowBox }: AddGraderPopupProps) =
       w="100vw"
       h="100vh"
       bg="rgba(0, 0, 0, 0.6)"
-      zIndex={1000}
+      zIndex={2000} 
       display="flex"
       justifyContent="center"
-      alignItems="center"
-      p={{ base: "2", md: "4" }}
+      alignItems={{ base: "flex-start", md: "center" }} 
+      p={{ base: "0", md: "4" }}
     >
       <Box
         position="relative"
-        width={{ base: "100%", md: "90%", lg: "50%" }}
-        maxH="90vh"
-        rounded='3xl'
+        width={{ base: "100%", md: "90%", lg: "60%" }}
+        maxH={{ base: "100vh", md: "90vh" }}
+        rounded={{ base: "none", md: "3xl" }}
         overflowY="auto"
+        bg="white" 
+        pb={{ base: "120px", md: "0" }} 
         css={{
           "&::-webkit-scrollbar": {
             display: "none",
           },
-          "-MsOverflowStyle": "none", // IE and Edge
-          "scrollbarWidth": "none", // Firefox
+          "-MsOverflowStyle": "none",
+          "scrollbarWidth": "none",
         }}
       >
         <AddGrader
@@ -47,22 +49,28 @@ const AddGraderPopup = ({ onClose, showBox, setShowBox }: AddGraderPopupProps) =
           setShowBox={setShowBox}
         />
 
-        {/* Close Button */}
+        {/* Close/Cancel Button */}
         <Button
-          position="absolute"
-          top="30px"
-          right="10px"
+          position={{ base: "fixed", md: "absolute" }} 
+          bottom={{ base: "20px", md: "auto" }}
+          top={{ base: "auto", md: "30px" }}
+          right={{ base: "50%", md: "10px" }}
+          transform={{ base: "translateX(50%)", md: "none" }} 
           bg="white"
           color="red.600"
+          border="1px solid"
           borderColor="red.600"
           borderRadius="3xl"
-          outline="none"
-          p={5}
-          w={{ base: "50%", md: "25%", lg: "20%" }}
+          boxShadow="xl"
+          p={6}
+          w={{ base: "90%", md: "120px" }}
           fontSize={"xs"}
+          fontWeight="bold"
+          zIndex={2001}
           onClick={onClose}
+          _active={{ transform: { base: "translateX(50%) scale(0.95)", md: "scale(0.95)" } }}
         >
-          <LiaUserTimesSolid fontSize={"xs"} />
+          <Icon as={LiaUserTimesSolid} mr={2} />
           Cancel
         </Button>
       </Box>

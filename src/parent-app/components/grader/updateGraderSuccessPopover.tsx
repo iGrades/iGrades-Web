@@ -1,102 +1,189 @@
-import { Box, Text, Icon, Button, Heading } from "@chakra-ui/react";
-import { FaCircleCheck } from "react-icons/fa6";
-import type { Dispatch, SetStateAction } from "react";
+import { useState } from "react";
+import { Table, Flex, Box, Text, Image } from "@chakra-ui/react";
+import { GoDotFill } from "react-icons/go";
+import AvatarComp from "@/components/avatar";
+import MenuModal from "../menuModal";
+import EditGraderPopup from "./editGraderPopover";
+import DeleteGraderPopover from "./deleteGraderPopover";
+import addFiles_img from "@/assets/addFiles_img.svg";
 
 type Props = {
-  setShowBox: Dispatch<SetStateAction<boolean>>;
-  onClose: () => void;
+  studentsData: any[];
 };
 
-const UpdateGraderSuccessPopover = ({setShowBox, onClose}: Props) => {
-    const handleBoxes = () => {
-        setShowBox(false)
-        onClose()
-    }
+const GraderTable = ({ studentsData }: Props) => {
+  const [modal, setModal] = useState<"" | "edit" | "delete">("");
+  const [selectedStudent, setSelectedStudent] = useState<any | null>(null);
+
   return (
-    <Box
-      position="fixed"
-      top={0}
-      left={0}
-      w="100vw"
-      h="100vh"
-      bg="rgba(0, 0, 0, 0.6)"
-      zIndex={1000}
-      display="flex"
-      justifyContent="center"
-      alignItems="center"
-      p={{ base: "2", md: "4" }}
-    >
+    <>
       <Box
-        position="relative"
-        width={{ base: "95%", md: "70%", lg: "40%" }}
-        maxH="90vh"
-        overflowY="auto"
+        borderRadius="lg"
+        boxShadow="md"
+        overflow="hidden"
+        p={{ base: 3, md: 6 }} // Less padding on mobile to maximize table space
         bg="white"
-        borderRadius="2xl"
-        boxShadow="lg"
-        p={{ base: "5", md: "10" }}
+        mb={{ base: "100px", lg: "10" }} // Clear the mobile bottom nav bar
+        mt={5}
       >
-        {/* success texts */}
-        <Box
-          display="flex"
-          flexDirection="column"
-          justifyContent="space-around"
-          alignItems="center"
-        >
-          <Icon
-            bg="green.100"
-            boxSize="70px"
-            color="green.400"
-            rounded="full"
-            mb={5}
-            p={2}
-          >
-            <FaCircleCheck />
-          </Icon>
-          <Heading as="h1" fontSize="2xl" color="backgroundColor2" my={2}>
-            Student Updated
-          </Heading>
-          <Text
-            fontSize="xs"
-            color="on_containerColor"
+        {studentsData.length > 0 ? (
+          <Table.ScrollArea border="1px solid" borderColor="gray.100" borderRadius="md">
+            <Table.Root size={{ base: "sm", md: "lg" }} stickyHeader>
+              <Table.Header>
+                <Table.Row bg="gray.50">
+                  <Table.ColumnHeader w="50px"></Table.ColumnHeader>
+                  <Table.ColumnHeader
+                    color="on_backgroundColor"
+                    fontSize="xs"
+                    fontWeight={700}
+                    whiteSpace="nowrap"
+                  >
+                    Name
+                  </Table.ColumnHeader>
+                  <Table.ColumnHeader
+                    color="on_backgroundColor"
+                    fontSize="xs"
+                    fontWeight={700}
+                    whiteSpace="nowrap"
+                  >
+                    School
+                  </Table.ColumnHeader>
+                  <Table.ColumnHeader
+                    color="on_backgroundColor"
+                    fontSize="xs"
+                    fontWeight={700}
+                    whiteSpace="nowrap"
+                  >
+                    Class
+                  </Table.ColumnHeader>
+                  <Table.ColumnHeader
+                    color="on_backgroundColor"
+                    fontSize="xs"
+                    fontWeight={700}
+                    whiteSpace="nowrap"
+                  >
+                    Subscription
+                  </Table.ColumnHeader>
+                  <Table.ColumnHeader w="50px"></Table.ColumnHeader>
+                </Table.Row>
+              </Table.Header>
+              <Table.Body>
+                {studentsData.map((item) => (
+                  <Table.Row key={item.id} _hover={{ bg: "gray.50" }}>
+                    <Table.Cell>
+                      <AvatarComp
+                        username={`${item.firstname ?? ""} ${item.lastname ?? ""}`}
+                        profileImage={item.profile_image}
+                      />
+                    </Table.Cell>
+
+                    <Table.Cell
+                      color="backgrondColor2"
+                      fontSize="xs"
+                      fontWeight={500}
+                      whiteSpace="nowrap"
+                    >
+                      {item.firstname} {item.lastname}
+                    </Table.Cell>
+                    <Table.Cell
+                      color="on_containerColor"
+                      fontWeight={400}
+                      fontSize="xs"
+                      maxW="200px" // Prevents school name from stretching table too wide
+                      isTruncated
+                    >
+                      {item.school}
+                    </Table.Cell>
+                    <Table.Cell
+                      color="on_containerColor"
+                      fontWeight={400}
+                      fontSize="xs"
+                      textTransform="capitalize"
+                    >
+                      {item.class}
+                    </Table.Cell>
+                    <Table.Cell
+                      color="on_containerColor"
+                      fontWeight={400}
+                      fontSize="xs"
+                    >
+                      <Flex align="center" gap="2">
+                        <GoDotFill 
+                          color={
+                            item.subscription === "Premium" ? "green" : 
+                            item.subscription === "Standard" ? "blue" : "yellow"
+                          } 
+                        />
+                        {item.subscription || "Basic"}
+                      </Flex>
+                    </Table.Cell>
+                    <Table.Cell>
+                      <MenuModal
+                        editText="Edit"
+                        deleteText="Delete"
+                        setModal={setModal}
+                        onSelect={(type) => {
+                          setSelectedStudent(item);
+                          setModal(type);
+                        }}
+                      />
+                    </Table.Cell>
+                  </Table.Row>
+                ))}
+              </Table.Body>
+            </Table.Root>
+          </Table.ScrollArea>
+        ) : (
+          <Box
+            w="full"
+            display="flex"
+            flexDirection="column"
+            alignItems="center"
             textAlign="center"
-            w={{ base: "100%", md: "80%" }}
-            mb="2"
+            px={4}
           >
-            You have successfully updated the stuent details
-          </Text>
-        </Box>
-
-        {/* Buttons */}
-        <Box
-          display="flex"
-          flexDirection="column"
-          justifyContent="space between"
-          alignItems="center"
-          w={{ base: "100%", md: "90%" }}
-          m="auto"
-          my={5}
-          gap={4}
-        >
-          {/* View grader button */}
-          <Button
-            bg="primaryColor"
-            color="white"
-            borderColor="primaryColor"
-            borderRadius="3xl"
-            outline="none"
-            p={6}
-            w={"100%"}
-            fontSize={"sm"}
-            fontWeight={500}
-            onClick={handleBoxes}
-          >
-            View your Students
-          </Button>
-        </Box>
+            <Text my={10} fontSize="sm" color="fieldTextColor">
+              You have not added any child yet. Click the button above to add a child.
+            </Text>
+            <Image 
+              src={addFiles_img} 
+              w={{ base: "80%", md: "35%", lg: "20%" }} 
+              opacity={0.8} 
+              mb={10}
+            />
+          </Box>
+        )}
       </Box>
-    </Box>
-  );
-}
 
-export default UpdateGraderSuccessPopover
+      {/* Popovers - handled by existing conditional logic */}
+      {modal === "edit" && selectedStudent && (
+        <EditGraderPopup
+          student={selectedStudent}
+          setStudent={setSelectedStudent}
+          modal={modal}
+          setModal={setModal}
+          showEditBtn={true}
+          showDeleteBtn={true}
+          onClose={() => {
+            setModal("");
+            setSelectedStudent(null);
+          }}
+        />
+      )}
+      {modal === "delete" && selectedStudent && (
+        <DeleteGraderPopover
+          student={selectedStudent}
+          setStudent={setSelectedStudent}
+          modal={modal}
+          setModal={setModal}
+          onClose={() => {
+            setModal("");
+            setSelectedStudent(null);
+          }}
+        />
+      )}
+    </>
+  );
+};
+
+export default GraderTable;

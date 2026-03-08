@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/lib/supabaseClient";
 import { usePassKey } from "@/parent-app/context/passkeyContext";
@@ -13,7 +13,7 @@ import {
   Text,
   PinInput,
   Grid,
-  HStack
+  HStack,
 } from "@chakra-ui/react";
 import type { Dispatch, SetStateAction } from "react";
 
@@ -31,11 +31,27 @@ const ChildrenLogin = ({ setAlert }: Props) => {
   const [email, setEmail] = useState("");
   const [passcode, setPasscode] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+
+  const passcodeRef = useRef<string[]>([]);
+
   const encKey = import.meta.env.VITE_ENC_KEY;
 
+  const handlePasscodeChange = useCallback((e: { value: string[] }) => {
+    passcodeRef.current = e.value;
+    setPasscode(e.value);
+  }, []);
+
   const handleLogin = async () => {
+    const currentPasscode = passcodeRef.current.join("");
+
+    if (!email || currentPasscode.length < 6) {
+      setAlert({ type: "error", message: "Please enter your email and full passcode" });
+      return;
+    }
+
     setIsLoading(true);
-    const encrypted = encrypt(passcode.join(""), encKey);
+
+    const encrypted = encrypt(currentPasscode, encKey);
 
     const { data, error } = await supabase.rpc("get_student_by_credentials", {
       p_email: email,
@@ -44,7 +60,6 @@ const ChildrenLogin = ({ setAlert }: Props) => {
 
     if (error || !data || data.length === 0) {
       console.error("Login error:", error);
-
       setAlert({ type: "error", message: "Invalid email or passcode" });
       setIsLoading(false);
       return;
@@ -59,12 +74,12 @@ const ChildrenLogin = ({ setAlert }: Props) => {
       message: `Welcome back, ${student.firstname}!`,
     });
 
-    setTimeout(() => navigate("/student-dashboard"), 2000);
+    setTimeout(() => navigate("/student-dashboard"), 1000);
   };
 
   return (
-    <Box px={{md: 8}}>
-      <Grid templateColumns={'base: "repeat(1, 1fr)"'}  my={5}>
+    <Box px={{ md: 8 }}>
+      <Grid templateColumns={'base: "repeat(1, 1fr)"'} my={5}>
         <Field.Root>
           <Field.Label
             color={"greyOthers"}
@@ -99,16 +114,10 @@ const ChildrenLogin = ({ setAlert }: Props) => {
             <PinInput.Root
               size="sm"
               value={passcode}
-              onValueChange={(e) => setPasscode(e.value)}
+              onValueChange={handlePasscodeChange}
             >
               <PinInput.HiddenInput />
               <PinInput.Control>
-                {/* <PinInput.Input index={0} />
-              <PinInput.Input index={1} />
-              <PinInput.Input index={2} />
-              <PinInput.Input index={3} />
-              <PinInput.Input index={4} />
-              <PinInput.Input index={5} /> */}
                 {Array.from({ length: 6 }, (_, index) => (
                   <PinInput.Input
                     key={index}

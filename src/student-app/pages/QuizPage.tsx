@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { Flex, Box, Button, Grid, Badge, Text} from "@chakra-ui/react";
-  // import { IoIosAlert } from "react-icons/io";
 import { GoArrowRight, GoX } from "react-icons/go";
 import QuizSubjectsList from "../components/quiz/quizSubjectsList";
 import QuizTopicsList from "../components/quiz/quizTopicsList";

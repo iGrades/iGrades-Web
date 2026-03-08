@@ -15,30 +15,27 @@ const MyChildren = ({ data }: Props) => {
   const [showStudentModal, setShowStudentModal] = useState(false);
   const [selectedStudent, setSelectedStudent] = useState<any>(null);
 
-  // Sort data by created_at (or id) and take the last 4 entries
   const sortedData = [...data]
     .sort((a, b) => {
-      // Use created_at if available, otherwise use id
       const dateA = a.created_at ? new Date(a.created_at).getTime() : a.id || 0;
       const dateB = b.created_at ? new Date(b.created_at).getTime() : b.id || 0;
-      return dateB - dateA; // Descending order
+      return dateB - dateA;
     })
-    .slice(0, 4); // Take the last 4 added
+    .slice(0, 4);
 
   return (
     <>
-      <Flex w="full" mb={{ base: "24", lg: "10" }}>
-        <Box bg="white" boxShadow="md" borderRadius="lg" w="full" my={5} p={4}>
-          <Heading as="h1" fontSize="lg" my={2}>
+      <Flex w="full" mb={{ base: "100px", lg: "10" }}>
+        <Box bg="white" boxShadow="md" borderRadius="lg" w="full" my={5} p={{ base: 3, md: 4 }}>
+          <Heading as="h1" fontSize="lg" my={2} px={1}>
             My Children
           </Heading>
+          
           <Grid
-            templateColumns={{ base: "repeat(1, 1fr)", md: "repeat(2, 2fr)" }}
-            gap={{ md: 6, lg: 10 }}
-            p={{ base: 3, md: 5 }}
-            placeItems="center"
-            w={{ base: "full", md: "100%", lg: "100%" }}
-            m="auto"
+            templateColumns={{ base: "1fr", md: "repeat(2, 1fr)" }}
+            gap={{ base: 3, md: 4, lg: 6 }}
+            p={{ base: 1, md: 2 }}
+            w="full"
           >
             {sortedData.length > 0 ? (
               sortedData.map((student, index) => (
@@ -49,52 +46,54 @@ const MyChildren = ({ data }: Props) => {
                   w="full"
                   bg="textFieldColor"
                   borderRadius="lg"
-                  // boxShadow="xs"
-                  p={{ base: "4", md: "4", lg: "5" }}
-                  my={2}
+                  p={{ base: "3", md: "4", lg: "5" }}
                   cursor="pointer"
+                  transition="transform 0.2s"
+                  _active={{ transform: "scale(0.98)" }} 
                   onClick={() => {
                     setSelectedStudent(student);
                     setShowStudentModal(true);
                   }}
                 >
-                  <Box
-                    display="flex"
-                    justifyItems="space-between"
-                    alignItems="center"
-                  >
+                  <Flex align="center" minW="0"> 
                     <AvatarComp
-                      username={`${student.firstname ?? ""} ${
-                        student.lastname ?? ""
-                      }`}
+                      username={`${student.firstname ?? ""} ${student.lastname ?? ""}`}
                       profileImage={student.profile_image}
                     />
-                    <Box mx={5}>
+                    <Box ml={{ base: 3, md: 5 }} overflow="hidden">
                       <Heading
                         as="h2"
-                        fontSize={{ base: "xs", md: "sm", lg: "md" }}
+                        fontSize={{ base: "sm", md: "sm", lg: "md" }}
                         color="#333951"
+                        truncate
                       >
                         {student.firstname} {student.lastname}
                       </Heading>
                       <Text
                         fontSize="xs"
-                        mb={1}
                         color="#333951"
                         textTransform="capitalize"
+                        truncate
                       >
-                        {student.school} {student.class}
+                        {student.school} • {student.class}
                       </Text>
                     </Box>
-                  </Box>
-                  <Icon as={MdOutlineKeyboardArrowRight} ml={5} fontSize="xl" />
+                  </Flex>
+                  <Icon 
+                    as={MdOutlineKeyboardArrowRight} 
+                    flexShrink={0} 
+                    ml={2} 
+                    fontSize="xl" 
+                    color="greyOthers" 
+                  />
                 </Flex>
               ))
             ) : (
-              <Text>No children added yet.</Text>
+              <Text p={4}>No children added yet.</Text>
             )}
           </Grid>
-          <Flex justify="center">
+
+          <Flex justify="center" mt={4} w="full">
             <AddGraderBtn
               showBox={myChildrenShowBox}
               setShowBox={setMyChildrenShowBox}
@@ -105,6 +104,7 @@ const MyChildren = ({ data }: Props) => {
           </Flex>
         </Box>
       </Flex>
+
       {myChildrenShowBox && (
         <AddGraderPopup
           onClose={() => setMyChildrenShowBox(false)}

@@ -1,66 +1,81 @@
-import { Box, Heading, Flex, Text, Icon, Switch } from "@chakra-ui/react";
+import { Box, Heading, Flex, Text, Icon, Switch, VStack } from "@chakra-ui/react";
 import { BiSolidNotification } from "react-icons/bi";
 import { useState } from "react";
 
 const Notification = () => {
-  // const [notificationOn, setNotificationOn] = useState(false)
   const [checked, setChecked] = useState(false);
+  
   return (
-    <Box bg="white" rounded="lg" shadow="lg" p={4} mb={20} h="75vh">
+    <Box 
+      bg="white" 
+      rounded="2xl" 
+      shadow="sm" 
+      p={{ base: 4, md: 6 }} 
+      h={{ base: "auto", md: "70vh" }} 
+      minH={{ base: "300px", md: "500px" }}
+      mb={{ base: "100px", lg: 10 }}
+    >
       <Heading
         as="h3"
         display="flex"
         alignItems="center"
         justifyContent="flex-start"
         gap={3}
-        mt={3}
-        mb={10}
-        mx={2}
+        mt={2}
+        mb={{ base: 6, md: 10 }}
+        fontSize={{ base: "lg", md: "xl" }}
       >
-        {/* <LuArrowLeft /> */}
         Notifications
       </Heading>
 
       <Flex
+        direction={{ base: "column", sm: "row" }} 
         justify="space-between"
-        align="center"
-        p={{ base: "3", md: "8", lg: "10" }}
+        align={{ base: "flex-start", sm: "center" }}
+        p={{ base: 4, md: 8 }}
         bg="textFieldColor"
-        rounded="lg"
-        shadow="xs"
+        rounded="xl"
+        gap={4}
       >
-        <Flex align="center" justify="center" gap={4}>
+        <Flex align="center" gap={4} flex="1">
           <Icon
             bg="green.100"
-            boxSize="40px"
-            color="green.400"
-            rounded="lg"
-            p={2}
+            boxSize={{ base: "40px", md: "48px" }}
+            color="green.500"
+            rounded="xl"
+            p={2.5}
+            flexShrink={0}
           >
             <BiSolidNotification />
           </Icon>
-          <Box>
-            <Heading as="h4" fontSize="lg">
-              Notifications
+          <VStack align="start" gap={0} overflow="hidden">
+            <Heading as="h4" fontSize={{ base: "md", md: "lg" }}>
+              App Notifications
             </Heading>
-            <Text fontSize="xs">
-              Toggle notifications on or off to control the notifications coming
-              in
+            <Text 
+              fontSize="xs" 
+              color="gray.500" 
+              lineHeight="tall"
+              maxW={{ base: "full", md: "80%" }}
+            >
+              Toggle notifications on or off to control the alerts you receive.
             </Text>
-          </Box>
+          </VStack>
         </Flex>
 
-        <Switch.Root
-          checked={checked}
-          onCheckedChange={(e) => setChecked(e.checked)}
-          colorPalette='blue'
-        >
-          <Switch.HiddenInput />
-          <Switch.Control>
-            <Switch.Thumb />
-          </Switch.Control>
-          <Switch.Label />
-        </Switch.Root>
+        <Box py={{ base: 2, sm: 0 }} alignSelf={{ base: "flex-end", sm: "center" }}>
+          <Switch.Root
+            checked={checked}
+            onCheckedChange={(e) => setChecked(e.checked)}
+            colorPalette='blue'
+            size="lg" 
+          >
+            <Switch.HiddenInput />
+            <Switch.Control>
+              <Switch.Thumb />
+            </Switch.Control>
+          </Switch.Root>
+        </Box>
       </Flex>
     </Box>
   );

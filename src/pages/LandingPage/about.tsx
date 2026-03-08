@@ -47,12 +47,8 @@ const About = () => {
           What is <span style={{ color: "#FD8B3A" }}>iGrade?</span>
         </Heading>
         <Text fontSize="md" color="on_backgroundColor" opacity={0.9}>
-          Lorem ipsum dolor sit amet consectetur adipisicing elit. Similique
-          illo tenetur illum voluptas enim impedit veniam quis dolore possimus
-          tempora, neque officiis accusamus sed laboriosam, blanditiis iure.
-          Magnam, ex molestias illum voluptas enim impedit veniam quis dolore
-          possimus tempora, neque officiis accusamus sed laboriosam, blanditiis
-          iure. Magnam, ex molestias.
+          iGrade is an education-driven freelancing platform designed to connect students seeking academic excellence with skilled tutors, graduates, and subject-matter experts. We combine technology, accountability, and quality control to deliver effective online learning experiences.
+          Students gain access to affordable, structured lessons across various academic levels, while educators monetize their knowledge through flexible teaching opportunities.
         </Text>
       </Box>
 
@@ -131,8 +127,7 @@ const About = () => {
             Tests
           </Heading>
           <Text fontSize="lg" color="on_backgroundColor" opacity={0.9} mt={6}>
-            Easily launch live assignments, quizzes and tests. Student results
-            are automatically entered in the online gradebook
+            Structured academic evaluations designed to measure understanding, track progress, and reinforce learning outcomes.
           </Text>
         </Box>
       </Flex>

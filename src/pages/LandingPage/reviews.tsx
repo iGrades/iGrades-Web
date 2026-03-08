@@ -46,17 +46,20 @@ const Reviews = () => {
         </Heading>
 
         <Text w={{base: '100%', md: '90%'}} fontSize={{base:'md', md: 'md', lg: 'xl'}} color="#696984" mb={6} lineHeight="1.8">
-          iGrade has got more than 100k positive ratings from our users around
+          {/*iGrade has got more than 100k positive ratings from our users around
           the world. <br /> <br />
           Some of the students and teachers were greatly helped by the iGrade.{" "}
           <br /> <br />
-          Are you too? Please give your assessment
+          Are you too? Please give your assessment*/}
+          
+          Students and tutors consistently praise iGrade for delivering high-quality instruction, connecting learners with reliable tutors, and offering flexible, personalized learning experiences. Users love the affordability, convenience, and measurable academic improvements that make iGrade their go-to platform for success.
+
         </Text>
 
         <Button
           w={72}
           p={6}
-          pr={16} // Make extra space for the icon
+          pr={16}
           rounded="3xl"
           border="1px solid"
           borderColor="primaryColor"

@@ -12,80 +12,76 @@ type Props = {
 };
 
 const GraderTable = ({ studentsData }: Props) => {
-  const [modal, setModal] = useState<"" | "edit" | "delete" >("");
+  const [modal, setModal] = useState<"" | "edit" | "delete">("");
   const [selectedStudent, setSelectedStudent] = useState<any | null>(null);
+
   return (
     <>
       <Box
         borderRadius="lg"
         boxShadow="md"
         overflow="hidden"
-        p={6}
+        p={{ base: 3, md: 6 }}
         bg="white"
-        mb={10}
+        mb={{ base: "100px", lg: "10" }}
         mt={5}
       >
         {studentsData.length > 0 ? (
-          <Table.ScrollArea>
-            <Table.Root size="lg" stickyHeader mb={{ base: "24", lg: "10" }}>
+          <Table.ScrollArea border="1px solid" borderColor="gray.100" borderRadius="md">
+            <Table.Root size={{ base: "sm", md: "lg" }} stickyHeader>
               <Table.Header>
-                <Table.Row>
+                <Table.Row bg="gray.50">
+                  <Table.ColumnHeader w="50px"></Table.ColumnHeader>
                   <Table.ColumnHeader
                     color="on_backgroundColor"
-                    fontSize={"xs"}
+                    fontSize="xs"
                     fontWeight={700}
-                  ></Table.ColumnHeader>
-                  <Table.ColumnHeader
-                    color="on_backgroundColor"
-                    fontSize={"xs"}
-                    fontWeight={700}
+                    whiteSpace="nowrap"
                   >
                     Name
                   </Table.ColumnHeader>
                   <Table.ColumnHeader
                     color="on_backgroundColor"
-                    fontSize={"xs"}
+                    fontSize="xs"
                     fontWeight={700}
+                    whiteSpace="nowrap"
                   >
                     School
                   </Table.ColumnHeader>
                   <Table.ColumnHeader
                     color="on_backgroundColor"
-                    fontSize={"xs"}
+                    fontSize="xs"
                     fontWeight={700}
+                    whiteSpace="nowrap"
                   >
                     Class
                   </Table.ColumnHeader>
                   <Table.ColumnHeader
                     color="on_backgroundColor"
-                    fontSize={"xs"}
+                    fontSize="xs"
                     fontWeight={700}
+                    whiteSpace="nowrap"
                   >
                     Subscription
                   </Table.ColumnHeader>
-                  <Table.ColumnHeader
-                    color="on_backgroundColor"
-                    fontSize={"xs"}
-                    fontWeight={700}
-                  ></Table.ColumnHeader>
+                  <Table.ColumnHeader w="50px"></Table.ColumnHeader>
                 </Table.Row>
               </Table.Header>
               <Table.Body>
                 {studentsData.map((item) => (
-                  <Table.Row key={item.id}>
+                  <Table.Row key={item.id} _hover={{ bg: "gray.50" }}>
                     <Table.Cell>
                       <AvatarComp
-                        username={`${item.firstname ?? ""} ${
-                          item.lastname ?? ""
-                        }`}
+                        username={`${item.firstname ?? ""} ${item.lastname ?? ""}`}
                         profileImage={item.profile_image}
                       />
                     </Table.Cell>
 
                     <Table.Cell
                       color="backgrondColor2"
-                      fontSize={"xs"}
-                      fontWeight={400}
+                      fontSize="xs"
+                      fontWeight={500}
+                      whiteSpace="nowrap"
                     >
                       {item.firstname} {item.lastname}
                     </Table.Cell>
@@ -93,6 +89,8 @@ const GraderTable = ({ studentsData }: Props) => {
                       color="on_containerColor"
                       fontWeight={400}
                       fontSize="xs"
+                      maxW="200px" // Prevents school name from stretching table too wide
+                      isTruncated
                     >
                       {item.school}
                     </Table.Cell>
@@ -110,20 +108,16 @@ const GraderTable = ({ studentsData }: Props) => {
                       fontSize="xs"
                     >
                       <Flex align="center" gap="2">
-                        {item.subscription === "Premium" ? (
-                          <GoDotFill color="green" />
-                        ) : item.subscription === "Standard" ? (
-                          <GoDotFill color="blue" />
-                        ) : item.subscription === "Basic" ? (
-                          <GoDotFill color="yellow" />
-                        ) : (
-                          <GoDotFill color="yellow" />
-                        )}
-
+                        <GoDotFill 
+                          color={
+                            item.subscription === "Premium" ? "green" : 
+                            item.subscription === "Standard" ? "blue" : "yellow"
+                          } 
+                        />
                         {item.subscription || "Basic"}
                       </Flex>
                     </Table.Cell>
-                    <Table.Cell cursor="pointer">
+                    <Table.Cell>
                       <MenuModal
                         editText="Edit"
                         deleteText="Delete"
@@ -144,19 +138,25 @@ const GraderTable = ({ studentsData }: Props) => {
             w="full"
             display="flex"
             flexDirection="column"
-            justifyItems="center"
             alignItems="center"
+            textAlign="center"
+            px={4}
           >
-            <Text my={10} fontSize="xs" color="fieldTextColor">
-              You have not added any child yet. Click the button above to add a
-              child
+            <Text my={10} fontSize="sm" color="fieldTextColor">
+              You have not added any child yet. Click the button above to add a child.
             </Text>
-            <Image src={addFiles_img} w={{ md: "35%", lg: "20%" }} my={16} />
+            <Image 
+              src={addFiles_img} 
+              w={{ base: "80%", md: "35%", lg: "20%" }} 
+              opacity={0.8} 
+              mb={10}
+            />
           </Box>
         )}
       </Box>
 
-      {modal === "edit" && selectedStudent ? (
+      {/* Popovers - handled by existing conditional logic */}
+      {modal === "edit" && selectedStudent && (
         <EditGraderPopup
           student={selectedStudent}
           setStudent={setSelectedStudent}
@@ -169,7 +169,8 @@ const GraderTable = ({ studentsData }: Props) => {
             setSelectedStudent(null);
           }}
         />
-      ) : modal === "delete" && selectedStudent ? (
+      )}
+      {modal === "delete" && selectedStudent && (
         <DeleteGraderPopover
           student={selectedStudent}
           setStudent={setSelectedStudent}
@@ -180,7 +181,7 @@ const GraderTable = ({ studentsData }: Props) => {
             setSelectedStudent(null);
           }}
         />
-      ) : null}
+      )}
     </>
   );
 };

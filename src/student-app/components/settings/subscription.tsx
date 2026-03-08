@@ -1,4 +1,5 @@
 import React from "react";
+import { supabase } from "@/lib/supabaseClient";
 import {
   Box,
   Heading,
@@ -26,10 +27,11 @@ const Subscription: React.FC = () => {
       price: "Zero Fee",
       amount: 0,
       desc: [
-        "Basic Feature 1",
-        "Basic Feature 2",
-        "Basic Feature 3",
-        "Basic Feature 4",
+        "Foundational Access",
+        "Access to selected PDF learning materials",
+        "Access to limited video lessons",
+        "Basic student dashboard access",
+        "Introductory academic resources"
       ],
     },
     {
@@ -39,11 +41,14 @@ const Subscription: React.FC = () => {
       price: "₦15,000",
       amount: 1500000, // 15,000 Naira in kobo
       desc: [
-        "All Basic Features Inclusive",
-        "Standard Feature 2",
-        "Standard Feature 3",
-        "Standard Feature 4",
-      ],
+        // "All Basic Features Inclusive",
+       "Comprehensive Learning Experience",
+       "Full access to all PDF materials",
+       "Complete video lesson library",
+       "Access to scheduled live group sessions",
+       "Mock quizzes with performance tracking",
+       "Structured academic progression support"
+      ]
     },
     {
       id: "premium",
@@ -52,28 +57,46 @@ const Subscription: React.FC = () => {
       price: "₦25,000",
       amount: 2500000, // 25,000 Naira in kobo
       desc: [
-        "All Standard Features Inclusive",
-        "Premium 2",
-        "Premium 3",
-        "Premium 4",
+        // "All Standard Features Inclusive",
+      "Advanced & Personalized Learning",
+      "Everything in the Standard Plan",
+      "Priority access to live sessions",
+      "Advanced mock examinations with feedback",
+      "Personalized academic guidance",
+      "Early access to new learning resources"
       ],
     },
   ];
 
+  
   const handlePayment = async (plan: SubscriptionPlan): Promise<void> => {
-
     const userEmail = authdStudent?.email; 
     
+    // 1. Trigger Paystack UI
     const result = await initializePayment(plan, userEmail);
-
-    if (result.success && result.response) {
-      // Payment was successful - you can handle additional logic here
-      console.log("Payment completed successfully:", result.response);
-
-      // You might want to:
-      // 1. Update user subscription in your backend
-      // 2. Redirect to success page
-      // 3. Update local state
+  
+    // 2. If Paystack returns success OR if it's the free plan
+    if (result.success) {
+      try {
+        // Update Supabase
+        const { error } = await supabase
+          .from("students") 
+          .update({ 
+            subscription_plan: plan.id,
+            subscription_status: "active",
+            last_payment_ref: result.response?.reference || "free_plan"
+          })
+          .eq("id", authdStudent?.id); 
+  
+        if (error) throw error;
+  
+        // Success UI logic
+        console.log("Database updated successfully!");
+        
+      } catch (err) {
+        console.error("Error updating subscription:", err);
+        // Show an error toast here
+      }
     }
   };
 

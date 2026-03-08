@@ -17,16 +17,16 @@ const Sidebar = () => {
     { icon: TbHomeFilled, label: "Home", value: "home" },
     { icon: PiStudentDuotone, label: "Students", value: "student" },
     { icon: AiTwotoneSetting, label: "Settings", value: "settings" },
-    // { icon: AiTwotoneSetting, label: "Community", value: "community" },
   ];
 
   return (
     <>
+      {/* Desktop Sidebar */}
       <Box
         as="aside"
         display={{ base: "none", lg: "block" }}
         width="full"
-        h="88vh"
+        h="87vh"
         overflow="hidden"
         bg="white"
         px={4}
@@ -52,62 +52,77 @@ const Sidebar = () => {
                 : "fieldTextColor"
             }
             bg={currentParentPage === item.value ? "#206CE11A" : "transparent"}
-            fontWeight={"400"}
+            _hover={{ bg: "#206CE10D" }} 
+            transition="all 0.2s"
             onClick={() => setCurrentParentPage(item.value)}
           >
-            <Icon as={item.icon} size="sm" />
-            <Text mx={2} fontSize={"sm"} fontWeight={500}>
+            <Icon as={item.icon} boxSize="20px" />
+            <Text mx={3} fontSize={"sm"} fontWeight={500}>
               {item.label}
             </Text>
           </Box>
         ))}
       </Box>
 
-      {/* medium and smaller screens floating nav */}
+      {/* Mobile/Tablet Bottom Navigation */}
       <Box
         as="aside"
         display={{ base: "block", lg: "none" }}
         position="fixed"
-        bottom={{ base: 0, md: 2 }}
-        left="50%"
-        transform="translateX(-50%)"
+        bottom={0}
+        left="0"
+        right="0"
         bg="white"
-        borderRadius={{ base: "none", md: "2xl" }}
-        boxShadow={{ base: "none", md: "xl" }}
-        px={{ base: 0, md: 1 }}
-        py={{ base: 0, md: 1 }}
-        mt={40}
-        maxW="md"
-        width={{ base: "100%", md: "90%" }}
-        zIndex={1000}
+        pb={{ base: "env(safe-area-inset-bottom)", md: 2 }} 
+        pt={2}
+        px={{ base: 2, md: 6 }}
+        boxShadow="0 -4px 12px rgba(0,0,0,0.05)" 
+        borderTop="1px solid"
+        borderColor="gray.100"
+        zIndex={1100}
       >
-        <Flex justify="space-between" align="center">
-          {parentsAsideElem.map(({ icon, label, value }) => (
-            <Flex
-              key={label}
-              direction="column"
-              align="center"
-              flex="1"
-              p={1}
-              fontWeight={"normal"}
-              onClick={() => setCurrentParentPage(value)}
-            >
-              <IconButton
-                aria-label={label}
-                variant="ghost"
-                size="lg"
-                fontSize="xl"
-                color={
-                  currentParentPage === value ? "blue.700" : "fieldTextColor"
-                }
-                bg={currentParentPage === value ? "blue.50" : "transparent"}
-                borderRadius="xl"
+        <Flex 
+          justify="space-around" 
+          align="center" 
+          maxW="md" 
+          mx="auto"
+        >
+          {parentsAsideElem.map(({ icon, label, value }) => {
+            const isActive = currentParentPage === value;
+            return (
+              <Flex
+                key={label}
+                direction="column"
+                align="center"
+                justify="center"
+                flex="1"
+                cursor="pointer"
+                py={1}
+                onClick={() => setCurrentParentPage(value)}
               >
-                <Icon as={icon} />
-              </IconButton>
-              <Text fontSize="xs">{label}</Text>
-            </Flex>
-          ))}
+                <IconButton
+                  aria-label={label}
+                  variant="ghost"
+                  size="md" 
+                  fontSize="22px"
+                  color={isActive ? "blue.700" : "fieldTextColor"}
+                  bg={isActive ? "blue.50" : "transparent"}
+                  borderRadius="xl"
+                  mb={1}
+                  _active={{ bg: "blue.100" }}
+                >
+                  <Icon as={icon} />
+                </IconButton>
+                <Text 
+                  fontSize="10px" 
+                  fontWeight={isActive ? "bold" : "medium"}
+                  color={isActive ? "blue.700" : "fieldTextColor"}
+                >
+                  {label}
+                </Text>
+              </Flex>
+            );
+          })}
         </Flex>
       </Box>
     </>

@@ -1,5 +1,5 @@
 import type { Dispatch, SetStateAction } from "react"
-import { Button } from "@chakra-ui/react";
+import { Button, Icon } from "@chakra-ui/react"; // Added Icon for better alignment
 import { AiOutlineUserAdd } from "react-icons/ai";
 
 type Props = {
@@ -17,20 +17,28 @@ const AddGraderBtn = ({ showBox, setShowBox, basePageWidth, mdPageWidth, lgPageW
         <Button
           bg="white"
           color="blue.600"
+          border="1px solid"
           borderColor="blue.600"
           borderRadius="3xl"
-          outline="none"
           boxShadow='md'
-          p={5}
+        
+          p={{ base: 6, md: 5 }} 
           w={{
             base: `${basePageWidth}%`,
             md: `${mdPageWidth}%`,
             lg: `${lgPageWidth}%`,
           }}
-          fontSize={"xs"}
+        
+          fontSize={{ base: "sm", md: "xs" }} 
+          fontWeight="semibold"
+          display="flex"
+          alignItems="center"
+          justifyContent="center"
+          gap={2} 
+          _active={{ transform: "scale(0.96)" }} 
           onClick={() => setShowBox(!showBox)}
         >
-          <AiOutlineUserAdd fontSize={"xs"} />
+          <Icon as={AiOutlineUserAdd} boxSize={{ base: "18px", md: "14px" }} />
           Add New Child
         </Button>
       )}

@@ -12,44 +12,52 @@ const SettingsNav = ({ settingsState, setSettingsState }: Props) => {
     { text: "Security", state: "security" },
     { text: "Notifications", state: "notification" },
   ];
+
   return (
     <Flex
       as="nav"
       justify="start"
       align="center"
-      gap={4}
-      p={1}
-      shadow='md'
-      bg='white'
-      rounded="sm"
+      gap={2} 
+      p={1.5}
+      shadow="md"
+      bg="white"
+      rounded="md"
       w="full"
-      m="auto"
-      mb={5}
-      mt={{ base: 5, md: 0 }}
+      overflowX="auto"
+      whiteSpace="nowrap"
+      css={{
+        "&::-webkit-scrollbar": { display: "none" },
+        msOverflowStyle: "none",
+        scrollbarWidth: "none",
+      }}
     >
-      {navItems.map((item, idx) => (
-        <Box
-          key={idx}
-          bg={settingsState === item.state ? "#206CE11A" : "transparent"}
-          p={2}
-          rounded="md"
-          w={28}
-          textAlign="center"
-          cursor="pointer"
-          onClick={() => setSettingsState(item.state)}
-        >
-          <Text
-            color="primaryColor"
-            fontSize={{ base: "xs", md: "xs" }}
-            fontWeight={settingsState === item.state ? 600 : 500}
-            // color={
-            //   settingsState === item.state ? "primaryColor" : "fieldTextColor"
-            // }
+      {navItems.map((item, idx) => {
+        const isActive = settingsState === item.state;
+        return (
+          <Box
+            key={idx}
+            bg={isActive ? "#206CE11A" : "transparent"}
+            py={2}
+            px={4} 
+            rounded="md"
+            minW={{ base: "max-content", md: "110px" }}
+            textAlign="center"
+            cursor="pointer"
+            transition="all 0.2s"
+            _active={{ transform: "scale(0.95)" }}
+            onClick={() => setSettingsState(item.state)}
           >
-            {item.text}
-          </Text>
-        </Box>
-      ))}
+            <Text
+              color={isActive ? "primaryColor" : "gray.500"} 
+              fontSize={{ base: "xs", md: "sm" }}
+              fontWeight={isActive ? 700 : 500}
+            >
+              {item.text}
+            </Text>
+          </Box>
+        );
+      })}
     </Flex>
   );
 };

@@ -1,92 +1,90 @@
-import { Box, Flex, Image, Link, Text } from "@chakra-ui/react";
-import { FaGoogle } from "react-icons/fa";
-import { FaLinkedinIn } from "react-icons/fa";
-import { AiFillInstagram } from "react-icons/ai";
-import { FaFacebookSquare } from "react-icons/fa";
+import { Box, Flex, Image, Link, Text, HStack, Container } from "@chakra-ui/react";
+import { FaGoogle, FaLinkedinIn, FaInstagram, FaFacebookF } from "react-icons/fa";
 import logo from "@/assets/landing-page/logo.png";
 
-const footer = () => {
+const Footer = () => {
   const navItems = [
-    { name: "Home", link: "#" },
-    { name: "About us", link: "#" },
-    { name: "Download", link: "#" },
-    { name: "Contact us", link: "#" },
-    { name: "Log in", link: "#" },
-    { name: "Sign up", link: "#" },
+    { name: "HOME", link: "#" },
+    { name: "ABOUT US", link: "#" },
+    { name: "DOWNLOAD", link: "#" },
+    { name: "CONTACT US", link: "#" },
+    { name: "LOG IN", link: "#" },
+    { name: "SIGN UP", link: "#" },
   ];
+
   return (
-    <Box
-      bg="#E0ECFF"
-      pt={10}
-      mt={20}
-      alignContent="center"
-    >
-      {/* logo image */}
-      <Box
-        display="flex"
-        alignItems="center"
-        w={{ base: "25%", md: "15%" }}
-        m="auto"
-        my={2}
-      >
-        <Image src={logo} alt="iGrades_logo" width="150px" fit="cover" />
-      </Box>
+    <Box bg="#0F172A" color="white" pt={20} mt={20}>
+      <Container maxW="container.xl">
+        <Flex 
+          direction="column" 
+          align="center" 
+          textAlign="center"
+        >
+          {/* Elegant Logo Treatment */}
+          <Box mb={12} filter="brightness(0) invert(1)">
+            <Image src={logo} alt="iGrades_logo" width="140px" />
+          </Box>
 
-      <Flex
-      flexWrap='wrap'
-      gap={{base: 6, md: 3, lg: 0}}
-        mx={{base: 0, md: '6', lg:'16'}}
-        mb={10}
-        py={10}
-        px={{ base: 2, md: 6, lg: 12 }}
-        justify="space-around"
-        align="start"
-      >
-        {navItems.map((item, idx) => (
-          <Link
-            href={item.name}
-            key={idx}
-            flex="1"
-            mx={{base: 5, md: 1, lg: 10}}
-            textAlign="center"
-            borderRight={idx !== navItems.length ? "2px solid" : "none"}
-            borderColor="#232323"
-            fontSize="sm"
-            fontWeight="semibold"
-            color="#232323"
+          {/* Navigation with High-End Typography */}
+          <HStack 
+            gap={{ base: 4, md: 10 }} 
+            flexWrap="wrap" 
+            justify="center"
+            mb={12}
           >
-            {item.name}
-          </Link>
-        ))}
-      </Flex>
+            {navItems.map((item, idx) => (
+              <Link
+                key={idx}
+                href={item.link}
+                fontSize="xs"
+                fontWeight="bold"
+                letterSpacing="2px"
+                color="gray.400"
+                _hover={{ color: "white", textDecoration: "none" }}
+                transition="all 0.3s ease"
+              >
+                {item.name}
+              </Link>
+            ))}
+          </HStack>
 
-      <Flex justify="center" align="center" mt={-6}>
-        {[
-          <FaGoogle />,
-          <FaLinkedinIn />,
-          <AiFillInstagram />,
-          <FaFacebookSquare />,
-        ].map((icon, idx) => (
-          <Link key={idx} href="#" mx={2} fontSize="2xl" color="#232323">
-            {icon}
-          </Link>
-        ))}
-      </Flex>
+          {/* Minimalist Socials */}
+          <HStack gap={8} mb={16}>
+            {[FaGoogle, FaLinkedinIn, FaInstagram, FaFacebookF].map((Icon, idx) => (
+              <Link 
+                key={idx} 
+                href="#" 
+                color="gray.500" 
+                _hover={{ color: "white" }}
+                fontSize="xl"
+              >
+                <Icon />
+              </Link>
+            ))}
+          </HStack>
+        </Flex>
 
-      <Flex
-        color="#232323"
-        justify={{base: 'space-between', md: 'space-around'}}
-        align="center"
-        mt={10}
-        py={3}
-        bg="white"
-        fontSize={{base: 'xs', md: 'sm'}}
-      >
-        <Text>(c) 2022 copyright | Indomitables, All rights reserved</Text>
-        <Link href="#!">Privacy & Policy | Terms & Condition</Link>
-      </Flex>
+        {/* Legal Row */}
+        <Flex
+          py={10}
+          direction={{ base: "column", md: "row" }}
+          justify="space-between"
+          align="center"
+          fontSize="11px"
+          fontWeight="medium"
+          letterSpacing="1px"
+          color="whiteAlpha.500"
+          gap={4}
+        >
+          <Text>© 2026 INDOMITABLES. ALL RIGHTS RESERVED.</Text>
+          <HStack gap={6}>
+            <Link _hover={{ color: "white" }}>PRIVACY POLICY</Link>
+            <Link _hover={{ color: "white" }}>TERMS & CONDITIONS</Link>
+          </HStack>
+        </Flex>
+      </Container>
     </Box>
   );
 };
 
-export default footer;
+export default Footer;

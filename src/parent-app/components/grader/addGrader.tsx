@@ -1,3 +1,5 @@
+
+
 import { useState } from "react";
 import { getParentId } from "../../utils/getParentId";
 import { supabase } from "../../../lib/supabaseClient";
@@ -22,19 +24,8 @@ import manikin from "@/assets/manikin.png";
 import addPix from "@/assets/addPix.png";
 import AddGraderSuccessPopover from "./addGraderSuccessPopover";
 import type { Dispatch, SetStateAction } from "react";
-
-// Import your existing course components
 import SeniorCourses from "../courses/seniorCourses";
 import JuniorCourses from "../courses/juniorCourses";
-
-interface AddGraderProps {
-  basePageWidth: number;
-  mdPageWidth: number;
-  lgPageWidth: number;
-  radius: string;
-  showBox: boolean;
-  setShowBox: Dispatch<SetStateAction<boolean>>;
-}
 
 function AddGrader({
   basePageWidth,
@@ -125,8 +116,8 @@ function AddGrader({
     groupBy(
       selectCollections.classes.items,
       (item: { label: string; value: string; category?: string }) =>
-        item.category ?? "Uncategorized"
-    )
+        item.category ?? "Uncategorized",
+    ),
   );
 
   // Check if student is a senior (SSS) or junior (JSS)
@@ -134,7 +125,7 @@ function AddGrader({
   const isJuniorStudent = formData.class?.startsWith("JSS");
 
   const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
   ) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
@@ -194,7 +185,10 @@ function AddGrader({
 
     const imageUrl = await handleImageUpload();
     if (!imageUrl) {
-      setAlert({ status: "error", message: "Image upload failed. Adding an image is required" });
+      setAlert({
+        status: "error",
+        message: "Image upload failed. Adding an image is required",
+      });
       return;
     }
 
@@ -247,7 +241,7 @@ function AddGrader({
         as="section"
         bg="white"
         boxShadow="lg"
-        p={{ base: "5", md: "10" }}
+        p={{ base: "4", md: "10" }}
         m="auto"
         w={{
           base: `${basePageWidth}%`,
@@ -255,35 +249,46 @@ function AddGrader({
           lg: `${lgPageWidth}%`,
         }}
         rounded={radius}
-        mb={{ base: "24", lg: "10" }}
+        mb={{ base: "120px", lg: "10" }}
+        mt={{ base: 4, md: 0 }}
       >
-        <Box w={{ base: "3/4", md: "1/2" }} m="auto" textAlign="center">
+        {/* Header Section */}
+        <Box
+          w={{ base: "full", md: "3/4", lg: "1/2" }}
+          m="auto"
+          textAlign="center"
+        >
           <Heading
             as="h1"
-            fontSize="3xl"
+            fontSize={{ base: "xl", md: "3xl" }}
             color="backgroundColor2"
             fontWeight={700}
-            mt={{ base: "24", md: "15" }}
+            mt={{ base: "4", md: "15" }}
           >
             Student Credentials
           </Heading>
-          <Text fontSize="sm" my={1} color="on_containerColor" fontWeight={400}>
+          <Text
+            fontSize="sm"
+            my={1}
+            color="on_containerColor"
+            fontWeight={400}
+            px={4}
+          >
             Please fill the field provided correctly
           </Text>
         </Box>
 
-        
-
-        <Box w="1/2" m="auto" textAlign="center">
-          <Box position="relative" display="inline-block" mx="auto" mt={10}>
+        {/* Profile Image Section */}
+        <Box w="full" m="auto" textAlign="center">
+          <Box position="relative" display="inline-block" mx="auto" mt={6}>
             <Box
               display="flex"
               justifyContent="center"
               alignItems="center"
               bg="textFieldColor"
               overflow="hidden"
-              w="90px"
-              h="90px"
+              w={{ base: "80px", md: "90px" }}
+              h={{ base: "80px", md: "90px" }}
               borderRadius="2xl"
             >
               {selectedFile ? (
@@ -293,10 +298,9 @@ function AddGrader({
                   fit="cover"
                   w="full"
                   h="full"
-                  borderRadius="2xl"
                 />
               ) : (
-                <Image src={manikin} alt="add profile photo" boxSize="40px" />
+                <Image src={manikin} alt="add profile photo" boxSize="35px" />
               )}
             </Box>
 
@@ -304,11 +308,11 @@ function AddGrader({
               <Image
                 src={addPix}
                 alt="add button"
-                boxSize="30px"
+                boxSize="28px"
                 position="absolute"
                 bottom="0"
                 right="0"
-                transform="translate(30%, 30%)"
+                transform="translate(25%, 25%)"
                 borderRadius="full"
                 bg="textFieldColor"
                 p="1"
@@ -328,219 +332,239 @@ function AddGrader({
           </Box>
         </Box>
 
+        {/* Form Grid */}
         <form onSubmit={handleSubmit}>
           <Grid
-            templateColumns={{ base: "repeat(1, 1fr)", md: "repeat(2, 1fr)" }}
-            gap="6"
-            my="10"
+            templateColumns={{ base: "1fr", md: "repeat(2, 1fr)" }}
+            // Tighter gap for mobile to keep the form compact
+            gap={{ base: "4", md: "6" }}
+            my={{ base: "6", md: "10" }}
           >
             {["firstname", "lastname", "email", "school", "date_of_birth"].map(
-              (index, field) => (
+              (name, field) => (
                 <Field.Root key={field}>
-                  <Field.Label color="on_backgroundColor" fontSize="xs">
-                    {index
+                  <Field.Label color="on_backgroundColor" fontSize="xs" mb={1}>
+                    {name
                       .replace(/_/g, " ")
                       .replace(/\b\w/g, (c) => c.toUpperCase())}
                   </Field.Label>
                   <Input
-                    name={index}
-                    placeholder={index
+                    name={name}
+                    placeholder={name
                       .replace(/_/g, " ")
                       .replace(/\b\w/g, (c) => c.toUpperCase())}
                     onChange={handleChange}
                     required
                     type={
-                      index === "email"
+                      name === "email"
                         ? "email"
-                        : index === "date_of_birth"
-                        ? "date"
-                        : "text"
+                        : name === "date_of_birth"
+                          ? "date"
+                          : "text"
                     }
                     border="none"
                     bg="textFieldColor"
-                    fontSize="xs"
+                    fontSize="sm"
+                    h="45px"
                   />
                 </Field.Root>
-              )
+              ),
             )}
 
-            {/* gender select */}
-            <Select.Root
-              collection={selectCollections.genders}
-              size="md"
-              onValueChange={(e) =>
-                setFormData({ ...formData, gender: e.value[0] })
-              }
-            >
-              <label htmlFor="gender" style={{ fontSize: "0.75rem" }}>
-                Gender
-              </label>
-              <Select.HiddenSelect name="gender" />
-              <Select.Control>
-                <Select.Trigger
-                  border="none"
-                  outline="none"
-                  bg="textFieldColor"
-                  cursor="pointer"
-                >
-                  <Select.ValueText placeholder="Select gender" fontSize="xs" />
-                </Select.Trigger>
-                <Select.IndicatorGroup>
-                  <Select.Indicator />
-                </Select.IndicatorGroup>
-              </Select.Control>
-              <Portal>
-                <Select.Positioner>
-                  <Select.Content>
-                    {selectCollections.genders.items.map((item) => (
-                      <Select.Item key={item.value} item={item}>
-                        {item.label}
-                        <Select.ItemIndicator />
-                      </Select.Item>
-                    ))}
-                  </Select.Content>
-                </Select.Positioner>
-              </Portal>
-            </Select.Root>
-
-            {/* languages select */}
-            <Select.Root
-              collection={selectCollections.languages}
-              size="md"
-              onValueChange={(e) =>
-                setFormData({ ...formData, basic_language: e.value[0] })
-              }
-            >
-              <label htmlFor="language" style={{ fontSize: "0.75rem" }}>
-                Basic Language
-              </label>
-              <Select.HiddenSelect name="language" />
-              <Select.Control>
-                <Select.Trigger
-                  border="none"
-                  outline="none"
-                  bg="textFieldColor"
-                  cursor="pointer"
-                >
-                  <Select.ValueText
-                    placeholder="Select Basic Language"
-                    fontSize="xs"
-                  />
-                </Select.Trigger>
-                <Select.IndicatorGroup>
-                  <Select.Indicator />
-                </Select.IndicatorGroup>
-              </Select.Control>
-              <Portal>
-                <Select.Positioner>
-                  <Select.Content>
-                    {selectCollections.languages.items.map((item) => (
-                      <Select.Item key={item.value} item={item}>
-                        {item.label}
-                        <Select.ItemIndicator />
-                      </Select.Item>
-                    ))}
-                  </Select.Content>
-                </Select.Positioner>
-              </Portal>
-            </Select.Root>
-
-            {/* Class select */}
-            <Select.Root
-              collection={selectCollections.classes}
-              size="md"
-              onValueChange={(e) =>
-                setFormData({ ...formData, class: e.value[0] })
-              }
-            >
-              <label
-                htmlFor="class"
-                style={{
-                  fontSize: "0.75rem",
-                  fontWeight: "400",
-                  color: "#474256",
-                  marginTop: "8px",
-                }}
+            {/* Gender Select Wrapper */}
+            <Box>
+              <Select.Root
+                collection={selectCollections.genders}
+                size="md"
+                onValueChange={(e) =>
+                  setFormData({ ...formData, gender: e.value[0] })
+                }
               >
-                Class
-              </label>
-              <Select.HiddenSelect name="class" />
-              <Select.Control>
-                <Select.Trigger
-                  outline="none"
-                  cursor="pointer"
-                  bg="textFieldColor"
-                  fontSize="xs"
-                  border="1px solid #ccc"
+                <label htmlFor="gender" style={{ fontSize: "0.75rem" }}>
+                  Gender
+                </label>
+                <Select.HiddenSelect name="gender" />
+                <Select.Control>
+                  <Select.Trigger
+                    border="none"
+                    outline="none"
+                    bg="textFieldColor"
+                    cursor="pointer"
+                  >
+                    <Select.ValueText
+                      placeholder="Select gender"
+                      fontSize="xs"
+                    />
+                  </Select.Trigger>
+                  <Select.IndicatorGroup>
+                    <Select.Indicator />
+                  </Select.IndicatorGroup>
+                </Select.Control>
+                <Portal>
+                  <Select.Positioner>
+                    <Select.Content>
+                      {selectCollections.genders.items.map((item) => (
+                        <Select.Item key={item.value} item={item}>
+                          {item.label}
+                          <Select.ItemIndicator />
+                        </Select.Item>
+                      ))}
+                    </Select.Content>
+                  </Select.Positioner>
+                </Portal>
+              </Select.Root>
+            </Box>
+
+            {/* Language Select Wrapper */}
+            <Box>
+              <Select.Root
+                collection={selectCollections.languages}
+                size="md"
+                onValueChange={(e) =>
+                  setFormData({ ...formData, basic_language: e.value[0] })
+                }
+              >
+                <label htmlFor="language" style={{ fontSize: "0.75rem" }}>
+                  Basic Language
+                </label>
+                <Select.HiddenSelect name="language" />
+                <Select.Control>
+                  <Select.Trigger
+                    border="none"
+                    outline="none"
+                    bg="textFieldColor"
+                    cursor="pointer"
+                  >
+                    <Select.ValueText
+                      placeholder="Select Basic Language"
+                      fontSize="xs"
+                    />
+                  </Select.Trigger>
+                  <Select.IndicatorGroup>
+                    <Select.Indicator />
+                  </Select.IndicatorGroup>
+                </Select.Control>
+                <Portal>
+                  <Select.Positioner>
+                    <Select.Content>
+                      {selectCollections.languages.items.map((item) => (
+                        <Select.Item key={item.value} item={item}>
+                          {item.label}
+                          <Select.ItemIndicator />
+                        </Select.Item>
+                      ))}
+                    </Select.Content>
+                  </Select.Positioner>
+                </Portal>
+              </Select.Root>
+            </Box>
+
+            {/* Class Select Wrapper */}
+            <Box gridColumn={{ md: "span 2" }}>
+              {" "}
+              <Select.Root
+                collection={selectCollections.classes}
+                size="md"
+                onValueChange={(e) =>
+                  setFormData({ ...formData, class: e.value[0] })
+                }
+              >
+                <label
+                  htmlFor="class"
+                  style={{
+                    fontSize: "0.75rem",
+                    fontWeight: "400",
+                    color: "#474256",
+                    marginTop: "8px",
+                  }}
                 >
-                  <Select.ValueText placeholder="Select Class" fontSize="xs" />
-                </Select.Trigger>
-                <Select.IndicatorGroup>
-                  <Select.Indicator />
-                </Select.IndicatorGroup>
-              </Select.Control>
-              <Portal>
-                <Select.Positioner>
-                  <Select.Content>
-                    {classesCategories.map(([category, items]) => (
-                      <Select.ItemGroup key={category}>
-                        <Select.ItemGroupLabel fontWeight={600}>
-                          {category}
-                        </Select.ItemGroupLabel>
-                        {items.map((item) => (
-                          <Select.Item item={item} key={item.value}>
-                            {item.label}
-                            <Select.ItemIndicator />
-                          </Select.Item>
-                        ))}
-                      </Select.ItemGroup>
-                    ))}
-                  </Select.Content>
-                </Select.Positioner>
-              </Portal>
-            </Select.Root>
+                  Class
+                </label>
+                <Select.HiddenSelect name="class" />
+                <Select.Control>
+                  <Select.Trigger
+                    outline="none"
+                    cursor="pointer"
+                    bg="textFieldColor"
+                    fontSize="xs"
+                    border="1px solid #ccc"
+                  >
+                    <Select.ValueText
+                      placeholder="Select Class"
+                      fontSize="xs"
+                    />
+                  </Select.Trigger>
+                  <Select.IndicatorGroup>
+                    <Select.Indicator />
+                  </Select.IndicatorGroup>
+                </Select.Control>
+                <Portal>
+                  <Select.Positioner>
+                    <Select.Content>
+                      {classesCategories.map(([category, items]) => (
+                        <Select.ItemGroup key={category}>
+                          <Select.ItemGroupLabel fontWeight={600}>
+                            {category}
+                          </Select.ItemGroupLabel>
+                          {items.map((item) => (
+                            <Select.Item item={item} key={item.value}>
+                              {item.label}
+                              <Select.ItemIndicator />
+                            </Select.Item>
+                          ))}
+                        </Select.ItemGroup>
+                      ))}
+                    </Select.Content>
+                  </Select.Positioner>
+                </Portal>
+              </Select.Root>
+            </Box>
           </Grid>
 
-          {/* Course Selection - Only show after class is selected */}
-          {isSeniorStudent && (
-            <SeniorCourses onSelectionChange={handleCourseSelection} />
-          )}
+          {/* Responsive Course Containers */}
+          <Box mb={6} overflow="hidden">
+            {isSeniorStudent && (
+              <SeniorCourses onSelectionChange={handleCourseSelection} />
+            )}
+            {isJuniorStudent && (
+              <JuniorCourses onSelectionChange={handleCourseSelection} />
+            )}
+          </Box>
 
-          {isJuniorStudent && (
-            <JuniorCourses onSelectionChange={handleCourseSelection} />
-          )}
-
-          {/* alert */}
+          {/* Alerts */}
           {alert && (
             <Alert.Root
               status={alert.status}
               borderRadius="md"
               my={4}
-              fontSize="12px"
+              fontSize={{ base: "11px", md: "12px" }}
             >
               <Alert.Indicator />
-              <Alert.Title mr={2}>
-                {alert.status === "error" ? "Error" : "Success"}:
-              </Alert.Title>
-              <Alert.Description>{alert.message}</Alert.Description>
+              <Alert.Content>
+                <Alert.Title>
+                  {alert.status === "error" ? "Error" : "Success"}
+                </Alert.Title>
+                <Alert.Description>{alert.message}</Alert.Description>
+              </Alert.Content>
             </Alert.Root>
           )}
 
-          <Flex justify="center" align="center" w="full">
+          <Flex justify="center" align="center" w="full" mt={6}>
             <Button
               type="submit"
-              w={{ base: "100%", md: "80%", lg: "80%" }}
-              m="auto"
+              w={{ base: "full", md: "80%" }}
+              h="50px" 
               rounded="xl"
               bg="primaryColor"
+              fontSize="md"
             >
               Add Child
             </Button>
           </Flex>
-          <Text mt={2}>{status}</Text>
         </form>
       </Box>
 
+      
       {showModal && (
         <AddGraderSuccessPopover
           setShowBox={setShowBox}

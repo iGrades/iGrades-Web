@@ -16,7 +16,6 @@ import EditParent from "../parent/editParent";
 import Children from "./children";
 import DeleteUserPopover from "../parent/deleteUserPopover";
 
-// Define the possible profile view states
 type ProfileState =
   | "igrade"
   | "Profile"
@@ -24,7 +23,6 @@ type ProfileState =
   | "Quiz Report"
   | "Refer a Friend";
 
-// Settings menu items with their icons and colors
 const SETTINGS_ITEMS = [
   { head: "Profile", icon: MdPerson, iconColor: "#206CE1" },
   { head: "Quiz Report", icon: GiNotebook, iconColor: "#00A8E6" },
@@ -41,10 +39,8 @@ const MyIgrade = () => {
     message: string;
   } | null>(null);
 
-  // Handle navigation back to main view
   const handleBack = () => setProfileState("igrade");
 
-  // This function renders the appropriate view based on profileState
   const renderView = () => {
     switch (profileState) {
       case "Profile":
@@ -53,74 +49,60 @@ const MyIgrade = () => {
         return <Children />;
       case "Quiz Report":
       case "Refer a Friend":
-        return <Text>Coming soon</Text>; 
+        return <Text p={10} textAlign="center">Coming soon</Text>;
       case "igrade":
       default:
         return renderMainView();
     }
   };
 
-
-  // Render the main dashboard view
   const renderMainView = () => (
     <>
       <Flex
         direction="column"
         justify="space-between"
-        gap={6}
+        gap={{ base: 4, md: 6 }}
         alignItems="center"
         w={{ base: "100%", lg: "80%" }}
         m="auto"
       >
         {/* Profile header section */}
         <Flex
-          my={5}
+          my={{ base: 4, md: 8 }}
           align="center"
           justify="center"
-          gap={{ md: 4}}
-          w="90%"
-          
+          gap={{ base: 4, md: 6 }}
+          w="full"
+          px={4}
         >
           <Box
-            w={"40%"}
-            textAlign="center"
             display="flex"
-            justifyContent={{base:'center', md: 'flex-end'}}
+            justifyContent="center"
             alignItems="center"
+            bg="textFieldColor"
+            overflow="hidden"
+            w={{ base: "65px", md: "80px" }}
+            h={{ base: "65px", md: "80px" }}
+            borderRadius="2xl"
+            boxShadow="sm"
           >
-            <Box
-              display="flex"
-              justifyContent="center"
-              alignItems="center"
-              bg="textFieldColor"
-              overflow="hidden"
-              w="75px"
-              h="75px"
-              borderRadius="2xl"
-              boxShadow="xs"
-            >
-              {parent[0].profile_image ? (
-                <Image
-                  src={parent[0].profile_image}
-                  alt="profile preview"
-                  fit="cover"
-                  w="full"
-                  h="full"
-                  borderRadius="2xl"
-                />
-              ) : (
-                <Image src={manikin} alt="add profile photo" boxSize="40px" />
-              )}
-            </Box>
+            {parent[0]?.profile_image ? (
+              <Image
+                src={parent[0].profile_image}
+                alt="profile"
+                fit="cover"
+                w="full"
+                h="full"
+              />
+            ) : (
+              <Image src={manikin} alt="default" boxSize="40px" />
+            )}
           </Box>
-          <Box w="40%" >
-            <Heading as="h1" mt={1} fontSize='md'>
-              {parent[0].firstname} {parent[0].lastname}
+          <Box flex="1" maxW="200px">
+            <Heading as="h1" fontSize={{ base: "md", md: "lg" }} truncate>
+              {parent[0]?.firstname} {parent[0]?.lastname}
             </Heading>
-            <Text
-              fontSize="xs"
-              w={{base: '100%', md:'45%'}}
-            >
+            <Text fontSize="xs" color="gray.500" fontWeight="medium">
               iGrade Parent
             </Text>
           </Box>
@@ -128,36 +110,34 @@ const MyIgrade = () => {
 
         {/* Settings grid */}
         <Grid
-          templateColumns={{ base: "repeat(1, 2fr)", md: "repeat(2, 2fr)" }}
-          gap={6}
+          templateColumns={{ base: "1fr", md: "repeat(2, 1fr)" }}
+          gap={4}
           w="full"
-          p={4}
-          my={2}
+          px={{ base: 2, md: 4 }}
         >
           {SETTINGS_ITEMS.map((item, index) => (
             <Flex
               key={index}
               justify="space-between"
               align="center"
-              gap="2"
               bg="textFieldColor"
-              w={{ base: "100%", md: "90%" }}
-              m="auto"
-              p={6}
-              rounded="lg"
-              // shadow="xs"
+              w="full"
+              p={{ base: 5, md: 6 }}
+              rounded="xl"
               cursor="pointer"
+              transition="all 0.2s"
+              _active={{ bg: "gray.100", transform: "scale(0.98)" }}
               onClick={() => setProfileState(item.head as ProfileState)}
             >
               <Box display="flex" alignItems="center" gap="3">
                 <item.icon
-                  style={{ color: item.iconColor, fontSize: "1.3rem" }}
+                  style={{ color: item.iconColor, fontSize: "1.4rem" }}
                 />
-                <Text fontSize="sm" fontWeight={500}>
+                <Text fontSize="sm" fontWeight={600}>
                   {item.head}
                 </Text>
               </Box>
-              <MdOutlineKeyboardArrowRight />
+              <MdOutlineKeyboardArrowRight color="gray.400" />
             </Flex>
           ))}
         </Grid>
@@ -168,17 +148,17 @@ const MyIgrade = () => {
           align="center"
           gap="3"
           bg="#E43F401A"
-          w="92%"
-          mt={2}
-          mb={5}
-          p={6}
-          rounded="lg"
-          shadow="xs"
+          w={{ base: "95%", md: "90%" }}
+          mt={4}
+          mb={8}
+          p={5}
+          rounded="xl"
           cursor="pointer"
+          _active={{ bg: "#E43F4033" }}
           onClick={() => setShowDeleteConfirm(true)}
         >
           <MdDelete style={{ color: "red", fontSize: "1.4rem" }} />
-          <Text fontSize="sm" fontWeight={500}>
+          <Text fontSize="sm" fontWeight={600} color="red.600">
             Delete Account
           </Text>
         </Flex>
@@ -200,11 +180,11 @@ const MyIgrade = () => {
       as="section"
       bg="white"
       boxShadow={{ base: "none", md: "md" }}
-      rounded={{ base: "none", md: "md" }}
+      rounded={{ base: "none", md: "2xl" }}
       w="full"
       h="auto"
-      mb={{ base: "20", lg: "10" }}
-      p={{ base: "0", md: "3", lg: "6" }}
+      mb={{ base: "100px", lg: "10" }}
+      p={{ base: 4, md: 6 }}
     >
       {/* Header with back button */}
       <Heading
@@ -213,24 +193,23 @@ const MyIgrade = () => {
         alignItems="center"
         justifyContent="flex-start"
         gap={3}
-        mt={3}
-        mb={5}
-        mx={2}
+        mb={6}
         cursor="pointer"
-        fontSize={{ base: "lg", md: "lg" }}
+        fontSize="lg"
       >
-        {profileState !== "igrade" && <LuArrowLeft onClick={handleBack} />}
+        {profileState !== "igrade" && (
+          <Box p={1} onClick={handleBack} cursor="pointer">
+            <LuArrowLeft />
+          </Box>
+        )}
         {profileState === "igrade" ? "Settings" : profileState}
       </Heading>
 
       {/* Alert messages */}
       {alert && (
-        <Alert.Root status={alert.type} variant="subtle" mt={6}>
+        <Alert.Root status={alert.type} variant="subtle" mb={6} borderRadius="lg">
           <Alert.Indicator />
-          <Alert.Content>
-            <Alert.Title>
-              {alert.type === "error" ? "Error!" : "Success!"}
-            </Alert.Title>
+          <Alert.Content fontSize="xs">
             <Alert.Description>{alert.message}</Alert.Description>
           </Alert.Content>
         </Alert.Root>
@@ -238,11 +217,11 @@ const MyIgrade = () => {
 
       {/* Main content */}
       {loading ? (
-        <SkeletonText noOfLines={3} gap="4" />
+        <SkeletonText noOfLines={5} gap="4" />
       ) : parent.length > 0 ? (
         renderView()
       ) : (
-        <Text>You don't have data as a parent</Text>
+        <Text textAlign="center" py={10}>Account data not found</Text>
       )}
     </Box>
   );

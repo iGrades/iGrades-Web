@@ -63,7 +63,7 @@ export const usePaystack = () => {
         const handler = window.PaystackPop.setup({
           key:
             // process.env.REACT_APP_PAYSTACK_PUBLIC_KEY ||
-            "pk_live_63315661de6ed0ff4deaee36c3ee29fdd2f95bbd",
+            "pk_test_0d6b3ab8a6cb3fb857c1028ab2ba5c6f20d3c40f",
           email: userEmail,
           amount: plan.amount,
           currency: "NGN",

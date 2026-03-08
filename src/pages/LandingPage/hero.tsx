@@ -6,9 +6,9 @@ import orangeBlob from "@/assets/landing-page/orange_line.png";
 
 const Hero = () => {
   const stats = [
-    { id: 1, value: "60k+", label: "Total Registered Students" },
-    { id: 2, value: "10K+", label: "Total Avialable Courses/Subjects" },
-    { id: 3, value: "2K+", label: "Certified Tutors" },
+    { id: 1, value: "50k+", label: "Potential Registered Students" },
+    { id: 2, value: "2K+", label: "Total Avialable Courses/Subjects" },
+    { id: 3, value: "1K+", label: "Potential Certified Tutors" },
     { id: 4, value: "5K+", label: "Acreditted Quizzes" },
   ];
   return (
@@ -59,8 +59,7 @@ const Hero = () => {
             w={{ base: "100%", lg: "70%" }}
             textAlign={{ base: "center", md: "left" }}
           >
-            1-on-1 lessons with expert teachers based on your specific goals or
-            interest.
+            Quality Education. Real Tutors. Flexible Learning.
           </Text>
 
           <Flex

@@ -1,8 +1,6 @@
-"use client"
-
 import { useState, useMemo } from "react"
 import { supabase } from "../../../lib/supabaseClient"
-import { Box, Button, Flex, Heading, Text, VStack, HStack, Icon, Separator } from "@chakra-ui/react"
+import { Box, Button, Flex, Heading, Text, VStack, HStack, Icon } from "@chakra-ui/react"
 import { LuArrowLeft } from "react-icons/lu"
 import { MdOutlineModeEditOutline, MdDelete, MdOutlineKeyboardArrowRight } from "react-icons/md"
 import { GiNotebook } from "react-icons/gi"
@@ -46,72 +44,117 @@ const EditGraderPopup = ({ student, setStudent, onClose, showEditBtn, showDelete
 
   return (
     <>
-      <Box position="fixed" top={0} left={0} w="100vw" h="100vh" bg="rgba(0, 0, 0, 0.6)" zIndex={1000} display="flex" justifyContent="center" alignItems="center" p={4}>
+      <Box 
+        position="fixed" 
+        top={0} 
+        left={0} 
+        w="100vw" 
+        h="100vh" 
+        bg="rgba(0, 0, 0, 0.7)" 
+        zIndex={1000} 
+        display="flex" 
+        justifyContent="center" 
+        alignItems={{ base: "flex-end", md: "center" }} // Slide up from bottom on mobile
+        p={{ base: 0, md: 4 }}
+      >
         <Box 
           position="relative" 
-          // Dynamic width and height for "Full Page Popup" feel
-          width={isHistory ? { base: "98%", lg: "95%" } : { base: "100%", md: "80%", lg: "50%" }} 
-          height={isHistory ? "95vh" : "auto"}
-          maxH="95vh" 
+          width={isHistory ? { base: "100%", lg: "95%" } : { base: "100%", md: "80%", lg: "45%" }} 
+          height={isHistory ? { base: "100%", md: "95vh" } : "auto"}
+          maxH={{ base: "100%", md: "95vh" }} 
           overflowY="auto" 
+          css={{
+             "&::-webkit-scrollbar": {
+               display: "none",
+             },
+             scrollbarWidth: "none",
+           }}
           bg="white" 
-          borderRadius="2xl" 
-          p={isHistory ? { base: 4, md: 8 } : { base: 4, md: 6 }}
-          transition="all 0.3s ease-in-out"
+          borderRadius={{ base: "2xl 2xl 0 0", md: "2xl" }} 
+          p={{ base: 4, md: 8 }}
+          pb={{ base: "100px", md: 8 }} 
+          transition="all 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
         >
-          
           {view === "info" ? (
             <>
               {showEditBox ? (
                 <EditGrader student={student} onClose={() => setShowEditBox(false)} />
               ) : (
                 <VStack align="stretch" gap={6}>
-                  <Flex justify="space-between">
-                    <Button variant="ghost" size="sm" onClick={onClose}> <LuArrowLeft /> Back</Button>
+                  <Flex justify="space-between" align="center">
+                    <Button variant="ghost" size="sm" onClick={onClose} px={2}> 
+                      <LuArrowLeft /> Back
+                    </Button>
                     {showEditBtn && (
-                      <Button variant="ghost" size="sm" onClick={() => setShowEditBox(true)} > <MdOutlineModeEditOutline /> Edit</Button>
+                      <Button variant="subtle" size="xs" colorScheme="blue" borderRadius="full" onClick={() => setShowEditBox(true)} > 
+                        <MdOutlineModeEditOutline /> Edit
+                      </Button>
                     )}
                   </Flex>
 
-                  <VStack my={4}>
+                  <VStack my={2}>
                     <AvatarComp username={`${student.firstname} ${student.lastname}`} profileImage={student.profile_image} />
-                    <Heading size="md">{student.firstname} {student.lastname}</Heading>
-                    <Text fontSize="xs" color="gray.500">Student Profile</Text>
+                    <Heading size="md" mt={2}>{student.firstname} {student.lastname}</Heading>
+                    <Text fontSize="xs" color="gray.500" fontWeight="bold" textTransform="uppercase" letterSpacing="wider">
+                      Student Profile
+                    </Text>
                   </VStack>
 
-                  <VStack gap={3} align="stretch" w="90%" m="auto">
+                  <VStack gap={3} align="stretch" w="full">
                     {[
                       { label: "School", value: student.school },
                       { label: "Class", value: student.class },
                       { label: "Email", value: student.email },
                       { label: "Passcode", value: PassPlaceholder },
                     ].map((item) => (
-                      <Box key={item.label} bg="gray.50" p={3} rounded="lg">
-                        <Text fontSize="10px" fontWeight="bold" color="gray.500" textTransform="uppercase">{item.label}</Text>
-                        <Text fontSize="xs" fontWeight="600">{item.value || "Not Set"}</Text>
-                        {item.label === "Passcode" && !student.passcode && (
-                          <Button size="xs" mt={2} colorScheme="blue" onClick={handleGenBtnClick}>Generate</Button>
-                        )}
+                      <Box key={item.label} bg="gray.50" p={4} rounded="xl" border="1px solid" borderColor="gray.100">
+                        <Text fontSize="10px" fontWeight="black" color="gray.400" textTransform="uppercase">{item.label}</Text>
+                        <Flex justify="space-between" align="center">
+                          <Text fontSize="sm" fontWeight="600" color="gray.700">{item.value || "Not Set"}</Text>
+                          {item.label === "Passcode" && !student.passcode && (
+                            <Button size="xs" h="24px" colorScheme="blue" onClick={handleGenBtnClick}>Generate</Button>
+                          )}
+                        </Flex>
                       </Box>
                     ))}
                   </VStack>
 
-                  <VStack gap={3} w="90%" m="auto" mt={4}>
-                    <Flex w="full" p={4} bg="blue.50" rounded="xl" justify="space-between" align="center" cursor="pointer" onClick={() => setView("history")}>
+                  <VStack gap={3} w="full" mt={2}>
+                    <Flex 
+                      w="full" 
+                      p={4} 
+                      bg="blue.50" 
+                      rounded="xl" 
+                      justify="space-between" 
+                      align="center" 
+                      cursor="pointer" 
+                      _active={{ bg: "blue.100" }} 
+                      onClick={() => setView("history")}
+                    >
                       <HStack gap={3}>
-                        <Icon as={GiNotebook} color="blue.600" />
-                        <Text fontSize="xs" fontWeight="bold">Quiz Report</Text>
+                        <Icon as={GiNotebook} boxSize="20px" color="blue.600" />
+                        <Text fontSize="sm" fontWeight="bold" color="blue.900">Quiz Report</Text>
                       </HStack>
-                      <Icon as={MdOutlineKeyboardArrowRight} />
+                      <Icon as={MdOutlineKeyboardArrowRight} boxSize="20px" color="blue.600" />
                     </Flex>
 
                     {showDeleteBtn && (
-                      <Flex w="full" p={4} bg="red.50" rounded="xl" justify="space-between" align="center" cursor="pointer" onClick={() => setModal?.("delete")}>
+                      <Flex 
+                        w="full" 
+                        p={4} 
+                        bg="red.50" 
+                        rounded="xl" 
+                        justify="space-between" 
+                        align="center" 
+                        cursor="pointer" 
+                        _active={{ bg: "red.100" }} 
+                        onClick={() => setModal?.("delete")}
+                      >
                         <HStack gap={3}>
-                          <Icon as={MdDelete} color="red.600" />
-                          <Text fontSize="xs" fontWeight="bold" color="red.600">Delete Child Account</Text>
+                          <Icon as={MdDelete} boxSize="20px" color="red.600" />
+                          <Text fontSize="sm" fontWeight="bold" color="red.600">Delete Child Account</Text>
                         </HStack>
-                        <Icon as={MdOutlineKeyboardArrowRight} color="red.200" />
+                        <Icon as={MdOutlineKeyboardArrowRight} boxSize="20px" color="red.200" />
                       </Flex>
                     )}
                   </VStack>
@@ -119,16 +162,26 @@ const EditGraderPopup = ({ student, setStudent, onClose, showEditBtn, showDelete
               )}
             </>
           ) : (
-            /* HISTORY VIEW - Full Page Style Header */
+            /* HISTORY VIEW */
             <VStack align="stretch" gap={6}>
-               <Box position="sticky" top="-8" bg="white" pt={2} pb={4} zIndex={20} borderBottom="1px solid" borderColor="gray.100">
-                <Flex justify="space-between" align="center">
-                  <HStack>
-                    <Button variant="ghost" size="sm" onClick={() => setView("info")}> <LuArrowLeft /> Back to Profile</Button>
-                    <Separator orientation="vertical" h="20px" mx={2} />
-                    <Heading size="md">Academic Dashboard</Heading>
+               <Box 
+                 position="sticky" 
+                 top="-4" // Tightened for mobile scroll
+                 bg="white" 
+                 pt={2} 
+                 pb={4} 
+                 zIndex={20} 
+                 borderBottom="1px solid" 
+                 borderColor="gray.100"
+               >
+                <Flex justify="space-between" align="center" direction={{ base: "column", sm: "row" }} gap={4}>
+                  <HStack w={{ base: "full", sm: "auto" }} justify="space-between">
+                    <Button variant="ghost" size="sm" onClick={() => setView("info")} px={1}> 
+                      <LuArrowLeft /> <Text display={{ base: "none", md: "inline" }}>Back to Profile</Text>
+                    </Button>
+                    <Heading size="md" fontSize={{ base: "md", md: "lg" }}>Academic Dashboard</Heading>
                   </HStack>
-                  <Button variant="outline" size="sm" onClick={onClose}>Close Report</Button>
+                  <Button variant="outline" size="sm" w={{ base: "full", sm: "auto" }} onClick={onClose}>Close Report</Button>
                 </Flex>
               </Box>
               <QuizHistoryList studentId={student.id} />
@@ -138,10 +191,16 @@ const EditGraderPopup = ({ student, setStudent, onClose, showEditBtn, showDelete
       </Box>
 
       {modal === "delete" && student && setModal && (
-        <DeleteGraderPopover student={student} setStudent={setStudent} modal={modal} setModal={setModal} onClose={() => setModal("")} />
+        <DeleteGraderPopover 
+          student={student} 
+          setStudent={setStudent} 
+          modal={modal} 
+          setModal={setModal} 
+          onClose={() => setModal("")} 
+        />
       )}
     </>
   )
 }
 
-export default EditGraderPopup
+export default EditGraderPopup;

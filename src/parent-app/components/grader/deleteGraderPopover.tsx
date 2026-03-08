@@ -27,52 +27,52 @@ const DeleteGraderPopover = ({
     message: string;
   } | null>(null);
 
-  const handleDelete = async () => {
-    setDeleteStep("deleting");
-
-    try {
-      // Extract file path from public URL
-      const publicUrl = student.profile_image;
-      let filePath = "";
-      if (publicUrl) {
-        const parts = publicUrl.split("/");
-        const bucketNameIndex = parts.findIndex(
-          (p: string) => p === "profile-photos"
-        );
-        filePath = parts.slice(bucketNameIndex + 1).join("/");
+    const handleDelete = async () => {
+      setDeleteStep("deleting");
+  
+      try {
+        // Extract file path from public URL
+        const publicUrl = student.profile_image;
+        let filePath = "";
+        if (publicUrl) {
+          const parts = publicUrl.split("/");
+          const bucketNameIndex = parts.findIndex(
+            (p: string) => p === "profile-photos"
+          );
+          filePath = parts.slice(bucketNameIndex + 1).join("/");
+        }
+  
+        // Delete image if exists
+        if (filePath) {
+          const { error: imageError } = await supabase.storage
+            .from("profile-photos")
+            .remove([filePath]);
+          if (imageError) throw imageError;
+        }
+  
+        // Delete student record
+        const { error: dbError } = await supabase
+          .from("students")
+          .delete()
+          .eq("id", student.id);
+        if (dbError) throw dbError;
+  
+        // Success
+        setDeleteStep("success");
+        getGraderDetails();
+        setTimeout(() => {
+          setModal("");
+          setStudent(null);
+          onClose();
+        }, 1500);
+      } catch (error: any) {
+        setDeleteStep("warning");
+        setAlert({
+          type: "error",
+          message: error.message || "Failed to delete student",
+        });
       }
-
-      // Delete image if exists
-      if (filePath) {
-        const { error: imageError } = await supabase.storage
-          .from("profile-photos")
-          .remove([filePath]);
-        if (imageError) throw imageError;
-      }
-
-      // Delete student record
-      const { error: dbError } = await supabase
-        .from("students")
-        .delete()
-        .eq("id", student.id);
-      if (dbError) throw dbError;
-
-      // Success
-      setDeleteStep("success");
-      getGraderDetails();
-      setTimeout(() => {
-        setModal("");
-        setStudent(null);
-        onClose();
-      }, 1500);
-    } catch (error: any) {
-      setDeleteStep("warning");
-      setAlert({
-        type: "error",
-        message: error.message || "Failed to delete student",
-      });
-    }
-  };
+    };
 
   return (
     <Box
@@ -81,169 +81,109 @@ const DeleteGraderPopover = ({
       left={0}
       w="100vw"
       h="100vh"
-      bg="rgba(0, 0, 0, 0.6)"
-      zIndex={1000}
+      bg="rgba(0, 0, 0, 0.7)"
+      zIndex={4000} 
       display="flex"
       justifyContent="center"
       alignItems="center"
-      p={{ base: "2", md: "4" }}
+      p={{ base: 4, md: 6 }}
     >
       <Box
         position="relative"
-        width={{ base: "95%", md: "70%", lg: "40%" }}
+        width={{ base: "100%", sm: "85%", md: "60%", lg: "35%" }}
         maxH="90vh"
-        overflowY="auto"
         bg="white"
-        borderRadius="2xl"
-        boxShadow="lg"
-        p={{ base: "5", md: "10" }}
+        borderRadius="3xl"
+        boxShadow="2xl"
+        p={{ base: 6, md: 10 }}
+        overflowY="auto"
       >
-        {/* Warning/Confirm Content */}
+        {/* Content Section */}
         <Box
           display="flex"
           flexDirection="column"
-          justifyContent="space-around"
           alignItems="center"
+          textAlign="center"
         >
-          {deleteStep === "warning" && (
-            <>
-              <Icon
-                bg="red.100"
-                boxSize="70px"
-                color="red.400"
-                rounded="full"
-                mb={5}
-              >
-                <MdErrorOutline />
-              </Icon>
-              <Heading as="h1" fontSize="2xl" color="backgroundColor2" my={2}>
-                Delete Student Request
-              </Heading>
-              <Text
-                fontSize="xs"
-                color="on_containerColor"
-                textAlign="center"
-                w={{ base: "100%", md: "80%" }}
-                mb="2"
-              >
-                By removing the child all classes are going to be cancelled and
-                fees for uncompleted classes are non-refundable.
-              </Text>
-            </>
-          )}
+          <Icon
+            bg={deleteStep === "success" ? "green.100" : deleteStep === "deleting" ? "blue.100" : "red.100"}
+            boxSize={{ base: "60px", md: "70px" }}
+            color={deleteStep === "success" ? "green.500" : deleteStep === "deleting" ? "blue.500" : "red.500"}
+            rounded="full"
+            mb={5}
+            p={4}
+          >
+            <MdErrorOutline size="100%" />
+          </Icon>
 
-          {deleteStep === "confirm" && (
-            <>
-              <Icon
-                bg="red.100"
-                boxSize="70px"
-                color="red.400"
-                rounded="full"
-                mb={5}
-              >
-                <MdErrorOutline />
-              </Icon>
-              <Heading as="h1" fontSize="2xl" color="backgroundColor2" my={2}>
-                Confirm Deletion
-              </Heading>
-              <Text
-                fontSize="xs"
-                color="on_containerColor"
-                textAlign="center"
-                w={{ base: "100%", md: "80%" }}
-                mb="2"
-              >
-                Are you sure you want to permanently delete {student?.firstname}
-                's account? This action cannot be undone.
-              </Text>
-            </>
-          )}
+          <Heading 
+            as="h1" 
+            fontSize={{ base: "xl", md: "2xl" }} 
+            color="backgroundColor2" 
+            mb={3}
+          >
+            {deleteStep === "warning" && "Delete Student Request"}
+            {deleteStep === "confirm" && "Confirm Deletion"}
+            {deleteStep === "deleting" && "Deleting Student..."}
+            {deleteStep === "success" && "Deleted Successfully!"}
+          </Heading>
 
-          {deleteStep === "deleting" && (
-            <>
-              <Icon
-                bg="blue.100"
-                boxSize="70px"
-                color="blue.400"
-                rounded="full"
-                mb={5}
-              >
-                <MdErrorOutline />
-              </Icon>
-              <Heading as="h1" fontSize="2xl" color="backgroundColor2" my={2}>
-                Deleting Student...
-              </Heading>
-            </>
-          )}
-
-          {deleteStep === "success" && (
-            <>
-              <Icon
-                bg="green.100"
-                boxSize="70px"
-                color="green.400"
-                rounded="full"
-                mb={5}
-              >
-                <MdErrorOutline />
-              </Icon>
-              <Heading as="h1" fontSize="2xl" color="backgroundColor2" my={2}>
-                Deleted Successfully!
-              </Heading>
-            </>
+          {(deleteStep === "warning" || deleteStep === "confirm") && (
+            <Text
+              fontSize={{ base: "sm", md: "xs" }}
+              color="on_containerColor"
+              maxW="90%"
+              mb={6}
+            >
+              {deleteStep === "warning" 
+                ? "By removing the child, all classes will be cancelled and fees for uncompleted classes are non-refundable."
+                : `Are you sure you want to permanently delete ${student?.firstname}'s account? This action cannot be undone.`
+              }
+            </Text>
           )}
         </Box>
 
-        {/* Buttons - changes based on step */}
+        {/* Action Buttons */}
         <Box
           display="flex"
           flexDirection="column"
-          justifyContent="space between"
-          alignItems="center"
-          w={{ base: "100%", md: "90%" }}
-          m="auto"
-          my={5}
-          gap={4}
+          gap={3}
+          w="full"
+          mt={2}
         >
           {(deleteStep === "warning" || deleteStep === "confirm") && (
             <>
               <Button
-                bg="white"
-                color="primaryColor"
-                borderColor="primaryColor"
+                bg="red.500"
+                color="white"
                 borderRadius="3xl"
-                outline="none"
-                p={6}
-                w={"100%"}
-                fontSize={"sm"}
-                fontWeight={500}
-                _hover={{ bg: "primaryColor", color: "white" }}
+                h="50px"
+                w="full"
+                fontSize="sm"
+                fontWeight="bold"
+                _hover={{ bg: "red.600" }}
+                _active={{ transform: "scale(0.97)" }}
                 onClick={() =>
                   deleteStep === "warning"
                     ? setDeleteStep("confirm")
                     : handleDelete()
                 }
               >
-                {deleteStep === "warning"
-                  ? "Yes, Delete"
-                  : "Yes, Delete Permanently"}
+                {deleteStep === "warning" ? "Yes, Delete" : "Yes, Delete Permanently"}
               </Button>
 
               <Button
-                bg="white"
-                color="blue.600"
-                borderColor="blue.600"
+                variant="outline"
+                color="gray.600"
+                borderColor="gray.300"
                 borderRadius="3xl"
-                outline="none"
-                p={6}
-                w={"100%"}
-                fontSize={"sm"}
-                fontWeight={500}
-                _hover={{ bg: "primaryColor", color: "white" }}
+                h="50px"
+                w="full"
+                fontSize="sm"
+                fontWeight="medium"
+                _active={{ transform: "scale(0.97)" }}
                 onClick={() =>
-                  deleteStep === "confirm"
-                    ? setDeleteStep("warning")
-                    : onClose()
+                  deleteStep === "confirm" ? setDeleteStep("warning") : onClose()
                 }
               >
                 Cancel
@@ -256,11 +196,9 @@ const DeleteGraderPopover = ({
               bg="primaryColor"
               color="white"
               borderRadius="3xl"
-              p={6}
-              w={"100%"}
-              fontSize={"sm"}
-              fontWeight={500}
-              _hover={{ opacity: 0.8 }}
+              h="50px"
+              w="full"
+              fontSize="sm"
               onClick={onClose}
             >
               Close
@@ -268,14 +206,11 @@ const DeleteGraderPopover = ({
           )}
         </Box>
 
-        {/* Alert messages */}
+        {/* Alerts */}
         {alert && (
-          <Alert.Root status={alert.type} variant="subtle" mt={6}>
+          <Alert.Root status={alert.type} variant="subtle" mt={6} borderRadius="lg">
             <Alert.Indicator />
-            <Alert.Content>
-              <Alert.Title>
-                {alert.type === "error" ? "Error!" : "Success!"}
-              </Alert.Title>
+            <Alert.Content fontSize="xs">
               <Alert.Description>{alert.message}</Alert.Description>
             </Alert.Content>
           </Alert.Root>

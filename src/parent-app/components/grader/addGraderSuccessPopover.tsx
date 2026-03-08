@@ -8,11 +8,11 @@ type Props = {
 };
 
 const AddGraderSuccessPopover = ({ setShowBox, setShowModal }: Props) => {
+  const handleBoxes = () => {
+    setShowBox(false);
+    setShowModal(false);
+  };
 
-    const handleBoxes = ()=> {
-        setShowBox(false)
-        setShowModal(false)
-    }
   return (
     <Box
       position="fixed"
@@ -20,76 +20,70 @@ const AddGraderSuccessPopover = ({ setShowBox, setShowModal }: Props) => {
       left={0}
       w="100vw"
       h="100vh"
-      bg="rgba(0, 0, 0, 0.6)"
-      zIndex={1000}
+      bg="rgba(0, 0, 0, 0.7)"
+      zIndex={3000} 
       display="flex"
       justifyContent="center"
       alignItems="center"
-      p={{ base: "2", md: "4" }}
+      p={{ base: "4", md: "8" }}
     >
       <Box
         position="relative"
-        width={{ base: "95%", md: "70%", lg: "40%" }}
+        width={{ base: "100%", sm: "80%", md: "60%", lg: "35%" }} 
         maxH="90vh"
-        overflowY="auto"
         bg="white"
-        borderRadius="2xl"
-        boxShadow="lg"
-        p={{ base: "5", md: "10" }}
+        borderRadius="3xl" 
+        boxShadow="2xl"
+        p={{ base: "6", md: "10" }}
+        textAlign="center"
       >
-        {/* success texts */}
+        {/* success content */}
         <Box
           display="flex"
           flexDirection="column"
-          justifyContent="space-around"
           alignItems="center"
         >
           <Icon
             bg="green.100"
-            boxSize="70px"
-            color="green.400"
+            boxSize={{ base: "60px", md: "70px" }}
+            color="green.500"
             rounded="full"
-            mb={5}
-            p={2}
+            mb={4}
+            p={3}
           >
             <FaCircleCheck />
           </Icon>
-          <Heading as="h1" fontSize="2xl" color="backgroundColor2" my={2}>
+          
+          <Heading 
+            as="h1" 
+            fontSize={{ base: "xl", md: "2xl" }} 
+            color="backgroundColor2" 
+            mb={2}
+          >
             Yes, Student added!
           </Heading>
+          
           <Text
-            fontSize="xs"
+            fontSize={{ base: "sm", md: "xs" }} 
             color="on_containerColor"
-            textAlign="center"
-            w={{ base: "100%", md: "80%" }}
-            mb="2"
+            maxW={{ base: "100%", md: "80%" }}
+            mb={6}
           >
-            You have successfully added a stuent
+            You have successfully added a student.
           </Text>
         </Box>
 
-        {/* Buttons */}
-        <Box
-          display="flex"
-          flexDirection="column"
-          justifyContent="space between"
-          alignItems="center"
-          w={{ base: "100%", md: "90%" }}
-          m="auto"
-          my={5}
-          gap={4}
-        >
-          {/* View grader button */}
+        {/* Action Button */}
+        <Box w="full" px={{ base: 0, md: 4 }}>
           <Button
             bg="primaryColor"
             color="white"
-            borderColor="primaryColor"
             borderRadius="3xl"
-            outline="none"
             p={6}
-            w={"100%"}
-            fontSize={"sm"}
-            fontWeight={500}
+            w="full"
+            fontSize="sm"
+            fontWeight={600}
+            _active={{ transform: "scale(0.97)" }} 
             onClick={handleBoxes}
           >
             View your Students

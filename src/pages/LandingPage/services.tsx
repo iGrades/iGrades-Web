@@ -9,29 +9,29 @@ import orangeBlob from "@/assets/landing-page/second_orange_line.png";
 const Services = () => {
   const services = [
     {
-      label: "One-on-One Teaching",
+      label: "One-on-One Session",
       icon: MdOutlinePeopleAlt,
       color: "#FEA7C7",
-      desc: "lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
+      desc: "Personalized live sessions that give students focused attention, tailored explanations, and direct academic support to improve understanding and performance.",
     },
 
     {
-      label: "Affordable Prices",
+      label: "Affordable Packages",
       icon: AiFillDollarCircle,
       color: "#A7CF4B",
-      desc: "lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
+      desc: "Flexible and student-friendly pricing that makes quality education accessible without compromising learning standards.",
     },
     {
-      label: "24/7 Avialability",
+      label: "24/7 Accessibility",
       icon: BsFillCalendarCheckFill,
       color: "#F0C933",
-      desc: "lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
+      desc: "Access learning support anytime, ensuring help is always available when students need it most.",
     },
     {
-      label: "Flexible Timing",
+      label: "Flexible Hours",
       icon: MdTimer,
       color: "#7478EC",
-      desc: "lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
+      desc: "Learn or teach at convenient times that fit individual schedules, allowing full control over lesson timing and pace, without fixed classroom constraints.",
     },
   ];
   return (

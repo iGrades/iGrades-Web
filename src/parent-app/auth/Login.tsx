@@ -12,6 +12,7 @@ import {
 } from "@chakra-ui/react";
 import { IoEyeOutline, IoEyeOffOutline } from "react-icons/io5";
 import type { Dispatch, SetStateAction } from "react";
+// import HCaptcha from "@hcaptcha/react-hcaptcha";
 
 type Props = {
   setAlert: Dispatch<
@@ -30,6 +31,8 @@ const ParentLogin = ({ setAlert }: Props) => {
   const [isLoading, setIsLoading] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  // const [captchaToken, setCaptchaToken] = useState<string | null>(null);
+
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
@@ -49,17 +52,30 @@ const ParentLogin = ({ setAlert }: Props) => {
   const handlePasswordLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true); // Start loading
+    
+    // if (!captchaToken) {
+    //   setAlert({
+    //     type: "error",
+    //     message: "Please complete the captcha verification",
+    //   });
+    //   return;
+    // }
 
     const { error } = await supabase.auth.signInWithPassword({
       email,
       password,
+      // options: {
+      //    captchaToken,
+      //  },
     });
 
     if (error) {
       setAlert({ type: "error", message: error.message });
       setIsLoading(false); // Stop loading on error
+        // setCaptchaToken(null);
       return;
     }
+
 
     setIsLoading(false); // Stop loading on success
      navigate("/parent-dashboard");
@@ -115,6 +131,15 @@ const ParentLogin = ({ setAlert }: Props) => {
           </Box>
         ))}
       </Grid>
+      
+       {/*<Flex justify={"center"} my={10}>
+      <HCaptcha
+        sitekey={import.meta.env.VITE_HCAPTCHA_SITE_KEY}
+        onVerify={(token) => setCaptchaToken(token)}
+        onExpire={() => setCaptchaToken(null)}
+      />
+       </Flex>*/}
+
       <Flex justify={"center"} my={10}>
         <Button
           loading={isLoading}

@@ -19,7 +19,6 @@ const Navbar = () => {
     <>
       <Flex
         as="nav"
-        // p={{ base: 2, md: 3, lg: 4 }}
         justify="flex-start"
         alignItems="center"
         bg={"textFieldColor"}
