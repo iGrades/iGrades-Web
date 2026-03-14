@@ -31,6 +31,7 @@ type AddGraderProps = {
   mdPageWidth: number;
   lgPageWidth: number;
   radius: string;
+  showBox: boolean;
   setShowBox: React.Dispatch<React.SetStateAction<boolean>>;
 }
 

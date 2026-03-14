@@ -24,7 +24,7 @@ import quickTestIcon from "@/assets/quickTest_ico.png";
 import examTestIcon from "@/assets/examText_ico.png";
 import QuizInstructions from "./quizInstructions";
 import { supabase } from "@/lib/supabaseClient";
-import { useAuthdStudentData } from "@/student-app/context/studentDataContext";
+// import { useAuthdStudentData } from "@/student-app/context/studentDataContext";
 
 type Props = {
   topicList: Topic[];
