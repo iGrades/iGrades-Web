@@ -1,6 +1,6 @@
 import { Box, Flex, Button, Image, Link } from "@chakra-ui/react";
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link as RouterLink } from "react-router-dom";
 import logo from "@/assets/landing-page/logo.png";
 
 const NavBar = () => {
@@ -14,18 +14,17 @@ const NavBar = () => {
     { name: "Contact", link: "/contact" },
   ];
 
-  const toggleMobileNav = () => {
-    setIsMobileNavOpen(!isMobileNavOpen);
-  };
+  const toggleMobileNav = () => setIsMobileNavOpen((p) => !p);
 
   const handleLogin = () => {
-    isMobileNavOpen && setIsMobileNavOpen(!isMobileNavOpen);
+    isMobileNavOpen && setIsMobileNavOpen(false);
     navigate("/login");
   };
   const handleRegister = () => {
-    isMobileNavOpen && setIsMobileNavOpen(!isMobileNavOpen);
+    isMobileNavOpen && setIsMobileNavOpen(false);
     navigate("/signup");
-  }
+  };
+
   return (
     <Flex
       as="header"
@@ -35,35 +34,32 @@ const NavBar = () => {
       px={{ base: 4, lg: 12 }}
       position="relative"
     >
-      {/* logo image */}
-      <Box
-        display="flex"
-        alignItems="center"
-        bg="white"
-        w={{ base: "45%", md: "15%" }}
-        mr={{ base: 4, md: 6, lg: 0 }}
-      >
+      {/* Logo */}
+      <Box display="flex" alignItems="center" bg="white"
+        w={{ base: "45%", md: "15%" }} mr={{ base: 4, md: 6, lg: 0 }}>
         <Image src={logo} alt="iGrades_logo" width="150px" fit="cover" />
       </Box>
 
-      {/* desktop nav items */}
+      {/* Desktop nav */}
       <Box as="nav" display={{ base: "none", md: "block" }}>
         {navItems.map((item) => (
           <Link
             key={item.name}
-            href={item.link}
+            asChild
             color="on_backgroundColor"
             mx={4}
             fontSize={{ base: "sm", lg: "md" }}
             fontWeight="semibold"
-            textDecor={"none"}
+            textDecoration="none"
+            _hover={{ textDecoration: "none", color: "primaryColor" }}
+            transition="color 0.2s"
           >
-            {item.name}
+            <RouterLink to={item.link}>{item.name}</RouterLink>
           </Link>
         ))}
       </Box>
 
-      {/* desktop buttons */}
+      {/* Desktop buttons */}
       <Box display={{ base: "none", md: "block" }}>
         <Button
           variant="outline"
@@ -93,34 +89,21 @@ const NavBar = () => {
         </Button>
       </Box>
 
-      {/* Mobile hamburger menu */}
-      <Box
-        display={{ base: "block", md: "none" }}
-        onClick={toggleMobileNav}
-        cursor="pointer"
-        zIndex="20"
-        p={2}
-      >
-        <Box w="25px" h="3px" bg="black" mb="5px"></Box>
-        <Box w="25px" h="3px" bg="black" mb="5px"></Box>
-        <Box w="25px" h="3px" bg="black"></Box>
+      {/* Mobile hamburger */}
+      <Box display={{ base: "block", md: "none" }}
+        onClick={toggleMobileNav} cursor="pointer" zIndex="20" p={2}>
+        <Box w="25px" h="3px" bg="black" mb="5px" />
+        <Box w="25px" h="3px" bg="black" mb="5px" />
+        <Box w="25px" h="3px" bg="black" />
       </Box>
 
-      {/* Mobile nav overlay */}
+      {/* Mobile overlay */}
       {isMobileNavOpen && (
-        <Box
-          position="fixed"
-          top="0"
-          left="0"
-          w="100%"
-          h="100%"
-          bg="blackAlpha.600"
-          zIndex="10"
-          onClick={toggleMobileNav}
-        />
+        <Box position="fixed" top="0" left="0" w="100%" h="100%"
+          bg="blackAlpha.600" zIndex="10" onClick={toggleMobileNav} />
       )}
 
-      {/* Mobile nav menu - slides from left */}
+      {/* Mobile nav drawer */}
       <Box
         as="nav"
         display={{ base: "flex", md: "none" }}
@@ -137,61 +120,36 @@ const NavBar = () => {
         transition="left 0.3s ease-in-out"
         boxShadow="2xl"
       >
-        {/* Close button */}
-        <Button
-          onClick={toggleMobileNav}
-          alignSelf="flex-end"
-          variant="ghost"
-          mb={8}
-          fontSize="xl"
-        >
-          ✕
-        </Button>
+        <Button onClick={toggleMobileNav} alignSelf="flex-end"
+          variant="ghost" mb={8} fontSize="xl">✕</Button>
 
-        {/* Navigation items */}
         {navItems.map((item) => (
           <Link
             key={item.name}
-            href={item.link}
+            asChild
             color="gray.700"
             py={4}
             px={2}
             fontSize="lg"
             fontWeight="semibold"
-            textDecor="none"
+            textDecoration="none"
             borderBottom="1px solid"
             borderColor="gray.100"
-            _hover={{ bg: "gray.50" }}
+            _hover={{ bg: "gray.50", textDecoration: "none" }}
             onClick={toggleMobileNav}
           >
-            {item.name}
+            <RouterLink to={item.link}>{item.name}</RouterLink>
           </Link>
         ))}
 
-        {/* Mobile buttons */}
         <Flex direction="column" mt={8} gap={4}>
-          <Button
-            variant="outline"
-            border="1px solid"
-            borderColor="primaryColor"
-            rounded="xl"
-            color="primaryColor"
-            fontWeight="bold"
-            fontSize="md"
-            py={6}
-            onClick={handleLogin}
-          >
+          <Button variant="outline" border="1px solid" borderColor="primaryColor"
+            rounded="xl" color="primaryColor" fontWeight="bold" fontSize="md"
+            py={6} onClick={handleLogin}>
             Login
           </Button>
-          <Button
-            bg="primaryColor"
-            rounded="xl"
-            py={6}
-            fontWeight="bold"
-            fontSize="md"
-            color="white"
-            onClick={handleRegister}
-          >
+          <Button bg="primaryColor" rounded="xl" py={6} fontWeight="bold"
+            fontSize="md" color="white" onClick={handleRegister}>
             Register
           </Button>
         </Flex>

@@ -1,4 +1,5 @@
 import { Box, Flex, Grid, Image, Link, Text, HStack, VStack, Icon } from "@chakra-ui/react";
+import { Link as RouterLink } from "react-router-dom";
 import { FaLinkedinIn, FaInstagram, FaFacebookF, FaXTwitter } from "react-icons/fa6";
 import { MdEmail, MdPhone } from "react-icons/md";
 import logo from "@/assets/landing-page/logo.png";
@@ -13,15 +14,15 @@ const Footer = () => {
       { label: "Pricing", href: "#" },
     ],
     Company: [
-      { label: "About Us", href: "#" },
-      { label: "Our Team", href: "#" },
-      { label: "Careers", href: "#" },
+      { label: "About Us", href: "/about" },
+      { label: "Our Team", href: "/about" },
+      { label: "Careers", href: "/about" },
       { label: "Press Kit", href: "#" },
       { label: "Blog", href: "#" },
     ],
     Support: [
-      { label: "Help Centre", href: "#" },
-      { label: "Contact Us", href: "#" },
+      { label: "Help Centre", href: "/contact" },
+      { label: "Contact Us", href: "/contact" },
       { label: "Privacy Policy", href: "#" },
       { label: "Terms & Conditions", href: "#" },
       { label: "Cookie Policy", href: "#" },
@@ -152,14 +153,14 @@ const Footer = () => {
                   {items.map((item) => (
                     <Link
                       key={item.label}
-                      href={item.href}
+                      asChild
                       className="footer-link"
                       fontSize="sm"
                       color="rgba(255,255,255,0.45)"
                       textDecoration="none"
                       _hover={{ textDecoration: "none" }}
                     >
-                      {item.label}
+                      <RouterLink to={item.href}>{item.label}</RouterLink>
                     </Link>
                   ))}
                 </VStack>
@@ -282,11 +283,11 @@ const Footer = () => {
 
           <HStack gap={5}>
             {["Privacy Policy", "Terms", "Cookies"].map((t) => (
-              <Link key={t} href="#" fontSize="11px" color="rgba(255,255,255,0.25)"
+              <Link key={t} asChild fontSize="11px" color="rgba(255,255,255,0.25)"
                 letterSpacing="0.06em" textTransform="uppercase"
                 _hover={{ color: "rgba(255,255,255,0.7)", textDecoration: "none" }}
                 transition="color .2s">
-                {t}
+                <RouterLink to="#">{t}</RouterLink>
               </Link>
             ))}
           </HStack>
