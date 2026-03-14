@@ -9,6 +9,7 @@ export interface Question {
   subject_id: string;
   topic_id: string;
   quiz_id: string;
+  image_url?: string;
 }
 
 export interface Subject {

@@ -214,7 +214,7 @@ const QuizInstructions = ({
       const { data: questions, error: questionsError } = await supabase
         .from("questions")
         .select(
-          "id, question_text, option_a, option_b, option_c, option_d, correct_option, quiz_id, subject_id, topic_id"
+          "*"
         )
         .in("quiz_id", quizIds)
         .limit(examMode === "examination" ? 100 : 50);

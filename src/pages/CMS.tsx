@@ -23,7 +23,7 @@ import {
 } from "@chakra-ui/react";
 import { useState, useEffect, useRef } from "react";
 import { useDropzone } from "react-dropzone";
-import { FiFile, FiX, FiPlus, FiTrash2, FiDownload, FiUpload } from "react-icons/fi";
+import { FiFile, FiX, FiPlus, FiTrash2, FiDownload, FiUpload, FiImage } from "react-icons/fi";
 import { IoCloudUploadOutline } from "react-icons/io5";
 import { MdQuiz } from "react-icons/md";
 import { HiOutlineDocumentArrowUp } from "react-icons/hi2";
@@ -33,23 +33,28 @@ import { supabase } from "@/lib/supabaseClient";
 interface Class { id: string; name: string }
 interface Subject { id: string; name: string }
 interface Topic { id: string; name: string; description: string; class_id: string; subject_id: string }
+interface Quiz { id: string; subject_id: string; topic_id: string; class_id: string }
 interface QuizQuestion {
   question_text: string;
   option_a: string; option_b: string; option_c: string; option_d: string;
   correct_option: "a" | "b" | "c" | "d" | "";
+  image_file?: File | null;
+  image_preview?: string | null;
 }
 
 const emptyQuestion = (): QuizQuestion => ({
-  question_text: "", option_a: "", option_b: "", option_c: "", option_d: "", correct_option: "",
+  question_text: "", option_a: "", option_b: "", option_c: "", option_d: "",
+  correct_option: "", image_file: null, image_preview: null,
 });
 
 /* ── Reusable styled select ── */
+interface SelectItem { label: string; value: string }
 const StyledSelect = ({
   collection, value, onValueChange, label, placeholder, disabled = false, size,
 }: {
-  collection: ReturnType<typeof createListCollection>;
+  collection: ReturnType<typeof createListCollection<SelectItem>>;
   value: string[]; onValueChange: (e: any) => void;
-  label: string; placeholder: string; disabled?: boolean; size?: string;
+  label: string; placeholder: string; disabled?: boolean; size?: 'xs' | 'sm' | 'md' | 'lg';
 }) => (
   <Box>
     <Select.Root
@@ -142,12 +147,16 @@ const CMS = () => {
   const [selectedTopic, setSelectedTopic] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
 
+  const [quizClasses, setQuizClasses] = useState<Class[]>([]);
+  const [quizSelectedClass, setQuizSelectedClass] = useState<string[]>([]);
   const [quizSubjects, setQuizSubjects] = useState<Subject[]>([]);
   const [quizTopics, setQuizTopics] = useState<Topic[]>([]);
   const [quizSelectedSubject, setQuizSelectedSubject] = useState<string[]>([]);
   const [quizSelectedTopic, setQuizSelectedTopic] = useState<string[]>([]);
   const [questions, setQuestions] = useState<QuizQuestion[]>([emptyQuestion()]);
   const [quizLoading, setQuizLoading] = useState(false);
+  const [quizzes, setQuizzes] = useState<Quiz[]>([]);
+  const [quizSelectedQuiz, setQuizSelectedQuiz] = useState<string[]>([]);
 
   const [importedQuestions, setImportedQuestions] = useState<QuizQuestion[]>([]);
   const [importFileName, setImportFileName] = useState<string | null>(null);
@@ -165,7 +174,18 @@ const CMS = () => {
   useEffect(() => {
     if (quizSelectedSubject.length > 0) fetchQuizTopics(quizSelectedSubject[0]);
     else { setQuizTopics([]); setQuizSelectedTopic([]); }
+    setQuizzes([]); setQuizSelectedQuiz([]);
   }, [quizSelectedSubject]);
+
+  useEffect(() => {
+    setQuizSelectedClass([]);
+  }, [quizSelectedSubject, quizSelectedTopic]);
+
+  useEffect(() => {
+    if (quizSelectedSubject.length > 0 && quizSelectedTopic.length > 0) {
+      fetchQuizzes(quizSelectedSubject[0], quizSelectedTopic[0]);
+    } else { setQuizzes([]); setQuizSelectedQuiz([]); }
+  }, [quizSelectedSubject, quizSelectedTopic]);
 
   useEffect(() => {
     if (alert) { const t = setTimeout(() => setAlert(null), 4500); return () => clearTimeout(t); }
@@ -173,7 +193,7 @@ const CMS = () => {
 
   const fetchClasses = async () => {
     const { data } = await supabase.from("classes").select("id, name").order("name");
-    setClasses(data || []);
+    setClasses(data || []); setQuizClasses(data || []);
   };
   const fetchSubjects = async () => {
     const { data } = await supabase.from("subjects").select("id, name").order("name");
@@ -190,6 +210,16 @@ const CMS = () => {
       .select("id, name, description, class_id, subject_id")
       .eq("subject_id", subjectId).order("name");
     setQuizTopics(data || []);
+  };
+
+  const fetchQuizzes = async (subjectId: string, topicId: string) => {
+    const { data } = await supabase
+      .from("quizzes")
+      .select("id, subject_id, topic_id, class_id")
+      .eq("subject_id", subjectId)
+      .eq("topic_id", topicId)
+      .order("title");
+    setQuizzes(data || []);
   };
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
@@ -230,10 +260,60 @@ const CMS = () => {
 
   const updateQuestion = (i: number, f: keyof QuizQuestion, v: string) =>
     setQuestions((p) => p.map((q, j) => j === i ? { ...q, [f]: v } : q));
+
+  const updateQuestionImage = (i: number, file: File | null) => {
+    if (!file) {
+      setQuestions((p) => p.map((q, j) => j === i ? { ...q, image_file: null, image_preview: null } : q));
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      setQuestions((p) =>
+        p.map((q, j) =>
+          j === i ? { ...q, image_file: file, image_preview: e.target?.result as string } : q
+        )
+      );
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const uploadQuestionImage = async (file: File): Promise<string | null> => {
+    const ext = file.name.split(".").pop();
+    const path = `questions/${Math.random().toString(36).substring(2)}_${Date.now()}.${ext}`;
+    const { error } = await supabase.storage.from("question-images").upload(path, file);
+    if (error) { console.error("Image upload error:", error); return null; }
+    const { data: { publicUrl } } = supabase.storage.from("question-images").getPublicUrl(path);
+    return publicUrl;
+  };
   const addQuestion = () => setQuestions((p) => [...p, emptyQuestion()]);
   const removeQuestion = (i: number) => { if (questions.length > 1) setQuestions((p) => p.filter((_, j) => j !== i)); };
   const isQuestionValid = (q: QuizQuestion) =>
     q.question_text.trim() && q.option_a.trim() && q.option_b.trim() && q.option_c.trim() && q.option_d.trim() && q.correct_option;
+
+  const createOrGetQuiz = async (): Promise<string | null> => {
+    // If user picked an existing quiz, use it directly
+    if (quizSelectedQuiz[0] && quizSelectedQuiz[0] !== "__new__") return quizSelectedQuiz[0];
+
+    // Otherwise create a new one
+    if (!quizSelectedClass[0]) {
+      setAlert({ type: "error", message: "Please select a class for the new quiz." });
+      return null;
+    }
+    const { data, error } = await supabase
+      .from("quizzes")
+      .insert({
+        class_id: quizSelectedClass[0],
+        subject_id: quizSelectedSubject[0],
+        topic_id: quizSelectedTopic[0],
+      })
+      .select("id")
+      .single();
+    if (error) { setAlert({ type: "error", message: "Failed to create quiz: " + error.message }); return null; }
+    // Refresh quiz list and mark the new quiz as selected
+    await fetchQuizzes(quizSelectedSubject[0], quizSelectedTopic[0]);
+    setQuizSelectedQuiz([data.id]);
+    return data.id;
+  };
 
   const handleQuizUpload = async () => {
     if (!quizSelectedSubject[0] || !quizSelectedTopic[0]) {
@@ -244,11 +324,27 @@ const CMS = () => {
     }
     setQuizLoading(true);
     try {
-      const rows = questions.map((q) => ({ ...q, subject_id: quizSelectedSubject[0], topic_id: quizSelectedTopic[0] }));
+      const quizId = await createOrGetQuiz();
+      if (!quizId) { setQuizLoading(false); return; }
+
+      // Upload any attached images first, then build DB rows
+      const rows = await Promise.all(
+        questions.map(async (q) => {
+          let image_url: string | null = null;
+          if (q.image_file) image_url = await uploadQuestionImage(q.image_file);
+          const { /*image_file, image_preview,  */ ...rest } = q;
+          return {
+            ...rest, image_url,
+            subject_id: quizSelectedSubject[0],
+            topic_id: quizSelectedTopic[0],
+            quiz_id: quizId,
+          };
+        })
+      );
       const { error } = await supabase.from("questions").insert(rows);
       if (error) throw error;
       setAlert({ type: "success", message: `${rows.length} question${rows.length > 1 ? "s" : ""} uploaded!` });
-      setQuestions([emptyQuestion()]); setQuizSelectedSubject([]); setQuizSelectedTopic([]);
+      setQuestions([emptyQuestion()]); setQuizSelectedSubject([]); setQuizSelectedTopic([]); setQuizSelectedQuiz([]); setQuizSelectedClass([]);
     } catch (err) {
       setAlert({ type: "error", message: "Upload failed: " + (err as Error).message });
     } finally { setQuizLoading(false); }
@@ -288,29 +384,59 @@ const CMS = () => {
     reader.readAsArrayBuffer(file);
   };
 
+  const downloadCsvTemplate = () => {
+    const headers = ["question_text", "option_a", "option_b", "option_c", "option_d", "correct_option"];
+    const examples = [
+      ["What is 2 + 2?", "3", "4", "5", "6", "B"],
+      ["What is the capital of France?", "Berlin", "Madrid", "Paris", "Rome", "C"],
+    ];
+    const csvRows = [
+      headers.join(","),
+      ...examples.map((row) => row.map((cell) => `"${cell}"`).join(",")),
+    ];
+    const blob = new Blob([csvRows.join("\n")], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url; a.download = "quiz_questions_template.csv";
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
   const handleFileImportUpload = async () => {
     if (!quizSelectedSubject[0] || !quizSelectedTopic[0]) {
       setAlert({ type: "error", message: "Select a subject and topic first." }); return;
     }
     setQuizLoading(true);
     try {
-      const rows = importedQuestions.map((q) => ({ ...q, subject_id: quizSelectedSubject[0], topic_id: quizSelectedTopic[0] }));
+      const quizId = await createOrGetQuiz();
+      if (!quizId) { setQuizLoading(false); return; }
+
+      const rows = importedQuestions.map((q) => ({
+        ...q,
+        subject_id: quizSelectedSubject[0],
+        topic_id: quizSelectedTopic[0],
+        quiz_id: quizId,
+      }));
       const { error } = await supabase.from("questions").insert(rows);
       if (error) throw error;
       setAlert({ type: "success", message: `${rows.length} question${rows.length > 1 ? "s" : ""} uploaded!` });
-      setImportedQuestions([]); setImportFileName(null); setQuizSelectedSubject([]); setQuizSelectedTopic([]);
+      setImportedQuestions([]); setImportFileName(null); setQuizSelectedSubject([]); setQuizSelectedTopic([]); setQuizSelectedQuiz([]); setQuizSelectedClass([]);
     } catch (err) {
       setAlert({ type: "error", message: "Upload failed: " + (err as Error).message });
     } finally { setQuizLoading(false); }
   };
 
-  const classCollection = createListCollection({ items: classes.map((c) => ({ label: c.name, value: c.id })) });
-  const subjectCollection = createListCollection({ items: subjects.map((s) => ({ label: s.name, value: s.id })) });
-  const topicCollection = createListCollection({ items: topics.map((t) => ({ label: t.name, value: t.id })) });
-  const fileTypeCollection = createListCollection({ items: [{ label: "PDF", value: "pdf" }, { label: "Video", value: "video" }, { label: "Past Questions", value: "pqs" }] });
-  const quizSubjectCollection = createListCollection({ items: quizSubjects.map((s) => ({ label: s.name, value: s.id })) });
-  const quizTopicCollection = createListCollection({ items: quizTopics.map((t) => ({ label: t.name, value: t.id })) });
-  const correctOptionCollection = createListCollection({ items: [{ label: "Option A", value: "a" }, { label: "Option B", value: "b" }, { label: "Option C", value: "c" }, { label: "Option D", value: "d" }] });
+  const classCollection = createListCollection<SelectItem>({ items: classes.map((c) => ({ label: c.name, value: c.id })) });
+  const subjectCollection = createListCollection<SelectItem>({ items: subjects.map((s) => ({ label: s.name, value: s.id })) });
+  const topicCollection = createListCollection<SelectItem>({ items: topics.map((t) => ({ label: t.name, value: t.id })) });
+  const fileTypeCollection = createListCollection<SelectItem>({ items: [{ label: "PDF", value: "pdf" }, { label: "Video", value: "video" }, { label: "Past Questions", value: "pqs" }] });
+  const quizSubjectCollection = createListCollection<SelectItem>({ items: quizSubjects.map((s) => ({ label: s.name, value: s.id })) });
+  const quizTopicCollection = createListCollection<SelectItem>({ items: quizTopics.map((t) => ({ label: t.name, value: t.id })) });
+  const quizClassCollection = createListCollection<SelectItem>({ items: quizClasses.map((c) => ({ label: c.name, value: c.id })) });
+  // const quizCollection = createListCollection({
+  //   items: quizzes.map((q) => ({ label: q.title, value: q.id })),
+  // });
+  const correctOptionCollection = createListCollection<SelectItem>({ items: [{ label: "Option A", value: "a" }, { label: "Option B", value: "b" }, { label: "Option C", value: "c" }, { label: "Option D", value: "d" }] });
 
   const quizUploadDisabled = !quizSelectedSubject[0] || !quizSelectedTopic[0] || questions.some((q) => !isQuestionValid(q)) || quizLoading;
 
@@ -351,9 +477,9 @@ const CMS = () => {
         {/* Page header */}
         <Box mb={8}>
           <HStack gap={3} mb={1} align="center">
-            <Box w="4px" h={12} bg="primaryColor" borderRadius="full" flexShrink={0} />
+            <Box w="4px" h={9} bg="primaryColor" borderRadius="full" flexShrink={0} />
             <Box>
-              <Heading fontSize={{ base: "2xl", md: "28px" }} fontWeight="800" color="gray.900" letterSpacing="-0.025em" lineHeight="1" mt={1}>
+              <Heading fontSize={{ base: "2xl", md: "28px" }} fontWeight="800" color="gray.900" letterSpacing="-0.025em" lineHeight="1">
                 Content Management
               </Heading>
               <Text fontSize="sm" color="gray.400" mt={1}>
@@ -383,7 +509,7 @@ const CMS = () => {
                     bg="gray.50" border="1px solid" borderColor="gray.200" borderRadius="lg"
                     _focus={{ borderColor: "blue.400", bg: "white" }}
                     _hover={{ borderColor: "gray.300" }}
-                    transition="all 0.15s" variant="unstyled" px={3} h={10} fontSize="sm" />
+                    transition="all 0.15s" variant="subtle" px={3} h={10} fontSize="sm" />
                 </Box>
 
                 <Grid templateColumns="1fr 1fr" gap={3}>
@@ -408,7 +534,7 @@ const CMS = () => {
                     bg="gray.50" border="1px solid" borderColor="gray.200" borderRadius="lg"
                     _focus={{ borderColor: "blue.400", bg: "white" }}
                     _hover={{ borderColor: "gray.300" }}
-                    transition="all 0.15s" variant="unstyled" px={3} pt={2} resize="none" fontSize="sm" />
+                    transition="all 0.15s" variant="subtle" px={3} pt={2} resize="none" fontSize="sm" />
                 </Box>
 
                 {/* Drop zone */}
@@ -452,7 +578,7 @@ const CMS = () => {
                         <Icon as={FiFile} color="blue.600" boxSize={3.5} />
                       </Box>
                       <VStack align="start" gap={0}>
-                        <Text fontSize="xs" fontWeight="600" color="gray.700" maxW="200px" noOfLines={1}>{file.name}</Text>
+                        <Text fontSize="xs" fontWeight="600" color="gray.700" maxW="200px" >{file.name}</Text>
                         <Text fontSize="10px" color="gray.400">{(file.size / 1024 / 1024).toFixed(2)} MB</Text>
                       </VStack>
                     </HStack>
@@ -494,6 +620,60 @@ const CMS = () => {
                     disabled={!quizSelectedSubject[0]} />
                 </Grid>
 
+                {/* ── Quiz selector / creator ── */}
+                <Box>
+                  <Text {...fieldLabelProps}>Quiz</Text>
+                  {!quizSelectedSubject[0] || !quizSelectedTopic[0] ? (
+                    <Box px={3} py={2} bg="gray.50" borderRadius="lg" border="1px solid" borderColor="gray.200">
+                      <Text fontSize="xs" color="gray.400">Select subject &amp; topic first</Text>
+                    </Box>
+                  ) : quizzes.length === 0 ? (
+                    /* No quizzes exist — straight to create mode */
+                    <Box p={3} bg="orange.50" border="1px solid" borderColor="orange.200" borderRadius="lg">
+                      <Text fontSize="xs" color="orange.700" fontWeight="600" mb={2}>
+                        No quiz exists for this subject/topic — a new one will be created.
+                      </Text>
+                      <StyledSelect
+                        collection={quizClassCollection}
+                        value={quizSelectedClass}
+                        onValueChange={(e) => setQuizSelectedClass(e.value)}
+                        label="Assign to Class"
+                        placeholder="Select class"
+                      />
+                    </Box>
+                  ) : (
+                    /* Quizzes exist — pick one or choose to create a new one */
+                    <Box>
+                      <StyledSelect
+                        collection={createListCollection({
+                          items: [
+                            ...quizzes.map((q, i) => ({ label: `Quiz ${i + 1} (existing)`, value: q.id })),
+                            { label: "＋ Create new quiz", value: "__new__" },
+                          ],
+                        })}
+                        value={quizSelectedQuiz}
+                        onValueChange={(e) => { setQuizSelectedQuiz(e.value); setQuizSelectedClass([]); }}
+                        label="Select or create quiz"
+                        placeholder="Choose…"
+                      />
+                      {quizSelectedQuiz[0] === "__new__" && (
+                        <Box mt={2} p={3} bg="blue.50" border="1px solid" borderColor="blue.200" borderRadius="lg">
+                          <Text fontSize="xs" color="blue.700" fontWeight="600" mb={2}>
+                            Select the class for the new quiz
+                          </Text>
+                          <StyledSelect
+                            collection={quizClassCollection}
+                            value={quizSelectedClass}
+                            onValueChange={(e) => setQuizSelectedClass(e.value)}
+                            label="Class"
+                            placeholder="Select class"
+                          />
+                        </Box>
+                      )}
+                    </Box>
+                  )}
+                </Box>
+
                 <Tabs.Root defaultValue="manual" variant="enclosed" size="sm">
                   <Tabs.List bg="gray.100" borderRadius="lg" p={0.5} gap={0.5}>
                     <Tabs.Trigger value="manual" flex={1} borderRadius="md" fontSize="xs" fontWeight="600"
@@ -534,7 +714,72 @@ const CMS = () => {
                                   onChange={(e) => updateQuestion(index, "question_text", e.target.value)}
                                   rows={2} bg="white" border="1px solid" borderColor="gray.200" borderRadius="lg"
                                   _focus={{ borderColor: "blue.400", bg: "white" }}
-                                  variant="unstyled" px={3} pt={2} resize="none" fontSize="sm" />
+                                  variant="subtle" px={3} pt={2} resize="none" fontSize="sm" />
+
+                                {/* ── Question image (optional) ── */}
+                                <Box>
+                                  {q.image_preview ? (
+                                    <Box position="relative" display="inline-block">
+                                      <img
+                                        src={q.image_preview!}
+                                        alt="Question image preview"
+                                        style={{
+                                          maxHeight: "140px", maxWidth: "100%",
+                                          borderRadius: "8px", border: "1px solid #E2E8F0",
+                                          display: "block",
+                                        }}
+                                      />
+                                      <IconButton
+                                        aria-label="Remove image"
+                                        size="xs"
+                                        position="absolute"
+                                        top={1}
+                                        right={1}
+                                        bg="red.500"
+                                        color="white"
+                                        borderRadius="full"
+                                        _hover={{ bg: "red.600" }}
+                                        onClick={() => updateQuestionImage(index, null)}
+                                      >
+                                        <Icon as={FiX} boxSize={2.5} />
+                                      </IconButton>
+                                    </Box>
+                                  ) : (
+                                    <label
+                                      htmlFor={"q-img-" + index}
+                                      style={{
+                                        display: "flex", alignItems: "center", gap: "8px",
+                                        padding: "6px 12px", background: "white",
+                                        border: "1px dashed #CBD5E0", borderRadius: "8px",
+                                        cursor: "pointer", width: "fit-content", transition: "all 0.15s",
+                                      }}
+                                      onMouseEnter={(e) => {
+                                        (e.currentTarget as HTMLElement).style.borderColor = "#90CDF4";
+                                        (e.currentTarget as HTMLElement).style.background = "#EBF8FF";
+                                      }}
+                                      onMouseLeave={(e) => {
+                                        (e.currentTarget as HTMLElement).style.borderColor = "#CBD5E0";
+                                        (e.currentTarget as HTMLElement).style.background = "white";
+                                      }}
+                                    >
+                                      <input
+                                        id={"q-img-" + index}
+                                        type="file"
+                                        accept="image/*"
+                                        style={{ display: "none" }}
+                                        onChange={(e) => {
+                                          const f = e.target.files?.[0] ?? null;
+                                          updateQuestionImage(index, f);
+                                          e.target.value = "";
+                                        }}
+                                      />
+                                      <Icon as={FiImage} boxSize={3} color="gray.400" />
+                                      <Text fontSize="10px" color="gray.400" fontWeight="500">
+                                        Add image (optional)
+                                      </Text>
+                                    </label>
+                                  )}
+                                </Box>
 
                                 <Grid templateColumns="1fr 1fr" gap={2}>
                                   {(["a", "b", "c", "d"] as const).map((opt) => (
@@ -546,7 +791,7 @@ const CMS = () => {
                                       <Input placeholder={`Option ${opt.toUpperCase()}`}
                                         value={q[`option_${opt}` as keyof QuizQuestion] as string}
                                         onChange={(e) => updateQuestion(index, `option_${opt}` as keyof QuizQuestion, e.target.value)}
-                                        variant="unstyled" fontSize="xs" h="full" />
+                                        variant="subtle" fontSize="xs" h="full" />
                                     </HStack>
                                   ))}
                                 </Grid>
@@ -588,24 +833,33 @@ const CMS = () => {
                         borderRadius="xl" p={3.5} justify="space-between">
                         <VStack align="start" gap={0.5}>
                           <Text fontSize="xs" fontWeight="700" color="blue.800">Download Template</Text>
-                          <Text fontSize="xs" color="blue.500" lineHeight="1.4">Fill in and upload below</Text>
+                          <Text fontSize="xs" color="blue.500" lineHeight="1.4">CSV · Fill in and upload below</Text>
                         </VStack>
-                        <Button as="a" href="/quiz_questions_template.xlsx" download="quiz_questions_template.xlsx"
+                        <Button onClick={downloadCsvTemplate}
                           size="sm" bg="blue.500" color="white" borderRadius="lg"
                           _hover={{ bg: "blue.600", transform: "translateY(-1px)" }}
                           transition="all 0.15s" flexShrink={0} fontSize="xs" fontWeight="600">
                           <Icon as={FiDownload} mr={1.5} />
-                          Template
+                          Template (.csv)
                         </Button>
                       </HStack>
 
                       {/* File picker */}
-                      <Box as="label" htmlFor="quiz-file-input" display="block"
-                        border="2px dashed"
-                        borderColor={importedQuestions.length > 0 ? "green.300" : "gray.200"}
-                        borderRadius="xl" p={5} textAlign="center" cursor="pointer"
-                        bg={importedQuestions.length > 0 ? "green.50" : "gray.50"}
-                        transition="all 0.2s" _hover={{ borderColor: "blue.300", bg: "blue.50" }}>
+                      <label htmlFor="quiz-file-input" style={{
+                        display: "block", border: "2px dashed",
+                        borderColor: importedQuestions.length > 0 ? "#68D391" : "#E2E8F0",
+                        borderRadius: "12px", padding: "20px", textAlign: "center", cursor: "pointer",
+                        background: importedQuestions.length > 0 ? "#F0FFF4" : "#F7FAFC",
+                        transition: "all 0.2s",
+                      }}
+                      onMouseEnter={(e) => {
+                        (e.currentTarget as HTMLElement).style.borderColor = "#90CDF4";
+                        (e.currentTarget as HTMLElement).style.background = "#EBF8FF";
+                      }}
+                      onMouseLeave={(e) => {
+                        (e.currentTarget as HTMLElement).style.borderColor = importedQuestions.length > 0 ? "#68D391" : "#E2E8F0";
+                        (e.currentTarget as HTMLElement).style.background = importedQuestions.length > 0 ? "#F0FFF4" : "#F7FAFC";
+                      }}>
                         <input id="quiz-file-input" ref={fileInputRef} type="file" accept=".xlsx,.xls,.csv"
                           style={{ display: "none" }}
                           onChange={(e) => { const f = e.target.files?.[0]; if (f) parseImportFile(f); e.target.value = ""; }} />
@@ -623,7 +877,7 @@ const CMS = () => {
                             </Badge>
                           )}
                         </VStack>
-                      </Box>
+                      </label>
 
                       {importError && (
                         <Alert.Root status="error" variant="subtle" borderRadius="xl">
@@ -652,14 +906,14 @@ const CMS = () => {
                                   Q{i + 1}
                                 </Badge>
                                 <VStack align="start" gap={0.5} flex={1} minW={0}>
-                                  <Text fontSize="xs" fontWeight="600" color="gray.700" noOfLines={1}>{q.question_text}</Text>
+                                  <Text fontSize="xs" fontWeight="600" color="gray.700">{q.question_text}</Text>
                                   <HStack gap={2} flexWrap="wrap">
                                     {(["a", "b", "c", "d"] as const).map((opt) => (
                                       <Text key={opt} fontSize="10px"
-                                        color={q.correct_option === opt ? "green.600" : "gray.400"}
-                                        fontWeight={q.correct_option === opt ? "700" : "400"}>
+                                        color={q.correct_option === opt.toUpperCase() ? "green.600" : "gray.400"}
+                                        fontWeight={q.correct_option === opt.toUpperCase() ? "700" : "400"}>
                                         {opt.toUpperCase()}: {q[`option_${opt}` as keyof QuizQuestion] as string}
-                                        {q.correct_option === opt && " ✓"}
+                                        {q.correct_option === opt.toUpperCase() && " ✓"}
                                       </Text>
                                     ))}
                                   </HStack>

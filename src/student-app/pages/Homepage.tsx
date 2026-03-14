@@ -3,6 +3,7 @@ import MyClasses from "../layouts/myClasses";
 import HomeChart from "../components/chart";
 import Analytics from "../components/analytics";
 import RightCTA from "../components/rightCTA";
+import AIChatbot from "../components/AIChatbot";
 
 const Homepage = () => {
   return (
@@ -31,6 +32,7 @@ const Homepage = () => {
         >
           <RightCTA />
         </Box>
+        <AIChatbot />
       </Flex>
     </Box>
   );

@@ -111,9 +111,13 @@ const Pdfs = () => {
     <Box bg="white" rounded="lg" shadow="sm" p={4} mb={20} h={{base: 'auto', lg: '75vh'}}>
       {!topicList ? (
         <Grid
-          templateColumns="repeat(auto-fill, minmax(200px, 1fr))"
-          gap={6}
-          py={6}
+          templateColumns={{
+          base: "repeat(auto-fill, minmax(150px, 1fr))",
+          md: "repeat(auto-fill, minmax(200px, 1fr))",
+          lg: "repeat(auto-fill, minmax(225px, 1fr))",
+        }}
+        gap={{ base: 4, md: 6 }}
+        py={{ base: 4, md: 6 }}
         >
           {studentCourses.map((course, index) => (
             <Box
@@ -121,12 +125,19 @@ const Pdfs = () => {
               borderRadius="xl"
               p={6}
               textAlign="center"
-              bg={course.image ? `url(${course.image})` : course.color}
+              minH="100px"
+              display="flex"
+              flexDirection="column"
+              justifyContent="center"
+              alignItems="center"
+              transition="all 0.3s ease"
+              _hover={{ transform: "translateY(-8px)" }}
+              background={course.image ? `url(${course.image})` : course.color}
               backgroundSize="contain"
               backgroundRepeat="no-repeat"
               cursor="pointer"
-              transition="0.3s"
-              _hover={{ transform: "translateY(-8px)" }}
+              position="relative"
+              overflow="hidden"
               onClick={() => handleCourseClick(course.displayName, course.dbName)}
             >
               <Center flexDirection="column">

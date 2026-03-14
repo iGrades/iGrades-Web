@@ -73,7 +73,7 @@ export default function Login() {
         src={sideImage}
         alt="login_image"
         display={{ base: "none", lg: "block" }}
-        w={{ base: "full", lg: "35%" }}
+        w={{ base: "full", lg: "45%" }}
         mx="auto"
       />
       <Box bg="white" h={"full"} w={{ base: "full", lg: "60%" }}>
