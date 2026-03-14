@@ -1,6 +1,6 @@
 "use client";
 
-import { useChatbot } from "../../hooks/useChatBot";
+import { useChatbot } from "../../hooks/useChatbot";
 
 export const AIChatbot = () => {
   const {

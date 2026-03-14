@@ -17,7 +17,7 @@ const LogoutPopover = ({ setShowLogoutModal }: Props) => {
   const navigate = useNavigate();
 
   const handleLogout = async () => {
-    let { error } = await supabase.auth.signOut();
+    const { error } = await supabase.auth.signOut();
 
     if (error) {
       setAlert({ type: "error", message: error.message });
@@ -53,7 +53,7 @@ const LogoutPopover = ({ setShowLogoutModal }: Props) => {
           textAlign="center"
         >
           {/* Content Section */}
-          <VStack spacing={4} align="center">
+          <VStack gap={4} align="center">
             <Icon
               bg="blue.50"
               boxSize={{ base: "60px", md: "70px" }}
@@ -84,7 +84,7 @@ const LogoutPopover = ({ setShowLogoutModal }: Props) => {
           </VStack>
 
           {/* Buttons Section */}
-          <VStack spacing={3} mt={8} w="full">
+          <VStack gap={3} mt={8} w="full">
             <Button
               bg="primaryColor"
               color="white"

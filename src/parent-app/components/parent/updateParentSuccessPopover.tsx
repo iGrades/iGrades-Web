@@ -37,7 +37,7 @@ const UpdateParentSuccessPopover = ({ setShowBox, onClose }: Props) => {
         p={{ base: 6, md: 10 }}
         textAlign="center"
       >
-        <VStack spacing={4}>
+        <VStack gap={4}>
           <Icon
             bg="green.50"
             boxSize={{ base: "60px", md: "70px" }}

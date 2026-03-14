@@ -1,4 +1,4 @@
-import { Box, Heading, Text, Flex, RadioGroup, VStack, Image } from "@chakra-ui/react";
+import { Box, Heading, Text, Flex, RadioGroup, VStack } from "@chakra-ui/react";
 import type { QuestionComponentProps } from "./types";
 
 export const QuestionComponent = ({
@@ -10,15 +10,12 @@ export const QuestionComponent = ({
   disabled,
 }: QuestionComponentProps) => {
   const hasImage = Boolean(currentQuestion?.image_url);
-  
-  console.log("question data:", JSON.stringify(currentQuestion, null, 2));
 
   return (
     <Box p={6} bg="white" borderRadius="lg" minH="50vh" w="80%" m="auto">
       <Heading my={2} fontSize="md">
         Question {currentQuestionIndex + 1} of {totalQuestions}
       </Heading>
-
       <Flex
         direction={{ base: "column", md: "row" }}
         justify="space-between"
@@ -36,28 +33,21 @@ export const QuestionComponent = ({
 
           {hasImage && (
             <Box mt={4} mb={2}>
-              <Image
+              <img
                 src={currentQuestion.image_url}
                 alt="Question illustration"
-                maxH="280px"
-                maxW="100%"
-                borderRadius="lg"
-                border="1px solid"
-                borderColor="gray.200"
-                objectFit="contain"
-                // Show a subtle loading placeholder while the image fetches
-                fallback={
-                  <Box
-                    h="120px"
-                    bg="gray.100"
-                    borderRadius="lg"
-                    display="flex"
-                    alignItems="center"
-                    justifyContent="center"
-                  >
-                    <Text fontSize="xs" color="gray.400">Loading image…</Text>
-                  </Box>
-                }
+                style={{
+                  maxHeight: "280px",
+                  maxWidth: "100%",
+                  borderRadius: "8px",
+                  border: "1px solid #E2E8F0",
+                  objectFit: "contain",
+                  display: "block",
+                }}
+                onError={(e) => {
+                  // Hide broken image silently
+                  (e.currentTarget as HTMLImageElement).style.display = "none";
+                }}
               />
             </Box>
           )}

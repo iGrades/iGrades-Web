@@ -23,9 +23,16 @@ import { groupBy } from "es-toolkit";
 import manikin from "@/assets/manikin.png";
 import addPix from "@/assets/addPix.png";
 import AddGraderSuccessPopover from "./addGraderSuccessPopover";
-import type { Dispatch, SetStateAction } from "react";
 import SeniorCourses from "../courses/seniorCourses";
 import JuniorCourses from "../courses/juniorCourses";
+
+type AddGraderProps = {
+  basePageWidth: number;
+  mdPageWidth: number;
+  lgPageWidth: number;
+  radius: string;
+  setShowBox: React.Dispatch<React.SetStateAction<boolean>>;
+}
 
 function AddGrader({
   basePageWidth,

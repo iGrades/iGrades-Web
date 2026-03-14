@@ -89,8 +89,8 @@ const GraderTable = ({ studentsData }: Props) => {
                       color="on_containerColor"
                       fontWeight={400}
                       fontSize="xs"
-                      maxW="200px" // Prevents school name from stretching table too wide
-                      isTruncated
+                      maxW="200px"
+                      truncate 
                     >
                       {item.school}
                     </Table.Cell>

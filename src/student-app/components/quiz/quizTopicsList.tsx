@@ -69,7 +69,7 @@ const QuizTopicsList = ({
   const [error, setError] = useState<string | null>(null);
 
   const { subjectImages } = useStudentData();
-  const { authdStudent } = useAuthdStudentData();
+  // const { authdStudent } = useAuthdStudentData();
 
   const items = [
     {

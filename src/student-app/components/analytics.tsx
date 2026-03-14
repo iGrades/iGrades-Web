@@ -119,9 +119,10 @@ const Analytics = () => {
             };
           }
 
-          const subjectVideos = (allVideos ?? []).filter(
-            (v) => v.topics?.subject_id === subjectId
-          );
+          const subjectVideos = (allVideos ?? []).filter((v) => {
+            const topics = Array.isArray(v.topics) ? v.topics : [v.topics];
+            return topics.some((t: any) => t?.subject_id === subjectId);
+          });
           const totalVideos = subjectVideos.length;
 
           if (totalVideos === 0) {
@@ -172,7 +173,7 @@ const Analytics = () => {
         boxShadow="md"
         borderRadius="lg"
         w={{ base: "100%", md: "40%" }}
-        h="65vh"
+        h="full"
         p={4}
         ml={{ md: 5 }}
       >
@@ -197,7 +198,7 @@ const Analytics = () => {
       my={{ base: 5, md: 0 }}
       ml={{ md: 5 }}
       p={4}
-      h="65vh"
+      h="full"
       display="flex"
       flexDirection="column"
     >

@@ -206,7 +206,7 @@ const EditGrader = ({ student, onClose }: Props) => {
       </VStack>
 
       {showBox && (
-        <UpdateGraderSuccessPopover setShowBox={setShowBox} onClose={onClose} />
+        <UpdateGraderSuccessPopover />
       )}
     </>
   );
