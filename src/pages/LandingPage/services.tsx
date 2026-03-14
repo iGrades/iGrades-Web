@@ -1,4 +1,4 @@
-import { Box, Grid, Heading, Icon, Text } from "@chakra-ui/react";
+import { Box, Grid, Heading, Icon, Image, Text } from "@chakra-ui/react";
 
 import { AiFillDollarCircle } from "react-icons/ai";
 import { MdOutlinePeopleAlt } from "react-icons/md";
@@ -71,8 +71,7 @@ const Services = () => {
           {/* Fix 2 & 6: span is relative so blob positions against "Indomitable" */}
           <Box as="span" color="#206CE1" fontWeight="bold" position="relative" display="inline-block">
             Indomitable
-            <Box
-              as="img"
+            <Image
               src={orangeBlob}
               alt=""
               aria-hidden="true"

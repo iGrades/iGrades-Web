@@ -48,6 +48,7 @@ const Footer = () => {
         .footer-link:hover { color: white !important; padding-left: 6px; }
         .social-btn { transition: all 0.2s ease; }
         .social-btn:hover { transform: translateY(-3px); }
+        .footer-email::placeholder { color: rgba(255,255,255,0.25); }
       `}</style>
 
       {/* Background texture */}
@@ -192,23 +193,32 @@ const Footer = () => {
             </Text>
           </Box>
           <HStack gap={0} maxW="400px" w="full">
-            <Box
-              as="input"
+            <input
+              type="email"
               placeholder="Enter your email"
-              flex={1}
-              bg="rgba(255,255,255,0.06)"
-              border="1px solid rgba(255,255,255,0.1)"
-              borderRight="none"
-              borderRadius="xl 0 0 xl"
-              px={4}
-              h="44px"
-              fontSize="sm"
-              color="white"
-              outline="none"
-              style={{ fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif" }}
-              _placeholder={{ color: "rgba(255,255,255,0.25)" }}
-              _focus={{ borderColor: "rgba(32,108,225,0.6)", bg: "rgba(32,108,225,0.06)" }}
-              transition="all .15s"
+              style={{
+                flex: 1,
+                background: "rgba(255,255,255,0.06)",
+                border: "1px solid rgba(255,255,255,0.1)",
+                borderRight: "none",
+                borderRadius: "12px 0 0 12px",
+                padding: "0 16px",
+                height: "44px",
+                fontSize: "14px",
+                color: "white",
+                outline: "none",
+                width: "100%",
+                fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif",
+              }}
+              className="footer-email"
+              onFocus={(e) => {
+                e.currentTarget.style.borderColor = "rgba(32,108,225,0.6)";
+                e.currentTarget.style.background = "rgba(32,108,225,0.06)";
+              }}
+              onBlur={(e) => {
+                e.currentTarget.style.borderColor = "rgba(255,255,255,0.1)";
+                e.currentTarget.style.background = "rgba(255,255,255,0.06)";
+              }}
             />
             <Box
               as="button"

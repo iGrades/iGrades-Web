@@ -237,8 +237,8 @@ const ContactPage = () => {
                       cursor={loading || !form.name || !form.email || !form.message ? "not-allowed" : "pointer"}
                       border="none"
                       boxShadow={!form.name || !form.email || !form.message ? "none" : "0 4px 20px rgba(32,108,225,0.3)"}
-                      onClick={handleSubmit}
-                      disabled={loading || !form.name || !form.email || !form.message}>
+                      onClick={!loading && form.name && form.email && form.message ? handleSubmit : undefined}
+                      aria-disabled={loading || !form.name || !form.email || !form.message}>
                       {loading ? "Sending…" : <>Send Message <Icon boxSize={4}><MdSend /></Icon></>}
                     </Box>
                   </VStack>
