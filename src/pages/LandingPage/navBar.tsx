@@ -8,10 +8,10 @@ const NavBar = () => {
   const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
 
   const navItems = [
-    { name: "Home", link: "#" },
-    { name: "About", link: "#" },
-    { name: "Download", link: "#" },
-    { name: "Contact", link: "#" },
+    { name: "Home", link: "/" },
+    { name: "About", link: "/about" },
+    { name: "Download", link: "/download" },
+    { name: "Contact", link: "/contact" },
   ];
 
   const toggleMobileNav = () => {

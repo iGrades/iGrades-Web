@@ -12,7 +12,7 @@ const Hero = () => {
     { id: 4, value: "5K+", label: "Acreditted Quizzes" },
   ];
   return (
-    <Box mb={{ base: 10, md: 20 }}>
+    <Box mb={{ base: 10, md: 20 }} mt={{ base: 0, md: -12 }}>
       <Flex
         as="section"
         direction={{ base: "column-reverse", md: "row" }}
@@ -44,7 +44,7 @@ const Hero = () => {
                 src={orangeBlob}
                 alt="orange-blob"
                 ml={{ base: 60, md: 48, lg: 80 }}
-                w={{ base: 28, md: 32, lg: "52" }}
+                w={{ base: 28, md: 32, lg: 52 }}
                 position="absolute"
               />
             </span>
@@ -146,7 +146,7 @@ const Hero = () => {
         rounded={{ md: "2xl", lg: "4xl" }}
         mx={{ md: 4, lg: 16 }}
         mb={6}
-        mt={{ md: "-80px", lg: "-90px" }}
+        mt={{ md: "-92px", lg: "-102px" }}
         py={{ base: 6, md: 12, lg: 20 }}
         px={{ base: 6, md: 2, lg: 12 }}
         justify="space-around"
