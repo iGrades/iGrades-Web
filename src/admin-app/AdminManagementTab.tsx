@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { supabase } from "@/lib/supabaseClient";
 import {
   Box, Flex, Text, Button, Input, Stack,
-  Badge, Grid, Table, Heading, Select,
+  Badge, Grid, Table, Heading, Select, createListCollection
 } from "@chakra-ui/react";
 import { toaster } from "@/components/ui/toaster";
 
@@ -147,6 +147,13 @@ const AdminManagementTab = ({ currentAdminId }: { currentAdminId: string }) => {
     setDeleting(null);
   };
 
+  const roleCollection = createListCollection({
+    items: [
+      { label: "Admin", value: "admin" },
+      { label: "Super Admin", value: "super_admin" },
+    ],
+  })
+
   return (
     <Stack gap={8}>
       {/* Header */}
@@ -244,6 +251,7 @@ const AdminManagementTab = ({ currentAdminId }: { currentAdminId: string }) => {
                 Role
               </Text>
               <Select.Root
+                collection={roleCollection}
                 value={[role]}
                 onValueChange={(e) => setRole(e.value[0] as "admin" | "super_admin")}
                 size="md"
@@ -258,8 +266,11 @@ const AdminManagementTab = ({ currentAdminId }: { currentAdminId: string }) => {
                   <Select.ValueText />
                 </Select.Trigger>
                 <Select.Content>
-                  <Select.Item item="admin">Admin</Select.Item>
-                  <Select.Item item="super_admin">Super Admin</Select.Item>
+                  {roleCollection.items.map((item) => (
+                        <Select.Item key={item.value} item={item}>
+                          {item.label}
+                        </Select.Item>
+                      ))}
                 </Select.Content>
               </Select.Root>
             </Box>

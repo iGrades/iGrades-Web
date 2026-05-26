@@ -136,7 +136,7 @@ export const useMonitoring = () => {
     // Run all three in sequence — screen share must be last because
     // the browser dialog steals focus and can interfere with getUserMedia
     const webcamOk = await initializeWebcam();
-    const audioOk = await initializeAudio();   // non-blocking — failure is OK
+    // const audioOk = await initializeAudio();   // non-blocking — failure is OK
     const screenOk = await initializeScreenShare();
 
     // Only webcam + screen are required to proceed

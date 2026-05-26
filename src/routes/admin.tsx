@@ -1,7 +1,7 @@
 import type { RouteObject } from "react-router-dom";
 import AdminLogin from "@/admin-app/AdminLogin";
 import AdminDashboard from "@/admin-app/AdminDashboard";
-import AdminGuard from "@/admin-app/adminGuard";
+import AdminGuard from "@/admin-app/AdminGuard";
 
 const adminRoutes: RouteObject[] = [
   {

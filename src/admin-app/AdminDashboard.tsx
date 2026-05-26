@@ -4,12 +4,12 @@ import { useAdminAuth } from "./hooks/useAdminAuth";
 import {
   Box, Flex, Heading, Text, Button, Input, Stack,
   Badge, Grid, Table, Select, Spinner, Center,
-  Tabs, Avatar, Icon, Image
+  Tabs, Avatar, Icon, Image, createListCollection
 } from "@chakra-ui/react";
 import { toaster } from "@/components/ui/toaster";
-import AdminManagementTab from "./Adminmanagementtab";
+import AdminManagementTab from "./AdminManagementTab";
 import {
-  BarChart, Bar, LineChart, Line, PieChart, Pie, Cell,
+  BarChart, Bar, PieChart, Pie, Cell,
   XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend,
   AreaChart, Area,
 } from "recharts";
@@ -200,10 +200,10 @@ const OverviewTab = ({ students, parents, resources }: { students: Student[]; pa
     { name: "Premium", value: students.filter((s) => s.subscription === "premium").length },
   ];
 
-  const activeDistribution = [
-    { name: "Active", value: activeStudents, color: "#10B981" },
-    { name: "Inactive", value: students.length - activeStudents, color: "#EF4444" },
-  ];
+  // const activeDistribution = [
+  //   { name: "Active", value: activeStudents, color: "#10B981" },
+  //   { name: "Inactive", value: students.length - activeStudents, color: "#EF4444" },
+  // ];
 
   return (
     <Stack gap={6}>
@@ -497,6 +497,14 @@ const SubscriptionsTab = ({ students }: { students: Student[] }) => {
     "Paid Users"
   );
 
+  const statuses = createListCollection({
+    items: [
+      { label: "All Statuses", value: "all" },
+      { label: "Active", value: "active" },
+      { label: "Inactive", value: "inactive" },
+    ],
+  })
+
   return (
     <Stack gap={6}>
       <Flex justify="space-between" align="center" mb={2}>
@@ -570,16 +578,16 @@ const SubscriptionsTab = ({ students }: { students: Student[] }) => {
       <ModernChartCard title="Subscription Management">
         <Stack gap={4}>
           <Flex gap={3}>
-            <Select.Root value={[filter]} onValueChange={(e) => setFilter(e.value[0])} size="sm" w="180px">
+            <Select.Root collection={statuses} value={[filter]} onValueChange={(e) => setFilter(e.value[0])} size="sm" w="180px">
               <Select.Trigger bg="white" border="1px solid #E5E7EB" borderRadius="full" fontSize="13px">
-                <Select.ValueText />
+                <Select.ValueText placeholder="Select status" />
               </Select.Trigger>
               <Select.Content>
-                {["all", "active", "inactive"].map((s) => (
-                  <Select.Item key={s} item={s}>
-                    {s === "all" ? "All Statuses" : s.charAt(0).toUpperCase() + s.slice(1)}
-                  </Select.Item>
-                ))}
+                {statuses.items.map((item) => (
+                      <Select.Item key={item.value} item={item}>
+                        {item.label}
+                      </Select.Item>
+                    ))}
               </Select.Content>
             </Select.Root>
           </Flex>
@@ -725,6 +733,16 @@ const ContentTab = ({ resources }: { resources: Resource[] }) => {
 
   const types = [...new Set(resources.map((r) => r.type))];
 
+  const typeCollection = createListCollection({
+    items: [
+      { label: "All Types", value: "all" },
+      ...types.map((t) => ({
+        label: t.charAt(0).toUpperCase() + t.slice(1),
+        value: t,
+      })),
+    ],
+  })
+
   return (
     <Stack gap={6}>
       <Flex justify="space-between" align="center" mb={2}>
@@ -757,15 +775,17 @@ const ContentTab = ({ resources }: { resources: Resource[] }) => {
               py={2}
               _focus={{ borderColor: "#206CE1", boxShadow: "none" }}
             />
-            <Select.Root value={[typeFilter]} onValueChange={(e) => setTypeFilter(e.value[0])} size="md" w="150px">
+            <Select.Root collection={typeCollection} value={[typeFilter]} onValueChange={(e) => setTypeFilter(e.value[0])} size="md" w="150px">
               <Select.Trigger bg="white" border="1px solid #E5E7EB" borderRadius="full" fontSize="13px">
                 <Select.ValueText />
               </Select.Trigger>
               <Select.Content>
                 <Select.Item item="all">All Types</Select.Item>
-                {types.map((t) => (
-                  <Select.Item key={t} item={t}>{t.charAt(0).toUpperCase() + t.slice(1)}</Select.Item>
-                ))}
+                {typeCollection.items.map((item) => (
+                      <Select.Item key={item.value} item={item}>
+                        {item.label}
+                      </Select.Item>
+                    ))}
               </Select.Content>
             </Select.Root>
           </Flex>
@@ -1182,7 +1202,7 @@ const AdminDashboard = () => {
         {loading ? (
           <Center h="60vh">
             <Stack align="center" gap={3}>
-              <Spinner color="#206CE1" size="lg" thickness="3px" speed="0.65s" />
+              <Spinner color="#206CE1" size="lg" borderWidth="3px" speed="0.65s" />
               <Text fontSize="13px" color="#9CA3AF" fontFamily="mono">Loading platform data...</Text>
             </Stack>
           </Center>

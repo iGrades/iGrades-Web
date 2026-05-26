@@ -144,7 +144,7 @@ export const useFlutterwave = () => {
   const loadFlutterwaveScript = (): Promise<void> => {
     return new Promise((resolve, reject) => {
       // Already loaded
-      if (window.FlutterwaveCheckout) {
+      if (typeof window.FlutterwaveCheckout !== "undefined") {
         resolve();
         return;
       }
@@ -155,7 +155,6 @@ export const useFlutterwave = () => {
       document.head.appendChild(script);
     });
   };
-
   // ── Main payment initializer ────────────────────────────────────────────────
   const initializePayment = async (
     plan: SubscriptionPlan,
