@@ -95,7 +95,7 @@ const SubjectsList = ({ onBack, selectedExam }: Props) => {
           subjectId={subjectId}
         />
       ) : (
-        <Box bg="white" rounded="lg" shadow="lg" p={4} mb={20} h={{base: 'auto', lg: '75vh'}}>
+      <Box bg="white" rounded="lg" shadow="lg" p={4} mb={20} h={{base: 'auto', lg: '75vh'}}>
           {/* Header with back button */}
           <Heading
             as="h3"

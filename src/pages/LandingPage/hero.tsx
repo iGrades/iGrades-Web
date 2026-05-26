@@ -7,8 +7,8 @@ import orangeBlob from "@/assets/landing-page/orange_line.png";
 const Hero = () => {
   const stats = [
     { id: 1, value: "50k+", label: "Potential Registered Students" },
-    { id: 2, value: "2K+", label: "Total Avialable Courses/Subjects" },
-    { id: 3, value: "1K+", label: "Potential Certified Tutors" },
+    { id: 2, value: "20+", label: "Total Avialable Courses/Subjects" },
+    { id: 3, value: "50+", label: "Potential Certified Tutors" },
     { id: 4, value: "5K+", label: "Acreditted Quizzes" },
   ];
   return (

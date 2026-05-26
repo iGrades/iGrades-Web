@@ -23,10 +23,17 @@ const socials = [
 const topics = ["General Inquiry", "Technical Support", "Billing & Subscriptions", "Tutor Partnership", "School / Institution", "Press & Media"];
 
 const faqs = [
-  { q: "Is iGrades free?", a: "Yes — you can access a generous free tier. Premium plans unlock all subjects, AI tutoring, and live support." },
+  { q: "What is iGrades?", a: "iGrades is an academic support platform that helps students with services such as tutoring, assignments, and other academic support solutions designed to make studying less stressful." },
+  { q: "How does iGrades work?", a: "Register and a student or tutor - Pick Your Subjects - Start learning or teaching under guidelines - Take quizzes and pass exams - Get Certified"},
+  { q: "Is iGrades free?", a: "Yes! You can access a generous free tier. Premium plans unlock all subjects, AI tutoring, and live support." },
+  { q: "What subjects can I learn on iGrades?", a: "All Nigerian Secondary School Approved Subjects " },
+  { q: "How do I register for a class?", a: "Simply click the link to get started" },
+  { q: "Is iGrades a tutoring service?", a: "iGrades provides academic support and educational assistance to help students better " },
   { q: "What exams does iGrades cover?", a: "WAEC, NECO, JAMB, and A-Level. Content is updated every year to match current syllabi." },
+    { q: "Is iGrades available for international students?", a: "Yes. iGrades works with students from different countries and educational systems." },
   { q: "Can I use iGrades without internet?", a: "Yes. Download lessons, videos, and past questions for offline use on our mobile app." },
   { q: "How does the AI tutor work?", a: "Spark asks you questions and gives hints rather than direct answers — this builds real understanding, not just recall." },
+    { q: "Is my information confidential?", a: "Your personal information, documents, and conversations are kept private and secure." },
 ];
 
 const ContactPage = () => {

@@ -1,6 +1,7 @@
 import { createContext, useContext, useState, useEffect } from "react";
 import type { ReactNode } from "react";
 import type { Dispatch, SetStateAction } from "react";
+import { supabase } from "@/lib/supabaseClient";
 
 interface Student {
   id: string;
@@ -14,6 +15,9 @@ interface Student {
   registered_courses?: string[];
   active_classes?: string;
   is_child: boolean | null;
+  subscription: string;           // add this
+  subscription_status: string;    // add this
+  last_payment_ref: string | null; // add this
 }
 
 interface Alert {
@@ -21,15 +25,15 @@ interface Alert {
   message: string;
 }
 
-
 interface AuthdStudentDataContextType {
-  authdStudent: Student | null; // single student or null
+  authdStudent: Student | null;
   alert: Alert | null;
   setAuthdStudent: Dispatch<SetStateAction<Student | null>>;
   clearAlert: () => void;
   logoutFunc: () => void;
   isPopOver?: boolean;
   setIsPopOver?: Dispatch<SetStateAction<boolean>>;
+  refreshStudentData: () => Promise<void>;
 }
 
 const AuthdStudentDataContext = createContext<
@@ -41,17 +45,13 @@ export const AuthdStudentDataProvider = ({
 }: {
   children: ReactNode;
 }) => {
-  // Initialize state from localStorage if available
   const [authdStudent, setAuthdStudent] = useState<Student | null>(() => {
     const storedStudent = localStorage.getItem("authdStudent");
     return storedStudent ? JSON.parse(storedStudent) : null;
   });
-
   const [alert, setAlert] = useState<Alert | null>(null);
   const [isPopOver, setIsPopOver] = useState<boolean>(false);
 
-
-  // Update localStorage whenever authdStudent changes
   useEffect(() => {
     if (authdStudent) {
       localStorage.setItem("authdStudent", JSON.stringify(authdStudent));
@@ -60,19 +60,48 @@ export const AuthdStudentDataProvider = ({
     }
   }, [authdStudent]);
 
+  const refreshStudentData = async (): Promise<void> => {
+    // Guard: can't refresh if we don't know who the student is
+    if (!authdStudent?.id) return;
+
+    const { data, error } = await supabase
+      .from("students")
+      .select("*")
+      .eq("id", authdStudent.id)  // use the id already in state
+      .single();
+
+    if (error) {
+      console.error("Failed to refresh student data:", error);
+      return;
+    }
+
+    if (data) {
+      setAuthdStudent(data); // updates state + triggers localStorage sync via useEffect
+    }
+  };
+
   const logoutFunc = () => {
     setAuthdStudent(null);
     localStorage.removeItem("authdStudent");
-    setIsPopOver(false)
+    setIsPopOver(false);
     setAlert({ type: "success", message: "Logged out successfully." });
-    window.location.assign(`${window.location.origin}/login`); // reassgn user to login page (with success alert)...
-  }
+    window.location.assign(`${window.location.origin}/login`);
+  };
 
   const clearAlert = () => setAlert(null);
 
   return (
     <AuthdStudentDataContext.Provider
-      value={{ authdStudent, setAuthdStudent, alert, clearAlert, logoutFunc, isPopOver, setIsPopOver }}
+      value={{
+        authdStudent,
+        setAuthdStudent,
+        alert,
+        clearAlert,
+        logoutFunc,
+        isPopOver,
+        setIsPopOver,
+        refreshStudentData,
+      }}
     >
       {children}
     </AuthdStudentDataContext.Provider>

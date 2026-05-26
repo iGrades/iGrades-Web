@@ -20,22 +20,22 @@ const values = [
   {
     icon: <MdLightbulb />, color: "#F18729", bg: "#FFF4EC",
     title: "Student-First Learning",
-    desc: "Every feature, every lesson, every interaction is designed around what helps students actually understand — not just pass. We obsess over comprehension, not completion.",
+    desc: "Every lesson, every interaction is designed around what helps students actually understand, not just pass. We focus first and mainly on comprehension, not completion. ",
   },
   {
     icon: <MdSchool />, color: "#206CE1", bg: "#EBF3FF",
     title: "Academic Excellence",
-    desc: "Our tutors are vetted, our content is reviewed by exam experts, and our pass rates speak for themselves. Quality isn't a checkbox — it's the culture.",
+    desc: "Our tutors are vetted, our content is reviewed by exam experts, and our pass rates speak for themselves. Quality isn't a checkbox, it's the culture.",
   },
   {
     icon: <MdPeople />, color: "#1FBA79", bg: "#EDFAF4",
     title: "Accessible to All",
-    desc: "Great education shouldn't be a privilege. Flexible pricing, offline mode, and a mobile-first design mean any student anywhere in Nigeria can access what they need.",
+    desc: "Great education shouldn't be a privilege. Flexible pricing, offline mode, and a mobile-first design means any student anywhere in Nigeria can access what they need to become the best version academically.",
   },
   {
     icon: <MdAutoAwesome />, color: "#AE3DD6", bg: "#F9F0FD",
     title: "AI That Teaches, Not Tells",
-    desc: "Spark, our AI tutor, guides students to answers through questions and hints — never just handing over the solution. That's how real learning happens.",
+    desc: "Spark, our AI tutor, guides students to answers through questions and hints, never just handing over the solution. That's how real learning happens.",
   },
   {
     icon: <FiTarget />, color: "#018BEF", bg: "#E8F5FF",
@@ -45,15 +45,15 @@ const values = [
   {
     icon: <MdVerified />, color: "#F18729", bg: "#FFF4EC",
     title: "Results You Can Measure",
-    desc: "Detailed analytics show students exactly where they stand — by subject, by topic, by week. No guessing. No surprises. Just a clear picture of progress.",
+    desc: "Detailed analytics show students exactly where they stand, by subject, by topic, by week. No guessing. Just a clear picture of progress.",
   },
 ];
 
 const team = [
-  { name: "Joseph Ajiboye", role: "Founder & CEO", initials: "JA", color: "#206CE1", bio: "Former teacher turned product builder. Passionate about closing the education gap in Nigeria." },
-  { name: "Ngozi Adeyemi", role: "Head of Curriculum", initials: "NA", color: "#F18729", bio: "10+ years developing WAEC and JAMB-aligned content. Architect of the iGrades curriculum." },
-  { name: "Tunde Olatunji", role: "Lead — STEM Tutors", initials: "TO", color: "#1FBA79", bio: "Physics PhD candidate and lead tutor overseeing our science faculty." },
-  { name: "Amaka Obi", role: "Product & Technology", initials: "AO", color: "#AE3DD6", bio: "Built the platform from scratch. Leads everything engineering at iGrades." },
+  { name: "Olatan Bakare Emmanuel", role: "Founder & CEO", initials: "JA", color: "#206CE1", bio: "Former teacher turned product builder. Passionate about closing the education gap in Nigeria." },
+  { name: "Ngozi Adeyemi", role: "COO", initials: "NA", color: "#F18729", bio: "10+ years developing WAEC and JAMB-aligned content. Architect of the iGrades curriculum." },
+  { name: "Tunde Olatunji", role: "CTO", initials: "TO", color: "#1FBA79", bio: "Physics PhD candidate and lead tutor overseeing our science faculty." },
+  { name: "Amaka Obi", role: "AUDITOR", initials: "AO", color: "#AE3DD6", bio: "Built the platform from scratch. Leads everything engineering at iGrades." },
 ];
 
 const milestones = [
@@ -413,9 +413,7 @@ const AboutPage = () => {
                 </Box>
                 <Flex align="flex-end">
                   <Text fontSize="md" color="#474256" lineHeight="1.85">
-                    We don't just say we care about students — every product decision,
-                    every hire, and every feature is run through these values first.
-                    This is the iGrades operating system.
+                    We don't just say we care about building excellent students but through every product decision, every hire, and every feature, they all run through these values first. This is the iGrades operating system.
                   </Text>
                 </Flex>
               </Grid>

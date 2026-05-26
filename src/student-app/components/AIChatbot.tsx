@@ -209,7 +209,7 @@ export const AIChatbot = () => {
         onClick={toggleOpen}
         title="Ask iGrades AI"
         style={{
-          position: "fixed", bottom: "24px", right: "24px",
+          position: "fixed", bottom: "80px", right: "24px",
           width: "56px", height: "56px", borderRadius: "50%",
           background: isOpen
             ? "#4f46e5"

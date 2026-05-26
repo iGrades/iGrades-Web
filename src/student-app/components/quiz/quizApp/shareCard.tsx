@@ -33,7 +33,7 @@ export const ShareCard = ({ quizResults, quizData, studentName}: ShareCardProps)
 
   return (
     <Box
-      id="quiz-report-card" // We will use this ID later to "capture" the image
+      id="quiz-report-card" // ID will later be used to "capture" the image
       w="350px"
       bgGradient="linear(to-br, blue.600, purple.700)"
       p={6}

@@ -12,7 +12,7 @@ const features = [
   { icon: <MdBarChart />, color: "#1FBA79", bg: "#EDFAF4", title: "Deep Analytics", desc: "Know exactly where you stand — by subject, by topic, by week. No guessing required." },
   { icon: <MdSecurity />, color: "#AE3DD6", bg: "#F9F0FD", title: "Secure & Private", desc: "Your data is encrypted and never shared. Student privacy is non-negotiable." },
   { icon: <MdDevices />, color: "#018BEF", bg: "#E8F5FF", title: "Sync Everywhere", desc: "Start on your phone, finish on your laptop. Progress syncs instantly across all devices." },
-  { icon: <MdAutoAwesome />, color: "#F18729", bg: "#FFF4EC", title: "AI Tutor Built In", desc: "Spark is available on every platform — ask questions, get hints, learn better." },
+  { icon: <MdAutoAwesome />, color: "#F18729", bg: "#FFF4EC", title: "Learn And Earn", desc: "Turn your progress into rewards. Every completed course earns you digital coins you can use for your next subject."},
 ];
 
 const platforms = [

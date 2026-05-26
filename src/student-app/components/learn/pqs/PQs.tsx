@@ -40,8 +40,8 @@ const PQs = () => {
         <Grid
           templateColumns={{
             base: "repeat(auto-fill, minmax(200px, 1fr))",
-            md: "repeat(auto-fill, minmax(200px, 1fr))",
-            lg: "repeat(auto-fill, minmax(250px, 1fr))",
+            md: "repeat(auto-fill, minmax(250px, 1fr))",
+            lg: "repeat(auto-fill, minmax(300px, 1fr))",
           }}
           gap={{ base: 4, md: 6 }}
           py={{ base: 4, md: 6 }}

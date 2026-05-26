@@ -30,7 +30,9 @@ export const useChatbot = () => {
     if (isOpen && messages.length === 0) {
       setMessages([{
         role: "assistant",
-        content: `Hey ${studentName}! 👋 I'm iGrades AI, your AI tutor. Ask me about any concept or question you're struggling with — I won't just give you the answer, but I'll help you think it through!`,
+        content: `Hey ${studentName}! 👋
+I'm iGrades AI, your AI tutor.
+Ask me about any concept or question you're struggling with — I won't just give you the answer, but I'll help you think it through!`,
       }]);
     }
   }, [isOpen, studentName, messages.length]);

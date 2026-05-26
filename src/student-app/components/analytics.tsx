@@ -31,17 +31,17 @@ const Analytics = () => {
   const [showAllCourses, setShowAllCourses] = useState(false);
   const { authdStudent } = useAuthdStudentData();
 
-  const INITIAL_COURSES_TO_SHOW = 3;
+  const INITIAL_COURSES_TO_SHOW = 5;
 
   const getCourseColor = (dbCourseName: string): string =>
     courseConfig[dbCourseName.toLowerCase()]?.color || "#718096";
 
-  // Fix 2 & 3: derive everything inside the effect so there are no stale closures,
+  // derive everything inside the effect so there are no stale closures,
   // and depend on registered_courses so the effect re-runs if it loads late.
   useEffect(() => {
     if (!authdStudent?.id) return;
 
-    // Fix 2: parse registered_courses inside the effect
+    // parse registered_courses inside the effect
     const raw = authdStudent.registered_courses ?? "[]";
     const registeredCourses: string[] = Array.isArray(raw)
       ? raw
@@ -69,7 +69,7 @@ const Analytics = () => {
       try {
         setIsLoading(true);
 
-        // Fix 1: fetch all subjects in ONE query instead of N sequential calls
+        // fetch all subjects in ONE query instead of N sequential calls
         const { data: subjectsData, error: subjectsError } = await supabase
           .from("subjects")
           .select("id, name")
@@ -85,7 +85,7 @@ const Analytics = () => {
         );
         const allSubjectIds = subjectsData.map((s) => s.id);
 
-        // Fix 1: single videos query for all subjects at once
+        // single videos query for all subjects at once
         const [{ data: allVideos, error: videosError }, { data: videoProgress, error: progressError }] =
           await Promise.all([
             supabase
@@ -173,7 +173,7 @@ const Analytics = () => {
         boxShadow="md"
         borderRadius="lg"
         w={{ base: "100%", md: "40%" }}
-        h="full"
+        h="65vh"
         p={4}
         ml={{ md: 5 }}
       >
@@ -198,16 +198,24 @@ const Analytics = () => {
       my={{ base: 5, md: 0 }}
       ml={{ md: 5 }}
       p={4}
-      h="full"
+      h="68.5vh"
       display="flex"
       flexDirection="column"
+    
     >
       {/* Fix 4: heading stays fixed, only the list scrolls */}
       <Heading as="h2" mb={4} fontSize="md" flexShrink={0}>
         Learning Analytics
       </Heading>
 
-      <Box overflowY="auto" flex={1}>
+      <Box overflowY="auto" flex={1}
+        css={{
+        "&::-webkit-scrollbar": {
+          display: "none",
+        },
+        MsOverflowStyle: "none",
+        scrollbarWidth: "none",
+      }}>
         {coursesToShow.map((course, idx) => (
           <Box key={idx} px={2} my={{ base: 8, md: 5, lg: 8 }}>
             <Flex justify="space-between" align="center" mb={3}>

@@ -53,7 +53,7 @@ const TopicsList = ({
   };
 
   return (
-    <Box bg="white" rounded="lg" shadow="lg" p={4} mb={20} h="75vh">
+    <Box bg="white" rounded="lg"  p={4} mb={20} h="75vh">
       {pdfList && selectedTopic ? (
         <PdfList
           topic={selectedTopic}

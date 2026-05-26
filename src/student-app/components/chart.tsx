@@ -6,7 +6,6 @@ import {
   Bar,
   BarChart,
   CartesianGrid,
-  Legend,
   Tooltip,
   XAxis,
   YAxis,
@@ -18,7 +17,8 @@ import { courseConfig } from "@/student-app/utils/courseConstants";
 
 interface QuizProgressData {
   month: string;
-  [subject: string]: number | string;
+  averageScore: number;
+  courseScores: Record<string, number>; // Store individual scores for tooltip
 }
 
 interface SubjectData {
@@ -39,7 +39,6 @@ const HomeChart = () => {
   const { authdStudent } = useAuthdStudentData();
 
   useEffect(() => {
-    // Guard: wait until student id is available
     if (!authdStudent?.id) {
       setIsLoading(false);
       return;
@@ -52,7 +51,6 @@ const HomeChart = () => {
         const fourMonthsAgo = new Date();
         fourMonthsAgo.setMonth(fourMonthsAgo.getMonth() - 4);
 
-        // Fix 1: fetch subjects inline so the join is never undefined
         const { data: attempts, error } = await supabase
           .from("attempts")
           .select("id, subject_id, score, completed_at, subjects(id, name)")
@@ -66,8 +64,6 @@ const HomeChart = () => {
           return;
         }
 
-        // Fix 2: build allStudentSubjects here, inside the effect,
-        // so it always uses the current authdStudent value
         const raw = authdStudent.registered_courses ?? "[]";
         const registeredCourses: string[] = Array.isArray(raw) ? raw : JSON.parse(raw);
         const allStudentSubjects: SubjectData[] = registeredCourses.map((dbName) => ({
@@ -84,13 +80,19 @@ const HomeChart = () => {
           date.setMonth(date.getMonth() - i);
           const monthName = date.toLocaleString("en-US", { month: "long" });
           months.push(monthName);
-          monthlyData[monthName] = { month: monthName };
+          monthlyData[monthName] = { 
+            month: monthName, 
+            averageScore: 0,
+            courseScores: {} 
+          };
+          
+          // Initialize course scores for this month
           allStudentSubjects.forEach((s) => {
-            monthlyData[monthName][s.name] = 0;
+            monthlyData[monthName].courseScores[s.name] = 0;
           });
         }
 
-        // Fix 3: read subjects from the inline join, not a stitched lookup
+        // Collect all scores per course per month
         (attempts ?? []).forEach((attempt) => {
           if (!attempt.completed_at || !attempt.subjects) return;
 
@@ -98,7 +100,6 @@ const HomeChart = () => {
             month: "long",
           });
 
-          // subjects is an object from the inline join: { id, name }
           const subjectObj = Array.isArray(attempt.subjects)
             ? attempt.subjects[0]
             : attempt.subjects;
@@ -108,9 +109,23 @@ const HomeChart = () => {
           const displayName = getSubjectDisplayName(subjectObj.name);
           const score = Number(attempt.score) || 0;
 
-          if (monthlyData[monthName] && displayName in monthlyData[monthName]) {
-            const current = monthlyData[monthName][displayName] as number;
-            monthlyData[monthName][displayName] = Math.max(current, score);
+          if (monthlyData[monthName] && displayName in monthlyData[monthName].courseScores) {
+            // Take the maximum score for each course in that month (best attempt)
+            const current = monthlyData[monthName].courseScores[displayName];
+            monthlyData[monthName].courseScores[displayName] = Math.max(current, score);
+          }
+        });
+
+        // Calculate average for each month (only include courses with score > 0)
+        months.forEach((month) => {
+          const monthData = monthlyData[month];
+          const scores = Object.values(monthData.courseScores).filter(score => score > 0);
+          
+          if (scores.length > 0) {
+            const average = scores.reduce((sum, score) => sum + score, 0) / scores.length;
+            monthData.averageScore = Math.round(average);
+          } else {
+            monthData.averageScore = 0;
           }
         });
 
@@ -124,29 +139,58 @@ const HomeChart = () => {
     };
 
     fetchQuizProgress();
-    // Fix 4: depend on registered_courses so the chart re-runs if the
-    // student's courses change after initial load
   }, [authdStudent?.id, authdStudent?.registered_courses]);
 
   const chart = useChart({
     data: quizProgress,
-    series: subjects.map((s) => ({
-      name: s.name,
-      color: s.color,
-      stackId: "a",
-    })),
+    series: [{
+      name: "averageScore",
+      color: "#3182CE", // Blue color for the average bar
+    }],
   });
+
+  // Custom tooltip to show individual course scores
+  const CustomTooltip = ({ active, payload, label }: any) => {
+    if (!active || !payload || !payload.length) return null;
+    
+    const dataPoint = quizProgress.find(item => item.month === label);
+    if (!dataPoint) return null;
+
+    return (
+      <Box bg="white" p={3} border="1px solid" borderColor="gray.200" borderRadius="md" boxShadow="lg">
+        <Text fontWeight="bold" mb={2}>{label}</Text>
+        <Text fontSize="sm" mb={2}>
+          Average Score: <strong>{payload[0].value}%</strong>
+        </Text>
+        <Box borderTop="1px solid" borderColor="gray.200" pt={2} mt={1}>
+          <Text fontSize="xs" fontWeight="semibold" mb={1}>Course Breakdown:</Text>
+          {subjects.map((subject) => {
+            const score = dataPoint.courseScores[subject.name];
+            if (score > 0) {
+              return (
+                <Text key={subject.name} fontSize="xs" mb={0.5}>
+                  <span style={{ display: "inline-block", width: "12px", height: "12px", borderRadius: "2px", backgroundColor: subject.color, marginRight: "6px" }}></span>
+                  {subject.name}: <strong>{score}%</strong>
+                </Text>
+              );
+            }
+            return null;
+          })}
+        </Box>
+      </Box>
+    );
+  };
 
   if (isLoading) {
     return (
-      <Box bg="white" boxShadow="md" borderRadius="lg" w={{ base: "100%", md: "60%" }} p={4}  h="65vh" textAlign="center">
+      <Box bg="white" boxShadow="md" borderRadius="lg" w={{ base: "100%", md: "60%" }} p={4} h="65vh" textAlign="center">
         <Text fontSize="sm">Loading Quiz Analytics...</Text>
       </Box>
     );
   }
 
   return (
-    <Box bg="white" boxShadow="md" borderRadius="lg" w={{ base: "100%", md: "60%" }} p={4} h="65vh">
+    <Box bg="white" boxShadow="md" borderRadius="lg" w={{ base: "100%", md: "60%" }} p={4} h="68.5vh">
       <Heading mb={4} fontSize="md">
         Quiz Analytics (Last 4 Months)
       </Heading>
@@ -164,20 +208,13 @@ const HomeChart = () => {
             tickFormatter={(v) => `${v}%`}
             stroke={chart.color("border.emphasized")}
           />
-          <Tooltip
-            content={<Chart.Tooltip />}
-            cursor={{ fill: chart.color("bg.muted") }}
+          <Tooltip content={<CustomTooltip />} cursor={{ fill: chart.color("bg.muted") }} />
+          <Bar
+            dataKey={chart.key("averageScore")}
+            fill={chart.color("#3182CE")}
+            barSize={50}
+            radius={[4, 4, 0, 0]}
           />
-          <Legend content={<Chart.Legend />} />
-          {chart.series.map((s) => (
-            <Bar
-              key={s.name}
-              dataKey={chart.key(s.name)}
-              fill={chart.color(s.color)}
-              stackId={s.stackId}
-              barSize={30}
-            />
-          ))}
         </BarChart>
       </Chart.Root>
     </Box>

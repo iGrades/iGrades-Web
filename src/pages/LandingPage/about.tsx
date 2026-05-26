@@ -47,8 +47,7 @@ const About = () => {
           What is <span style={{ color: "#FD8B3A" }}>iGrade?</span>
         </Heading>
         <Text fontSize="md" color="on_backgroundColor" opacity={0.9}>
-          iGrade is an education-driven freelancing platform designed to connect students seeking academic excellence with skilled tutors, graduates, and subject-matter experts. We combine technology, accountability, and quality control to deliver effective online learning experiences.
-          Students gain access to affordable, structured lessons across various academic levels, while educators monetize their knowledge through flexible teaching opportunities.
+          iGrades is Nigeria's most complete online learning platform, combining expert tutors, AI-powered study tools, structured past-question banks, and live analytics to help every student hit their academic peak. We combine accountability excellence and technology to deliver virtual learning experiences 
         </Text>
       </Box>
 

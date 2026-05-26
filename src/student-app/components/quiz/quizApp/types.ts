@@ -10,6 +10,7 @@ export interface Question {
   topic_id: string;
   quiz_id: string;
   image_url?: string;
+  answer_explanation?: string | null;
 }
 
 export interface Subject {
