@@ -30,14 +30,27 @@ const NavBar = () => {
       as="header"
       justify="space-between"
       align="center"
-      pt={{ base: 4, md: 8, lg: 10 }}
+      // 1. Hard limits the vertical height on desktop screens to keep it ultra slim
+      h={{ base: "auto", md: "70px", lg: "80px" }}
+      pt={{ base: 4, md: 0 }} // Removed top padding on desktop since height controls it
       px={{ base: 4, lg: 12 }}
       position="relative"
+      bg="white"
     >
       {/* Logo */}
-      <Box display="flex" alignItems="center" bg="white"
-        w={{ base: "45%", md: "15%" }} mr={{ base: 4, md: 6, lg: 0 }}>
-        <Image src={logo} alt="iGrades_logo" width="150px" fit="cover" />
+      <Box 
+        display="flex" 
+        alignItems="center" 
+        w={{ base: "45%", md: "15%" }} 
+        mr={{ base: 4, md: 6, lg: 0 }}
+      >
+        {/* 2. Scaled down logo height slightly on desktop so it doesn't stretch the container */}
+        <Image 
+          src={logo} 
+          alt="iGrades_logo" 
+          maxW={{ base: "130px", md: "120px", lg: "140px" }} 
+          objectFit="contain" 
+        />
       </Box>
 
       {/* Desktop nav */}
@@ -70,7 +83,8 @@ const NavBar = () => {
           fontWeight="bold"
           fontSize={{ base: "xs", lg: "sm" }}
           w={{ base: 20, md: 16, lg: 28 }}
-          p={{ base: 2, lg: 4 }}
+          // 3. Trimmed inner button padding significantly for vertical compactness
+          h={{ md: "36px", lg: "42px" }}
           mr={4}
           onClick={handleLogin}
         >
@@ -80,7 +94,8 @@ const NavBar = () => {
           bg="primaryColor"
           rounded={{ base: "xl", lg: "3xl" }}
           w={{ base: 28, md: 24, lg: 36 }}
-          p={{ base: 2, lg: 4 }}
+          // 3. Trimmed inner button padding significantly for vertical compactness
+          h={{ md: "36px", lg: "42px" }}
           fontWeight="bold"
           fontSize={{ base: "xs", lg: "sm" }}
           onClick={handleRegister}

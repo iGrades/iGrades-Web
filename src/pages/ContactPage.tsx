@@ -55,7 +55,7 @@ const ContactPage = () => {
   return (
     <>
       <NavBar />
-      <Box bg="white" overflow="hidden" mt={10}>
+      <Box bg="white" overflow="hidden" >
         <style>{`
           @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@700;800;900&display=swap');
           .ct-root * { font-family: "'Helvetica Neue', Helvetica, Arial, sans-serif"; }

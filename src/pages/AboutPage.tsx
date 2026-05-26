@@ -69,7 +69,7 @@ const AboutPage = () => {
   return (
     <>
       <NavBar />
-      <Box bg="#FFFFFF" overflow="hidden" mt={10}>
+      <Box bg="#FFFFFF" overflow="hidden" >
         <style>{`
           @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@700;800;900&display=swap');
           .about-root * { font-family: "'Helvetica Neue', Helvetica, Arial, sans-serif"; }
