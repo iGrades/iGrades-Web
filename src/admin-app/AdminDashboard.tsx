@@ -1202,7 +1202,7 @@ const AdminDashboard = () => {
         {loading ? (
           <Center h="60vh">
             <Stack align="center" gap={3}>
-              <Spinner color="#206CE1" size="lg" borderWidth="3px" speed="0.65s" />
+              <Spinner color="#206CE1" size="lg" borderWidth="3px" animationDuration="0.65s" />
               <Text fontSize="13px" color="#9CA3AF" fontFamily="mono">Loading platform data...</Text>
             </Stack>
           </Center>
