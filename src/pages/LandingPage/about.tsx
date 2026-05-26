@@ -9,6 +9,7 @@ import {
 import instructorsBg from "@/assets/landing-page/instructors_bg.png";
 import studentsBg from "@/assets/landing-page/students_bg.png";
 import resultsImg from "@/assets/landing-page/results_img.png";
+import Goals from "./goals";
 
 const About = () => {
   const actions = [
@@ -95,6 +96,8 @@ const About = () => {
           </Box>
         ))}
       </Flex>
+
+      <Goals />
 
       {/* Assessmennt, Quizzes and Tests */}
       <Flex

@@ -62,7 +62,7 @@ const Footer = () => {
 
       {/* ── Big wordmark hero strip ── */}
       <Box
-        px={{ base: 6, md: 12, lg: 20 }}
+        px={{ base: 6, md: 12 }}
         pt={16} pb={12}
         borderBottom="1px solid rgba(255,255,255,0.06)"
         position="relative"
@@ -70,7 +70,7 @@ const Footer = () => {
         {/* Giant background text */}
         <Box
           position="absolute"
-          bottom="-10px"
+          bottom="10px"
           left={{ base: "50%", lg: "8%" }}
           transform={{ base: "translateX(-50%)", lg: "none" }}
           fontSize={{ base: "100px", md: "160px", lg: "200px" }}
@@ -93,8 +93,7 @@ const Footer = () => {
           gap={10}
           position="relative"
           zIndex={1}
-          maxW="1300px"
-          mx="auto"
+          // maxW="1300px"
         >
           {/* Brand block */}
           <Box maxW="360px">
@@ -172,10 +171,10 @@ const Footer = () => {
 
       {/* ── Newsletter strip ── */}
       <Box
-        px={{ base: 6, md: 12, lg: 20 }}
+        px={{ base: 6, md: 12 }}
         py={8}
         borderBottom="1px solid rgba(255,255,255,0.06)"
-        maxW="1300px"
+        // maxW="1300px"
         mx="auto"
       >
         <Flex
@@ -190,7 +189,7 @@ const Footer = () => {
               Stay in the loop
             </Text>
             <Text fontSize="xs" color="rgba(255,255,255,0.35)">
-              Tips, updates, and exam news — straight to your inbox.
+              Tips, updates, and exam news - straight to your inbox.
             </Text>
           </Box>
           <HStack gap={0} maxW="400px" w="full">
@@ -244,7 +243,10 @@ const Footer = () => {
       </Box>
 
       {/* ── Bottom legal bar ── */}
-      <Box px={{ base: 6, md: 12, lg: 20 }} py={6} maxW="1300px" mx="auto">
+      <Box px={{ base: 6, md: 12 }}
+        py={6}
+        // maxW="1300px"
+        mx="auto">
         <Flex
           direction={{ base: "column", md: "row" }}
           justify="space-between"

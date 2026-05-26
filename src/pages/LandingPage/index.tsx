@@ -3,6 +3,7 @@ import NavBar from "./navBar";
 import Hero from "./hero";
 import Services from "./services";
 import About from "./about";
+import Offers from "./offers";
 import Courses from "./courses";
 import Reviews from "./reviews";
 import Footer from "./footer";
@@ -25,6 +26,10 @@ const LandingPage = () => {
 
       <ScrollReveal direction="right" delay={0.2}>
         <About />
+      </ScrollReveal>
+
+      <ScrollReveal direction="left" delay={0.2}>
+        <Offers />
       </ScrollReveal>
 
       <ScrollReveal direction="up" delay={0.2}>

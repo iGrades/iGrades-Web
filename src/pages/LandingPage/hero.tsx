@@ -1,32 +1,65 @@
 import { Box, Flex, Heading, Text, Button, Image } from "@chakra-ui/react";
+import { useState, useEffect } from "react";
 import { FaPlay } from "react-icons/fa6";
 import headerPic from "@/assets/landing-page/header-pic.png";
 import orangeBlob from "@/assets/landing-page/orange_line.png";
-// import AnimatedSection from "./animatedSection";
 
 const Hero = () => {
+  const words = ["Excellence", "Education", "Tutoring"];
+  const [currentWordIdx, setCurrentWordIdx] = useState(0);
+  const [isFading, setIsFading] = useState(false);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setIsFading(true);
+      
+      setTimeout(() => {
+        setCurrentWordIdx((prev) => (prev + 1) % words.length);
+        setIsFading(false);
+      }, 300);
+      
+    }, 3000);
+
+    return () => clearInterval(interval);
+  }, []);
+
   const stats = [
     { id: 1, value: "50k+", label: "Potential Registered Students" },
-    { id: 2, value: "20+", label: "Total Avialable Courses/Subjects" },
+    { id: 2, value: "20+", label: "Total Available Courses/Subjects" },
     { id: 3, value: "50+", label: "Potential Certified Tutors" },
-    { id: 4, value: "5K+", label: "Acreditted Quizzes" },
+    { id: 4, value: "5K+", label: "Accredited Quizzes" },
   ];
+
   return (
+
     <Box mb={{ base: 10, md: 20 }} mt={{ base: 0, md: -12 }}>
       <Flex
         as="section"
-        direction={{ base: "column-reverse", md: "row" }}
-        align="center"
-        justify="space-between"
-        px={{ base: 2, md: 4, lg: 12 }}
-        py={{ base: 12, md: 6, lg: 0 }}
-        // bg="blue.400"
+          direction={{ base: "column-reverse", md: "row" }}
+          align={{ base: "center", md: "flex-start" }} 
+          justify="space-between"
+          px={{ base: 2, md: 4, lg: 12 }}
+          py={{ base: 12, md: 6, lg: 0 }}
       >
         <Box
           w={{ base: "100%", md: "45%" }}
-          mr={{ base: 0, md: 6, lg: 12 }}
-          mb={{ base: 12, md: 0 }}
+              mr={{ base: 0, md: 6, lg: 12 }}
+              mb={{ base: 12, md: 0 }}
+              pt={{ base: 0, md: "80px", lg: "110px", xl: "140px" }}
         >
+          {/* Subheading Label */}
+          <Text
+            color="#FD8B3A"
+            fontWeight="bold"
+            fontSize="sm"
+            letterSpacing="widest"
+            mb={2}
+            textAlign={{ base: "center", md: "left" }}
+          >
+            LEVEL UP YOUR LEARNING
+          </Text>
+
+          {/* Core Dynamic Heading */}
           <Heading
             as="h1"
             fontSize={{ base: "4xl", lg: "6xl" }}
@@ -35,21 +68,35 @@ const Hero = () => {
             color="on_backgroundColor"
             lineHeight="1.2"
             textAlign={{ base: "center", md: "left" }}
-            position="relative"
           >
-            Get Quality{" "}
-            <span style={{ color: "#206CE1" }}>
-              1-on-1
+            We Are Making Our <br />
+            <Box
+              as="span"
+              position="relative"
+              display="inline-block"
+              color="#206CE1"
+              style={{
+                opacity: isFading ? 0 : 1,
+                transform: isFading ? "translateY(5px)" : "translateY(0)",
+                transition: "opacity 0.3s ease, transform 0.3s ease",
+              }}
+            >
+              {words[currentWordIdx]}
               <Image
                 src={orangeBlob}
-                alt="orange-blob"
-                ml={{ base: 60, md: 48, lg: 80 }}
-                w={{ base: 28, md: 32, lg: 52 }}
+                alt=""
+                aria-hidden="true"
                 position="absolute"
+                bottom="-7px"
+                left="50%" 
+                transform="translateX(-50%)" 
+                w="65%"
+                pointerEvents="none"
               />
-            </span>
-            <br /> Tutoring at your <br /> Convinience
+            </Box>{" "}
+            Great <br /> Again
           </Heading>
+
           <Text
             color="on_backgroundColor"
             fontWeight="600"
@@ -59,7 +106,7 @@ const Hero = () => {
             w={{ base: "100%", lg: "70%" }}
             textAlign={{ base: "center", md: "left" }}
           >
-            Quality Education. Real Tutors. Flexible Learning.
+            Quality Education. Real Tutors. Flexible Learning at your convenience.
           </Text>
 
           <Flex
@@ -85,23 +132,28 @@ const Hero = () => {
               p={{ base: 7, md: 4, lg: 8 }}
               mr={4}
               _hover={{ border: "1px solid", borderColor: "gray.300" }}
+              display="flex"
+              alignItems="center"
+              justifyContent="center"
+              gap={2}
             >
               <FaPlay /> How it works
             </Button>
           </Flex>
         </Box>
 
-        {/* Hero image */}
-
+        {/* Hero Image Side */}
         <Box w={{ base: "100%", md: "50%" }} flex="1">
           <Image
             src={headerPic}
-            alt="lovely-teenage-girl-with-curly-hair-posing-yellow-tshirt-min 1"
+            alt="Student learning happily"
+            w="100%"
+            h="auto"
           />
         </Box>
       </Flex>
 
-      {/* mobile Banner */}
+      {/* Mobile Banner Panel (Restored Sizes) */}
       <Box
         display={{ base: "flex", md: "none" }}
         bg="primaryColor"
@@ -119,15 +171,7 @@ const Hero = () => {
           align="start"
         >
           {stats.map((stat) => (
-            <Box
-              key={stat.id}
-              flex="1"
-              textAlign="left"
-              ml={2}
-              w="200px"
-              // borderRight={stat.id !== stats.length ? "1px solid" : "none"}
-              // borderColor="gray.200"
-            >
+            <Box key={stat.id} flex="1" textAlign="left" ml={2} w="200px">
               <Heading fontSize="2xl" color="white" mx="auto">
                 {stat.value}
               </Heading>
@@ -139,7 +183,7 @@ const Hero = () => {
         </Flex>
       </Box>
 
-      {/* desktop Banner */}
+      {/* Desktop Banner Panel (Restored Sizes) */}
       <Flex
         display={{ base: "none", md: "flex" }}
         bg="primaryColor"
@@ -151,16 +195,11 @@ const Hero = () => {
         px={{ base: 6, md: 2, lg: 12 }}
         justify="space-around"
         align="start"
+        position="relative"
+        zIndex={2}
       >
         {stats.map((stat) => (
-          <Box
-            key={stat.id}
-            flex="1"
-            mx={4}
-            textAlign="center"
-            // borderRight={stat.id !== stats.length ? "1px solid" : "none"}
-            // borderColor="gray.200"
-          >
+          <Box key={stat.id} flex="1" mx={4} textAlign="center">
             <Heading
               fontSize={{ md: "5xl", lg: "6xl" }}
               color="white"
