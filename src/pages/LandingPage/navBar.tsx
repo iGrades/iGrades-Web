@@ -32,7 +32,7 @@ const NavBar = () => {
       align="center"
       // 1. Hard limits the vertical height on desktop screens to keep it ultra slim
       h={{ base: "auto", md: "70px", lg: "80px" }}
-      pt={{ base: 4, md: 0 }} // Removed top padding on desktop since height controls it
+      pt={{ base: 4, md: 0 }} 
       px={{ base: 4, lg: 12 }}
       position="relative"
       bg="white"
