@@ -128,6 +128,7 @@ const QuizAttempt = ({
     handleStartMonitoring,
     stopAllMonitoring,
     toggleMonitoring,
+    proceedWithWebcamOnly,
   } = useMonitoring();
 
   // Monitoring should be inactive when quiz is done
@@ -408,8 +409,13 @@ const QuizAttempt = ({
                 )}
               </VStack>
             </Dialog.Body>
-            <Dialog.Footer>
-              <Button variant="outline" onClick={onCancel} mr={3}>Cancel Quiz</Button>
+            <Dialog.Footer flexWrap="wrap" gap={2}>
+              <Button variant="outline" onClick={onCancel}>Cancel Quiz</Button>
+              {screenError && hasWebcamAccess && (
+                <Button variant="surface" colorPalette="amber" onClick={proceedWithWebcamOnly}>
+                  Proceed with Webcam Only
+                </Button>
+              )}
               <Button
                 bg="primaryColor"
                 onClick={handleStartMonitoring}

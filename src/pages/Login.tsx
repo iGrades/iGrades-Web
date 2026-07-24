@@ -20,6 +20,7 @@ import logo from "../assets/landing-page/logo.png";
 import sideImage from "../assets/login_illustration-removebg-preview.png";
 import ParentLogin from "@/parent-app/auth/Login";
 import StudentLogin from "@/student-app/auth/Login";
+import { supabase } from "@/lib/supabaseClient";
 
 export default function Login() {
   const navigate = useNavigate();
@@ -29,11 +30,34 @@ export default function Login() {
   } | null>(null);
 
   const [loginState, setLoginState] = useState("parent");
+  const [isGoogleLoading, setIsGoogleLoading] = useState(false);
 
   const userType = [
     { type: "iGrade Parent", state: "parent" },
     { type: "iGrade Children", state: "children" },
   ];
+
+  const handleGoogleLogin = async () => {
+    setIsGoogleLoading(true);
+    localStorage.setItem("oauth_role", loginState);
+    const redirectTo = `${window.location.origin}/auth/callback`;
+
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: "google",
+      options: {
+        redirectTo,
+        queryParams: {
+          access_type: "offline",
+          prompt: "select_account",
+        },
+      },
+    });
+
+    if (error) {
+      setAlert({ type: "error", message: error.message });
+      setIsGoogleLoading(false);
+    }
+  };
 
   return (
     <>
@@ -240,6 +264,9 @@ export default function Login() {
               {/* Social Logins */}
               <SimpleGrid columns={2} gap={4} mb={6} width="full">
                 <Button
+                  onClick={handleGoogleLogin}
+                  loading={isGoogleLoading}
+                  loadingText="Connecting..."
                   variant="outline"
                   borderRadius="xl"
                   borderColor="gray.200"

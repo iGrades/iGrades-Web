@@ -182,23 +182,48 @@ function StudentSignUp() {
         message: "Student created successfully!",
       });
 
-      const { data, error: loginError } = await supabase.rpc("get_student_by_credentials", {
-        p_email: formData.email,
-        p_enc_passcode: encrypt(passkey.join(""), encKey),
-      });
+      let student: any = null;
 
-      if (loginError || !data || data.length === 0) {
-        console.error("Login error:", loginError);
-        setAlert({ status: "error", message: "Login failed after registration." });
+      try {
+        const { data, error: loginError } = await supabase.rpc("get_student_by_credentials", {
+          p_email: formData.email,
+          p_enc_passcode: encrypt(passkey.join(""), encKey),
+        });
+
+        if (!loginError && data) {
+          if (Array.isArray(data) && data.length > 0) {
+            student = data[0];
+          } else if (!Array.isArray(data) && typeof data === "object" && (data as any)?.id) {
+            student = data;
+          }
+        }
+      } catch (err) {
+        console.warn("RPC post-signup login warning:", err);
+      }
+
+      if (!student) {
+        const { data: directData, error: directError } = await supabase
+          .from("students")
+          .select("*")
+          .eq("email", formData.email)
+          .eq("passcode", encrypt(passkey.join(""), encKey));
+
+        if (!directError && directData && Array.isArray(directData) && directData.length > 0) {
+          student = directData[0];
+        }
+      }
+
+      if (!student) {
+        setAlert({ status: "error", message: "Registration succeeded, please sign in." });
+        setTimeout(() => navigate("/login"), 1500);
         return;
       }
 
-      const student = data[0];
       setAuthdStudent(student);
 
       setAlert({
         status: "success",
-        message: `Welcome ${student.firstname}! Your Profile has been created successfully.`,
+        message: `Welcome ${student.firstname || "Student"}! Your Profile has been created successfully.`,
       });
 
       setTimeout(() => navigate("/course-selection"), 2000);

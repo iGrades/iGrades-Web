@@ -8,22 +8,52 @@ import {
   Link,
   Heading,
   Image,
+  HStack,
+  SimpleGrid,
+  Alert,
 } from "@chakra-ui/react";
 import { Link as RouterLink } from "react-router-dom";
+import { FcGoogle } from "react-icons/fc";
+import { FaApple } from "react-icons/fa";
 
 import logo from "../assets/landing-page/logo.png";
 import sideImage from "../assets/sign_up illustration.png";
 import ParentSignUp from "@/parent-app/auth/SignUp";
 import StudentSignUp from "@/student-app/auth/SignUp";
+import { supabase } from "@/lib/supabaseClient";
 
 const SignUp = () => {
   const navigate = useNavigate();
   const [registerState, setRegisterState] = useState("parent");
+  const [isGoogleLoading, setIsGoogleLoading] = useState(false);
+  const [alert, setAlert] = useState<{ type: "error" | "success"; message: string } | null>(null);
 
   const userType = [
     { type: "iGrade Parent", state: "parent" },
     { type: "iGrade Student", state: "children" },
   ];
+
+  const handleGoogleSignUp = async () => {
+    setIsGoogleLoading(true);
+    localStorage.setItem("oauth_role", registerState);
+    const redirectTo = `${window.location.origin}/auth/callback`;
+
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: "google",
+      options: {
+        redirectTo,
+        queryParams: {
+          access_type: "offline",
+          prompt: "select_account",
+        },
+      },
+    });
+
+    if (error) {
+      setAlert({ type: "error", message: error.message });
+      setIsGoogleLoading(false);
+    }
+  };
 
   return (
     <>
@@ -171,6 +201,21 @@ const SignUp = () => {
                 })}
               </Flex>
 
+              {/* Alert */}
+              {alert && (
+                <Box mb={4}>
+                  <Alert.Root status={alert.type} variant="subtle" borderRadius="xl">
+                    <Alert.Indicator />
+                    <Alert.Content>
+                      <Alert.Title fontSize="sm" fontWeight="700">
+                        {alert.type === "error" ? "Error!" : "Success!"}
+                      </Alert.Title>
+                      <Alert.Description fontSize="xs">{alert.message}</Alert.Description>
+                    </Alert.Content>
+                  </Alert.Root>
+                </Box>
+              )}
+
               {/* Active Form */}
               <Box mb={6}>
                 {registerState === "parent" ? (
@@ -179,6 +224,58 @@ const SignUp = () => {
                   <StudentSignUp />
                 )}
               </Box>
+
+              {/* Divider */}
+              <HStack my={6} gap={4} width="full" align="center">
+                <Box flex={1} h="1px" bg="gray.100" />
+                <Text fontSize="xs" fontWeight="600" color="gray.400" whiteSpace="nowrap">
+                  or sign up with
+                </Text>
+                <Box flex={1} h="1px" bg="gray.100" />
+              </HStack>
+
+              {/* Social Signups */}
+              <SimpleGrid columns={2} gap={4} mb={6} width="full">
+                <Button
+                  onClick={handleGoogleSignUp}
+                  loading={isGoogleLoading}
+                  loadingText="Connecting..."
+                  variant="outline"
+                  borderRadius="xl"
+                  borderColor="gray.200"
+                  bg="white"
+                  color="#1E293B"
+                  h="12"
+                  fontSize="sm"
+                  fontWeight="600"
+                  _hover={{ bg: "gray.50", borderColor: "gray.300" }}
+                  display="flex"
+                  alignItems="center"
+                  justifyContent="center"
+                  gap={2}
+                >
+                  <FcGoogle size={18} />
+                  Google
+                </Button>
+                <Button
+                  variant="outline"
+                  borderRadius="xl"
+                  borderColor="gray.200"
+                  bg="white"
+                  color="#1E293B"
+                  h="12"
+                  fontSize="sm"
+                  fontWeight="600"
+                  _hover={{ bg: "gray.50", borderColor: "gray.300" }}
+                  display="flex"
+                  alignItems="center"
+                  justifyContent="center"
+                  gap={2}
+                >
+                  <FaApple size={18} />
+                  Apple
+                </Button>
+              </SimpleGrid>
 
               {/* Toggle to Login */}
               <Text fontSize="xs" fontWeight="500" color="#64748B" textAlign="center" mt={4}>

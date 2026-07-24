@@ -9,6 +9,7 @@ import Pricing from "@/pages/PricingPage";
 import Login from "@/pages/Login";
 import SignUp from "@/pages/SignUp";
 import Verify from "@/parent-app/auth/Verify";
+import AuthCallback from "@/pages/AuthCallback";
 
 const publicRoutes: RouteObject[] = [
   {
@@ -42,6 +43,10 @@ const publicRoutes: RouteObject[] = [
   {
     path: "/verify",
     element: <Verify />,
+  },
+  {
+    path: "/auth/callback",
+    element: <AuthCallback />,
   },
 ];
 

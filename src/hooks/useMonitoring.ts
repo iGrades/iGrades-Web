@@ -83,10 +83,17 @@ export const useMonitoring = () => {
     }
   }, []);
 
+  const [bypassedScreenShare, setBypassedScreenShare] = useState(false);
+
   const initializeScreenShare = useCallback(async (): Promise<boolean> => {
     try {
       setIsScreenLoading(true);
       setScreenError(null);
+
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getDisplayMedia) {
+        throw new Error("Screen sharing is not supported in this browser environment.");
+      }
+
       const stream = await navigator.mediaDevices.getDisplayMedia({ video: true });
       setScreenStream(stream);
       setHasScreenAccess(true);
@@ -100,12 +107,20 @@ export const useMonitoring = () => {
 
       return true;
     } catch (err: any) {
-      setScreenError(err.message);
+      let msg = err?.message || "Failed to start screen share.";
+      if (msg.includes("display-capture") || msg.includes("permissions policy") || msg.includes("disallowed")) {
+        msg = "Screen share is disallowed by browser/iframe security policy. You can proceed with webcam monitoring or open the app directly in a new tab.";
+      }
+      setScreenError(msg);
       setHasScreenAccess(false);
       return false;
     } finally {
       setIsScreenLoading(false);
     }
+  }, []);
+
+  const proceedWithWebcamOnly = useCallback(() => {
+    setBypassedScreenShare(true);
   }, []);
 
   const initializeAudio = useCallback(async (): Promise<boolean> => {
@@ -125,23 +140,11 @@ export const useMonitoring = () => {
   }, []);
 
   // ── Start all monitoring ──────────────────────────────────────────────────
-  //
-  // FIX: Previously, showAccessDialog was:
-  //   !(hasWebcamAccess && hasScreenAccess && hasAudioAccess)
-  // This meant a denied microphone would permanently block quiz start.
-  // Now: webcam + screen share are required; audio is optional.
-  // The dialog dismisses as soon as both required streams are granted.
-
   const handleStartMonitoring = useCallback(async (): Promise<boolean> => {
-    // Run all three in sequence — screen share must be last because
-    // the browser dialog steals focus and can interfere with getUserMedia
     const webcamOk = await initializeWebcam();
-    // const audioOk = await initializeAudio();   // non-blocking — failure is OK
     const screenOk = await initializeScreenShare();
-
-    // Only webcam + screen are required to proceed
     return webcamOk && screenOk;
-  }, [initializeWebcam, initializeAudio, initializeScreenShare]);
+  }, [initializeWebcam, initializeScreenShare]);
 
   // ── Stop all monitoring ───────────────────────────────────────────────────
 
@@ -155,6 +158,7 @@ export const useMonitoring = () => {
     setHasWebcamAccess(false);
     setHasScreenAccess(false);
     setHasAudioAccess(false);
+    setBypassedScreenShare(false);
     // Clear video refs so YOLO hooks stop processing
     videoRef.current = null;
     screenVideoRef.current = null;
@@ -177,13 +181,15 @@ export const useMonitoring = () => {
     screenError,
     audioError,
     showMonitoring,
+    bypassedScreenShare,
+    proceedWithWebcamOnly,
 
-    // ── FIX: dialog dismisses when webcam + screen are ready ──────────────
-    // Audio denial no longer blocks quiz start.
-    showAccessDialog: !(hasWebcamAccess && hasScreenAccess),
+    // Dialog dismisses when webcam is granted and either screen share is active or bypassed due to policy
+    showAccessDialog: !(hasWebcamAccess && (hasScreenAccess || bypassedScreenShare)),
 
     handleStartMonitoring,
     stopAllMonitoring,
     toggleMonitoring,
+    initializeAudio,
   };
 };

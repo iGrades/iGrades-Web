@@ -37,15 +37,18 @@ const ChildrenLogin = ({ setAlert }: Props) => {
 
   const encKey = import.meta.env.VITE_ENC_KEY;
 
-  const handlePasscodeChange = useCallback((e: { value: string[] }) => {
-    passcodeRef.current = e.value;
-    setPasscode(e.value);
+  const handlePasscodeChange = useCallback((e: any) => {
+    const val = Array.isArray(e) ? e : (e?.value || []);
+    passcodeRef.current = val;
+    setPasscode(val);
   }, []);
 
   const handleLogin = async () => {
-    const currentPasscode = passcodeRef.current.join("");
+    const rawPasscode = passcodeRef.current || passcode || [];
+    const passcodeArr = Array.isArray(rawPasscode) ? rawPasscode : ((rawPasscode as any)?.value || []);
+    const currentPasscode = passcodeArr.join("");
 
-    if (!email || currentPasscode.length < 6) {
+    if (!email || !currentPasscode || currentPasscode.length < 6) {
       setAlert({ type: "error", message: "Please enter your email and full passcode" });
       return;
     }
@@ -54,25 +57,50 @@ const ChildrenLogin = ({ setAlert }: Props) => {
 
     const encrypted = encrypt(currentPasscode, encKey);
 
-    const { data, error } = await supabase.rpc("get_student_by_credentials", {
-      p_email: email,
-      p_enc_passcode: encrypted,
-    });
+    let student: any = null;
 
-    if (error || !data || data.length === 0) {
-      console.error("Login error:", error);
+    try {
+      const { data, error } = await supabase.rpc("get_student_by_credentials", {
+        p_email: email,
+        p_enc_passcode: encrypted,
+      });
+
+      if (!error && data) {
+        if (Array.isArray(data) && data.length > 0) {
+          student = data[0];
+        } else if (!Array.isArray(data) && typeof data === "object" && (data as any)?.id) {
+          student = data;
+        }
+      }
+    } catch (err) {
+      console.warn("RPC get_student_by_credentials warning:", err);
+    }
+
+    // Direct fallback query if RPC failed or returned no match
+    if (!student) {
+      const { data: directData, error: directError } = await supabase
+        .from("students")
+        .select("*")
+        .eq("email", email)
+        .eq("passcode", encrypted);
+
+      if (!directError && directData && Array.isArray(directData) && directData.length > 0) {
+        student = directData[0];
+      }
+    }
+
+    if (!student) {
       setAlert({ type: "error", message: "Invalid email or passcode" });
       setIsLoading(false);
       return;
     }
 
-    const student = data[0];
     setAuthdStudent(student);
     setIsLoading(false);
 
     setAlert({
       type: "success",
-      message: `Welcome back, ${student.firstname}!`,
+      message: `Welcome back, ${student.firstname || "Student"}!`,
     });
 
     setTimeout(() => navigate("/student-dashboard"), 1000);
