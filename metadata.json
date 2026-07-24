@@ -1,0 +1,11 @@
+{
+  "name": "iGrades",
+  "description": "An all-in-one educational platform with integrated study tools, exam simulations, analytics, cheating detection, and tutoring assistance.",
+  "requestFramePermissions": [
+    "microphone",
+    "camera"
+  ],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
