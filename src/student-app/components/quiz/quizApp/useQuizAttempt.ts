@@ -244,6 +244,34 @@ export const useQuizAttempt = (quizData: QuizAttemptProps["quizData"]) => {
       );
   
       await Promise.all(updatePromises);
+
+      // 6. Award iGrades points for quiz first attempt
+      if (authdStudent?.id) {
+        try {
+          const mainQuizId = quizData?.quizzes?.[0]?.id || `quiz_${currentSubject?.id || "general"}`;
+          const { data: session } = await supabase.auth.getSession();
+          const token = session?.session?.access_token;
+          await fetch(
+            `${import.meta.env.VITE_SUPABASE_URL || "https://ais-dev-zznm53354f22xrz54kfnwn-544188797831.europe-west2.run.app"}/functions/v1/award-points`,
+            {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${token || import.meta.env.VITE_SUPABASE_ANON_KEY}`,
+              },
+              body: JSON.stringify({
+                event: "quiz_completion",
+                student_id: authdStudent.id,
+                quiz_id: mainQuizId,
+                score_percentage: results.subjectResults[currentSubject?.id]?.percentage || 50,
+              }),
+            }
+          );
+        } catch (e) {
+          console.warn("Quiz points award trigger error:", e);
+        }
+      }
+
       setShowResults(true);
   
     } catch (error) {

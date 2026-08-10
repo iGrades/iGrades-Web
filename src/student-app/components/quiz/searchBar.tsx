@@ -8,12 +8,14 @@ import { IoIosSearch } from "react-icons/io";
 
 interface SearchBarProps extends InputProps {
   placeholder?: string;
-  searchResult: never[]
-  setSearchResult: React.Dispatch<React.SetStateAction<never[]>>
+  searchResult?: any;
+  setSearchResult?: React.Dispatch<React.SetStateAction<any>>;
 }
 
 const SearchBar: React.FC<SearchBarProps> = ({
   placeholder = "Search student here...",
+  searchResult,
+  setSearchResult,
   ...rest
 }) => {
   return (

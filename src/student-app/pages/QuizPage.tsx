@@ -37,7 +37,7 @@ const QuizPage = ({ setShowSideBar, setShowNavBar }: Props) => {
   const [selectedForQuiz, setSelectedForQuiz] = useState<SelectedCourse[]>([]);
   const [selectedTopicsId, setSelectedTopicsId] = useState<string>("");
   const [subjectImages, setSubjectImages] = useState<SubjectImage>({});
-  const [searchResult, setSearchResult] = useState([])
+  const [searchResult, setSearchResult] = useState<any[]>([]);
 
   // handles selection of courses
  const handleCourseSelect = (

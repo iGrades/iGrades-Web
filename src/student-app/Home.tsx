@@ -11,6 +11,7 @@ import Homepage from "./pages/Homepage";
 import QuizPage from "./pages/QuizPage";
 import LearnPage from "./pages/LearnPage";
 import SettingsPage from "./pages/SettingsPage";
+import RewardsPage from "./pages/RewardsPage";
 
 const Home = () => {
   const currentPage = useNavigationStore((state) => state.currentStudentPage);
@@ -50,13 +51,14 @@ const Home = () => {
 
   // Initialize page from URL on component mount
   // Define the StudentPage type if not already imported
-  type StudentPage = "home" | "quiz" | "learn" | "settings";
+  type StudentPage = "home" | "quiz" | "learn" | "rewards" | "settings";
 
   useEffect(() => {
     const pageMap: Record<string, StudentPage> = {
       "": "home",
       quizzes: "quiz",
       learning: "learn",
+      rewards: "rewards",
       settings: "settings",
     };
 
@@ -84,6 +86,7 @@ const Home = () => {
           home: "",
           quiz: "quizzes",
           learn: "learning",
+          rewards: "rewards",
           settings: "settings",
         };
 
@@ -111,6 +114,8 @@ const Home = () => {
         );
       case "learn":
         return <LearnPage />;
+      case "rewards":
+        return <RewardsPage />;
       case "settings":
         return <SettingsPage />;
       default:

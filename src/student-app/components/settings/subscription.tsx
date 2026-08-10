@@ -250,16 +250,20 @@ import {
   Flex,
   Button,
   Badge,
+  HStack,
 } from "@chakra-ui/react";
 import { toaster } from "@/components/ui/toaster";
 import { IoIosCheckmarkCircle } from "react-icons/io";
 import { useFlutterwave } from "@/hooks/useFlutterwave";
 import { useAuthdStudentData } from "@/student-app/context/studentDataContext";
 import type { SubscriptionPlan } from "@/types/flutterwave";
+import { usePointsSystem } from "@/student-app/hooks/usePointsSystem";
+import { FiAward } from "react-icons/fi";
 
 const Subscription: React.FC = () => {
   const { initializePayment, isLoading, loadingPlanId } = useFlutterwave();
   const { authdStudent, refreshStudentData } = useAuthdStudentData();
+  const { pointsBalance, creditBalance, convertPoints, actionLoading } = usePointsSystem();
 
   const subscriptionPlans: SubscriptionPlan[] = [
     {
@@ -369,14 +373,65 @@ const Subscription: React.FC = () => {
       shadow="sm"
       p={4}
       mb={10}
-      h={{ base: "auto", md: "75vh" }}
+      minH={{ base: "auto", md: "75vh" }}
     >
+      {/* iGrades Points & Store Credit Discount Banner */}
+      <Box
+        p={4}
+        borderRadius="2xl"
+        bgGradient="linear(to-r, amber.500, orange.600)"
+        color="white"
+        mb={6}
+        shadow="md"
+      >
+        <Flex
+          direction={{ base: "column", md: "row" }}
+          justify="space-between"
+          align="center"
+          gap={3}
+        >
+          <HStack gap={3}>
+            <Box p={2.5} bg="white/20" borderRadius="xl">
+              <FiAward size={26} />
+            </Box>
+            <Box>
+              <HStack gap={2}>
+                <Heading size="sm" color="white" fontWeight="extrabold">
+                  iGrades Rewards Store Credit
+                </Heading>
+                <Badge colorPalette="amber" variant="solid" bg="white" color="amber.800" px={2} fontSize="10px">
+                  {pointsBalance.toLocaleString()} IGG Pts Available
+                </Badge>
+              </HStack>
+              <Text fontSize="xs" color="amber.100" mt={0.5}>
+                Available Subscription Store Credit: <Text as="span" fontWeight="bold" fontSize="sm" color="white">₦{creditBalance.toLocaleString()}</Text>
+              </Text>
+            </Box>
+          </HStack>
+
+          {pointsBalance >= 100 && (
+            <Button
+              size="sm"
+              bg="white"
+              color="amber.800"
+              _hover={{ bg: "amber.50" }}
+              fontWeight="bold"
+              borderRadius="xl"
+              loading={actionLoading}
+              onClick={() => convertPoints(100)}
+            >
+              Convert 100 Pts → Get ₦1,000 Credit
+            </Button>
+          )}
+        </Flex>
+      </Box>
+
       <Flex
         direction={{ base: "column", md: "row" }}
         justify="space-around"
         align="center"
         gap={5}
-        mt={10}
+        mt={4}
       >
         {subscriptionPlans.map((plan) => {
           const isCurrentPlan = currentPlan === plan.id;

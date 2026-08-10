@@ -2,9 +2,10 @@ import { useState, useEffect } from "react";
 import { supabase } from "@/lib/supabaseClient";
 import {
   Box, Flex, Text, Button, Input, Stack,
-  Badge, Grid, Table, Heading, Select, createListCollection
+  Badge, Grid, Table, Heading, Select, Avatar, createListCollection
 } from "@chakra-ui/react";
 import { toaster } from "@/components/ui/toaster";
+import { FiUserPlus } from "react-icons/fi";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -117,9 +118,11 @@ const AdminManagementTab = ({ currentAdminId }: { currentAdminId: string }) => {
       return;
     }
 
+    if (!window.confirm(`Are you sure you want to remove ${admin.name} from admin team?`)) return;
+
     setDeleting(admin.id);
 
-    // Delete from admins table — Supabase cascade will handle auth.users
+    // Delete from admins table
     const { error } = await supabase
       .from("admins")
       .delete()
@@ -152,64 +155,66 @@ const AdminManagementTab = ({ currentAdminId }: { currentAdminId: string }) => {
       { label: "Admin", value: "admin" },
       { label: "Super Admin", value: "super_admin" },
     ],
-  })
+  });
 
   return (
-    <Stack gap={8}>
+    <Stack gap={6}>
       {/* Header */}
       <Box>
-        <Heading fontSize="xl" fontWeight="semibold" color="on_backgroundColor">
-          Admin Management
+        <Heading fontSize="1.5rem" fontWeight="800" letterSpacing="-0.02em" color="gray.900">
+          Admin Team Management
         </Heading>
-        <Text fontSize="sm" color="fieldTextColor" mt={1}>
-          Create and manage admin accounts. Only super admins can access this tab.
+        <Text fontSize="13px" color="gray.500" mt={1}>
+          Provision new system administrators and manage elevated privileges. Restricted to Super Admins.
         </Text>
       </Box>
 
-      {/* Create form */}
+      {/* Create form card */}
       <Box
         bg="white"
-        border="1px solid"
-        borderColor="lightGrey"
-        borderTop="3px solid"
-        borderTopColor="primaryColor"
-        rounded="xl"
+        borderRadius="1.25rem"
         p={6}
-        shadow="sm"
+        border="1px solid"
+        borderColor="gray.100"
+        boxShadow="0 1px 3px rgba(15,23,42,0.03)"
       >
-        <Text
-          fontSize="xs"
-          fontFamily="mono"
-          letterSpacing="widest"
-          color="fieldTextColor"
-          textTransform="uppercase"
-          mb={5}
-        >
-          Create New Admin
-        </Text>
+        <Flex align="center" gap={2} mb={5}>
+          <Box p={2} bg="blue.50" color="blue.600" borderRadius="lg">
+            <FiUserPlus size={18} />
+          </Box>
+          <Box>
+            <Text fontSize="15px" fontWeight="700" color="gray.900">
+              Provision New Administrator
+            </Text>
+            <Text fontSize="12px" color="gray.500">
+              New admin will receive credentials to access the admin portal
+            </Text>
+          </Box>
+        </Flex>
 
         <form onSubmit={handleCreate}>
           <Grid templateColumns={{ base: "1fr", md: "1fr 1fr" }} gap={4}>
             <Box>
-              <Text fontSize="xs" color="fieldTextColor" mb={1} textTransform="uppercase" fontFamily="mono" letterSpacing="wider">
+              <Text fontSize="11px" fontWeight="700" letterSpacing="0.05em" color="gray.600" textTransform="uppercase" mb={1.5}>
                 Full Name
               </Text>
               <Input
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 required
-                placeholder="Jane Doe"
-                bg="textFieldColor"
+                placeholder="e.g. Dr. Sarah Jenkins"
+                bg="white"
                 border="1px solid"
-                borderColor="lightGrey"
-                rounded="lg"
-                fontSize="sm"
-                _focus={{ borderColor: "primaryColor", boxShadow: "none" }}
+                borderColor="gray.200"
+                borderRadius="lg"
+                fontSize="13px"
+                h="40px"
+                _focus={{ borderColor: "blue.500", boxShadow: "none" }}
               />
             </Box>
 
             <Box>
-              <Text fontSize="xs" color="fieldTextColor" mb={1} textTransform="uppercase" fontFamily="mono" letterSpacing="wider">
+              <Text fontSize="11px" fontWeight="700" letterSpacing="0.05em" color="gray.600" textTransform="uppercase" mb={1.5}>
                 Email Address
               </Text>
               <Input
@@ -217,18 +222,19 @@ const AdminManagementTab = ({ currentAdminId }: { currentAdminId: string }) => {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                placeholder="jane@example.com"
-                bg="textFieldColor"
+                placeholder="sarah@igrades.org"
+                bg="white"
                 border="1px solid"
-                borderColor="lightGrey"
-                rounded="lg"
-                fontSize="sm"
-                _focus={{ borderColor: "primaryColor", boxShadow: "none" }}
+                borderColor="gray.200"
+                borderRadius="lg"
+                fontSize="13px"
+                h="40px"
+                _focus={{ borderColor: "blue.500", boxShadow: "none" }}
               />
             </Box>
 
             <Box>
-              <Text fontSize="xs" color="fieldTextColor" mb={1} textTransform="uppercase" fontFamily="mono" letterSpacing="wider">
+              <Text fontSize="11px" fontWeight="700" letterSpacing="0.05em" color="gray.600" textTransform="uppercase" mb={1.5}>
                 Password
               </Text>
               <Input
@@ -237,93 +243,96 @@ const AdminManagementTab = ({ currentAdminId }: { currentAdminId: string }) => {
                 onChange={(e) => setPassword(e.target.value)}
                 required
                 placeholder="Min. 8 characters"
-                bg="textFieldColor"
+                bg="white"
                 border="1px solid"
-                borderColor="lightGrey"
-                rounded="lg"
-                fontSize="sm"
-                _focus={{ borderColor: "primaryColor", boxShadow: "none" }}
+                borderColor="gray.200"
+                borderRadius="lg"
+                fontSize="13px"
+                h="40px"
+                _focus={{ borderColor: "blue.500", boxShadow: "none" }}
               />
             </Box>
 
             <Box>
-              <Text fontSize="xs" color="fieldTextColor" mb={1} textTransform="uppercase" fontFamily="mono" letterSpacing="wider">
-                Role
+              <Text fontSize="11px" fontWeight="700" letterSpacing="0.05em" color="gray.600" textTransform="uppercase" mb={1.5}>
+                Role Level
               </Text>
               <Select.Root
                 collection={roleCollection}
                 value={[role]}
                 onValueChange={(e) => setRole(e.value[0] as "admin" | "super_admin")}
-                size="md"
+                size="sm"
               >
                 <Select.Trigger
-                  bg="textFieldColor"
+                  bg="white"
                   border="1px solid"
-                  borderColor="lightGrey"
-                  rounded="lg"
-                  fontSize="sm"
+                  borderColor="gray.200"
+                  borderRadius="lg"
+                  fontSize="13px"
+                  h="40px"
+                  px={3}
                 >
                   <Select.ValueText />
                 </Select.Trigger>
                 <Select.Content>
                   {roleCollection.items.map((item) => (
-                        <Select.Item key={item.value} item={item}>
-                          {item.label}
-                        </Select.Item>
-                      ))}
+                    <Select.Item key={item.value} item={item}>
+                      {item.label}
+                    </Select.Item>
+                  ))}
                 </Select.Content>
               </Select.Root>
             </Box>
           </Grid>
 
           {formError && (
-            <Text fontSize="sm" color="errorColor" mt={3}>{formError}</Text>
+            <Box mt={3} p={3} bg="rose.50" border="1px solid" borderColor="rose.200" borderRadius="lg">
+              <Text fontSize="12px" color="rose.700" fontWeight="600">{formError}</Text>
+            </Box>
           )}
 
           <Flex mt={5} justify="flex-end">
             <Button
               type="submit"
-              bg="primaryColor"
-              color="on_primaryColor"
-              rounded="xl"
+              bg="blue.600"
+              color="white"
+              borderRadius="lg"
               px={6}
+              h="40px"
+              fontSize="13px"
+              fontWeight="700"
               loading={creating}
-              loadingText="Creating..."
-              _hover={{ opacity: 0.9 }}
+              loadingText="Provisioning..."
+              _hover={{ bg: "blue.500" }}
               transition="all 0.2s"
             >
-              Create Admin
+              Create Administrator
             </Button>
           </Flex>
         </form>
       </Box>
 
       {/* Existing admins table */}
-      <Box>
-        <Text
-          fontSize="xs"
-          fontFamily="mono"
-          letterSpacing="widest"
-          color="fieldTextColor"
-          textTransform="uppercase"
-          mb={4}
-        >
-          All Admins ({admins.length})
-        </Text>
+      <Box
+        bg="white"
+        borderRadius="1.25rem"
+        p={6}
+        border="1px solid"
+        borderColor="gray.100"
+        boxShadow="0 1px 3px rgba(15,23,42,0.03)"
+      >
+        <Flex justify="space-between" align="center" mb={4}>
+          <Text fontSize="15px" fontWeight="700" color="gray.900">
+            Active Admin Directory ({admins.length})
+          </Text>
+        </Flex>
 
-        <Box
-          bg="white"
-          border="1px solid"
-          borderColor="lightGrey"
-          rounded="xl"
-          shadow="sm"
-          overflow="hidden"
-        >
-          <Table.Root size="sm" variant="line">
+        <Box borderRadius="0.75rem" border="1px solid" borderColor="gray.100" overflow="hidden">
+          <Table.Root size="sm">
             <Table.Header>
-              <Table.Row bg="textFieldColor">
-                {["Name", "Email", "Role", "Created", "Actions"].map((h) => (
-                  <Table.ColumnHeader key={h} fontSize="xs" color="fieldTextColor" py={3}>
+              <Table.Row bg="gray.50">
+                {["Administrator", "Email Address", "Role Level", "Created Date", "Actions"].map((h) => (
+                  <Table.ColumnHeader key={h} fontSize="11px" fontWeight="700" color="gray.500" py={3.5} textTransform="uppercase" letterSpacing="0.05em">
                     {h}
                   </Table.ColumnHeader>
                 ))}
@@ -332,57 +341,73 @@ const AdminManagementTab = ({ currentAdminId }: { currentAdminId: string }) => {
             <Table.Body>
               {loading ? (
                 <Table.Row>
-                  <Table.Cell colSpan={5} textAlign="center" py={8} color="fieldTextColor" fontSize="sm">
-                    Loading...
+                  <Table.Cell colSpan={5} textAlign="center" py={8} color="gray.400" fontSize="13px">
+                    Loading admin records...
                   </Table.Cell>
                 </Table.Row>
               ) : admins.length === 0 ? (
                 <Table.Row>
-                  <Table.Cell colSpan={5} textAlign="center" py={8} color="fieldTextColor" fontSize="sm">
-                    No admins found.
+                  <Table.Cell colSpan={5} textAlign="center" py={8} color="gray.400" fontSize="13px">
+                    No administrators found.
                   </Table.Cell>
                 </Table.Row>
               ) : admins.map((admin) => (
-                <Table.Row key={admin.id} _hover={{ bg: "faithYellow" }} transition="background 0.15s">
-                  <Table.Cell fontWeight="medium" color="on_backgroundColor" fontSize="sm">
-                    <Flex align="center" gap={2}>
-                      {admin.name}
-                      {admin.id === currentAdminId && (
-                        <Badge colorPalette="blue" variant="subtle" rounded="full" px={2} fontSize="10px">
-                          You
-                        </Badge>
-                      )}
+                <Table.Row key={admin.id} _hover={{ bg: "blue.50/20" }} transition="background 0.15s">
+                  <Table.Cell py={3}>
+                    <Flex align="center" gap={2.5}>
+                      <Avatar.Root size="xs">
+                        <Avatar.Fallback bg="blue.100" color="blue.700" fontWeight="700" fontSize="11px">
+                          {admin.name?.[0] || "A"}
+                        </Avatar.Fallback>
+                      </Avatar.Root>
+                      <Box>
+                        <Flex align="center" gap={2}>
+                          <Text fontSize="13px" fontWeight="700" color="gray.900">{admin.name}</Text>
+                          {admin.id === currentAdminId && (
+                            <Badge bg="blue.50" color="blue.700" borderRadius="full" px={2} fontSize="9px" fontWeight="700">
+                              Current You
+                            </Badge>
+                          )}
+                        </Flex>
+                      </Box>
                     </Flex>
                   </Table.Cell>
-                  <Table.Cell fontSize="xs" color="fieldTextColor">{admin.email}</Table.Cell>
+                  <Table.Cell fontSize="12px" color="gray.600">{admin.email}</Table.Cell>
                   <Table.Cell>
                     <Badge
-                      colorPalette={admin.role === "super_admin" ? "orange" : "blue"}
-                      variant="subtle"
-                      rounded="full"
+                      bg={admin.role === "super_admin" ? "amber.50" : "blue.50"}
+                      color={admin.role === "super_admin" ? "amber.700" : "blue.700"}
+                      borderRadius="full"
                       px={3}
+                      py={0.5}
+                      fontSize="10px"
+                      fontWeight="700"
                     >
                       {admin.role === "super_admin" ? "Super Admin" : "Admin"}
                     </Badge>
                   </Table.Cell>
-                  <Table.Cell fontSize="xs" fontFamily="mono" color="fieldTextColor">
+                  <Table.Cell fontSize="11px" color="gray.500">
                     {fmt(admin.created_at)}
                   </Table.Cell>
                   <Table.Cell>
                     {admin.id !== currentAdminId ? (
                       <Button
                         size="xs"
-                        colorPalette="red"
                         variant="ghost"
-                        rounded="lg"
+                        color="rose.600"
+                        _hover={{ bg: "rose.50" }}
+                        borderRadius="md"
                         loading={deleting === admin.id}
-                        loadingText="Removing..."
                         onClick={() => handleDelete(admin)}
+                        fontSize="11px"
+                        fontWeight="600"
+                        h="26px"
+                        px={2.5}
                       >
                         Remove
                       </Button>
                     ) : (
-                      <Text fontSize="xs" color="fieldTextColor">—</Text>
+                      <Text fontSize="11px" color="gray.400">—</Text>
                     )}
                   </Table.Cell>
                 </Table.Row>

@@ -1,7 +1,7 @@
 import { create } from "zustand";
 
 export type ParentPage = "home" | "student" | "settings";
-export type StudentPage = "home" | "quiz" | "learn" | "settings"
+export type StudentPage = "home" | "quiz" | "learn" | "rewards" | "settings";
 
 interface NavigationState {
   currentParentPage: ParentPage;

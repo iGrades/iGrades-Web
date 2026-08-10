@@ -7,7 +7,7 @@ import AIChatbot from "../components/AIChatbot";
 
 const Homepage = () => {
   return (
-    <Box>
+    <Box pt={2}>
       <Flex
         w="95%"
         m="auto"
