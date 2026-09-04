@@ -37,6 +37,7 @@ const MenuModal = ({ editText, deleteText, onSelect }: Props) => {
               cursor="pointer" 
               py={3} 
               px={4}
+              onClick={() => onSelect('edit')}
               onSelect={() => onSelect('edit')}
               _active={{ bg: "blue.50" }}
             >
@@ -49,6 +50,7 @@ const MenuModal = ({ editText, deleteText, onSelect }: Props) => {
               cursor="pointer" 
               py={3} 
               px={4}
+              onClick={() => onSelect('delete')}
               onSelect={() => onSelect('delete')}
               _active={{ bg: "red.50" }}
             >

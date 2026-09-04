@@ -95,7 +95,10 @@ const Popover = ({head, info, firstBtnText, secondBtnText, clickFunc, setIsPopOv
               fontSize={"sm"}
               fontWeight={500}
               _hover={{ bg: "primaryColor", color: "white" }}
-              onClick={clickFunc}
+              onClick={() => {
+                if (setIsPopOver) setIsPopOver(false);
+                if (clickFunc) clickFunc();
+              }}
             >
               {firstBtnText}
             </Button>

@@ -9,7 +9,7 @@ type OtpInputProps = {
 const OtpInput = ({ length = 6, onChangeOtp }: OtpInputProps) => {
   const inputsRef = useRef<Array<HTMLInputElement | null>>([]);
 
-  interface OtpInputEvent extends React.ChangeEvent<HTMLInputElement> {}
+  type OtpInputEvent = React.ChangeEvent<HTMLInputElement>;
   // interface OtpInputKeyEvent extends React.KeyboardEvent<HTMLInputElement> {}
 
   const handleChange = (e: OtpInputEvent, index: number) => {
@@ -28,7 +28,7 @@ const OtpInput = ({ length = 6, onChangeOtp }: OtpInputProps) => {
     }
   };
 
-  interface OtpInputKeyDownEvent extends React.KeyboardEvent<HTMLInputElement> {}
+  type OtpInputKeyDownEvent = React.KeyboardEvent<HTMLInputElement>;
 
   const handleKeyDown = (e: OtpInputKeyDownEvent, index: number) => {
     if (

@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/lib/supabaseClient";
-import { Box, Spinner, Text, VStack, Alert, Flex } from "@chakra-ui/react";
+import { Box, Text, VStack, Alert, Flex } from "@chakra-ui/react";
+import { DancingLogoLoader } from "@/components/DancingLogoLoader";
 import { useAuthdStudentData } from "@/student-app/context/studentDataContext";
 import { useUser } from "@/parent-app/context/parentDataContext";
 
@@ -174,14 +175,13 @@ export default function AuthCallback() {
             </Text>
           </VStack>
         ) : (
-          <VStack gap={4}>
-            <Spinner size="lg" color="primaryColor" />
-            <Text fontSize="md" fontWeight="700" color="#1E293B">
-              Completing Google Authentication...
-            </Text>
-            <Text fontSize="xs" color="#64748B">
-              Please wait while we log you into your iGrade account.
-            </Text>
+          <VStack gap={3}>
+            <DancingLogoLoader
+              size="lg"
+              text="Completing Google Authentication..."
+              subtext="Please wait while we log you into your iGrade account."
+              minH="120px"
+            />
           </VStack>
         )}
       </Box>

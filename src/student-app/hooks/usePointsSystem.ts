@@ -142,8 +142,8 @@ export function usePointsSystem() {
       if (cTxData) {
         setCreditHistory(cTxData);
       }
-    } catch (err) {
-      console.error("Error fetching points data:", err);
+    } catch (err: any) {
+      console.warn("Points sync note:", err?.message || "offline");
     } finally {
       setLoading(false);
     }

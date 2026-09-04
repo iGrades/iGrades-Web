@@ -1,11 +1,39 @@
 import { Box, Flex, Button, Image, Link } from "@chakra-ui/react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate, Link as RouterLink } from "react-router-dom";
 import logo from "../../assets/landing-page/logo.png";
 
 const NavBar = () => {
   const navigate = useNavigate();
   const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
+  const [activeSession, setActiveSession] = useState<{ path: string } | null>(null);
+
+  useEffect(() => {
+    try {
+      const student = localStorage.getItem("authdStudent");
+      if (student) {
+        const parsed = JSON.parse(student);
+        if (parsed?.id || parsed?.firstname) {
+          const name = parsed.firstname ? `${parsed.firstname} ${parsed.lastname || ""}`.trim().toLowerCase().replace(/\s+/g, "-") : "";
+          setActiveSession({ path: name ? `/student-dashboard/${name}` : "/student-dashboard" });
+          return;
+        }
+      }
+
+      const parent = localStorage.getItem("authdParent");
+      if (parent) {
+        const parsed = JSON.parse(parent);
+        const p = Array.isArray(parsed) ? parsed[0] : parsed;
+        if (p?.id || p?.firstname) {
+          const name = p.firstname ? `${p.firstname} ${p.lastname || ""}`.trim().toLowerCase().replace(/\s+/g, "-") : "";
+          setActiveSession({ path: name ? `/parent-dashboard/${name}` : "/parent-dashboard" });
+          return;
+        }
+      }
+    } catch {
+      // ignore
+    }
+  }, []);
 
   const navItems = [
     { name: "Home", link: "/" },
@@ -17,11 +45,15 @@ const NavBar = () => {
   const toggleMobileNav = () => setIsMobileNavOpen((p) => !p);
 
   const handleLogin = () => {
-    isMobileNavOpen && setIsMobileNavOpen(false);
-    navigate("/login");
+    if (isMobileNavOpen) setIsMobileNavOpen(false);
+    if (activeSession) {
+      navigate(activeSession.path);
+    } else {
+      navigate("/login");
+    }
   };
   const handleRegister = () => {
-    isMobileNavOpen && setIsMobileNavOpen(false);
+    if (isMobileNavOpen) setIsMobileNavOpen(false);
     navigate("/signup");
   };
 

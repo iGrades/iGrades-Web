@@ -14,8 +14,8 @@ interface SearchBarProps extends InputProps {
 
 const SearchBar: React.FC<SearchBarProps> = ({
   placeholder = "Search student here...",
-  searchResult,
-  setSearchResult,
+  searchResult: _searchResult,
+  setSearchResult: _setSearchResult,
   ...rest
 }) => {
   return (

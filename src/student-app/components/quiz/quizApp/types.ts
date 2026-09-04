@@ -8,6 +8,7 @@ export interface Question {
   correct_option: string;
   subject_id: string;
   topic_id: string;
+  subtopic_id?: string | null;
   quiz_id: string;
   image_url?: string;
   answer_explanation?: string | null;

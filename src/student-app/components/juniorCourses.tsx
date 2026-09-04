@@ -102,7 +102,7 @@ const JuniorCourses = ({ onSelectionChange }: JuniorCoursesProps) => {
               key={course.id}
               value={course.id}
               checked={selectedCourses.includes(course.id)}
-              onChange={() => handleCourseChange(course.id)}
+              onCheckedChange={() => handleCourseChange(course.id)}
               disabled={
                 !selectedCourses.includes(course.id) &&
                 selectedCourses.length >= maxSelection

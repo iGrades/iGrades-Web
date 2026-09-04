@@ -12,6 +12,7 @@ import {
 } from "recharts";
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabaseClient";
+import { DancingLogoLoader } from "@/components/DancingLogoLoader";
 import { useAuthdStudentData } from "@/student-app/context/studentDataContext";
 import { courseConfig } from "@/student-app/utils/courseConstants";
 
@@ -183,8 +184,8 @@ const HomeChart = () => {
 
   if (isLoading) {
     return (
-      <Box bg="white" boxShadow="md" borderRadius="lg" w={{ base: "100%", md: "60%" }} p={4} h="65vh" textAlign="center">
-        <Text fontSize="sm">Loading Quiz Analytics...</Text>
+      <Box bg="white" boxShadow="md" borderRadius="lg" w={{ base: "100%", md: "60%" }} p={4} minH="350px">
+        <DancingLogoLoader size="md" text="Loading Quiz Analytics..." minH="260px" />
       </Box>
     );
   }

@@ -1,6 +1,6 @@
-import { SkeletonText } from "@chakra-ui/react";
 import { useState } from "react";
 import { Flex, Box, Image, Heading, Text, Grid, Alert } from "@chakra-ui/react";
+import { DancingLogoLoader } from "@/components/DancingLogoLoader";
 import { useUser } from "../../context/parentDataContext";
 import {
   MdPerson,
@@ -217,7 +217,7 @@ const MyIgrade = () => {
 
       {/* Main content */}
       {loading ? (
-        <SkeletonText noOfLines={5} gap="4" />
+        <DancingLogoLoader size="md" text="Loading settings & profile data..." minH="220px" />
       ) : parent.length > 0 ? (
         renderView()
       ) : (

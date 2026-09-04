@@ -184,7 +184,7 @@ const EditGraderPopup = ({ student, setStudent, onClose, showEditBtn, showDelete
                   <Button variant="outline" size="sm" w={{ base: "full", sm: "auto" }} onClick={onClose}>Close Report</Button>
                 </Flex>
               </Box>
-              <QuizHistoryList studentId={student.id} />
+              <QuizHistoryList studentId={student.id} student={student} />
             </VStack>
           )}
         </Box>

@@ -1,6 +1,7 @@
 import { Box, Flex, VStack, Heading, Text, Grid, Input, Textarea, Icon } from "@chakra-ui/react";
 import { useState } from "react";
 import { MdCheckCircle, MdSend } from "react-icons/md";
+import { toaster } from "@/components/ui/toaster";
 
 interface FormState {
   name: string;
@@ -25,7 +26,14 @@ const ContactForm = () => {
 
   const handleSubmit = async () => {
     // Basic structural validation fallback check
-    if (!form.name || !form.email || !form.message) return;
+    if (!form.name || !form.email || !form.message) {
+      toaster.create({
+        title: "All Fields Required",
+        description: "Please fill out your name, email address, and message.",
+        type: "warning",
+      });
+      return;
+    }
 
     setLoading(true);
 
@@ -51,11 +59,19 @@ const ContactForm = () => {
       if (result.success) {
         setSubmitted(true);
       } else {
-        alert(result.message || "Submission failed. Please try again.");
+        toaster.create({
+          title: "Submission Failed",
+          description: result.message || "Failed to submit message. Please try again.",
+          type: "error",
+        });
       }
     } catch (error) {
       console.error("Web3Forms submission error:", error);
-      alert("Network error. Please try again later.");
+      toaster.create({
+        title: "Network Error",
+        description: "Unable to connect to the contact server. Please try again later.",
+        type: "error",
+      });
     } finally {
       setLoading(false);
     }

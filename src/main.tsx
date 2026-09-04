@@ -11,21 +11,23 @@ import { BrowserRouter } from 'react-router-dom';
 import { PasskeyProvider } from './parent-app/context/passkeyContext.tsx';
 import { AuthdStudentDataProvider } from './student-app/context/studentDataContext.tsx';
 import { DataProvider } from './student-app/context/dataContext.tsx';
-
+import { ErrorBoundary } from './components/ErrorBoundary.tsx';
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
-    <PasskeyProvider>
-      <AuthdStudentDataProvider>
-        <DataProvider>
-          <ChakraProvider value={system}>
-            <Toaster />
-            <BrowserRouter>
-              <App />
-            </BrowserRouter>
-          </ChakraProvider>
-        </DataProvider>
-      </AuthdStudentDataProvider>
-    </PasskeyProvider>
+    <ErrorBoundary>
+      <PasskeyProvider>
+        <AuthdStudentDataProvider>
+          <DataProvider>
+            <ChakraProvider value={system}>
+              <Toaster />
+              <BrowserRouter>
+                <App />
+              </BrowserRouter>
+            </ChakraProvider>
+          </DataProvider>
+        </AuthdStudentDataProvider>
+      </PasskeyProvider>
+    </ErrorBoundary>
   </StrictMode>
 );

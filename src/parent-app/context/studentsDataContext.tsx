@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect } from "react";
+import { createContext, useContext, useState, useEffect, useCallback } from "react";
 import { supabase } from "@/lib/supabaseClient";
 import type { ReactNode } from "react";
 import type { Dispatch, SetStateAction } from "react";
@@ -12,7 +12,9 @@ interface Student {
   profile_image: string;
   school: string;
   class: string;
-  // Add all other student fields needed
+  parent_id?: string | null;
+  registered_courses?: string[] | string | null;
+  [key: string]: any;
 }
 
 interface Alert {
@@ -44,35 +46,93 @@ export const StudentsDataProvider = ({ children }: { children: ReactNode }) => {
 
   const clearAlert = () => setAlert(null);
 
-  // fetch students details from database
-  const getGraderDetails = async () => {
+  // fetch students details from database for THIS SPECIFIC PARENT ONLY
+  const getGraderDetails = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
 
+      // 1. Get authenticated user
+      const {
+        data: { user },
+        error: authError,
+      } = await supabase.auth.getUser();
+
+      if (authError || !user) {
+        setStudentsData([]);
+        return;
+      }
+
+      // 2. Resolve parent ID from parents table
+      let parentRows: Array<{ id: string }> = [];
+
+      const { data: parentsByUserId } = await supabase
+        .from("parents")
+        .select("id")
+        .eq("user_id", user.id);
+
+      if (parentsByUserId && parentsByUserId.length > 0) {
+        parentRows = parentsByUserId;
+      } else if (user.email) {
+        const { data: parentsByEmail } = await supabase
+          .from("parents")
+          .select("id")
+          .eq("email", user.email);
+        if (parentsByEmail && parentsByEmail.length > 0) {
+          parentRows = parentsByEmail;
+        }
+      }
+
+      // Collect all candidate parent IDs (table id + auth user id)
+      const parentIds = Array.from(
+        new Set([
+          ...parentRows.map((p) => p.id),
+          user.id,
+        ])
+      ).filter(Boolean);
+
+      if (parentIds.length === 0) {
+        setStudentsData([]);
+        return;
+      }
+
+      // 3. Query ONLY students connected to this parent
       const { data: students, error: supabaseError } = await supabase
         .from("students")
-        .select("*");
+        .select("*")
+        .in("parent_id", parentIds)
+        .order("created_at", { ascending: false });
 
       if (supabaseError) {
-        throw new Error(supabaseError.message);
+        setError(new Error(supabaseError.message));
+        setStudentsData([]);
+        return;
       }
 
       // Ensure we always set an array, even if null
       setStudentsData(students ?? []);
-    } catch (err) {
-      const message =
-        err instanceof Error ? err.message : "Failed to fetch students";
-      setError(new Error(message));
-      setAlert({ type: "error", message });
+    } catch (err: any) {
+      setError(err instanceof Error ? err : new Error(String(err)));
+      setStudentsData([]);
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
     getGraderDetails();
-  }, []);
+
+    // Listen to auth changes so parent log in/out immediately updates children list
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange(() => {
+      getGraderDetails();
+    });
+
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, [getGraderDetails]);
 
   return (
     <StudentsDataContext.Provider
@@ -101,3 +161,4 @@ export const useStudentsData = (): StudentsDataContextType => {
   }
   return context;
 };
+

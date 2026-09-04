@@ -95,9 +95,10 @@ export const useQuizAttempt = (quizData: QuizAttemptProps["quizData"]) => {
       await saveAnswersForCurrentSubject();
     }, [currentSubjectIndex, saveAnswersForCurrentSubject, isSubjectCompleted]);
 
-  // Timer for current subject only
+  // Timer for current subject only (ONLY active in examination mode)
   useEffect(() => {
     if (
+      quizData.mode !== "examination" ||
       isSubjectCompleted ||
       !subjectTimeLeft[currentSubjectIndex] ||
       !hasQuizzesForCurrentSubject
@@ -117,6 +118,7 @@ export const useQuizAttempt = (quizData: QuizAttemptProps["quizData"]) => {
 
     return () => clearInterval(timer);
   }, [
+    quizData.mode,
     currentSubjectIndex,
     subjectTimeLeft,
     isSubjectCompleted,

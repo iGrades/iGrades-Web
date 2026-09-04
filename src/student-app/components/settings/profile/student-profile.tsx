@@ -7,10 +7,15 @@ import {
   Grid,
   GridItem,
   Button,
+  Heading,
+  Text,
+  Icon,
 } from "@chakra-ui/react";
 import { useState, useRef } from "react";
 import { useAuthdStudentData } from "@/student-app/context/studentDataContext";
 import { supabase } from "@/lib/supabaseClient";
+import { FaCircleCheck } from "react-icons/fa6";
+import { toaster } from "@/components/ui/toaster";
 
 const pageData = ["firstname", "lastname", "email", "class"]; 
 
@@ -35,6 +40,7 @@ const StudentProfile = () => {
     school: authdStudent?.school || "",
   });
   const [isLoading, setIsLoading] = useState(false);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -56,6 +62,11 @@ const StudentProfile = () => {
 
         if (uploadError) {
           console.error("Upload error:", uploadError);
+          toaster.create({
+            title: "Photo Upload Failed",
+            description: uploadError.message || "Failed to upload profile photo.",
+            type: "error",
+          });
           setIsLoading(false);
           return;
         }
@@ -88,9 +99,14 @@ const StudentProfile = () => {
         ...data[0],
       }));
 
-      console.log("Student updated successfully:", data[0]);
+      setShowSuccessModal(true);
     } catch (err: any) {
       console.error("Update failed:", err.message || err);
+      toaster.create({
+        title: "Profile Update Failed",
+        description: err.message || "Could not save your profile changes. Please try again.",
+        type: "error",
+      });
     } finally {
       setIsLoading(false);
     }
@@ -215,9 +231,82 @@ const StudentProfile = () => {
           borderRadius="xl"
           onClick={handleEdit}
         >
-          Update
+          Update Profile
         </Button>
       </VStack>
+
+      {/* Success Modal */}
+      {showSuccessModal && (
+        <Box
+          position="fixed"
+          top={0}
+          left={0}
+          w="100vw"
+          h="100vh"
+          bg="rgba(0, 0, 0, 0.7)"
+          zIndex={5000}
+          display="flex"
+          justifyContent="center"
+          alignItems="center"
+          p={{ base: 4, md: 8 }}
+        >
+          <Box
+            position="relative"
+            width={{ base: "100%", sm: "85%", md: "60%", lg: "35%" }}
+            maxH="90vh"
+            bg="white"
+            borderRadius="3xl"
+            boxShadow="2xl"
+            p={{ base: 6, md: 10 }}
+            textAlign="center"
+          >
+            <VStack gap={4}>
+              <Icon
+                bg="green.50"
+                boxSize={{ base: "60px", md: "70px" }}
+                color="green.500"
+                rounded="full"
+                p={3}
+              >
+                <FaCircleCheck size="100%" />
+              </Icon>
+
+              <Heading
+                as="h1"
+                fontSize={{ base: "xl", md: "2xl" }}
+                color="backgroundColor2"
+              >
+                Profile Updated!
+              </Heading>
+
+              <Text
+                fontSize={{ base: "sm", md: "xs" }}
+                color="gray.600"
+                maxW="90%"
+                lineHeight="tall"
+              >
+                Your student profile details and photo have been successfully saved.
+              </Text>
+
+              <Box w="full" pt={4}>
+                <Button
+                  bg="primaryColor"
+                  color="white"
+                  borderRadius="3xl"
+                  h="55px"
+                  w="full"
+                  fontSize="sm"
+                  fontWeight="bold"
+                  _active={{ transform: "scale(0.97)" }}
+                  onClick={() => setShowSuccessModal(false)}
+                >
+                  Done
+                </Button>
+              </Box>
+            </VStack>
+          </Box>
+        </Box>
+      )}
     </>
   );
 };

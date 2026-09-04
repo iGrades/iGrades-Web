@@ -1,10 +1,15 @@
 import type { RouteObject } from "react-router-dom";
+import { Navigate } from "react-router-dom";
 import AdminLogin from "@/admin-app/AdminLogin";
 import AdminDashboard from "@/admin-app/AdminDashboard";
 import AdminGuard from "@/admin-app/AdminGuard";
 import CMS from "@/admin-app/CMS";  
 
 const adminRoutes: RouteObject[] = [
+  {
+    path: "/admin",
+    element: <Navigate to="/admin/login" replace />,
+  },
   {
     path: "/admin/login",
     element: <AdminLogin />,

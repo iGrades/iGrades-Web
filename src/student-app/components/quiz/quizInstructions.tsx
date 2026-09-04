@@ -7,10 +7,12 @@ import {
   Button,
   Progress,
   Alert,
-  Center,
   HStack,
+  VStack,
+  Badge,
+  Icon,
 } from "@chakra-ui/react";
-import { LuArrowLeft, LuArrowRight } from "react-icons/lu";
+import { LuArrowLeft, LuArrowRight, LuLayers } from "react-icons/lu";
 import { useState, useEffect } from "react";
 import { useStudentData } from "@/student-app/context/dataContext";
 import { supabase } from "@/lib/supabaseClient";
@@ -22,10 +24,13 @@ import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
 import timerImage from "@/assets/timer.png";
 import QuizAttempt from "./quizApp/quizAttempt";
+import type { SubTopic } from "./quizTopicsList";
 
 type Props = {
   examMode: string;
   selectedTopics: string[];
+  selectedSubtopics?: string[];
+  subtopicsByTopic?: Record<string, SubTopic[]>;
   topicsCount: number;
   selectedCourses: SelectedCourse[];
   setSelectedCourses: React.Dispatch<React.SetStateAction<SelectedCourse[]>>;
@@ -53,6 +58,8 @@ interface SelectedCourse {
 const QuizInstructions = ({
   examMode,
   selectedTopics,
+  selectedSubtopics = [],
+  subtopicsByTopic = {},
   topicsByCourse,
   selectedCourses,
   setSelectedCourses,
@@ -70,20 +77,21 @@ const QuizInstructions = ({
   const [timePerSubject, setTimePerSubject] = useState(0);
   const [error, setError] = useState<string | null>(null);
 
-  const allocatedTime = selectedCourses.length * 45; // 45 minutes per subject
+  // Quick Test: 7 minutes per subject; Examination: 60 minutes per subject
+  const allocatedTime = examMode === "examination"
+    ? selectedCourses.length * 60
+    : selectedCourses.length * 7;
 
   useEffect(() => {
-    setTimePerSubject(allocatedTime / selectedCourses.length);
+    setTimePerSubject(allocatedTime / Math.max(selectedCourses.length, 1));
   }, [examMode, allocatedTime, selectedCourses.length]);
 
   const fetchQuizQuestions = async () => {
     setFetchingQuestions(true);
     setError(null);
-    setShowNavBar(false)
+    setShowNavBar(false);
     try {
       if (!authdStudent?.id) throw new Error("Student not authenticated.");
-
-      console.log("Looking up subject IDs from database...");
 
       // 1. Get all subject IDs from the database using the dbNames
       const dbNames = selectedCourses.map((course) => course.dbName);
@@ -98,157 +106,129 @@ const QuizInstructions = ({
         throw new Error(`Error loading subjects: ${subjectsError.message}`);
       }
 
-      console.log("Subjects found in database:", subjectsData);
+      const validSelectedCourses = selectedCourses
+        .map((course) => {
+          const dbSubject = subjectsData?.find((s) => s.name === course.dbName);
+          return {
+            ...course,
+            id: dbSubject ? dbSubject.id : course.id,
+          };
+        })
+        .filter((c) => c.id);
 
-      if (!subjectsData || subjectsData.length === 0) {
-        throw new Error(
-          "No subjects found in database. Please contact support."
-        );
-      }
-
-      // 2. Map the database subjects to our selected courses
-      const coursesWithIds = selectedCourses.map((course) => {
-        const dbSubject = subjectsData.find(
-          (subject) => subject.name === course.dbName
-        );
-        return {
-          ...course,
-          id: dbSubject?.id || null, // Add the ID from database
-        };
-      });
-
-      console.log("Courses with IDs:", coursesWithIds);
-
-      // 3. Validate that all selectedCourses now have valid IDs
-      const validSelectedCourses = coursesWithIds.filter((course) => {
-        const isValid =
-          course.id && typeof course.id === "string" && course.id.length > 0;
-        console.log(
-          `Course validation: ${course.displayName} - ID: ${course.id}, Valid: ${isValid}`
-        );
-        return isValid;
-      });
-
-      console.log("Valid courses after ID lookup:", validSelectedCourses);
-
-      // 4. Validate topics (same as before)
-      const validTopics = selectedTopics.filter((topicId) => {
-        const isValid =
-          topicId && typeof topicId === "string" && topicId.length > 0;
-        console.log(`Topic validation: ${topicId} - isValid: ${isValid}`);
-        return isValid;
-      });
-
-      console.log("Valid topics after filtering:", validTopics);
+      const validTopics = selectedTopics.filter(
+        (tId) => tId && typeof tId === "string" && tId.length > 0
+      );
 
       if (validSelectedCourses.length === 0) {
-        const errorDetails = coursesWithIds.map((course) => ({
-          displayName: course.displayName,
-          dbName: course.dbName,
-          id: course.id,
-        }));
-
-        console.error(
-          "No valid subjects after ID lookup - details:",
-          errorDetails
-        );
-        throw new Error(
-          "Could not find subject IDs in database. Please contact support."
-        );
+        throw new Error("Could not find subject IDs in database. Please contact support.");
       }
 
       if (validTopics.length === 0) {
-        console.error("No valid topics - details:", selectedTopics);
-        throw new Error(
-          "No valid topics selected. Please select topics again."
-        );
+        throw new Error("No valid topics selected. Please select topics again.");
       }
 
-      // 5. Get the class ID from the class name (same as before)
-      let classId = null;
-      if (authdStudent.class) {
-        const { data: classData, error: classError } = await supabase
-          .from("classes")
-          .select("id")
-          .eq("name", authdStudent.class)
-          .single();
+      // 2. Resolve quizzes for the selected subject(s) and topics
+      let allQuizzes: any[] = [];
+      try {
+        const { data: dbQuizzes, error: quizzesError } = await supabase
+          .from("quizzes")
+          .select("id, subject_id, topic_id, title")
+          .in("subject_id", validSelectedCourses.map((c) => c.id))
+          .in("topic_id", validTopics);
 
-        if (classError) {
-          console.warn("Could not find class ID, using null:", classError);
-        } else {
-          classId = classData.id;
-          console.log("Found class ID:", classId);
-        }
+        if (quizzesError) throw quizzesError;
+        allQuizzes = dbQuizzes || [];
+      } catch (err: any) {
+        console.error("Error fetching quizzes:", err);
+        throw new Error(`Quiz fetch error: ${err.message}`);
       }
-      // 6. Check existing quizzes for selected subjects and topics
-      console.log("Checking existing quizzes...");
-      const { data: existingQuizzes, error: quizzesError } = await supabase
-        .from("quizzes")
-        .select("id, subject_id, topic_id")
-        .in(
-          "subject_id",
-          validSelectedCourses.map((course) => course.id)
-        )
-        .in("topic_id", validTopics);
-
-      if (quizzesError) {
-        console.error("Error fetching quizzes:", quizzesError);
-        throw new Error(`Quiz fetch error: ${quizzesError.message}`);
-      }
-
-      console.log("Existing quizzes:", existingQuizzes);
-
-      const allQuizzes = [...(existingQuizzes || [])];
-
-      console.log("All quizzes:", allQuizzes);
 
       if (allQuizzes.length === 0) {
         throw new Error(
-          "No quizzes found or created for the selected subjects and topics."
+          "No quizzes found for the selected subjects and topics."
         );
       }
 
-      // 4. Fetch questions
-      console.log("Fetching questions...");
-      
       const quizIds = allQuizzes.map((quiz) => quiz.id);
-      console.log("Type of first ID:", typeof quizIds[0], "Value:", quizIds[0]);
 
-      const { data: questions, error: questionsError } = await supabase
+      // 3. Fetch questions with Topic & Subtopic logic
+      // In Quick Test mode: Filter or prioritize by selectedSubtopics
+      // In Examination mode: Fetch across all subtopics in the selected topics
+      let loadedQuestions: any[] = [];
+
+      // Query questions matching the quizzes or topics
+      const { data: rawQuestions, error: questionsError } = await supabase
         .from("questions")
-        .select(
-          "*"
-      )
-        .in("quiz_id", quizIds)
-        .limit(examMode === "examination" ? 100 : 50);
+        .select("*")
+        .in("quiz_id", quizIds);
 
       if (questionsError) {
-        console.error("Error fetching questions:", questionsError);
-        throw new Error(`Questions fetch error: ${questionsError.message}`);
+        console.error("Error fetching questions by quiz_id:", questionsError);
       }
 
-      console.log("Fetched questions:", questions);
+      const allFetchedQuestions = rawQuestions || [];
 
-      if (!questions || questions.length === 0) {
+      // Also try fetching questions directly by topic_id if fewer questions found
+      if (allFetchedQuestions.length < 5) {
+        const { data: topicQuestions } = await supabase
+          .from("questions")
+          .select("*")
+          .in("topic_id", validTopics);
+
+        if (topicQuestions && topicQuestions.length > 0) {
+          const existingIds = new Set(allFetchedQuestions.map((q) => q.id));
+          topicQuestions.forEach((tq) => {
+            if (!existingIds.has(tq.id)) {
+              allFetchedQuestions.push(tq);
+            }
+          });
+        }
+      }
+
+      if (allFetchedQuestions.length === 0) {
         throw new Error(
-          "No questions found for the selected quizzes. Please contact support."
+          "No questions found for the selected quizzes. Please ensure questions are loaded in the CMS."
         );
       }
 
-      // 5. Prepare quiz data
+      // Mode-specific Question Filtering
+      if (examMode === "quick test" && selectedSubtopics.length > 0) {
+        // Priority 1: Questions matching the exact subtopic IDs selected
+        const subtopicQuestions = allFetchedQuestions.filter(
+          (q) => q.subtopic_id && selectedSubtopics.includes(q.subtopic_id)
+        );
+
+        // Priority 2: Questions matching the selected topics (if subtopic_id is null/unassigned)
+        const topicOnlyQuestions = allFetchedQuestions.filter(
+          (q) => !q.subtopic_id || !selectedSubtopics.includes(q.subtopic_id)
+        );
+
+        // Combine prioritized subtopic questions first, supplemented by topic questions if needed
+        const combined = [...subtopicQuestions, ...topicOnlyQuestions];
+        // 15 questions per subject for test mode
+        const targetCount = validSelectedCourses.length * 15;
+        loadedQuestions = combined.slice(0, Math.max(targetCount, 15));
+      } else {
+        // Examination mode: shuffle and take up to 60 questions per subject
+        const shuffled = [...allFetchedQuestions].sort(() => 0.5 - Math.random());
+        const targetCount = validSelectedCourses.length * 60;
+        loadedQuestions = shuffled.slice(0, Math.max(targetCount, 60));
+      }
+
+      // 4. Prepare quiz data
       const quizDataObj = {
         mode: examMode,
         subjects: validSelectedCourses,
         topics: validTopics,
         quizzes: allQuizzes,
-        questions,
+        questions: loadedQuestions,
         timePerSubject,
         totalTime: allocatedTime,
       };
 
       setQuizData(quizDataObj);
       setShowQuizAttempt(true);
-      console.log("Quiz data prepared successfully");
     } catch (err) {
       console.error("Error in fetchQuizQuestions:", err);
       const errorMessage =
@@ -281,10 +261,7 @@ const QuizInstructions = ({
     setShowNavBar(true);
   };
 
-  console.log("This is the tpoics by course: ", topicsByCourse);
-  console.log("These are the topics: ", selectedTopics);
-
-  // custom arrow functions
+  // Custom slider arrows
   function SampleNextArrow(props: any) {
     const { onClick } = props;
     return (
@@ -354,14 +331,12 @@ const QuizInstructions = ({
 
   // Function to get selected topics for a specific course
   const getSelectedTopicsForCourse = (course: SelectedCourse) => {
-    // If topicsByCourse is keyed by database name
     if (topicsByCourse[course.dbName]) {
       return topicsByCourse[course.dbName].filter((topic) =>
         selectedTopics.includes(topic.id)
       );
     }
 
-    // Try case-insensitive matching
     const matchingKey = Object.keys(topicsByCourse).find(
       (key) =>
         key.toLowerCase() === course.dbName.toLowerCase() ||
@@ -385,11 +360,11 @@ const QuizInstructions = ({
           quizData={quizData}
           onComplete={handleQuizComplete}
           onCancel={handleCancelQuiz}
-           setShowSideBar={setShowSideBar}
-           setShowNavBar={setShowNavBar}
+          setShowSideBar={setShowSideBar}
+          setShowNavBar={setShowNavBar}
         />
       ) : (
-        <Box w={{ base: "100%", lg: "80%" }} m="auto">
+        <Box w={{ base: "100%", lg: "85%" }} m="auto">
           <Flex
             justify="flex-end"
             align="center"
@@ -400,21 +375,27 @@ const QuizInstructions = ({
               justify="space-between"
               w={{ base: "70%", md: "60%", lg: "50%" }}
             >
-              {/* display timer only if in examination mode */}
-              {examMode === "examination" && (
+              {/* display timer only if examination mode */}
+              {examMode === "examination" ? (
                 <HStack>
                   <Image
                     src={timerImage}
                     alt="timer"
-                    height={{ base: "30px", md: "35px" }}
+                    height={{ base: "28px", md: "32px" }}
                   />
                   <Heading
                     color="on_backgroundColor"
-                    fontSize={{ base: "2xl", md: "3xl" }}
+                    fontSize={{ base: "xl", md: "2xl" }}
                     fontWeight="semibold"
                   >
                     {allocatedTime}:00
                   </Heading>
+                </HStack>
+              ) : (
+                <HStack>
+                  <Badge colorPalette="blue" variant="subtle" size="md" px={3} py={1} borderRadius="full">
+                    ⚡ Untimed Practice
+                  </Badge>
                 </HStack>
               )}
 
@@ -439,10 +420,11 @@ const QuizInstructions = ({
           </Flex>
           <Box
             mb={4}
-            p={{ base: 2, md: 4, lg: 6 }}
+            p={{ base: 3, md: 5, lg: 6 }}
             bg="white"
-            borderRadius="lg"
+            borderRadius="xl"
             minH="75vh"
+            shadow="sm"
           >
             <Heading
               as="h3"
@@ -450,16 +432,25 @@ const QuizInstructions = ({
               alignItems="center"
               justifyContent="space-between"
               gap={3}
-              mt={3}
-              mb={5}
+              mt={2}
+              mb={4}
               mx={2}
             >
               <Flex align="center">
                 <LuArrowLeft onClick={onBack} style={{ cursor: "pointer" }} />
                 <Text ml={3}>
-                  {examMode === "examination" ? "Examination" : "Quick Test"}
+                  {examMode === "examination" ? "Examination Mode" : "Quick Test Mode"}
                 </Text>
               </Flex>
+              <Badge
+                colorPalette={examMode === "examination" ? "blue" : "purple"}
+                variant="subtle"
+                px={3}
+                py={1}
+                borderRadius="full"
+              >
+                {examMode === "examination" ? "Whole Topic Exam" : "Topic & Subtopic Test"}
+              </Badge>
             </Heading>
 
             {error && (
@@ -476,92 +467,98 @@ const QuizInstructions = ({
               align="flex-start"
               gap={6}
             >
-              <Box w={{ base: "100%", md: "50%", lg: "40%" }} p={4}>
+              {/* Left Column: Course Topics & Subtopics Summary */}
+              <Box w={{ base: "100%", md: "50%", lg: "45%" }} p={2}>
                 <Slider {...sliderSettings}>
                   {selectedCourses.map((course) => {
                     const courseImage = subjectImages[course.dbName];
-                    const selectedCourseTopics =
-                      getSelectedTopicsForCourse(course);
+                    const selectedCourseTopics = getSelectedTopicsForCourse(course);
 
                     return (
-                      <Box key={course.dbName} mb={6} position="relative">
-                        {/* Course Image */}
+                      <Box key={course.dbName} mb={6} position="relative" px={2}>
+                        {/* Course Header & Image */}
                         <Flex
                           align="center"
                           gap={3}
                           mb={4}
-                          w={{ base: "70%", md: "65%", lg: "60%" }}
-                          m="auto"
+                          w="100%"
+                          justify="center"
                         >
                           {courseImage ? (
-                            <Image src={courseImage} alt={course.displayName} />
+                            <Image src={courseImage} alt={course.displayName} maxH="80px" />
                           ) : (
                             <Box
                               borderRadius="xl"
-                              p={4}
+                              p={3}
                               textAlign="center"
-                              minH="80px"
-                              minW="80px"
-                              display="flex"
-                              flexDirection="column"
-                              justifyContent="center"
-                              alignItems="center"
-                              bg="gray.100"
-                              cursor="pointer"
-                              position="relative"
-                              overflow="hidden"
+                              minH="60px"
+                              minW="120px"
+                              bg="blue.50"
                             >
-                              <Center
-                                flexDirection="column"
-                                zIndex={2}
-                                position="relative"
-                              >
-                                <Text
-                                  fontSize="sm"
-                                  fontWeight="bold"
-                                  color="gray.600"
-                                  textAlign="center"
-                                >
-                                  {course.displayName}
-                                </Text>
-                              </Center>
+                              <Text fontSize="sm" fontWeight="bold" color="blue.700">
+                                {course.displayName}
+                              </Text>
                             </Box>
                           )}
                         </Flex>
 
-                        {/* Selected Topics */}
+                        {/* Selected Topics & Subtopics Breakdown */}
                         {selectedCourseTopics.length > 0 && (
-                          <Box
-                            w={{ base: "70%", md: "65%", lg: "60%" }}
-                            m="auto"
-                          >
-                            {selectedCourseTopics.map((topic) => (
-                              <Box key={topic.id} py={2}>
+                          <VStack gap={3} align="stretch" maxH="380px" overflowY="auto" pr={1}>
+                            {selectedCourseTopics.map((topic) => {
+                              const topicSubtopics = subtopicsByTopic[topic.id] || [];
+                              const chosenSubtopics = topicSubtopics.filter((st) =>
+                                selectedSubtopics.includes(st.id)
+                              );
+
+                              return (
                                 <Box
-                                  bg="#206CE10D"
-                                  p={4}
+                                  key={topic.id}
+                                  bg="blue.50/40"
+                                  p={3}
                                   borderRadius="lg"
-                                  textAlign="center"
-                                  minH="45px"
-                                  display="flex"
-                                  alignItems="center"
-                                  justifyContent="space-between"
+                                  border="1px solid"
+                                  borderColor="blue.100"
                                 >
-                                  <Text
-                                    fontSize="xs"
-                                    fontWeight="medium"
-                                    color="on_backgroundColor"
-                                  >
-                                    {topic.name}
-                                  </Text>
-                                  <IoIosCheckmarkCircle
-                                    color="#1FBA79"
-                                    size="17px"
-                                  />
+                                  <Flex justify="space-between" align="center" mb={examMode === "quick test" && chosenSubtopics.length > 0 ? 2 : 0}>
+                                    <Text fontSize="xs" fontWeight="700" color="gray.800">
+                                      {topic.name}
+                                    </Text>
+                                    <IoIosCheckmarkCircle color="#1FBA79" size="18px" />
+                                  </Flex>
+
+                                  {/* In Quick Test Mode: display subtopics */}
+                                  {examMode === "quick test" && (
+                                    <Box mt={1}>
+                                      {chosenSubtopics.length > 0 ? (
+                                        <VStack align="stretch" gap={1} pl={2} borderLeft="2px solid" borderColor="purple.200">
+                                          {chosenSubtopics.map((st) => (
+                                            <HStack key={st.id} gap={1}>
+                                              <Icon as={LuLayers} boxSize={3} color="purple.500" />
+                                              <Text fontSize="11px" color="gray.600">
+                                                {st.name}
+                                              </Text>
+                                            </HStack>
+                                          ))}
+                                        </VStack>
+                                      ) : (
+                                        <Text fontSize="10px" color="gray.500" fontStyle="italic">
+                                          All subtopic concepts included
+                                        </Text>
+                                      )}
+                                    </Box>
+                                  )}
+
+                                  {/* In Examination Mode */}
+                                  {examMode === "examination" && (
+                                    <Text fontSize="10px" color="blue.600" mt={0.5}>
+                                      ✓ Complete syllabus topic coverage
+                                    </Text>
+                                  )}
                                 </Box>
-                              </Box>
-                            ))}
-                          </Box>
+                              );
+                            })}
+                          </VStack>
                         )}
 
                         {selectedCourseTopics.length === 0 && (
@@ -580,56 +577,65 @@ const QuizInstructions = ({
                 </Slider>
               </Box>
 
-              <Box w={{ base: "100%", md: "50%", lg: "50%" }} p={6}>
-                <Heading size="xl" mb={6} color="on_backgroundColor">
-                  Instructions
+              {/* Right Column: Instructions */}
+              <Box w={{ base: "100%", md: "50%", lg: "55%" }} p={4}>
+                <Heading size="md" mb={4} color="gray.800">
+                  Assessment Instructions
                 </Heading>
 
-                <Text
-                  fontSize={{ base: "md", md: "sm", lg: "md" }}
-                  fontWeight={500}
-                  lineHeight="tall"
-                  mb={4}
-                  color="on_backgroundColor"
-                >
-                  {examMode === "examination"
-                    ? `The quiz duration is ${timePerSubject} minutes per subject,
-                     60 multiple choice questions each. Pass mark is 55%.`
-                    : `The quick test is not timed. There will be 25 multiple choice questions for each subject.
-                     Pass mark is 55%.`}
-                </Text>
+                <Box mb={4} p={3.5} bg="gray.50" borderRadius="lg" border="1px solid" borderColor="gray.100">
+                  <Text
+                    fontSize="sm"
+                    fontWeight="600"
+                    color="gray.800"
+                    mb={1.5}
+                  >
+                    {examMode === "examination"
+                      ? `⏱️ Examination Duration: ${timePerSubject} minutes per subject (60 questions each). Pass mark: 55%.`
+                      : `📝 Quick Test: 15 questions per subject (Untimed Practice). Pass mark: 55%.`}
+                  </Text>
+                  <Text fontSize="xs" color="gray.600" lineHeight="relaxed">
+                    {examMode === "examination"
+                      ? "In Examination mode, questions test overall mastery across all subtopics in your selected topics."
+                      : "In Quick Test mode, questions specifically focus on your selected topics and chosen subtopics."}
+                  </Text>
+                </Box>
 
-                <Text
-                  fontSize={{ base: "md", md: "sm", lg: "md" }}
-                  fontWeight={500}
-                  lineHeight="tall"
-                  color="on_backgroundColor"
-                >
-                  Please note that once you begin the quiz, it can't be stopped
-                  until it's submitted.
-                  <br />
-                  <br />
-                  Ensure you have enough power and good connectivity on your
-                  device. Prepare a pen, paper and calculator (for Math-related
-                  questions).
-                  <br />
-                  <br />
-                  After a successful completion of the test, you can check your
-                  result on your profile.
-                </Text>
+                <VStack align="stretch" gap={3} color="gray.600" fontSize="xs">
+                  <HStack align="start" gap={2}>
+                    <Text fontWeight="bold" color="blue.600">1.</Text>
+                    <Text>
+                      {examMode === "examination"
+                        ? "Once you begin the exam, the timer starts and cannot be paused until submitted."
+                        : "Quick Test is untimed — practice and solve questions at your own comfortable pace."}
+                    </Text>
+                  </HStack>
+                  <HStack align="start" gap={2}>
+                    <Text fontWeight="bold" color="blue.600">2.</Text>
+                    <Text>Ensure a stable internet connection and good device battery.</Text>
+                  </HStack>
+                  <HStack align="start" gap={2}>
+                    <Text fontWeight="bold" color="blue.600">3.</Text>
+                    <Text>Prepare pen and scratch paper for any calculations or problem-solving.</Text>
+                  </HStack>
+                  <HStack align="start" gap={2}>
+                    <Text fontWeight="bold" color="blue.600">4.</Text>
+                    <Text>Upon completion, view your instant breakdown, score report, and topic-level mastery insights.</Text>
+                  </HStack>
+                </VStack>
 
                 {fetchingQuestions && (
-                  <Box mt={8} p={4} bg="blue.50" borderRadius="md">
-                    <Text mb={2} fontWeight="bold">
-                      Preparing your quiz...
+                  <Box mt={6} p={4} bg="blue.50" borderRadius="lg">
+                    <Text mb={2} fontSize="xs" fontWeight="bold" color="blue.800">
+                      Preparing questions for your assessment...
                     </Text>
-                    <Progress.Root value={50} size="sm">
+                    <Progress.Root value={65} size="sm" colorPalette="blue">
                       <Progress.Track>
                         <Progress.Range />
                       </Progress.Track>
                     </Progress.Root>
-                    <Text mt={2} fontSize="sm">
-                      Loading questions from selected topics
+                    <Text mt={2} fontSize="11px" color="gray.600">
+                      Loading and verifying questions according to your selected topics and subtopics
                     </Text>
                   </Box>
                 )}

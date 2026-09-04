@@ -3,9 +3,10 @@ import { supabase } from "@/lib/supabaseClient";
 import { useAdminAuth } from "./hooks/useAdminAuth";
 import {
   Box, Flex, Heading, Text, Button, Input, Stack,
-  Badge, Grid, Table, Select, Spinner, Center,
+  Badge, Grid, Table, Select, Center,
   Tabs, Avatar, Icon, Image, createListCollection
 } from "@chakra-ui/react";
+import { DancingLogoLoader } from "@/components/DancingLogoLoader";
 import { toaster } from "@/components/ui/toaster";
 import AdminManagementTab from "./AdminManagementTab";
 import {
@@ -1444,10 +1445,7 @@ const AdminDashboard = () => {
         <Box p={{ base: 4, md: 8 }} flex={1} maxW="1600px" w="full" mx="auto">
           {loading ? (
             <Center h="50vh">
-              <Stack align="center" gap={3}>
-                <Spinner color="blue.600" size="xl" borderWidth="3px" animationDuration="0.6s" />
-                <Text fontSize="13px" color="gray.500" fontWeight="600">Loading admin metrics...</Text>
-              </Stack>
+              <DancingLogoLoader size="lg" text="Loading admin metrics & system data..." />
             </Center>
           ) : (
             <>

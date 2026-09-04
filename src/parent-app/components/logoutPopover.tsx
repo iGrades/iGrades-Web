@@ -2,6 +2,7 @@ import { Box, Heading, Text, Button, Icon, Alert, VStack } from "@chakra-ui/reac
 import { LuLogOut } from "react-icons/lu";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/lib/supabaseClient";
+import { useUser } from "@/parent-app/context/parentDataContext";
 import { useState } from "react";
 
 type Props = {
@@ -13,18 +14,27 @@ const LogoutPopover = ({ setShowLogoutModal }: Props) => {
     type: "success" | "error";
     message: string;
   } | null>(null);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
 
   const navigate = useNavigate();
+  const { logoutParent } = useUser();
 
   const handleLogout = async () => {
-    const { error } = await supabase.auth.signOut();
-
-    if (error) {
-      setAlert({ type: "error", message: error.message });
-      return;
+    setIsLoggingOut(true);
+    try {
+      if (logoutParent) {
+        await logoutParent();
+      } else {
+        localStorage.removeItem("authdParent");
+        await supabase.auth.signOut();
+      }
+    } catch (err: any) {
+      console.warn("Logout error:", err);
+      setAlert({ type: "error", message: err?.message || "Failed to logout" });
+    } finally {
+      setShowLogoutModal(false);
+      navigate("/login", { replace: true });
     }
-    navigate("/login");
-    setAlert({ type: "success", message: "Logged out successfully!" });
   };
 
   return (
@@ -93,6 +103,8 @@ const LogoutPopover = ({ setShowLogoutModal }: Props) => {
               w="full"
               fontSize="sm"
               fontWeight="bold"
+              loading={isLoggingOut}
+              loadingText="Logging out..."
               _active={{ transform: "scale(0.97)" }}
               onClick={handleLogout}
             >

@@ -11,6 +11,7 @@ const SettingsNav = ({ settingsState, setSettingsState }: Props) => {
     { text: "My iGrade", state: "igrade" },
     { text: "Security", state: "security" },
     { text: "Notifications", state: "notification" },
+    { text: "Help & Support", state: "support" },
   ];
 
   return (

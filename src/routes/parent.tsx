@@ -1,8 +1,5 @@
 import type { RouteObject } from "react-router-dom";
-import Login from "@/pages/Login";
-import SignUp from "@/pages/SignUp";
 import Home from "@/parent-app/Home";
-import Verify from "@/parent-app/auth/Verify";
 
 const parentRoutes: RouteObject[] = [
   // dynamic routes for parent dashboard with names
@@ -16,28 +13,12 @@ const parentRoutes: RouteObject[] = [
   },
    // Fallback for old URLs without parent name
   { 
-    path: "/parent-dashboard/", 
+    path: "/parent-dashboard", 
     element: <Home /> 
   },
-  
-  // other routes
-  {
-    path: "/login",
-    element: <Login />,
-  },
-  {
-    path: "/signup",
-    element: <SignUp />,
-  },
-  {
-    path: "/verify",
-    element: <Verify />,
-  },
-  
-  // redirect to root for parent dashboard
-  {
-    path: "/",
-    element: <Home />,
+  { 
+    path: "/parent-dashboard/", 
+    element: <Home /> 
   },
 ];
 

@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/lib/supabaseClient";
+import { useUser } from "@/parent-app/context/parentDataContext";
 import {
   Box,
   Field,
@@ -28,12 +29,11 @@ const parentFormFields = [
 
 const ParentLogin = ({ setAlert }: Props) => {
   const navigate = useNavigate();
+  const { getParentData } = useUser();
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  // const [captchaToken, setCaptchaToken] = useState<string | null>(null);
-
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
@@ -44,42 +44,32 @@ const ParentLogin = ({ setAlert }: Props) => {
       setEmail(value);
     } else if (name === "password") {
       setPassword(value);
-    } else if (name === "name") {
-      // Handle child username input
-      // This is just a placeholder, you can handle it as needed
     }
   };
 
   const handlePasswordLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsLoading(true); // Start loading
-    
-    // if (!captchaToken) {
-    //   setAlert({
-    //     type: "error",
-    //     message: "Please complete the captcha verification",
-    //   });
-    //   return;
-    // }
+    setIsLoading(true);
 
     const { error } = await supabase.auth.signInWithPassword({
       email,
       password,
-      // options: {
-      //    captchaToken,
-      //  },
     });
 
     if (error) {
       setAlert({ type: "error", message: error.message });
-      setIsLoading(false); // Stop loading on error
-        // setCaptchaToken(null);
+      setIsLoading(false);
       return;
     }
 
+    try {
+      await getParentData();
+    } catch {
+      // ignore
+    }
 
-    setIsLoading(false); // Stop loading on success
-     navigate("/parent-dashboard");
+    setIsLoading(false);
+    navigate("/parent-dashboard");
   };
 
   const passIcons = () => {

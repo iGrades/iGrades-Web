@@ -7,6 +7,12 @@ import React, {
 } from "react";
 import type { ReactNode } from "react";
 import { supabase } from "@/lib/supabaseClient";
+import {
+  DEFAULT_CLASSES,
+  DEFAULT_SUBJECTS,
+  DEFAULT_TOPICS,
+  DEFAULT_RESOURCES,
+} from "./defaultCurriculumData";
 
 // Interfaces
 export interface Subject {
@@ -179,24 +185,24 @@ interface DataProviderProps {
 }
 
 export const DataProvider: React.FC<DataProviderProps> = ({ children }) => {
-  // States
-  const [subjects, setSubjects] = useState<Subject[]>([]);
+  // States with default curriculum fallback so UI remains functional
+  const [subjects, setSubjects] = useState<Subject[]>(DEFAULT_SUBJECTS);
   const [subjectsLoading, setSubjectsLoading] = useState(true);
   const [subjectsError, setSubjectsError] = useState<string | null>(null);
 
-  const [topics, setTopics] = useState<Topic[]>([]);
+  const [topics, setTopics] = useState<Topic[]>(DEFAULT_TOPICS);
   const [topicsLoading, setTopicsLoading] = useState(true);
   const [topicsError, setTopicsError] = useState<string | null>(null);
 
-  const [classes, setClasses] = useState<Class[]>([]);
+  const [classes, setClasses] = useState<Class[]>(DEFAULT_CLASSES);
   const [classesLoading, setClassesLoading] = useState(true);
   const [classesError, setClassesError] = useState<string | null>(null);
 
-  const [resources, setResources] = useState<Resource[]>([]);
+  const [resources, setResources] = useState<Resource[]>(DEFAULT_RESOURCES);
   const [resourcesLoading, setResourcesLoading] = useState(true);
   const [resourcesError, setResourcesError] = useState<string | null>(null);
 
-  // Fetch functions
+  // Fetch functions with graceful fallback
   const fetchSubjects = async () => {
     try {
       setSubjectsLoading(true);
@@ -207,14 +213,20 @@ export const DataProvider: React.FC<DataProviderProps> = ({ children }) => {
         .select("*")
         .order("name");
 
-      if (error) throw new Error(`Error fetching subjects: ${error.message}`);
+      if (error) {
+        console.warn("Using offline subjects fallback:", error.message);
+        setSubjects(DEFAULT_SUBJECTS);
+        return;
+      }
 
-      setSubjects(data || []);
-    } catch (err) {
-      setSubjectsError(
-        err instanceof Error ? err.message : "An unknown error occurred"
-      );
-      console.error("Error fetching subjects:", err);
+      if (data && data.length > 0) {
+        setSubjects(data);
+      } else {
+        setSubjects(DEFAULT_SUBJECTS);
+      }
+    } catch {
+      console.warn("Notice: Using offline subjects fallback");
+      setSubjects(DEFAULT_SUBJECTS);
     } finally {
       setSubjectsLoading(false);
     }
@@ -230,14 +242,20 @@ export const DataProvider: React.FC<DataProviderProps> = ({ children }) => {
         .select("*")
         .order("order_index");
 
-      if (error) throw new Error(`Error fetching topics: ${error.message}`);
+      if (error) {
+        console.warn("Using offline topics fallback:", error.message);
+        setTopics(DEFAULT_TOPICS);
+        return;
+      }
 
-      setTopics(data || []);
-    } catch (err) {
-      setTopicsError(
-        err instanceof Error ? err.message : "An unknown error occurred"
-      );
-      console.error("Error fetching topics:", err);
+      if (data && data.length > 0) {
+        setTopics(data);
+      } else {
+        setTopics(DEFAULT_TOPICS);
+      }
+    } catch {
+      console.warn("Notice: Using offline topics fallback");
+      setTopics(DEFAULT_TOPICS);
     } finally {
       setTopicsLoading(false);
     }
@@ -253,14 +271,20 @@ export const DataProvider: React.FC<DataProviderProps> = ({ children }) => {
         .select("*")
         .order("name");
 
-      if (error) throw new Error(`Error fetching classes: ${error.message}`);
+      if (error) {
+        console.warn("Using offline classes fallback:", error.message);
+        setClasses(DEFAULT_CLASSES);
+        return;
+      }
 
-      setClasses(data || []);
-    } catch (err) {
-      setClassesError(
-        err instanceof Error ? err.message : "An unknown error occurred"
-      );
-      console.error("Error fetching classes:", err);
+      if (data && data.length > 0) {
+        setClasses(data);
+      } else {
+        setClasses(DEFAULT_CLASSES);
+      }
+    } catch {
+      console.warn("Notice: Using offline classes fallback");
+      setClasses(DEFAULT_CLASSES);
     } finally {
       setClassesLoading(false);
     }
@@ -276,14 +300,20 @@ export const DataProvider: React.FC<DataProviderProps> = ({ children }) => {
         .select("*")
         .order("order_index");
 
-      if (error) throw new Error(`Error fetching resources: ${error.message}`);
+      if (error) {
+        console.warn("Using offline resources fallback:", error.message);
+        setResources(DEFAULT_RESOURCES);
+        return;
+      }
 
-      setResources(data || []);
-    } catch (err) {
-      setResourcesError(
-        err instanceof Error ? err.message : "An unknown error occurred"
-      );
-      console.error("Error fetching resources:", err);
+      if (data && data.length > 0) {
+        setResources(data);
+      } else {
+        setResources(DEFAULT_RESOURCES);
+      }
+    } catch {
+      console.warn("Notice: Using offline resources fallback");
+      setResources(DEFAULT_RESOURCES);
     } finally {
       setResourcesLoading(false);
     }

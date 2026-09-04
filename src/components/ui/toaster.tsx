@@ -9,15 +9,39 @@ import {
   createToaster,
 } from "@chakra-ui/react"
 
-export const toaster = createToaster({
+const baseToaster = createToaster({
   placement: "bottom-end",
   pauseOnPageIdle: true,
+})
+
+// Wrap create in setTimeout to prevent "flushSync was called from inside a lifecycle method" in React 18/19
+const safeCreate = (options: Parameters<typeof baseToaster.create>[0]) => {
+  if (typeof window !== "undefined") {
+    setTimeout(() => {
+      baseToaster.create(options)
+    }, 0)
+    return options?.id || ""
+  }
+  return baseToaster.create(options)
+}
+
+export const toaster = new Proxy(baseToaster, {
+  get(target, prop, receiver) {
+    if (prop === "create") {
+      return safeCreate
+    }
+    const val = Reflect.get(target, prop, receiver)
+    if (typeof val === "function") {
+      return val.bind(target)
+    }
+    return val
+  },
 })
 
 export const Toaster = () => {
   return (
     <Portal>
-      <ChakraToaster toaster={toaster} insetInline={{ mdDown: "4" }}>
+      <ChakraToaster toaster={baseToaster} insetInline={{ mdDown: "4" }}>
         {(toast) => (
           <Toast.Root width={{ md: "sm" }}>
             {toast.type === "loading" ? (
@@ -41,3 +65,4 @@ export const Toaster = () => {
     </Portal>
   )
 }
+

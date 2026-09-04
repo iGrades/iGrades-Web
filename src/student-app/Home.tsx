@@ -12,6 +12,7 @@ import QuizPage from "./pages/QuizPage";
 import LearnPage from "./pages/LearnPage";
 import SettingsPage from "./pages/SettingsPage";
 import RewardsPage from "./pages/RewardsPage";
+import AIChatbot from "./components/AIChatbot";
 
 const Home = () => {
   const currentPage = useNavigationStore((state) => state.currentStudentPage);
@@ -23,6 +24,13 @@ const Home = () => {
   const { authdStudent, logoutFunc, isPopOver, setIsPopOver  } = useAuthdStudentData();
   const navigate = useNavigate();
   const location = useLocation();
+
+  useEffect(() => {
+    const cached = localStorage.getItem("authdStudent");
+    if (!authdStudent && !cached) {
+      navigate("/login", { replace: true });
+    }
+  }, [authdStudent, navigate]);
 
   // Function to create URL-friendly names
   const createUrlFriendlyName = (name: string) => {
@@ -161,15 +169,19 @@ const Home = () => {
         <Dashboard renderPage={renderPage} />
       </Box>
     </Flex>
+    <AIChatbot />
   </Box>
   {isPopOver && (
-    // <LogoutPopover setShowLogoutModal={setShowLogoutModal} />
     <Popover
       head="Logout Student Request"
-      info="  You have clicked the button to logout. All sessions and cookies will be lost"
+      info="You have clicked the button to logout. All active sessions and cookies will be cleared."
       firstBtnText="Yes! logout"
       secondBtnText="Cancel"
-      clickFunc={logoutFunc}
+      clickFunc={() => {
+        setIsPopOver(false);
+        logoutFunc();
+        navigate("/login", { replace: true });
+      }}
       setIsPopOver={setIsPopOver}
     />
   )}

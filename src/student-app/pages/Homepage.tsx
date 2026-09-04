@@ -3,9 +3,18 @@ import MyClasses from "../layouts/myClasses";
 import HomeChart from "../components/chart";
 import Analytics from "../components/analytics";
 import RightCTA from "../components/rightCTA";
-import AIChatbot from "../components/AIChatbot";
+import { ExamReadinessCard } from "../components/readiness/ExamReadinessCard";
+import { NextStudyRecommendationCard } from "../components/recommendations/NextStudyRecommendationCard";
+import { useExamReadiness } from "@/hooks/useExamReadiness";
+import { useAuthdStudentData } from "../context/studentDataContext";
 
 const Homepage = () => {
+  const { authdStudent } = useAuthdStudentData();
+  const { readiness, primaryRecommendation, recommendations, loading } = useExamReadiness(
+    authdStudent?.id,
+    authdStudent?.class
+  );
+
   return (
     <Box pt={2}>
       <Flex
@@ -18,6 +27,13 @@ const Homepage = () => {
       >
         <Box w={{ base: "full", lg: "80%" }} mb={{ md: 20, lg: 0 }}>
           <MyClasses />
+          <NextStudyRecommendationCard
+            recommendation={primaryRecommendation}
+            allRecommendations={recommendations}
+            targetExam={readiness?.targetExam || "WAEC"}
+            loading={loading}
+          />
+          <ExamReadinessCard readiness={readiness} loading={loading} />
           <Flex direction={{ base: "column", md: "row" }} align="stretch" h="full">
             <HomeChart />
             <Analytics />
@@ -32,7 +48,6 @@ const Homepage = () => {
         >
           <RightCTA />
         </Box>
-        <AIChatbot />
       </Flex>
     </Box>
   );

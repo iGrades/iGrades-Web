@@ -11,8 +11,8 @@ import {
   Alert,
   Container,
   Heading,
-  Spinner,
 } from "@chakra-ui/react";
+import { DancingLogoLoader } from "@/components/DancingLogoLoader";
 import SeniorCourses from "../components/seniorCourses";
 import JuniorCourses from "../components/juniorCourses";
 import sideImage from '../../assets/select_ico-removebg-preview.png'
@@ -92,9 +92,8 @@ const CourseSelectionPage = () => {
 
   if (!authdStudent) {
     return (
-      <Container centerContent py={10}>
-        <Spinner size="xl" />
-        <Text mt={4}>Loading student information...</Text>
+      <Container centerContent py={16}>
+        <DancingLogoLoader size="lg" text="Loading student course profiles..." />
       </Container>
     );
   }

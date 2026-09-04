@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
 import { Navigate } from "react-router-dom";
 import { supabase } from "@/lib/supabaseClient";
-import { Center, Spinner } from "@chakra-ui/react";
+import { Center } from "@chakra-ui/react";
+import { DancingLogoLoader } from "@/components/DancingLogoLoader";
 import type { ReactNode } from "react";
 
 const AdminGuard = ({ children }: { children: ReactNode }) => {
@@ -35,8 +36,8 @@ const AdminGuard = ({ children }: { children: ReactNode }) => {
 
   if (checking) {
     return (
-      <Center minH="100vh">
-        <Spinner color="primaryColor" size="lg" />
+      <Center minH="100vh" bg="#f8fafc">
+        <DancingLogoLoader size="lg" text="Verifying Admin Access..." />
       </Center>
     );
   }

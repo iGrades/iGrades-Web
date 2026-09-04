@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Button,
@@ -31,6 +31,43 @@ export default function Login() {
 
   const [loginState, setLoginState] = useState("parent");
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
+
+  useEffect(() => {
+    // 1. Check student session
+    try {
+      const storedStudent = localStorage.getItem("authdStudent");
+      if (storedStudent) {
+        const student = JSON.parse(storedStudent);
+        if (student?.id || student?.firstname) {
+          const name = student.firstname
+            ? `${student.firstname} ${student.lastname || ""}`.trim().toLowerCase().replace(/\s+/g, "-")
+            : "";
+          navigate(name ? `/student-dashboard/${name}` : "/student-dashboard", { replace: true });
+          return;
+        }
+      }
+    } catch {
+      // ignore
+    }
+
+    // 2. Check parent session
+    try {
+      const storedParent = localStorage.getItem("authdParent");
+      if (storedParent) {
+        const parentData = JSON.parse(storedParent);
+        const p = Array.isArray(parentData) ? parentData[0] : parentData;
+        if (p?.id || p?.firstname || p?.email) {
+          const name = p.firstname
+            ? `${p.firstname} ${p.lastname || ""}`.trim().toLowerCase().replace(/\s+/g, "-")
+            : "";
+          navigate(name ? `/parent-dashboard/${name}` : "/parent-dashboard", { replace: true });
+          return;
+        }
+      }
+    } catch {
+      // ignore
+    }
+  }, [navigate]);
 
   const userType = [
     { type: "iGrade Parent", state: "parent" },

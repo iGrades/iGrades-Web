@@ -13,7 +13,6 @@ import {
   Popover,
   Stack,
   HStack,
-  SkeletonText,
 } from "@chakra-ui/react";
 import { useState, type SetStateAction, type Dispatch } from "react";
 import { useUser } from "../context/parentDataContext";
@@ -44,7 +43,7 @@ interface NotificationItem {
 }
 
 const Navbar = ({ setShowLogoutModal }: Props) => {
-  const { parent, loading } = useUser();
+  const { parent } = useUser();
   const { setCurrentParentPage } = useNavigationStore();
   const { t, i18n } = useTranslation();
 
@@ -79,10 +78,6 @@ const Navbar = ({ setShowLogoutModal }: Props) => {
   const markAllRead = () => {
     setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
   };
-
-  if (loading) {
-    return <SkeletonText noOfLines={1} gap="4" p={4} />;
-  }
 
   const currentParent = parent[0] || {};
   const parentName = currentParent.firstname || "Parent";

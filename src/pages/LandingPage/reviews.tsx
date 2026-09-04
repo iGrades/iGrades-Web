@@ -12,11 +12,12 @@ import {
   Textarea,
   VStack,
   HStack,
-  Spinner,
 } from "@chakra-ui/react";
+import { DancingLogoLoader } from "@/components/DancingLogoLoader";
 import { DialogRoot, DialogTrigger, DialogContent, DialogHeader, DialogTitle, DialogBody, DialogActionTrigger } from "@/components/ui/dialog";
 import { FaArrowRightLong, FaChevronRight, FaStar } from "react-icons/fa6";
 import { supabase } from "@/lib/supabaseClient";
+import { toaster } from "@/components/ui/toaster";
 import testimonialImg from "@/assets/landing-page/testimonial_img.png"; // Original asset fallback
 import orangeBlob from "@/assets/landing-page/third_orange_line.png";
 
@@ -83,7 +84,14 @@ const Reviews = () => {
   // --- Form Submission Handler ---
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!imageFile || !formData.name || !formData.content) return alert("Please fill out all fields.");
+    if (!imageFile || !formData.name || !formData.content) {
+      toaster.create({
+        title: "All Fields Required",
+        description: "Please provide your name, review text, rating, and avatar image.",
+        type: "warning",
+      });
+      return;
+    }
     
     setSubmitting(true);
     try {
@@ -115,9 +123,18 @@ const Reviews = () => {
       setFormData({ name: "", content: "", rating: 5 });
       setImageFile(null);
       setIsOpen(false);
+      toaster.create({
+        title: "Assessment Submitted!",
+        description: "Thank you for sharing your feedback with the iGrades community.",
+        type: "success",
+      });
       fetchReviews();
     } catch (err: any) {
-      alert(err.message || "Something went wrong.");
+      toaster.create({
+        title: "Submission Error",
+        description: err.message || "Failed to submit your assessment. Please try again.",
+        type: "error",
+      });
     } finally {
       setSubmitting(false);
     }
@@ -267,7 +284,7 @@ const Reviews = () => {
         justifyContent="center"
       >
         {loading ? (
-          <Spinner size="xl" color="primaryColor" mt={10} />
+          <DancingLogoLoader size="lg" text="Loading community reviews..." minH="300px" />
         ) : (
           <Box 
             position="relative" 

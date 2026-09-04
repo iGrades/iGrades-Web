@@ -64,10 +64,15 @@ const DeleteUserPopover = ({
   
         if (error) throw error;
   
-        // Sign out the user
-        const { error: signOutError } =
-          await supabase.auth.admin.deleteUser(parent[0].user_id);
-        if (signOutError) throw signOutError;
+        // Sign out and clear session
+        try {
+          if (parent[0].user_id) {
+            await supabase.auth.admin?.deleteUser?.(parent[0].user_id);
+          }
+        } catch {
+          // If client SDK lacks admin rights, fall back to standard signOut
+        }
+        await supabase.auth.signOut();
   
         setAlert({ type: "success", message: "Account deleted successfully" });
         navigate("/login");

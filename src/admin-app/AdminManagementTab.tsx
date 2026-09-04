@@ -4,6 +4,7 @@ import {
   Box, Flex, Text, Button, Input, Stack,
   Badge, Grid, Table, Heading, Select, Avatar, createListCollection
 } from "@chakra-ui/react";
+import { DancingLogoLoader } from "@/components/DancingLogoLoader";
 import { toaster } from "@/components/ui/toaster";
 import { FiUserPlus } from "react-icons/fi";
 
@@ -100,7 +101,7 @@ const AdminManagementTab = ({ currentAdminId }: { currentAdminId: string }) => {
       setRole("admin");
       fetchAdmins();
 
-    } catch (err) {
+    } catch {
       setFormError("Something went wrong. Please try again.");
     } finally {
       setCreating(false);
@@ -341,8 +342,8 @@ const AdminManagementTab = ({ currentAdminId }: { currentAdminId: string }) => {
             <Table.Body>
               {loading ? (
                 <Table.Row>
-                  <Table.Cell colSpan={5} textAlign="center" py={8} color="gray.400" fontSize="13px">
-                    Loading admin records...
+                  <Table.Cell colSpan={5} textAlign="center" py={8}>
+                    <DancingLogoLoader size="sm" text="Loading admin directory..." minH="100px" />
                   </Table.Cell>
                 </Table.Row>
               ) : admins.length === 0 ? (

@@ -18,9 +18,25 @@ const Home = () => {
   const currentPage = useNavigationStore((state) => state.currentParentPage);
   const setCurrentPage = useNavigationStore((state) => state.setCurrentParentPage);
   
-  const { parent } = useUser();
+  const { parent, getParentData, loading } = useUser();
   const navigate = useNavigate();
   const location = useLocation();
+
+  useEffect(() => {
+    if (!parent || parent.length === 0) {
+      getParentData();
+    }
+  }, [parent, getParentData]);
+
+  useEffect(() => {
+    // If finished loading and there is genuinely no parent session, redirect to login
+    if (!loading && (!parent || parent.length === 0)) {
+      const cached = localStorage.getItem("authdParent");
+      if (!cached) {
+        navigate("/login", { replace: true });
+      }
+    }
+  }, [parent, loading, navigate]);
   
    // Function to create URL-friendly names
    function createUrlFriendlyName  (name: string)  {

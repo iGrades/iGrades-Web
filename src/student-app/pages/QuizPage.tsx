@@ -4,6 +4,7 @@ import { GoArrowRight, GoX } from "react-icons/go";
 import QuizSubjectsList from "../components/quiz/quizSubjectsList";
 import QuizTopicsList from "../components/quiz/quizTopicsList";
 import SearchBar from "../components/quiz/searchBar";
+import { toaster } from "@/components/ui/toaster";
 
 type Props = {
   showSideBar: boolean;
@@ -88,7 +89,11 @@ const QuizPage = ({ setShowSideBar, setShowNavBar }: Props) => {
 
   const handleStartQuiz = () => {
     if (selectedForQuiz.length < 1) {
-      alert("Please select at least 1 course for the quiz");
+      toaster.create({
+        title: "Subject Selection Required",
+        description: "Please select at least 1 course before continuing to quiz topics.",
+        type: "warning",
+      });
       return;
     }
     // Start quiz logic here

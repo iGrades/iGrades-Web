@@ -6,12 +6,15 @@ import {
   AbsoluteCenter,
   ProgressCircle,
 } from "@chakra-ui/react";
+import { useNavigate } from "react-router-dom";
 import tutorImg from "../../assets/tutor-icon.png";
 import tutorIcon from "../../assets/cube_arrow_right.png";
 import quizIcon from "../../assets/quiz_check.png";
 
 
 const RightCTA = () => {
+  const navigate = useNavigate();
+
   return (
     <Flex direction={{ base: "column", md: "row", lg: "column" }} justify="space-between" gap={4} bg="white" boxShadow="md" borderRadius="lg" w="full" my={{ md: 5}} p={4}>
       
@@ -23,6 +26,10 @@ const RightCTA = () => {
         p={4}
         borderRadius="lg"
         mb={4}
+        cursor="pointer"
+        transition="all 0.2s"
+        _hover={{ transform: "translateY(-2px)", shadow: "lg" }}
+        onClick={() => navigate("/student/quiz")}
       >
         <Flex justify="space-between" w={"full"}>
           <Text fontSize="xs" fontWeight="700" color={"white"}>
@@ -64,6 +71,10 @@ const RightCTA = () => {
         p={4}
         borderRadius="lg"
         mb={4}
+        cursor="pointer"
+        transition="all 0.2s"
+        _hover={{ transform: "translateY(-2px)", shadow: "md" }}
+        onClick={() => navigate("/student/learn")}
       >
         <Flex justify="space-between" w={"full"}>
           <Text fontSize="xs" fontWeight="700" color={"black"}>
@@ -97,6 +108,10 @@ const RightCTA = () => {
         p={4}
         borderRadius="lg"
         mb={0}
+        cursor="pointer"
+        transition="all 0.2s"
+        _hover={{ transform: "translateY(-2px)", shadow: "md" }}
+        onClick={() => navigate("/student/learn")}
       >
         <Flex justify="space-between" w={"full"}>
           <Text fontSize="xs" fontWeight="700" color={"black"}>

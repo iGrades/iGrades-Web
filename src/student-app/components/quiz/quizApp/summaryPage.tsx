@@ -14,6 +14,7 @@ import {
 import { IoClose, IoCheckmarkCircle, IoCloseCircle, IoInformationCircle } from "react-icons/io5";
 import type { QuizResults, QuizAttemptProps } from "./types";
 import PerformanceAnalytics from "./performanceAnalytics";
+import { useSparkStore } from "@/store/useSparkStore";
 
 interface SummaryPageProps {
   quizResults: QuizResults;
@@ -23,6 +24,7 @@ interface SummaryPageProps {
 
 const SummaryPage = ({ quizResults, quizData, onClose }: SummaryPageProps) => {
   const studentAnswers = quizResults.studentAnswers || {};
+  const openWithContext = useSparkStore((s) => s.openWithContext);
 
   return (
     <Box
@@ -150,6 +152,43 @@ const SummaryPage = ({ quizResults, quizData, onClose }: SummaryPageProps) => {
                                 </Box>
                               </HStack>
                             )}
+
+                            {/* ── Ask Spark action ── */}
+                            <HStack justify="flex-end" mt={3}>
+                              <Button
+                                size="xs"
+                                variant="subtle"
+                                colorPalette="purple"
+                                borderRadius="full"
+                                onClick={() => {
+                                  openWithContext(
+                                    {
+                                      contextType: "quiz_review",
+                                      examination: "WAEC / JAMB",
+                                      subject: subject.displayName || "Academic",
+                                      topic: quizData?.topics?.[0] || "Quiz Review",
+                                      currentQuestion: {
+                                        questionNumber: idx + 1,
+                                        questionText: question.question_text,
+                                        options: {
+                                          A: question.option_a,
+                                          B: question.option_b,
+                                          C: question.option_c,
+                                          D: question.option_d,
+                                        },
+                                        studentAnswer: userPick || undefined,
+                                        correctAnswer: question.correct_option,
+                                        explanation: question.answer_explanation || undefined,
+                                      },
+                                      sourceView: "quiz_summary",
+                                    },
+                                    `Can you help me understand Question ${idx + 1}? I chose option ${userPick || "none (skipped)"}, but would like a hint or step-by-step guidance on how to think through it.`
+                                  );
+                                }}
+                              >
+                                ⚡ Ask Spark Tutor
+                              </Button>
+                            </HStack>
                           </Box>
                         );
                       })}

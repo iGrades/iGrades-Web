@@ -8,7 +8,7 @@ export const useScreenRecordingDetection = (reportInfraction: (type: "screen_rec
   const lastInfractionTime = useRef(0);
   const debouncePeriod = 30000;  // 30s debounce between infractions
   const cpuThreshold = 5;  // Number of long tasks (>50ms) in 10s to flag (tune based on testing)
-  const checkIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const checkIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   useEffect(() => {
     // If the quiz is finished or in results mode, don't attach listeners

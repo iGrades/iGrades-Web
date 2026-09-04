@@ -10,9 +10,9 @@ import {
   Portal,
   CloseButton,
   Image,
-  Spinner,
   Link,
 } from "@chakra-ui/react";
+import { DancingLogoLoader } from "@/components/DancingLogoLoader";
 import { LuArrowLeft } from "react-icons/lu";
 import { useState, useRef } from "react";
 import { supabase } from "@/lib/supabaseClient";
@@ -254,11 +254,10 @@ const PdfList = ({ topic, pdf, onBack }: Props) => {
                         bottom="0"
                         align="center"
                         justify="center"
-                        bg="rgba(255, 255, 255, 0.9)"
+                        bg="rgba(255, 255, 255, 0.95)"
                         zIndex={10}
                       >
-                        <Spinner size="xl" color="blue.500" />
-                        <Text ml={3} fontWeight="500">Loading PDF View Documents...</Text>
+                        <DancingLogoLoader size="lg" text="Loading study document..." />
                       </Flex>
                     )}
 

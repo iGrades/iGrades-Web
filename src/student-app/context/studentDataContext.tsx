@@ -50,8 +50,12 @@ export const AuthdStudentDataProvider = ({
   children: ReactNode;
 }) => {
   const [authdStudent, setAuthdStudent] = useState<Student | null>(() => {
-    const storedStudent = localStorage.getItem("authdStudent");
-    return storedStudent ? JSON.parse(storedStudent) : null;
+    try {
+      const storedStudent = localStorage.getItem("authdStudent");
+      return storedStudent ? JSON.parse(storedStudent) : null;
+    } catch {
+      return null;
+    }
   });
   const [alert, setAlert] = useState<Alert | null>(null);
   const [isPopOver, setIsPopOver] = useState<boolean>(false);
@@ -59,8 +63,6 @@ export const AuthdStudentDataProvider = ({
   useEffect(() => {
     if (authdStudent) {
       localStorage.setItem("authdStudent", JSON.stringify(authdStudent));
-    } else {
-      localStorage.removeItem("authdStudent");
     }
   }, [authdStudent]);
 
@@ -89,7 +91,6 @@ export const AuthdStudentDataProvider = ({
     localStorage.removeItem("authdStudent");
     setIsPopOver(false);
     setAlert({ type: "success", message: "Logged out successfully." });
-    window.location.assign(`${window.location.origin}/login`);
   };
 
   const clearAlert = () => setAlert(null);

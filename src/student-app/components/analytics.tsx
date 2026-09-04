@@ -12,6 +12,7 @@ import {
 } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabaseClient";
+import { DancingLogoLoader } from "@/components/DancingLogoLoader";
 import { useAuthdStudentData } from "@/student-app/context/studentDataContext";
 import { LuChevronDown, LuChevronUp } from "react-icons/lu";
 import { RiCompassesLine } from "react-icons/ri";
@@ -158,8 +159,6 @@ const Analytics = () => {
     };
 
     fetchVideoProgress();
-  // Fix 3: also depend on registered_courses so the effect re-runs if it loads late
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [authdStudent?.id, authdStudent?.registered_courses]);
 
   const sortedCourses = [...courses].sort((a, b) => b.progress - a.progress);
@@ -175,13 +174,13 @@ const Analytics = () => {
         boxShadow="md"
         borderRadius="lg"
         w={{ base: "100%", md: "40%" }}
-        h="65vh"
+        minH="350px"
         p={4}
         ml={{ md: 5 }}
       >
         <Heading as="h2" mb={4} fontSize="md">Learning Analytics</Heading>
         {isLoading ? (
-          <Text fontSize="xs">Loading statistics...</Text>
+          <DancingLogoLoader size="sm" text="Loading analytics..." minH="220px" />
         ) : (
           <Text fontSize="sm" color="gray.500" textAlign="center" py={8}>
             No course data available.
