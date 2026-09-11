@@ -174,7 +174,8 @@ const Home = () => {
         <Dashboard renderPage={renderPage} />
       </Box>
     </Flex>
-    <AIChatbot />
+    {/* AI tutor is strictly not available in the quiz app */}
+    {currentPage !== "quiz" && <AIChatbot />}
   </Box>
   {isPopOver && (
     <Popover

@@ -15,7 +15,7 @@ export interface Message {
   studentStatus?: string;
 }
 
-const EXCLUDED_PATHS = ["/login", "/auth", "/signin", "/signup"];
+const EXCLUDED_PATHS = ["/login", "/auth", "/signin", "/signup", "quiz", "quizzes"];
 
 export const useChatbot = () => {
   const { authdStudent } = useAuthdStudentData();
@@ -110,7 +110,15 @@ export const useChatbot = () => {
 
   const studentName = authdStudent?.firstname || "there";
   const studentGradeLevel = authdStudent?.class || authdStudent?.grade_level || "Secondary";
-  const isExcluded = !isOpen && EXCLUDED_PATHS.some((p) => pathname?.includes(p));
+  const isQuizRoute = pathname?.toLowerCase().includes("quiz");
+  const isExcluded = isQuizRoute || (!isOpen && EXCLUDED_PATHS.some((p) => pathname?.includes(p)));
+
+  // Auto-close AI tutor if student navigates to quiz
+  useEffect(() => {
+    if (isQuizRoute && isOpen) {
+      setIsOpen(false);
+    }
+  }, [isQuizRoute, isOpen, setIsOpen]);
 
   // Greet on first open with context awareness
   useEffect(() => {

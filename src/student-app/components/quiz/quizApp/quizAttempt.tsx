@@ -1,5 +1,5 @@
 import { useCallback, useEffect, memo, useRef } from "react";
-import { Box, Alert, Text, Button, Dialog, VStack } from "@chakra-ui/react";
+import { Box, Alert, Text, Button, Dialog, VStack, HStack, Badge } from "@chakra-ui/react";
 import { toaster } from "@/components/ui/toaster";
 import { supabase } from "@/lib/supabaseClient";
 import { useAuthdStudentData } from "@/student-app/context/studentDataContext";
@@ -17,6 +17,8 @@ import { useTabSwitchDetection } from "@/hooks/useTabSwitchDetection";
 import { useAudioMonitoring } from "@/hooks/useAudioMonitoring";
 import { useScreenshotDetection } from "@/hooks/useScreenshotDetection";
 import { useScreenRecordingDetection } from "@/hooks/useScreenRecordingDetection";
+import { useAIProctoring } from "@/hooks/useAIProctoring";
+import { FiCamera, FiMic, FiMonitor, FiShield } from "react-icons/fi";
 
 
 // ─── Memoized Monitoring View (unchanged) ─────────────────────────────────────
@@ -31,6 +33,9 @@ const MemoizedMonitoring = memo(
     setScreenNode,
     toggleMonitoring,
     handleManualPlay,
+    bypassedScreenShare,
+    initializeScreenShare,
+    proctorStatus,
   }: any) => {
     return (
       <>
@@ -38,17 +43,28 @@ const MemoizedMonitoring = memo(
           <Alert.Root status="warning" size="sm" mb={2}>
             <Alert.Indicator />
             <Alert.Description fontSize="xs">
-              Webcam disconnected. Please refresh the page and grant access again.
+              Webcam disconnected. Please ensure your camera is enabled.
             </Alert.Description>
           </Alert.Root>
         )}
 
-        {!hasScreenAccess && (
-          <Alert.Root status="warning" size="sm" mb={2}>
+        {!hasScreenAccess && !bypassedScreenShare && (
+          <Alert.Root status="error" size="sm" mb={2}>
             <Alert.Indicator />
+            <Alert.Title fontSize="xs">Screen Sharing Inactive</Alert.Title>
             <Alert.Description fontSize="xs">
-              Screen sharing stopped. Please refresh the page and grant access again.
+              Entire screen sharing is required during the examination.
             </Alert.Description>
+            {initializeScreenShare && (
+              <Button
+                size="xs"
+                colorPalette="red"
+                ml="auto"
+                onClick={initializeScreenShare}
+              >
+                Re-share Screen
+              </Button>
+            )}
           </Alert.Root>
         )}
 
@@ -62,6 +78,7 @@ const MemoizedMonitoring = memo(
             setScreenNode={setScreenNode}
             toggleMonitoring={toggleMonitoring}
             handleManualPlay={handleManualPlay}
+            proctorStatus={proctorStatus}
           />
         )}
       </>
@@ -129,14 +146,26 @@ const QuizAttempt = ({
     screenError,
     isWebcamLoading,
     isScreenLoading,
+    isAudioLoading,
     showMonitoring,
     showAccessDialog,
     bypassedScreenShare,
     handleStartMonitoring,
+    initializeWebcam,
+    initializeAudio,
+    initializeScreenShare,
     stopAllMonitoring,
     toggleMonitoring,
     proceedWithWebcamOnly,
-  } = useMonitoring({ disabled: !isMonitoringEnabled });
+  } = useMonitoring({
+    disabled: !isMonitoringEnabled,
+    onScreenShareEnded: () => {
+      reportInfraction(
+        "screen_share_stopped",
+        "Screen sharing was stopped! Entire screen must remain shared throughout the examination."
+      );
+    },
+  });
 
   // Monitoring should be inactive when in test mode, or when quiz is completed/submitting
   const isMonitoringDisabled = !isMonitoringEnabled || showResults || isSubmitting;
@@ -152,44 +181,15 @@ const QuizAttempt = ({
   useScreenshotDetection(reportInfraction, isMonitoringDisabled);
   useScreenRecordingDetection(reportInfraction, isMonitoringDisabled);
 
-  // ── YOLO-powered monitoring hooks ────────────────────────────────────────
-  // All four hooks share the same webcam videoRef.
-  // They are disabled when monitoring is off OR webcam isn't ready yet.
-  // const yoloDisabled = isMonitoringDisabled || !hasWebcamAccess;
-
-  // useMultiplePersonsDetection({
-  //   videoRef,
-  //   reportInfraction,
-  //   disabled: yoloDisabled,
-  //   intervalMs: 3000,
-  //   consecutiveThreshold: 2,
-  // });
-
-  // usePhoneDetection({
-  //   videoRef,
-  //   reportInfraction,
-  //   disabled: yoloDisabled,
-  //   intervalMs: 4000,
-  //   consecutiveThreshold: 2,
-  // });
-
-  // useEyeTracking({
-  //   videoRef,
-  //   reportInfraction,
-  //   disabled: yoloDisabled,
-  //   intervalMs: 2000,
-  //   consecutiveThreshold: 3, // 3 consecutive = 6s of looking away before penalty
-  // });
-
-  // useFaceMismatch({
-  //   videoRef,
-  //   reportInfraction,
-  //   disabled: yoloDisabled,
-  //   // Pull profile image from the authenticated student's context
-  //   profileImageUrl: authdStudent?.profile_image,
-  //   intervalMs: 10000, // check every 10 seconds — less intrusive
-  //   consecutiveThreshold: 2,
-  // });
+  // ── AI-powered Vision & Head Pose Proctoring Hook ──────────────────────────
+  // Monitors face orientation, head shifting/turning, looking down,
+  // second person detection, and external objects (phones, books, secondary screens).
+  const proctorStatus = useAIProctoring({
+    videoRef,
+    reportInfraction,
+    disabled: isMonitoringDisabled || !hasWebcamAccess,
+    intervalMs: 1500,
+  });
 
   // ── Auto-submit when time runs out ───────────────────────────────────────
   useEffect(() => {
@@ -286,7 +286,7 @@ const QuizAttempt = ({
     // In examination mode, initialize once required media access is granted.
     const shouldInitialize =
       !isMonitoringEnabled ||
-      (hasWebcamAccess && (hasScreenAccess || bypassedScreenShare));
+      (hasWebcamAccess && hasAudioAccess && (hasScreenAccess || bypassedScreenShare));
 
     if (shouldInitialize && !hasInitializedAttempts.current) {
       hasInitializedAttempts.current = true;
@@ -318,6 +318,7 @@ const QuizAttempt = ({
   }, [
     isMonitoringEnabled,
     hasWebcamAccess,
+    hasAudioAccess,
     hasScreenAccess,
     bypassedScreenShare,
     createAttemptRecord,
@@ -393,36 +394,186 @@ const QuizAttempt = ({
   }
 
   if (isMonitoringEnabled && showAccessDialog) {
+    const allGranted =
+      hasWebcamAccess && hasAudioAccess && (hasScreenAccess || bypassedScreenShare);
+
     return (
       <Dialog.Root
         defaultOpen={true}
         onOpenChange={(open) => {
-          if (!open && !(hasWebcamAccess && hasScreenAccess)) onCancel();
+          if (!open && !allGranted) onCancel();
         }}
       >
         <Dialog.Backdrop />
         <Dialog.Positioner>
-          <Dialog.Content>
+          <Dialog.Content maxW="lg">
             <Dialog.Header>
-              <Dialog.Title>Quiz Monitoring Required</Dialog.Title>
+              <HStack justify="space-between" align="center">
+                <HStack gap={2}>
+                  <FiShield size={20} color="#2563eb" />
+                  <Dialog.Title fontSize="lg" fontWeight="bold">
+                    Proctored Examination Access
+                  </Dialog.Title>
+                </HStack>
+                <Badge colorPalette="blue" size="sm">
+                  Active Proctoring
+                </Badge>
+              </HStack>
             </Dialog.Header>
             <Dialog.Body>
               <VStack align="stretch" gap={4}>
-                <Text>
-                  To ensure academic integrity, this quiz requires webcam, microphone, and screen
-                  sharing access.
+                <Text fontSize="sm" color="gray.600">
+                  To ensure academic integrity, this examination requires active verification of your{" "}
+                  <b>Camera, Microphone, and Entire Screen</b>. Real-time AI proctoring monitors head
+                  movements, looking away, unauthorized persons, and external objects (phones, notes).
                 </Text>
+
+                {/* Device Access Checklist */}
+                <VStack
+                  align="stretch"
+                  gap={2}
+                  p={3}
+                  bg="gray.50"
+                  borderRadius="lg"
+                  border="1px solid"
+                  borderColor="gray.200"
+                >
+                  {/* Camera Checklist Item */}
+                  <HStack justify="space-between" p={2} bg="white" borderRadius="md" boxShadow="xs">
+                    <HStack gap={2}>
+                      <FiCamera size={18} color="#4b5563" />
+                      <VStack align="start" gap={0}>
+                        <Text fontSize="xs" fontWeight="bold">
+                          Webcam Camera
+                        </Text>
+                        <Text fontSize="10px" color="gray.500">
+                          Tracks face centering, head shifts & object detection
+                        </Text>
+                      </VStack>
+                    </HStack>
+                    <HStack gap={2}>
+                      <Badge
+                        size="xs"
+                        colorPalette={hasWebcamAccess ? "green" : webcamError ? "red" : "gray"}
+                      >
+                        {hasWebcamAccess
+                          ? "Verified"
+                          : isWebcamLoading
+                          ? "Connecting..."
+                          : webcamError
+                          ? "Error"
+                          : "Pending"}
+                      </Badge>
+                      {!hasWebcamAccess && (
+                        <Button
+                          size="xs"
+                          variant="outline"
+                          onClick={initializeWebcam}
+                          loading={isWebcamLoading}
+                        >
+                          Enable
+                        </Button>
+                      )}
+                    </HStack>
+                  </HStack>
+
+                  {/* Microphone Checklist Item */}
+                  <HStack justify="space-between" p={2} bg="white" borderRadius="md" boxShadow="xs">
+                    <HStack gap={2}>
+                      <FiMic size={18} color="#4b5563" />
+                      <VStack align="start" gap={0}>
+                        <Text fontSize="xs" fontWeight="bold">
+                          Microphone Audio
+                        </Text>
+                        <Text fontSize="10px" color="gray.500">
+                          Monitors speech, whispering & vocal anomalies
+                        </Text>
+                      </VStack>
+                    </HStack>
+                    <HStack gap={2}>
+                      <Badge
+                        size="xs"
+                        colorPalette={hasAudioAccess ? "green" : audioError ? "red" : "gray"}
+                      >
+                        {hasAudioAccess
+                          ? "Verified"
+                          : isAudioLoading
+                          ? "Connecting..."
+                          : audioError
+                          ? "Error"
+                          : "Pending"}
+                      </Badge>
+                      {!hasAudioAccess && (
+                        <Button
+                          size="xs"
+                          variant="outline"
+                          onClick={initializeAudio}
+                          loading={isAudioLoading}
+                        >
+                          Enable
+                        </Button>
+                      )}
+                    </HStack>
+                  </HStack>
+
+                  {/* Screen Share Checklist Item */}
+                  <HStack justify="space-between" p={2} bg="white" borderRadius="md" boxShadow="xs">
+                    <HStack gap={2}>
+                      <FiMonitor size={18} color="#4b5563" />
+                      <VStack align="start" gap={0}>
+                        <Text fontSize="xs" fontWeight="bold">
+                          Entire Screen Share
+                        </Text>
+                        <Text fontSize="10px" color="gray.500">
+                          Monitors tab switches & external application usage
+                        </Text>
+                      </VStack>
+                    </HStack>
+                    <HStack gap={2}>
+                      <Badge
+                        size="xs"
+                        colorPalette={
+                          hasScreenAccess ? "green" : bypassedScreenShare ? "yellow" : screenError ? "red" : "gray"
+                        }
+                      >
+                        {hasScreenAccess
+                          ? "Shared"
+                          : bypassedScreenShare
+                          ? "Bypassed"
+                          : isScreenLoading
+                          ? "Requesting..."
+                          : screenError
+                          ? "Denied"
+                          : "Pending"}
+                      </Badge>
+                      {!hasScreenAccess && !bypassedScreenShare && (
+                        <Button
+                          size="xs"
+                          variant="outline"
+                          onClick={initializeScreenShare}
+                          loading={isScreenLoading}
+                        >
+                          Share
+                        </Button>
+                      )}
+                    </HStack>
+                  </HStack>
+                </VStack>
+
                 <Alert.Root status="info" size="sm">
                   <Alert.Indicator />
-                  <Alert.Description>Please ensure to share your entire screen</Alert.Description>
+                  <Alert.Description fontSize="xs">
+                    Please select <b>&quot;Entire Screen&quot;</b> when prompted by your browser to ensure full compliance.
+                  </Alert.Description>
                 </Alert.Root>
+
                 {(webcamError || screenError || audioError) && (
-                  <Alert.Root status="error">
+                  <Alert.Root status="error" size="sm">
                     <Alert.Indicator />
-                    <Alert.Title>Access Error</Alert.Title>
-                    <Alert.Description>
-                      {webcamError && `Webcam: ${webcamError}`}
-                      {screenError && `Screen Share: ${screenError}`}
+                    <Alert.Title fontSize="xs">Access Error</Alert.Title>
+                    <Alert.Description fontSize="xs">
+                      {webcamError && `Webcam: ${webcamError}. `}
+                      {screenError && `Screen Share: ${screenError}. `}
                       {audioError && `Audio: ${audioError}`}
                     </Alert.Description>
                   </Alert.Root>
@@ -430,8 +581,10 @@ const QuizAttempt = ({
               </VStack>
             </Dialog.Body>
             <Dialog.Footer flexWrap="wrap" gap={2}>
-              <Button variant="outline" onClick={onCancel}>Cancel Quiz</Button>
-              {screenError && hasWebcamAccess && (
+              <Button variant="outline" onClick={onCancel}>
+                Cancel Quiz
+              </Button>
+              {screenError && hasWebcamAccess && !bypassedScreenShare && (
                 <Button variant="surface" colorPalette="amber" onClick={proceedWithWebcamOnly}>
                   Proceed with Webcam Only
                 </Button>
@@ -439,9 +592,9 @@ const QuizAttempt = ({
               <Button
                 bg="primaryColor"
                 onClick={handleStartMonitoring}
-                loading={isWebcamLoading || isScreenLoading}
+                loading={isWebcamLoading || isScreenLoading || isAudioLoading}
               >
-                Grant Access & Start Quiz
+                {allGranted ? "Start Examination" : "Grant All Permissions & Enter"}
               </Button>
             </Dialog.Footer>
           </Dialog.Content>
@@ -464,6 +617,9 @@ const QuizAttempt = ({
           handleManualPlay={handleManualPlay}
           cheatingScore={cheatingScore}
           reportInfraction={reportInfraction}
+          bypassedScreenShare={bypassedScreenShare}
+          initializeScreenShare={initializeScreenShare}
+          proctorStatus={proctorStatus}
         />
       )}
 

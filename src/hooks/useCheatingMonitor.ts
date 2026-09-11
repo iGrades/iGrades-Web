@@ -3,30 +3,40 @@ import { toaster } from "@/components/ui/toaster";
 
 export type CheatingType =
   | "tab_switch"
-  | "multiple_persons" // non functional
-  | "eye_tracking" // non functional
+  | "multiple_persons"
+  | "head_shift"
+  | "eye_tracking"
+  | "no_person"
+  | "phone_detection"
+  | "object_detected"
   | "audio_anomaly"
-  | "phone_detection" // non functional
   | "screenshot"
   | "screen_recording"
-  | "face_mismatch"; // non functional
+  | "screen_share_stopped"
+  | "face_mismatch";
 
 const getPointsForType = (type: CheatingType): number => {
   switch (type) {
     case "tab_switch":
       return 5;
     case "multiple_persons":
-      return 20;
+      return 25;
+    case "head_shift":
     case "eye_tracking":
       return 10;
+    case "no_person":
+      return 15;
     case "audio_anomaly":
       return 15;
     case "phone_detection":
-      return 20;
+    case "object_detected":
+      return 25;
     case "screenshot":
-      return 10;
-    case "screen_recording":
       return 15;
+    case "screen_recording":
+      return 20;
+    case "screen_share_stopped":
+      return 25;
     case "face_mismatch":
       return 25;
     default:

@@ -1,6 +1,9 @@
 import { useState, useCallback, useRef, useEffect } from "react";
 
-export const useMonitoring = (options?: { disabled?: boolean }) => {
+export const useMonitoring = (options?: {
+  disabled?: boolean;
+  onScreenShareEnded?: () => void;
+}) => {
   const disabled = options?.disabled ?? false;
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const screenVideoRef = useRef<HTMLVideoElement | null>(null);
@@ -15,6 +18,7 @@ export const useMonitoring = (options?: { disabled?: boolean }) => {
 
   const [isWebcamLoading, setIsWebcamLoading] = useState(false);
   const [isScreenLoading, setIsScreenLoading] = useState(false);
+  const [isAudioLoading, setIsAudioLoading] = useState(false);
 
   const [webcamError, setWebcamError] = useState<string | null>(null);
   const [screenError, setScreenError] = useState<string | null>(null);
@@ -104,6 +108,7 @@ export const useMonitoring = (options?: { disabled?: boolean }) => {
       stream.getVideoTracks()[0]?.addEventListener("ended", () => {
         setHasScreenAccess(false);
         setScreenStream(null);
+        options?.onScreenShareEnded?.();
       });
 
       return true;
@@ -118,7 +123,7 @@ export const useMonitoring = (options?: { disabled?: boolean }) => {
     } finally {
       setIsScreenLoading(false);
     }
-  }, []);
+  }, [options]);
 
   const proceedWithWebcamOnly = useCallback(() => {
     setBypassedScreenShare(true);
@@ -126,26 +131,30 @@ export const useMonitoring = (options?: { disabled?: boolean }) => {
 
   const initializeAudio = useCallback(async (): Promise<boolean> => {
     try {
+      setIsAudioLoading(true);
       setAudioError(null);
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       setAudioStream(stream);
       setHasAudioAccess(true);
       return true;
     } catch (err: any) {
-      setAudioError(err.message);
+      setAudioError(err?.message || "Microphone access denied or not found.");
       setHasAudioAccess(false);
-      // Audio failure is non-blocking — webcam and screen share are the
-      // hard requirements. Audio monitoring is best-effort.
       return false;
+    } finally {
+      setIsAudioLoading(false);
     }
   }, []);
 
-  // ── Start all monitoring ──────────────────────────────────────────────────
+  // ── Start all monitoring (Webcam, Audio, and Screen Share) ───────────────────
   const handleStartMonitoring = useCallback(async (): Promise<boolean> => {
-    const webcamOk = await initializeWebcam();
-    const screenOk = await initializeScreenShare();
-    return webcamOk && screenOk;
-  }, [initializeWebcam, initializeScreenShare]);
+    const [webcamOk, audioOk, screenOk] = await Promise.all([
+      initializeWebcam(),
+      initializeAudio(),
+      initializeScreenShare(),
+    ]);
+    return webcamOk && audioOk && screenOk;
+  }, [initializeWebcam, initializeAudio, initializeScreenShare]);
 
   // ── Stop all monitoring ───────────────────────────────────────────────────
 
@@ -160,7 +169,6 @@ export const useMonitoring = (options?: { disabled?: boolean }) => {
     setHasScreenAccess(false);
     setHasAudioAccess(false);
     setBypassedScreenShare(false);
-    // Clear video refs so YOLO hooks stop processing
     videoRef.current = null;
     screenVideoRef.current = null;
   }, [webcamStream, screenStream, audioStream]);
@@ -184,6 +192,7 @@ export const useMonitoring = (options?: { disabled?: boolean }) => {
     hasAudioAccess: disabled ? false : hasAudioAccess,
     isWebcamLoading: disabled ? false : isWebcamLoading,
     isScreenLoading: disabled ? false : isScreenLoading,
+    isAudioLoading: disabled ? false : isAudioLoading,
     webcamError,
     screenError,
     audioError,
@@ -191,12 +200,16 @@ export const useMonitoring = (options?: { disabled?: boolean }) => {
     bypassedScreenShare,
     proceedWithWebcamOnly,
 
-    // Dialog dismisses when disabled, or when webcam is granted and either screen share is active or bypassed due to policy
-    showAccessDialog: !disabled && !(hasWebcamAccess && (hasScreenAccess || bypassedScreenShare)),
+    // Dialog dismisses when disabled, or when webcam, audio, and screen share are all granted
+    showAccessDialog:
+      !disabled &&
+      !(hasWebcamAccess && hasAudioAccess && (hasScreenAccess || bypassedScreenShare)),
 
     handleStartMonitoring,
+    initializeWebcam,
+    initializeAudio,
+    initializeScreenShare,
     stopAllMonitoring,
     toggleMonitoring,
-    initializeAudio,
   };
 };
