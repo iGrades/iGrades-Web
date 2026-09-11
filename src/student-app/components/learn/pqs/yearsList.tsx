@@ -71,12 +71,42 @@ const YearsList = ({
 
       if (pqError) {
         console.error("Error fetching past questions:", pqError);
-        return;
       }
 
-      console.log("Fetched past questions:", pqData);
+      if (pqData && pqData.length > 0) {
+        setFetchedPQs(pqData);
+      } else {
+        // Fallback for database alias naming (e.g. BECE, NABTEB, WAEC GCE)
+        const aliases: string[] = [];
+        if (selectedExam?.includes("BECE")) {
+          aliases.push("BECE", "National BECE", "Junior WAEC", "State BECE");
+        } else if (selectedExam === "NABTEC" || selectedExam === "NABTEB") {
+          aliases.push("NABTEB", "NABTEC");
+        } else if (selectedExam === "GCE" || selectedExam === "WAEC GCE") {
+          aliases.push("WAEC GCE", "GCE");
+        }
 
-      setFetchedPQs(pqData || []);
+        let foundAliased = false;
+        for (const alias of aliases) {
+          if (alias === selectedExam) continue;
+          const { data: aliasData } = await supabase
+            .from("past_questions")
+            .select("*")
+            .eq("exam_type", alias)
+            .eq("year", year)
+            .eq("subject_id", subjectId)
+            .order("created_at", { ascending: false });
+          if (aliasData && aliasData.length > 0) {
+            setFetchedPQs(aliasData);
+            foundAliased = true;
+            break;
+          }
+        }
+
+        if (!foundAliased) {
+          setFetchedPQs(pqData || []);
+        }
+      }
     } catch (error) {
       console.error("Error:", error);
     } finally {

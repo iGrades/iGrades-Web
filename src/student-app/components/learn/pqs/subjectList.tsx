@@ -108,7 +108,7 @@ const SubjectsList = ({ onBack, selectedExam }: Props) => {
             mx={2}
           >
             <LuArrowLeft onClick={onBack} style={{ cursor: "pointer" }} />
-            Select Subject
+            Select Subject {selectedExam ? `• ${selectedExam}` : ""}
           </Heading>
           <Grid
             templateColumns={{
