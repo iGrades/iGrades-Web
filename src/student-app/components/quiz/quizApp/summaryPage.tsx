@@ -153,14 +153,17 @@ const SummaryPage = ({ quizResults, quizData, onClose }: SummaryPageProps) => {
                               </HStack>
                             )}
 
-                            {/* ── Ask Spark action ── */}
+                            {/* ── Ask AI Tutor action ── */}
                             <HStack justify="flex-end" mt={3}>
                               <Button
+                                type="button"
                                 size="xs"
                                 variant="subtle"
                                 colorPalette="purple"
                                 borderRadius="full"
-                                onClick={() => {
+                                onClick={(e) => {
+                                  e.preventDefault();
+                                  e.stopPropagation();
                                   openWithContext(
                                     {
                                       contextType: "quiz_review",
@@ -186,7 +189,7 @@ const SummaryPage = ({ quizResults, quizData, onClose }: SummaryPageProps) => {
                                   );
                                 }}
                               >
-                                ⚡ Ask Spark Tutor
+                                ⚡ Ask AI Tutor
                               </Button>
                             </HStack>
                           </Box>

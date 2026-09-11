@@ -15,19 +15,19 @@ import { ErrorBoundary } from './components/ErrorBoundary.tsx';
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
-    <ErrorBoundary>
-      <PasskeyProvider>
-        <AuthdStudentDataProvider>
-          <DataProvider>
-            <ChakraProvider value={system}>
+    <ChakraProvider value={system}>
+      <ErrorBoundary>
+        <PasskeyProvider>
+          <AuthdStudentDataProvider>
+            <DataProvider>
               <Toaster />
               <BrowserRouter>
                 <App />
               </BrowserRouter>
-            </ChakraProvider>
-          </DataProvider>
-        </AuthdStudentDataProvider>
-      </PasskeyProvider>
-    </ErrorBoundary>
+            </DataProvider>
+          </AuthdStudentDataProvider>
+        </PasskeyProvider>
+      </ErrorBoundary>
+    </ChakraProvider>
   </StrictMode>
 );

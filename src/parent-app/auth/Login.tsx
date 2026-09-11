@@ -62,6 +62,7 @@ const ParentLogin = ({ setAlert }: Props) => {
       return;
     }
 
+    localStorage.removeItem("authdStudent");
     try {
       await getParentData();
     } catch {

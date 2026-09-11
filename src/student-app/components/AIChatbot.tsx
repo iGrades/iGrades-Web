@@ -139,7 +139,7 @@ export const AIChatbot = () => {
           background: "white", borderRadius: "20px",
           boxShadow: "0 24px 64px rgba(0,0,0,0.14), 0 4px 16px rgba(0,0,0,0.08)",
           display: "flex", flexDirection: "column",
-          zIndex: 9999,
+          zIndex: 20050,
           animation: "chatSlideUp 0.26s cubic-bezier(.16,1,.3,1)",
           overflow: "hidden", border: "1px solid #edf2f7",
         }}>
@@ -408,7 +408,7 @@ export const AIChatbot = () => {
           background: isOpen
             ? "#4f46e5"
             : "linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)",
-          border: "none", cursor: "pointer", zIndex: 9999,
+          border: "none", cursor: "pointer", zIndex: 20050,
           display: "flex", alignItems: "center", justifyContent: "center",
           boxShadow: "0 4px 20px rgba(99,102,241,0.45)",
           animation: !isOpen ? "sparkPulse 2.5s ease-in-out infinite" : "none",

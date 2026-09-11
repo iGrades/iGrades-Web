@@ -92,16 +92,20 @@ export const WeeklyOverviewMetrics = ({ report }: Props) => {
         {getDeltaBadge()}
       </Flex>
 
-      <Grid templateColumns={{ base: "repeat(2, 1fr)", md: "repeat(4, 1fr)" }} gap={3.5}>
+      <Grid templateColumns={{ base: "repeat(2, 1fr)", md: "repeat(4, 1fr)" }} gap={4}>
         {/* 1. Overall Accuracy */}
         <GridItem>
           <Box
             bg="white"
-            p={4}
-            borderRadius="xl"
-            border="1px solid"
-            borderColor="gray.150"
-            boxShadow="0 1px 4px rgba(0,0,0,0.03)"
+            p={5}
+            borderRadius="2xl"
+            border="none"
+            boxShadow="0 4px 20px -2px rgba(15, 23, 42, 0.07), 0 2px 6px -1px rgba(15, 23, 42, 0.04)"
+            _hover={{
+              transform: "translateY(-3px)",
+              boxShadow: "0 12px 28px -4px rgba(15, 23, 42, 0.11), 0 4px 10px -2px rgba(15, 23, 42, 0.04)",
+            }}
+            transition="all 0.25s cubic-bezier(0.4, 0, 0.2, 1)"
             h="full"
             display="flex"
             flexDirection="column"
@@ -111,7 +115,7 @@ export const WeeklyOverviewMetrics = ({ report }: Props) => {
               <Text fontSize="11px" fontWeight="800" color="gray.500" textTransform="uppercase" letterSpacing="0.04em">
                 Average Accuracy
               </Text>
-              <Box bg="blue.50" p={1.5} borderRadius="lg">
+              <Box bg="blue.50" p={2} borderRadius="xl" boxShadow="0 2px 6px rgba(0, 0, 0, 0.04)">
                 <Icon as={FiBookOpen} color="#206CE1" boxSize="16px" />
               </Box>
             </Flex>
@@ -152,11 +156,15 @@ export const WeeklyOverviewMetrics = ({ report }: Props) => {
         <GridItem>
           <Box
             bg="white"
-            p={4}
-            borderRadius="xl"
-            border="1px solid"
-            borderColor="gray.150"
-            boxShadow="0 1px 4px rgba(0,0,0,0.03)"
+            p={5}
+            borderRadius="2xl"
+            border="none"
+            boxShadow="0 4px 20px -2px rgba(15, 23, 42, 0.07), 0 2px 6px -1px rgba(15, 23, 42, 0.04)"
+            _hover={{
+              transform: "translateY(-3px)",
+              boxShadow: "0 12px 28px -4px rgba(15, 23, 42, 0.11), 0 4px 10px -2px rgba(15, 23, 42, 0.04)",
+            }}
+            transition="all 0.25s cubic-bezier(0.4, 0, 0.2, 1)"
             h="full"
             display="flex"
             flexDirection="column"
@@ -166,7 +174,7 @@ export const WeeklyOverviewMetrics = ({ report }: Props) => {
               <Text fontSize="11px" fontWeight="800" color="gray.500" textTransform="uppercase" letterSpacing="0.04em">
                 Questions Solved
               </Text>
-              <Box bg="green.50" p={1.5} borderRadius="lg">
+              <Box bg="green.50" p={2} borderRadius="xl" boxShadow="0 2px 6px rgba(0, 0, 0, 0.04)">
                 <Icon as={FiCheckCircle} color="#10B981" boxSize="16px" />
               </Box>
             </Flex>
@@ -195,11 +203,15 @@ export const WeeklyOverviewMetrics = ({ report }: Props) => {
         <GridItem>
           <Box
             bg="white"
-            p={4}
-            borderRadius="xl"
-            border="1px solid"
-            borderColor="gray.150"
-            boxShadow="0 1px 4px rgba(0,0,0,0.03)"
+            p={5}
+            borderRadius="2xl"
+            border="none"
+            boxShadow="0 4px 20px -2px rgba(15, 23, 42, 0.07), 0 2px 6px -1px rgba(15, 23, 42, 0.04)"
+            _hover={{
+              transform: "translateY(-3px)",
+              boxShadow: "0 12px 28px -4px rgba(15, 23, 42, 0.11), 0 4px 10px -2px rgba(15, 23, 42, 0.04)",
+            }}
+            transition="all 0.25s cubic-bezier(0.4, 0, 0.2, 1)"
             h="full"
             display="flex"
             flexDirection="column"
@@ -209,7 +221,7 @@ export const WeeklyOverviewMetrics = ({ report }: Props) => {
               <Text fontSize="11px" fontWeight="800" color="gray.500" textTransform="uppercase" letterSpacing="0.04em">
                 Study Sessions
               </Text>
-              <Box bg="purple.50" p={1.5} borderRadius="lg">
+              <Box bg="purple.50" p={2} borderRadius="xl" boxShadow="0 2px 6px rgba(0, 0, 0, 0.04)">
                 <Icon as={FiLayers} color="#6366F1" boxSize="16px" />
               </Box>
             </Flex>
@@ -241,11 +253,15 @@ export const WeeklyOverviewMetrics = ({ report }: Props) => {
         <GridItem>
           <Box
             bg="white"
-            p={4}
-            borderRadius="xl"
-            border="1px solid"
-            borderColor="gray.150"
-            boxShadow="0 1px 4px rgba(0,0,0,0.03)"
+            p={5}
+            borderRadius="2xl"
+            border="none"
+            boxShadow="0 4px 20px -2px rgba(15, 23, 42, 0.07), 0 2px 6px -1px rgba(15, 23, 42, 0.04)"
+            _hover={{
+              transform: "translateY(-3px)",
+              boxShadow: "0 12px 28px -4px rgba(15, 23, 42, 0.11), 0 4px 10px -2px rgba(15, 23, 42, 0.04)",
+            }}
+            transition="all 0.25s cubic-bezier(0.4, 0, 0.2, 1)"
             h="full"
             display="flex"
             flexDirection="column"
@@ -255,7 +271,7 @@ export const WeeklyOverviewMetrics = ({ report }: Props) => {
               <Text fontSize="11px" fontWeight="800" color="gray.500" textTransform="uppercase" letterSpacing="0.04em">
                 Estimated Study Time
               </Text>
-              <Box bg="teal.50" p={1.5} borderRadius="lg">
+              <Box bg="teal.50" p={2} borderRadius="xl" boxShadow="0 2px 6px rgba(0, 0, 0, 0.04)">
                 <Icon as={FiClock} color="#0D9488" boxSize="16px" />
               </Box>
             </Flex>

@@ -6,14 +6,14 @@ import {
   AbsoluteCenter,
   ProgressCircle,
 } from "@chakra-ui/react";
-import { useNavigate } from "react-router-dom";
+import { useNavigationStore } from "@/store/usenavigationStore";
 import tutorImg from "../../assets/tutor-icon.png";
 import tutorIcon from "../../assets/cube_arrow_right.png";
 import quizIcon from "../../assets/quiz_check.png";
 
 
 const RightCTA = () => {
-  const navigate = useNavigate();
+  const { setCurrentStudentPage } = useNavigationStore();
 
   return (
     <Flex direction={{ base: "column", md: "row", lg: "column" }} justify="space-between" gap={4} bg="white" boxShadow="md" borderRadius="lg" w="full" my={{ md: 5}} p={4}>
@@ -29,7 +29,7 @@ const RightCTA = () => {
         cursor="pointer"
         transition="all 0.2s"
         _hover={{ transform: "translateY(-2px)", shadow: "lg" }}
-        onClick={() => navigate("/student/quiz")}
+        onClick={() => setCurrentStudentPage("quiz")}
       >
         <Flex justify="space-between" w={"full"}>
           <Text fontSize="xs" fontWeight="700" color={"white"}>
@@ -74,7 +74,7 @@ const RightCTA = () => {
         cursor="pointer"
         transition="all 0.2s"
         _hover={{ transform: "translateY(-2px)", shadow: "md" }}
-        onClick={() => navigate("/student/learn")}
+        onClick={() => setCurrentStudentPage("learn")}
       >
         <Flex justify="space-between" w={"full"}>
           <Text fontSize="xs" fontWeight="700" color={"black"}>
@@ -111,7 +111,7 @@ const RightCTA = () => {
         cursor="pointer"
         transition="all 0.2s"
         _hover={{ transform: "translateY(-2px)", shadow: "md" }}
-        onClick={() => navigate("/student/learn")}
+        onClick={() => setCurrentStudentPage("learn")}
       >
         <Flex justify="space-between" w={"full"}>
           <Text fontSize="xs" fontWeight="700" color={"black"}>

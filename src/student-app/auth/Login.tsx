@@ -95,6 +95,7 @@ const ChildrenLogin = ({ setAlert }: Props) => {
       return;
     }
 
+    localStorage.removeItem("authdParent");
     setAuthdStudent(student);
     setIsLoading(false);
 
@@ -144,8 +145,16 @@ const ChildrenLogin = ({ setAlert }: Props) => {
         </Box>
 
         <Box w="full">
-          <Text color="#334155" fontSize="sm" fontWeight="600" mb={3}>
-            Passkey
+          <Flex justify="space-between" align="baseline" mb={1}>
+            <Text color="#334155" fontSize="sm" fontWeight="600">
+              Access Code / Passkey
+            </Text>
+            <Text color="gray.400" fontSize="xs">
+              6 digits
+            </Text>
+          </Flex>
+          <Text color="gray.500" fontSize="xs" mb={3}>
+            Enter the 6-digit access code provided by your parent or instructor
           </Text>
           <HStack justify="center" gap={{ base: 2, md: 4 }} mb={6}>
             <PinInput.Root

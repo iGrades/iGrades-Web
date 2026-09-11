@@ -27,7 +27,12 @@ export const WeeklyReportBannerCard = ({ student, onOpenFullReport }: Props) => 
       color="white"
       p={{ base: 4, md: 5 }}
       borderRadius="2xl"
-      boxShadow="0 4px 16px rgba(32, 108, 225, 0.16)"
+      boxShadow="0 10px 28px -4px rgba(32, 108, 225, 0.28), 0 4px 10px -2px rgba(32, 108, 225, 0.14)"
+      _hover={{
+        boxShadow: "0 16px 36px -4px rgba(32, 108, 225, 0.35), 0 6px 14px -2px rgba(32, 108, 225, 0.18)",
+        transform: "translateY(-2px)",
+      }}
+      transition="all 0.25s cubic-bezier(0.4, 0, 0.2, 1)"
       mb={6}
       position="relative"
       overflow="hidden"

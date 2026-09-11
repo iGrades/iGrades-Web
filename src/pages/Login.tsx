@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation, useSearchParams, Link as RouterLink } from "react-router-dom";
 import {
   Button,
   Alert,
@@ -12,7 +12,6 @@ import {
   HStack,
   SimpleGrid,
 } from "@chakra-ui/react";
-import { Link as RouterLink } from "react-router-dom";
 import { FcGoogle } from "react-icons/fc";
 import { FaApple } from "react-icons/fa";
 
@@ -22,15 +21,49 @@ import ParentLogin from "@/parent-app/auth/Login";
 import StudentLogin from "@/student-app/auth/Login";
 import { supabase } from "@/lib/supabaseClient";
 
-export default function Login() {
+interface LoginProps {
+  initialType?: "parent" | "children" | "student";
+}
+
+export default function Login({ initialType }: LoginProps) {
   const navigate = useNavigate();
+  const location = useLocation();
+  const [searchParams] = useSearchParams();
   const [alert, setAlert] = useState<{
     type: "success" | "error";
     message: string;
   } | null>(null);
 
-  const [loginState, setLoginState] = useState("parent");
+  const queryType = (
+    searchParams.get("type") ||
+    searchParams.get("role") ||
+    searchParams.get("tab") ||
+    ""
+  ).toLowerCase();
+
+  const isStudentDefault =
+    initialType === "student" ||
+    initialType === "children" ||
+    queryType === "student" ||
+    queryType === "children" ||
+    location.pathname.includes("student");
+
+  const [loginState, setLoginState] = useState(isStudentDefault ? "children" : "parent");
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
+
+  useEffect(() => {
+    if (
+      initialType === "student" ||
+      initialType === "children" ||
+      queryType === "student" ||
+      queryType === "children" ||
+      location.pathname.includes("student")
+    ) {
+      setLoginState("children");
+    } else if (initialType === "parent" || queryType === "parent") {
+      setLoginState("parent");
+    }
+  }, [initialType, queryType, location.pathname]);
 
   useEffect(() => {
     // 1. Check student session
@@ -71,7 +104,7 @@ export default function Login() {
 
   const userType = [
     { type: "iGrade Parent", state: "parent" },
-    { type: "iGrade Children", state: "children" },
+    { type: "iGrade Student", state: "children" },
   ];
 
   const handleGoogleLogin = async () => {

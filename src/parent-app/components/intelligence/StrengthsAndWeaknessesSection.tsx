@@ -15,18 +15,22 @@ export const StrengthsAndWeaknessesSection = ({ intelligence }: Props) => {
       <GridItem>
         <Box
           bg="white"
-          p={{ base: 4, md: 6 }}
+          p={{ base: 5, md: 6 }}
           borderRadius="2xl"
-          border="1px solid"
-          borderColor="gray.100"
-          boxShadow="0 2px 8px rgba(0, 0, 0, 0.04)"
+          border="none"
+          boxShadow="0 10px 30px -5px rgba(16, 185, 129, 0.12), 0 4px 14px -2px rgba(15, 23, 42, 0.04)"
+          _hover={{
+            transform: "translateY(-3px)",
+            boxShadow: "0 16px 36px -4px rgba(16, 185, 129, 0.20), 0 6px 16px -2px rgba(15, 23, 42, 0.05)",
+          }}
+          transition="all 0.25s cubic-bezier(0.4, 0, 0.2, 1)"
           h="full"
           display="flex"
           flexDirection="column"
         >
-          <Flex justify="space-between" align="center" mb={3}>
+          <Flex justify="space-between" align="center" mb={3.5}>
             <HStack gap={2.5}>
-              <Box bg="green.50" p={2} borderRadius="xl" border="1px solid" borderColor="green.200">
+              <Box bg="green.50" p={2.5} borderRadius="xl" border="none" boxShadow="0 2px 8px rgba(16, 185, 129, 0.18)">
                 <Icon as={FiAward} color="green.600" boxSize="18px" />
               </Box>
               <Box>
@@ -38,13 +42,13 @@ export const StrengthsAndWeaknessesSection = ({ intelligence }: Props) => {
                 </Text>
               </Box>
             </HStack>
-            <Badge colorPalette="green" variant="subtle" size="sm" borderRadius="md" px={2}>
+            <Badge colorPalette="green" variant="subtle" size="sm" borderRadius="full" px={2.5} py={0.5}>
               Doing Great
             </Badge>
           </Flex>
 
           {/* Highlight Banner */}
-          <Box bg="green.50/60" p={3.5} borderRadius="xl" border="1px solid" borderColor="green.200/80" mb={4}>
+          <Box bg="green.50/70" p={4} borderRadius="xl" border="none" boxShadow="0 2px 10px rgba(16, 185, 129, 0.12)" mb={4}>
             <Text fontSize="xs" fontWeight="700" color="green.900">
               {strengths.highlight}
             </Text>
@@ -63,11 +67,13 @@ export const StrengthsAndWeaknessesSection = ({ intelligence }: Props) => {
               strengths.topTopics.slice(0, 4).map((topic) => (
                 <Box
                   key={topic.topicId}
-                  p={3}
+                  p={3.5}
                   borderRadius="xl"
-                  border="1px solid"
-                  borderColor="gray.100"
-                  bg="gray.50/60"
+                  border="none"
+                  boxShadow="0 2px 8px rgba(16, 185, 129, 0.08)"
+                  bg="gray.50/80"
+                  _hover={{ transform: "translateY(-1px)", boxShadow: "0 4px 12px rgba(16, 185, 129, 0.14)" }}
+                  transition="all 0.2s"
                 >
                   <Flex justify="space-between" align="center" mb={1.5}>
                     <HStack gap={2}>
@@ -94,11 +100,13 @@ export const StrengthsAndWeaknessesSection = ({ intelligence }: Props) => {
               strengths.topSubjects.map((sub) => (
                 <Box
                   key={sub.subjectId}
-                  p={3}
+                  p={3.5}
                   borderRadius="xl"
-                  border="1px solid"
-                  borderColor="gray.100"
-                  bg="gray.50/60"
+                  border="none"
+                  boxShadow="0 2px 8px rgba(16, 185, 129, 0.08)"
+                  bg="gray.50/80"
+                  _hover={{ transform: "translateY(-1px)", boxShadow: "0 4px 12px rgba(16, 185, 129, 0.14)" }}
+                  transition="all 0.2s"
                 >
                   <Flex justify="space-between" align="center" mb={1.5}>
                     <HStack gap={2}>
@@ -133,18 +141,22 @@ export const StrengthsAndWeaknessesSection = ({ intelligence }: Props) => {
       <GridItem>
         <Box
           bg="white"
-          p={{ base: 4, md: 6 }}
+          p={{ base: 5, md: 6 }}
           borderRadius="2xl"
-          border="1px solid"
-          borderColor="gray.100"
-          boxShadow="0 2px 8px rgba(0, 0, 0, 0.04)"
+          border="none"
+          boxShadow="0 10px 30px -5px rgba(245, 158, 11, 0.16), 0 4px 14px -2px rgba(15, 23, 42, 0.05)"
+          _hover={{
+            transform: "translateY(-3px)",
+            boxShadow: "0 16px 36px -4px rgba(245, 158, 11, 0.24), 0 6px 16px -2px rgba(15, 23, 42, 0.06)",
+          }}
+          transition="all 0.25s cubic-bezier(0.4, 0, 0.2, 1)"
           h="full"
           display="flex"
           flexDirection="column"
         >
-          <Flex justify="space-between" align="center" mb={3}>
+          <Flex justify="space-between" align="center" mb={3.5}>
             <HStack gap={2.5}>
-              <Box bg="orange.50" p={2} borderRadius="xl" border="1px solid" borderColor="orange.200">
+              <Box bg="orange.50" p={2.5} borderRadius="xl" border="none" boxShadow="0 2px 8px rgba(245, 158, 11, 0.2)">
                 <Icon as={FiTarget} color="orange.600" boxSize="18px" />
               </Box>
               <Box>
@@ -156,13 +168,13 @@ export const StrengthsAndWeaknessesSection = ({ intelligence }: Props) => {
                 </Text>
               </Box>
             </HStack>
-            <Badge colorPalette="orange" variant="subtle" size="sm" borderRadius="md" px={2}>
+            <Badge colorPalette="orange" variant="subtle" size="sm" borderRadius="full" px={2.5} py={0.5}>
               Extra Focus
             </Badge>
           </Flex>
 
           {/* Highlight Banner */}
-          <Box bg="orange.50/60" p={3.5} borderRadius="xl" border="1px solid" borderColor="orange.200/80" mb={4}>
+          <Box bg="orange.50/70" p={4} borderRadius="xl" border="none" boxShadow="0 2px 10px rgba(245, 158, 11, 0.14)" mb={4}>
             <Text fontSize="xs" fontWeight="700" color="orange.900">
               {areasForAttention.highlight}
             </Text>
@@ -181,11 +193,13 @@ export const StrengthsAndWeaknessesSection = ({ intelligence }: Props) => {
               areasForAttention.strugglingTopics.slice(0, 4).map((topic) => (
                 <Box
                   key={topic.topicId}
-                  p={3}
+                  p={3.5}
                   borderRadius="xl"
-                  border="1px solid"
-                  borderColor="orange.200"
-                  bg="orange.50/30"
+                  border="none"
+                  boxShadow="0 2px 8px rgba(245, 158, 11, 0.10)"
+                  bg="orange.50/40"
+                  _hover={{ transform: "translateY(-1px)", boxShadow: "0 4px 12px rgba(245, 158, 11, 0.18)" }}
+                  transition="all 0.2s"
                 >
                   <Flex justify="space-between" align="center" mb={1.5}>
                     <HStack gap={2}>
@@ -212,11 +226,13 @@ export const StrengthsAndWeaknessesSection = ({ intelligence }: Props) => {
               areasForAttention.strugglingSubjects.map((sub) => (
                 <Box
                   key={sub.subjectId}
-                  p={3}
+                  p={3.5}
                   borderRadius="xl"
-                  border="1px solid"
-                  borderColor="orange.200"
-                  bg="orange.50/30"
+                  border="none"
+                  boxShadow="0 2px 8px rgba(245, 158, 11, 0.10)"
+                  bg="orange.50/40"
+                  _hover={{ transform: "translateY(-1px)", boxShadow: "0 4px 12px rgba(245, 158, 11, 0.18)" }}
+                  transition="all 0.2s"
                 >
                   <Flex justify="space-between" align="center" mb={1.5}>
                     <HStack gap={2}>

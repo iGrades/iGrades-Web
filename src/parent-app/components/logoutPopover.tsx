@@ -21,11 +21,11 @@ const LogoutPopover = ({ setShowLogoutModal }: Props) => {
 
   const handleLogout = async () => {
     setIsLoggingOut(true);
+    localStorage.removeItem("authdParent");
     try {
       if (logoutParent) {
         await logoutParent();
       } else {
-        localStorage.removeItem("authdParent");
         await supabase.auth.signOut();
       }
     } catch (err: any) {

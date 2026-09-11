@@ -11,8 +11,10 @@ import {
   determineReadinessBand,
 } from "./metrics";
 import { generateRecommendations } from "./recommendationEngine";
+import { parseRegisteredCourses, isSubjectRegistered, getSubjectDisplayName } from "@/utils/subjectMatching";
 import type {
   ActivityMetrics,
+  ChronologicalScorePoint,
   LearningIntelligenceReport,
   RawLearningInput,
   RepeatedMistake,
@@ -25,6 +27,7 @@ export function computeLearningIntelligence(input: RawLearningInput): LearningIn
     studentId,
     studentName,
     studentClass = "Secondary",
+    registeredCourses,
     subjects: rawSubjects = [],
     topics: rawTopics = [],
     attempts: rawAttempts = [],
@@ -259,8 +262,26 @@ export function computeLearningIntelligence(input: RawLearningInput): LearningIn
   // 8. Trends
   const trends = calculateTrend(attemptScores);
 
-  // 9. Subject-Level Intelligence
-  const subjectsIntelligence: SubjectIntelligence[] = rawSubjects.map((sub) => {
+  // 9. Subject-Level Intelligence (Restricted strictly to courses the student is registered for)
+  const registeredList = parseRegisteredCourses(registeredCourses);
+
+  let evaluatedSubjects = rawSubjects;
+  if (registeredList.length > 0) {
+    evaluatedSubjects = rawSubjects.filter((sub) => isSubjectRegistered(sub, registeredList));
+
+    // Ensure every registered course has a corresponding subject entry
+    registeredList.forEach((rc) => {
+      const exists = evaluatedSubjects.some((sub) => isSubjectRegistered(sub, [rc]));
+      if (!exists) {
+        evaluatedSubjects.push({
+          id: `reg-${rc}`,
+          name: rc,
+        });
+      }
+    });
+  }
+
+  const subjectsIntelligence: SubjectIntelligence[] = evaluatedSubjects.map((sub) => {
     const subTopics = rawTopics.filter((t) => t.subject_id === sub.id);
     const subTopicIds = new Set(subTopics.map((t) => t.id));
 
@@ -376,10 +397,59 @@ export function computeLearningIntelligence(input: RawLearningInput): LearningIn
 
   const primaryRecommendation = recommendations[0] || undefined;
 
+  // 9. Chronological Attempt Timeline for Real Line Graphs
+  const chronologicalAttempts = [...completedAttempts].sort((a, b) => {
+    const dateA = new Date(a.completed_at || a.started_at || 0).getTime();
+    const dateB = new Date(b.completed_at || b.started_at || 0).getTime();
+    return dateA - dateB;
+  });
+
+  const dayCounts = new Map<string, number>();
+  const attemptTimeline: ChronologicalScorePoint[] = chronologicalAttempts.map((att, idx) => {
+    const dStr = att.completed_at || att.started_at || new Date().toISOString();
+    const d = new Date(dStr);
+    const dateLabel = isNaN(d.getTime())
+      ? `Quiz ${idx + 1}`
+      : d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+    const timeLabel = isNaN(d.getTime())
+      ? ""
+      : d.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" });
+
+    dayCounts.set(dateLabel, (dayCounts.get(dateLabel) || 0) + 1);
+
+    const subName = att.subject_id ? (subjectMap.get(att.subject_id) || "Subject") : "General";
+    const displayName = getSubjectDisplayName(subName);
+
+    return {
+      attemptId: att.id,
+      subjectId: att.subject_id || "",
+      subjectName: displayName,
+      score: Math.round(parseFloat(String(att.score))),
+      totalQuestions: Number(att.total_questions) || 0,
+      completedAt: dStr,
+      dateLabel,
+      timeLabel,
+      displayLabel: dateLabel,
+      isRegistered: isSubjectRegistered({ subjectId: att.subject_id, subjectName: displayName }, registeredList),
+    };
+  });
+
+  // Disambiguate same-day attempts for clear X-axis display
+  const daySeen = new Map<string, number>();
+  attemptTimeline.forEach((pt) => {
+    const totalOnDay = dayCounts.get(pt.dateLabel) || 0;
+    if (totalOnDay > 1) {
+      const count = (daySeen.get(pt.dateLabel) || 0) + 1;
+      daySeen.set(pt.dateLabel, count);
+      pt.displayLabel = pt.timeLabel ? `${pt.dateLabel} (${pt.timeLabel})` : `${pt.dateLabel} #${count}`;
+    }
+  });
+
   return {
     studentId,
     studentName,
     studentClass,
+    registeredCourses: registeredList,
     generatedAt: new Date().toISOString(),
     dataQuality,
     activity,
@@ -407,5 +477,6 @@ export function computeLearningIntelligence(input: RawLearningInput): LearningIn
     repeatedMistakes,
     recommendations,
     primaryRecommendation,
+    attemptTimeline,
   };
 }

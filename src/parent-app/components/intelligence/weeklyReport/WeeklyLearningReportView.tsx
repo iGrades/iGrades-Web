@@ -44,9 +44,8 @@ export const WeeklyLearningReportView = ({ student, onClose }: Props) => {
     <Box
       bg="white"
       borderRadius="2xl"
-      border="1px solid"
-      borderColor="gray.150"
-      boxShadow="0 4px 20px rgba(32, 108, 225, 0.08)"
+      border="none"
+      boxShadow="0 10px 30px -5px rgba(15, 23, 42, 0.08), 0 4px 12px -2px rgba(15, 23, 42, 0.03)"
       p={{ base: 4, md: 6 }}
       mb={8}
       position="relative"
@@ -86,11 +85,10 @@ export const WeeklyLearningReportView = ({ student, onClose }: Props) => {
         <HStack gap={2} wrap="wrap">
           {/* Week Selector Pills */}
           <HStack
-            bg="gray.100"
+            bg="white"
             p={1}
             borderRadius="full"
-            border="1px solid"
-            borderColor="gray.200"
+            boxShadow="0 2px 8px rgba(0, 0, 0, 0.06)"
           >
             <Button
               size="xs"
@@ -176,11 +174,11 @@ export const WeeklyLearningReportView = ({ student, onClose }: Props) => {
       {/* Date Range Subheader Banner */}
       {report && (
         <Flex
-          bg="blue.50/60"
-          p={3}
-          borderRadius="xl"
-          border="1px solid"
-          borderColor="blue.100"
+          bg="blue.50/70"
+          p={3.5}
+          borderRadius="2xl"
+          border="none"
+          boxShadow="0 4px 14px -2px rgba(32, 108, 225, 0.12)"
           justify="space-between"
           align="center"
           mb={5}

@@ -61,45 +61,99 @@ export function useLearningIntelligence(studentId?: string, studentClass?: strin
           attemptsRes,
           answersRes,
           videosRes,
-          streakRes,
+          quizScoresRes,
           studentMetaRes,
         ] = await Promise.allSettled([
-          supabase.from("subjects").select("id, name, class_id").order("name"),
+          supabase.from("subjects").select("id, name").order("name"),
           supabase.from("topics").select("id, name, subject_id"),
           supabase
             .from("attempts")
-            .select("id, student_id, subject_id, quiz_id, score, total_questions, status, started_at, completed_at, is_mock")
+            .select("id, student_id, subject_id, quiz_id, score, total_questions, status, started_at, completed_at, mode")
             .eq("student_id", studentId),
           supabase
             .from("attempt_answers")
-            .select("id, attempt_id, question_id, student_id, selected_option, is_correct, time_spent_seconds, created_at, questions(id, question_text, topic_id, subject_id)")
+            .select("id, attempt_id, question_id, student_id, selected_option, created_at, questions(id, question_text, topic_id, subject_id, correct_option)")
             .eq("student_id", studentId)
             .limit(1000),
           supabase
             .from("video_progress")
-            .select("id, resource_id, student_id, completed, progress, updated_at")
+            .select("id, video_id, student_id, completed, progress, updated_at")
             .eq("student_id", studentId),
           supabase
-            .from("student_streaks")
-            .select("current_streak_days, last_active_date")
-            .eq("student_id", studentId)
-            .maybeSingle(),
+            .from("quiz_scores")
+            .select("attempt_id, student_id, subject_id, score, completed_at")
+            .eq("student_id", studentId),
           supabase
             .from("students")
-            .select("id, firstname, lastname, class, grade_level")
+            .select("id, firstname, lastname, class, registered_courses")
             .eq("id", studentId)
             .maybeSingle(),
         ]);
 
         const subjects = subjectsRes.status === "fulfilled" ? subjectsRes.value.data || [] : [];
         const topics = topicsRes.status === "fulfilled" ? topicsRes.value.data || [] : [];
-        const attempts = attemptsRes.status === "fulfilled" ? attemptsRes.value.data || [] : [];
-        const attemptAnswers = answersRes.status === "fulfilled" ? answersRes.value.data || [] : [];
+        const rawAttempts = attemptsRes.status === "fulfilled" ? attemptsRes.value.data || [] : [];
+        const rawAnswers = answersRes.status === "fulfilled" ? answersRes.value.data || [] : [];
         const videoProgress = videosRes.status === "fulfilled" ? videosRes.value.data || [] : [];
-        const streakData = streakRes.status === "fulfilled" ? streakRes.value.data : null;
+        const quizScores = quizScoresRes.status === "fulfilled" ? quizScoresRes.value.data || [] : [];
         const studentMeta = studentMetaRes.status === "fulfilled" ? studentMetaRes.value.data : null;
 
-        const effectiveClass = studentClass || studentMeta?.class || studentMeta?.grade_level || "Secondary";
+        // Correctly calculate answer correctness from question's correct_option
+        const attemptAnswers = rawAnswers.map((ans: any) => {
+          const isCorrect = (ans.is_correct !== undefined && ans.is_correct !== null)
+            ? (ans.is_correct === true || ans.is_correct === "true" || ans.is_correct === 1)
+            : (ans.selected_option && ans.questions?.correct_option
+                ? ans.selected_option.trim().toUpperCase() === ans.questions.correct_option.trim().toUpperCase()
+                : false);
+
+          return {
+            ...ans,
+            is_correct: isCorrect,
+          };
+        });
+
+        // Compute answer accuracy per attempt to heal any stale 0 scores in attempts table
+        const answersByAttempt = new Map<string, { total: number; correct: number }>();
+        attemptAnswers.forEach((ans) => {
+          if (!ans.attempt_id) return;
+          const curr = answersByAttempt.get(ans.attempt_id) || { total: 0, correct: 0 };
+          curr.total += 1;
+          if (ans.is_correct) curr.correct += 1;
+          answersByAttempt.set(ans.attempt_id, curr);
+        });
+
+        const quizScoresByAttempt = new Map<string, number>();
+        quizScores.forEach((qs) => {
+          if (qs.attempt_id && qs.score !== null && qs.score !== undefined) {
+            quizScoresByAttempt.set(qs.attempt_id, Number(qs.score));
+          }
+        });
+
+        // Harmonize attempts data
+        const attempts = rawAttempts.map((att: any) => {
+          let score = Number(att.score) || 0;
+          const qsScore = quizScoresByAttempt.get(att.id);
+          const ansData = answersByAttempt.get(att.id);
+
+          if (score <= 0 && qsScore !== undefined && qsScore > 0) {
+            score = qsScore;
+          } else if (score <= 0 && ansData && ansData.total > 0) {
+            score = Math.round((ansData.correct / ansData.total) * 100);
+          }
+
+          // If attempt has completed_at or answers, ensure it is treated as completed
+          const status = att.status === "completed" || att.completed_at || (ansData && ansData.total > 0)
+            ? "completed"
+            : att.status;
+
+          return {
+            ...att,
+            score,
+            status,
+          };
+        });
+
+        const effectiveClass = studentClass || studentMeta?.class || "Secondary";
         const studentFullName = studentMeta?.firstname
           ? `${studentMeta.firstname} ${studentMeta.lastname || ""}`.trim()
           : undefined;
@@ -108,13 +162,14 @@ export function useLearningIntelligence(studentId?: string, studentClass?: strin
           studentId,
           studentName: studentFullName,
           studentClass: effectiveClass,
+          registeredCourses: studentMeta?.registered_courses,
           subjects,
           topics,
           attempts,
           attemptAnswers: attemptAnswers as any,
           videoProgress,
-          currentStreakDays: streakData?.current_streak_days || 0,
-          lastActiveDate: streakData?.last_active_date || null,
+          currentStreakDays: 0,
+          lastActiveDate: attempts.find((a: any) => a.completed_at || a.started_at)?.completed_at || null,
         };
 
         const report = computeLearningIntelligence(rawInput);

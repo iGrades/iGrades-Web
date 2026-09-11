@@ -94,35 +94,33 @@ export const ExecutiveSummaryCards = ({ executiveAnswers, studentFirstName }: Pr
         </Badge>
       </Flex>
 
-      <Grid templateColumns={{ base: "repeat(1, 1fr)", md: "repeat(2, 1fr)", lg: "repeat(3, 1fr)" }} gap={3.5}>
+      <Grid templateColumns={{ base: "repeat(1, 1fr)", md: "repeat(2, 1fr)", lg: "repeat(3, 1fr)" }} gap={4}>
         {cards.map((card) => {
           return (
             <Box
               key={card.id}
               bg="white"
-              p={4}
-              borderRadius="xl"
-              border="1px solid"
-              borderColor="gray.150"
-              boxShadow="0 1px 4px rgba(0, 0, 0, 0.03)"
+              p={5}
+              borderRadius="2xl"
+              border="none"
+              boxShadow="0 4px 20px -2px rgba(15, 23, 42, 0.07), 0 2px 6px -1px rgba(15, 23, 42, 0.04)"
               display="flex"
               flexDirection="column"
               justifyContent="space-between"
               position="relative"
               _hover={{
-                borderColor: "blue.200",
-                transform: "translateY(-1px)",
-                boxShadow: "0 4px 12px rgba(32, 108, 225, 0.06)",
+                transform: "translateY(-3px)",
+                boxShadow: "0 12px 30px -4px rgba(15, 23, 42, 0.12), 0 4px 12px -2px rgba(32, 108, 225, 0.08)",
               }}
-              transition="all 0.2s"
+              transition="all 0.25s cubic-bezier(0.4, 0, 0.2, 1)"
             >
               <Box>
-                <Flex justify="space-between" align="start" mb={2}>
+                <Flex justify="space-between" align="start" mb={2.5}>
                   <Text fontSize="11px" fontWeight="800" color="gray.500" textTransform="uppercase" letterSpacing="0.04em">
                     {card.question}
                   </Text>
-                  <Box bg={card.bgLight} p={1.5} borderRadius="lg">
-                    <Icon as={card.icon} color={card.accentColor} boxSize="15px" />
+                  <Box bg={card.bgLight} p={2} borderRadius="xl" boxShadow="0 2px 6px rgba(0, 0, 0, 0.04)">
+                    <Icon as={card.icon} color={card.accentColor} boxSize="16px" />
                   </Box>
                 </Flex>
 

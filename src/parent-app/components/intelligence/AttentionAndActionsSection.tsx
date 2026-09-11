@@ -15,18 +15,22 @@ export const AttentionAndActionsSection = ({ intelligence }: Props) => {
       <GridItem>
         <Box
           bg="white"
-          p={{ base: 4, md: 6 }}
+          p={{ base: 5, md: 6 }}
           borderRadius="2xl"
-          border="1px solid"
-          borderColor="gray.100"
-          boxShadow="0 2px 8px rgba(0, 0, 0, 0.04)"
+          border="none"
+          boxShadow="0 10px 30px -5px rgba(245, 158, 11, 0.16), 0 4px 14px -2px rgba(15, 23, 42, 0.05)"
+          _hover={{
+            transform: "translateY(-3px)",
+            boxShadow: "0 16px 36px -4px rgba(245, 158, 11, 0.24), 0 6px 16px -2px rgba(15, 23, 42, 0.06)",
+          }}
+          transition="all 0.25s cubic-bezier(0.4, 0, 0.2, 1)"
           h="full"
           display="flex"
           flexDirection="column"
         >
           <Flex justify="space-between" align="center" mb={4}>
             <HStack gap={2.5}>
-              <Box bg="amber.50" p={2} borderRadius="xl" border="1px solid" borderColor="amber.200">
+              <Box bg="amber.50" p={2.5} borderRadius="xl" border="none" boxShadow="0 2px 8px rgba(245, 158, 11, 0.2)">
                 <Icon as={FiAlertCircle} color="amber.600" boxSize="18px" />
               </Box>
               <Box>
@@ -38,7 +42,7 @@ export const AttentionAndActionsSection = ({ intelligence }: Props) => {
                 </Text>
               </Box>
             </HStack>
-            <Badge colorPalette="amber" variant="subtle" size="sm" borderRadius="md" px={2}>
+            <Badge colorPalette="amber" variant="subtle" size="sm" borderRadius="full" px={2.5} py={0.5}>
               {needsAttentionAlerts.length} Points
             </Badge>
           </Flex>
@@ -48,19 +52,25 @@ export const AttentionAndActionsSection = ({ intelligence }: Props) => {
               const isWarning = alert.severity === "warning";
               const isPositive = alert.severity === "positive";
 
-              const borderCol = isWarning ? "amber.200" : isPositive ? "green.200" : "blue.200";
-              const bgCol = isWarning ? "amber.50/50" : isPositive ? "green.50/50" : "blue.50/50";
+              const bgCol = isWarning ? "amber.50/60" : isPositive ? "green.50/60" : "blue.50/60";
               const iconCol = isWarning ? "amber.600" : isPositive ? "green.600" : "#206CE1";
               const iconComponent = isWarning ? FiAlertCircle : isPositive ? FiCheck : FiInfo;
+              const shadowCol = isWarning
+                ? "0 2px 10px rgba(245, 158, 11, 0.14)"
+                : isPositive
+                ? "0 2px 10px rgba(16, 185, 129, 0.14)"
+                : "0 2px 10px rgba(32, 108, 225, 0.14)";
 
               return (
                 <Box
                   key={alert.id}
-                  p={3.5}
+                  p={4}
                   borderRadius="xl"
-                  border="1px solid"
-                  borderColor={borderCol}
+                  border="none"
+                  boxShadow={shadowCol}
                   bg={bgCol}
+                  _hover={{ transform: "translateY(-1px)", boxShadow: "0 4px 14px rgba(245, 158, 11, 0.2)" }}
+                  transition="all 0.2s"
                 >
                   <HStack align="start" gap={2.5}>
                     <Icon as={iconComponent} color={iconCol} mt={0.5} boxSize="16px" flexShrink={0} />
@@ -84,18 +94,22 @@ export const AttentionAndActionsSection = ({ intelligence }: Props) => {
       <GridItem>
         <Box
           bg="white"
-          p={{ base: 4, md: 6 }}
+          p={{ base: 5, md: 6 }}
           borderRadius="2xl"
-          border="1px solid"
-          borderColor="gray.100"
-          boxShadow="0 2px 8px rgba(0, 0, 0, 0.04)"
+          border="none"
+          boxShadow="0 10px 30px -5px rgba(32, 108, 225, 0.12), 0 4px 14px -2px rgba(15, 23, 42, 0.04)"
+          _hover={{
+            transform: "translateY(-3px)",
+            boxShadow: "0 16px 36px -4px rgba(32, 108, 225, 0.20), 0 6px 16px -2px rgba(15, 23, 42, 0.05)",
+          }}
+          transition="all 0.25s cubic-bezier(0.4, 0, 0.2, 1)"
           h="full"
           display="flex"
           flexDirection="column"
         >
           <Flex justify="space-between" align="center" mb={4}>
             <HStack gap={2.5}>
-              <Box bg="blue.50" p={2} borderRadius="xl" border="1px solid" borderColor="blue.200">
+              <Box bg="blue.50" p={2.5} borderRadius="xl" border="none" boxShadow="0 2px 8px rgba(32, 108, 225, 0.18)">
                 <Icon as={FiHeart} color="#206CE1" boxSize="18px" />
               </Box>
               <Box>
@@ -107,7 +121,7 @@ export const AttentionAndActionsSection = ({ intelligence }: Props) => {
                 </Text>
               </Box>
             </HStack>
-            <Badge colorPalette="blue" variant="subtle" size="sm" borderRadius="md" px={2}>
+            <Badge colorPalette="blue" variant="subtle" size="sm" borderRadius="full" px={2.5} py={0.5}>
               Helpful Tips
             </Badge>
           </Flex>
@@ -126,12 +140,12 @@ export const AttentionAndActionsSection = ({ intelligence }: Props) => {
               return (
                 <Box
                   key={rec.id}
-                  p={3.5}
+                  p={4}
                   borderRadius="xl"
-                  border="1px solid"
-                  borderColor="gray.100"
-                  bg="gray.50/70"
-                  _hover={{ borderColor: "blue.200", bg: "blue.50/20" }}
+                  border="none"
+                  boxShadow="0 2px 8px rgba(15, 23, 42, 0.05)"
+                  bg="gray.50/80"
+                  _hover={{ transform: "translateY(-1px)", boxShadow: "0 6px 16px rgba(32, 108, 225, 0.12)", bg: "blue.50/30" }}
                   transition="all 0.2s"
                 >
                   <Flex justify="space-between" align="start" mb={1}>

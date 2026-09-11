@@ -12,6 +12,7 @@ import {
   Input,
 } from "@chakra-ui/react";
 import { usePointsSystem } from "@/student-app/hooks/usePointsSystem";
+import { celebratePointsGained } from "@/student-app/components/rewards/pointsCelebrationStore";
 import {
   FiAward,
   FiZap,
@@ -87,16 +88,40 @@ export const PointsWidget: React.FC = () => {
           </Box>
         </HStack>
 
-        <Button
-          size="xs"
-          variant="ghost"
-          color="primaryColor"
-          _hover={{ bg: "#206CE11A" }}
-          onClick={() => fetchPointsData()}
-          loading={loading}
-        >
-          <FiRefreshCw size={14} /> Refresh
-        </Button>
+        <HStack gap={2}>
+          <Button
+            size="xs"
+            variant="outline"
+            borderColor="amber.300"
+            color="amber.800"
+            bg="amber.50"
+            _hover={{ bg: "amber.100" }}
+            onClick={() => {
+              celebratePointsGained({
+                points: 25,
+                title: "🎉 Points Celebration!",
+                description: "This is the points gained celebration popup with confetti and sound animation!",
+                eventType: "bonus",
+                streakDays: streakData.currentStreak || 3,
+                milestonePoints: 10,
+                newBalance: pointsBalance + 25,
+              });
+            }}
+          >
+            🎉 Preview Popup
+          </Button>
+
+          <Button
+            size="xs"
+            variant="ghost"
+            color="primaryColor"
+            _hover={{ bg: "#206CE11A" }}
+            onClick={() => fetchPointsData()}
+            loading={loading}
+          >
+            <FiRefreshCw size={14} /> Refresh
+          </Button>
+        </HStack>
       </Flex>
 
       {/* Primary Metrics Grid */}

@@ -37,7 +37,10 @@ const QuizHistoryList = ({ studentId, student }: QuizHistoryListProps) => {
     <VStack align="stretch" gap={5} w="full">
       <OverviewMetricsGrid intelligence={intelligence} />
       <AttentionAndActionsSection intelligence={intelligence} />
-      <SubjectPerformanceSection subjects={intelligence.subjects} />
+      <SubjectPerformanceSection
+        subjects={intelligence.subjects}
+        registeredCourses={studentObj?.registered_courses}
+      />
       <StrengthsAndWeaknessesSection intelligence={intelligence} />
       <ProgressTrendsSection intelligence={intelligence} />
       <RecentActivitySection intelligence={intelligence} />

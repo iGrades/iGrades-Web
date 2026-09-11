@@ -127,6 +127,7 @@ export interface LearningIntelligenceReport {
   studentId: string;
   studentName?: string;
   studentClass: string;
+  registeredCourses?: string[];
   generatedAt: string;
   dataQuality: DataQualityReport;
   activity: ActivityMetrics;
@@ -141,6 +142,20 @@ export interface LearningIntelligenceReport {
   repeatedMistakes: RepeatedMistake[];
   recommendations: StudyRecommendation[];
   primaryRecommendation?: StudyRecommendation;
+  attemptTimeline?: ChronologicalScorePoint[];
+}
+
+export interface ChronologicalScorePoint {
+  attemptId: string;
+  subjectId: string;
+  subjectName: string;
+  score: number;
+  totalQuestions: number;
+  completedAt: string;
+  dateLabel: string;
+  timeLabel: string;
+  displayLabel: string;
+  isRegistered?: boolean;
 }
 
 export interface RawAttemptRow {
@@ -199,6 +214,7 @@ export interface RawLearningInput {
   studentId: string;
   studentName?: string;
   studentClass?: string;
+  registeredCourses?: string[] | string | null;
   subjects: RawSubjectRow[];
   topics: RawTopicRow[];
   attempts: RawAttemptRow[];

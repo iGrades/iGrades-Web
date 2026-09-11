@@ -161,13 +161,13 @@ export const useFlutterwave = () => {
     userEmail: string | undefined = authdStudent?.email
   ): Promise<PaymentResult> => {
 
-    // Free plan — skip payment entirely
-    if (plan.id === "basic") {
+    // Free plan or 100% store-credit covered — skip payment entirely
+    if (plan.id === "basic" || plan.amount === 0) {
       toaster.create({
-        title: "Free Plan Selected",
-        description: "You have successfully subscribed to the Basic plan.",
+        title: plan.amount === 0 ? "Subscription Paid with Store Credit" : "Free Plan Selected",
+        description: plan.amount === 0 ? `Your ${plan.name} subscription was 100% covered by store credit!` : "You have successfully subscribed to the Basic plan.",
         type: "success",
-        duration: 3000,
+        duration: 4000,
         closable: true,
       });
       return { success: true };

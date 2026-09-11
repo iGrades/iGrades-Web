@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/lib/supabaseClient";
 import { useAuthdStudentData } from "@/student-app/context/studentDataContext";
+import { celebratePointsGained } from "@/student-app/components/rewards/pointsCelebrationStore";
 import type { QuizAttemptProps, QuizResults, SubjectResult } from "./types";
 
 const getGradeInfo = (percentage: number) => {
@@ -253,22 +254,38 @@ export const useQuizAttempt = (quizData: QuizAttemptProps["quizData"]) => {
           const mainQuizId = quizData?.quizzes?.[0]?.id || `quiz_${currentSubject?.id || "general"}`;
           const { data: session } = await supabase.auth.getSession();
           const token = session?.session?.access_token;
-          await fetch(
-            `${import.meta.env.VITE_SUPABASE_URL || "https://ais-dev-zznm53354f22xrz54kfnwn-544188797831.europe-west2.run.app"}/functions/v1/award-points`,
-            {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-                Authorization: `Bearer ${token || import.meta.env.VITE_SUPABASE_ANON_KEY}`,
-              },
-              body: JSON.stringify({
-                event: "quiz_completion",
-                student_id: authdStudent.id,
-                quiz_id: mainQuizId,
-                score_percentage: results.subjectResults[currentSubject?.id]?.percentage || 50,
-              }),
+          const scorePercent = results.subjectResults[currentSubject?.id]?.percentage || 50;
+
+          // Call local server endpoint first, with fallback to functions URL
+          const awardUrl = "/api/award-points";
+          const res = await fetch(awardUrl, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token || import.meta.env.VITE_SUPABASE_ANON_KEY}`,
+            },
+            body: JSON.stringify({
+              event: "quiz_completion",
+              student_id: authdStudent.id,
+              quiz_id: mainQuizId,
+              score_percentage: scorePercent,
+            }),
+          });
+
+          if (res.ok) {
+            const data = await res.json();
+            const totalEarned = (data.points_awarded || 0) + (data.milestone_points_awarded || 0);
+            if (totalEarned > 0) {
+              celebratePointsGained({
+                points: totalEarned,
+                title: "🎯 Quiz Points Earned!",
+                description: `+${data.points_awarded || totalEarned} iGG Points earned for completing your first attempt on this quiz with a score of ${Math.round(scorePercent)}%!`,
+                eventType: "quiz",
+                milestonePoints: data.milestone_points_awarded,
+                newBalance: data.points_balance,
+              });
             }
-          );
+          }
         } catch (e) {
           console.warn("Quiz points award trigger error:", e);
         }

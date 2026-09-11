@@ -66,39 +66,39 @@ const DownloadPage = () => {
           {/* ══════════════════════════════════════
               HERO
           ══════════════════════════════════════ */}
-          <Box position="relative" bg="#07052A" overflow="hidden"
-            pt={{ base: 28, md: 36 }} pb={{ base: 16, md: 0 }}
+          <Box position="relative" bg="#FFFFFF" borderBottom="1px solid #F1F3F9" overflow="hidden"
+            pt={{ base: 28, md: 36 }} pb={{ base: 16, md: 12 }}
             px={{ base: 6, md: 12, lg: 20 }}
             minH={{ base: "auto", lg: "90vh" }}>
 
-            <Box position="absolute" inset={0} opacity={0.04}
-              backgroundImage="radial-gradient(circle, #fff 1.5px, transparent 1.5px)"
+            <Box position="absolute" inset={0} opacity={0.025}
+              backgroundImage="radial-gradient(circle, #07052A 1.5px, transparent 1.5px)"
               backgroundSize="36px 36px" pointerEvents="none" />
             <Box position="absolute" bottom="-100px" left="-60px" w="500px" h="500px"
-              borderRadius="full" bg="#206CE1" opacity={0.08} filter="blur(100px)" pointerEvents="none" />
+              borderRadius="full" bg="#206CE1" opacity={0.04} filter="blur(100px)" pointerEvents="none" />
             <Box position="absolute" top="10%" right="15%" w="350px" h="350px"
-              borderRadius="full" bg="#F18729" opacity={0.06} filter="blur(80px)" pointerEvents="none" />
+              borderRadius="full" bg="#F18729" opacity={0.05} filter="blur(80px)" pointerEvents="none" />
 
             <Grid templateColumns={{ base: "1fr", lg: "1fr 1fr" }}
               gap={12} alignItems="center" maxW="1300px" mx="auto" position="relative" zIndex={1}
               pb={{ base: 12, lg: 0 }}>
 
               {/* Left text */}
-              <Box pb={{ base: 0, lg: 20 }}>
+              <Box pb={{ base: 0, lg: 16 }}>
                 <HStack className="fu1" mb={6} gap={2}>
                   <Box w="32px" h="2px" bg="#F18729" borderRadius="full" />
                   <Text color="#F18729" fontSize="xs" fontWeight="700"
                     letterSpacing="0.15em" textTransform="uppercase">Now Available</Text>
                 </HStack>
                 <Heading className="fu2"
-                  color="white" fontSize={{ base: "3xl", md: "5xl", lg: "6xl" }}
+                  color="#07052A" fontSize={{ base: "3xl", md: "5xl", lg: "6xl" }}
                   fontWeight="900" lineHeight="1.05" letterSpacing="-0.025em" mb={7}>
                   Your grades<br />
                   <Box as="span" color="#F18729">live in your</Box><br />
                   pocket now.
                 </Heading>
                 <Text className="fu3"
-                  color="rgba(255,255,255,0.55)" fontSize={{ base: "md", md: "lg" }}
+                  color="#474256" fontSize={{ base: "md", md: "lg" }}
                   lineHeight="1.85" maxW="500px" mb={10}>
                   iGrades is available on iOS, Android, and the web.
                   Study on the bus, revise before bed, practice
@@ -114,10 +114,10 @@ const DownloadPage = () => {
                       boxShadow={`0 8px 24px ${p.glow}`} minW="160px">
                       <Icon boxSize={6} color="white">{p.icon}</Icon>
                       <Box textAlign="left">
-                        <Text color="rgba(255,255,255,0.65)" fontSize="9px" lineHeight={1} mb={0.5}
+                        <Text color="rgba(255,255,255,0.75)" fontSize="9px" lineHeight={1} mb={0.5}
                           textTransform="uppercase" letterSpacing="0.08em">{p.label}</Text>
                         <Text color="white" fontWeight="700" fontSize="sm" lineHeight={1.2}>{p.name}</Text>
-                        <Text color="rgba(255,255,255,0.5)" fontSize="10px" mt={0.5}>{p.sub}</Text>
+                        <Text color="rgba(255,255,255,0.65)" fontSize="10px" mt={0.5}>{p.sub}</Text>
                       </Box>
                     </Box>
                   ))}
@@ -127,7 +127,7 @@ const DownloadPage = () => {
                   {["Free to download", "No credit card", "Cancel anytime"].map((t) => (
                     <HStack key={t} gap={1.5}>
                       <Icon boxSize={3} color="#1FBA79"><BsCheckCircleFill /></Icon>
-                      <Text color="rgba(255,255,255,0.5)" fontSize="xs">{t}</Text>
+                      <Text color="#64748B" fontSize="xs" fontWeight="500">{t}</Text>
                     </HStack>
                   ))}
                 </HStack>

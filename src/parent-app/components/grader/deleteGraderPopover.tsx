@@ -32,22 +32,37 @@ const DeleteGraderPopover = ({
   
       try {
         // Extract file path from public URL
-        const publicUrl = student.profile_image;
+        const publicUrl = student?.profile_image;
         let filePath = "";
-        if (publicUrl) {
+        if (publicUrl && typeof publicUrl === "string") {
           const parts = publicUrl.split("/");
           const bucketNameIndex = parts.findIndex(
             (p: string) => p === "profile-photos"
           );
-          filePath = parts.slice(bucketNameIndex + 1).join("/");
+          if (bucketNameIndex !== -1) {
+            filePath = parts.slice(bucketNameIndex + 1).join("/");
+          }
         }
   
-        // Delete image if exists
+        // Delete image if exists in storage (catch gracefully so missing file doesn't block deletion)
         if (filePath) {
-          const { error: imageError } = await supabase.storage
-            .from("profile-photos")
-            .remove([filePath]);
-          if (imageError) throw imageError;
+          try {
+            await supabase.storage
+              .from("profile-photos")
+              .remove([filePath]);
+          } catch (imgError) {
+            console.warn("Storage image deletion warning:", imgError);
+          }
+        }
+
+        // Clean up any dependent child activity rows to prevent foreign key constraint blocks
+        try {
+          await supabase.from("attempt_answers").delete().eq("student_id", student.id);
+          await supabase.from("attempts").delete().eq("student_id", student.id);
+          await supabase.from("quiz_scores").delete().eq("student_id", student.id);
+          await supabase.from("video_progress").delete().eq("student_id", student.id);
+        } catch (cascadeErr) {
+          console.debug("Child records cleanup notice:", cascadeErr);
         }
   
         // Delete student record
@@ -56,6 +71,19 @@ const DeleteGraderPopover = ({
           .delete()
           .eq("id", student.id);
         if (dbError) throw dbError;
+
+        // Clear auth session if current student in localStorage matches
+        try {
+          const currentAuthdStudent = localStorage.getItem("authdStudent");
+          if (currentAuthdStudent) {
+            const parsed = JSON.parse(currentAuthdStudent);
+            if (parsed?.id === student.id) {
+              localStorage.removeItem("authdStudent");
+            }
+          }
+        } catch (e) {
+          console.debug("Local session cleanup:", e);
+        }
   
         // Success
         setDeleteStep("success");

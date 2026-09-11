@@ -67,28 +67,32 @@ export const WeeklyRecommendations = ({ recommendations, studentFirstName }: Pro
         </Badge>
       </Flex>
 
-      <Grid templateColumns={{ base: "repeat(1, 1fr)", md: "repeat(2, 1fr)" }} gap={3.5}>
+      <Grid templateColumns={{ base: "repeat(1, 1fr)", md: "repeat(2, 1fr)" }} gap={4}>
         {recommendations.map((rec) => {
           const meta = getRecMeta(rec.type);
           return (
             <Box
               key={rec.id}
               bg="white"
-              p={4}
-              borderRadius="xl"
-              border="1px solid"
-              borderColor={meta.border}
-              boxShadow="0 1px 4px rgba(0,0,0,0.02)"
+              p={5}
+              borderRadius="2xl"
+              border="none"
+              boxShadow="0 4px 20px -2px rgba(15, 23, 42, 0.07), 0 2px 6px -1px rgba(15, 23, 42, 0.04)"
               display="flex"
               flexDirection="column"
               justifyContent="space-between"
+              _hover={{
+                transform: "translateY(-3px)",
+                boxShadow: "0 12px 28px -4px rgba(15, 23, 42, 0.12), 0 4px 10px -2px rgba(15, 23, 42, 0.05)",
+              }}
+              transition="all 0.25s cubic-bezier(0.4, 0, 0.2, 1)"
             >
               <Box>
-                <Flex justify="space-between" align="center" mb={2}>
+                <Flex justify="space-between" align="center" mb={2.5}>
                   <Badge colorPalette={meta.badgePalette} variant="solid" size="xs" borderRadius="full">
                     {rec.badgeText}
                   </Badge>
-                  <Box bg={meta.bg} p={1.5} borderRadius="lg">
+                  <Box bg={meta.bg} p={2} borderRadius="xl" boxShadow="0 2px 6px rgba(0, 0, 0, 0.05)">
                     <Icon as={meta.icon} color={meta.color} boxSize="15px" />
                   </Box>
                 </Flex>

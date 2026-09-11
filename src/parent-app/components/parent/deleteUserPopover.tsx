@@ -48,11 +48,13 @@ const DeleteUserPopover = ({
   
           if (bucketIndex > -1) {
             const filePath = parts.slice(bucketIndex + 1).join("/");
-            const { error: storageError } = await supabase.storage
-              .from("profile-photos")
-              .remove([filePath]);
-  
-            if (storageError) throw storageError;
+            try {
+              await supabase.storage
+                .from("profile-photos")
+                .remove([filePath]);
+            } catch (storageErr) {
+              console.warn("Profile image storage deletion warning:", storageErr);
+            }
           }
         }
   

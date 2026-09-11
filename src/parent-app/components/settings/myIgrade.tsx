@@ -15,6 +15,8 @@ import manikin from "../../../assets/manikin.png";
 import EditParent from "../parent/editParent";
 import Children from "./children";
 import DeleteUserPopover from "../parent/deleteUserPopover";
+import { ParentQuizReportView } from "./ParentQuizReportView";
+import { ReferAFriendView } from "./ReferAFriendView";
 
 type ProfileState =
   | "igrade"
@@ -48,8 +50,9 @@ const MyIgrade = () => {
       case "Children":
         return <Children />;
       case "Quiz Report":
+        return <ParentQuizReportView />;
       case "Refer a Friend":
-        return <Text p={10} textAlign="center">Coming soon</Text>;
+        return <ReferAFriendView />;
       case "igrade":
       default:
         return renderMainView();

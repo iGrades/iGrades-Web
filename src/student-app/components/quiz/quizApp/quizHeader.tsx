@@ -89,9 +89,11 @@ export const QuizHeader = ({
           </Text>*/}
         </Flex>
 
-        <Flex>
-          <CheatingProgressBar cheatingScore={cheatingScore} />
-        </Flex>
+        {mode === "examination" && (
+          <Flex>
+            <CheatingProgressBar cheatingScore={cheatingScore} />
+          </Flex>
+        )}
 
         <Flex
           justify="space-between"

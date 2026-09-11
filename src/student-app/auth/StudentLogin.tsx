@@ -50,7 +50,7 @@ const StudentLogin = ({ setAlert }: Props) => {
     e.preventDefault();
     setIsLoading(true); // Start loading
 
-    const { error } = await supabase.auth.signInWithPassword({
+    const { data: authData, error } = await supabase.auth.signInWithPassword({
       email,
       password,
     });
@@ -59,6 +59,27 @@ const StudentLogin = ({ setAlert }: Props) => {
       setAlert({ type: "error", message: error.message });
       setIsLoading(false); // Stop loading on error
       return;
+    }
+
+    if (authData?.user) {
+      const { data: studentRecord } = await supabase
+        .from("students")
+        .select("*")
+        .eq("email", email)
+        .maybeSingle();
+
+      if (studentRecord) {
+        localStorage.setItem("authdStudent", JSON.stringify(studentRecord));
+      } else {
+        const fallbackStudent = {
+          id: authData.user.id,
+          email: authData.user.email || email,
+          firstname: authData.user.user_metadata?.first_name || "Student",
+          lastname: authData.user.user_metadata?.last_name || "",
+          class: "Secondary",
+        };
+        localStorage.setItem("authdStudent", JSON.stringify(fallbackStudent));
+      }
     }
 
     setIsLoading(false); // Stop loading on success

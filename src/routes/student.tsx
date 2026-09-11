@@ -2,6 +2,7 @@ import type { RouteObject } from "react-router-dom";
 import Home from "@/student-app/Home";
 import Verify from "@/student-app/auth/Verify";
 import CourseSelectionPage from "@/student-app/pages/CourseSelectionPage";
+import StudentRedirect from "@/student-app/components/StudentRedirect";
 
 const studentRoutes: RouteObject[] = [
   // dynamic routes for student dashboard with names
@@ -17,6 +18,26 @@ const studentRoutes: RouteObject[] = [
   {
     path: "/student-dashboard",
     element: <Home />,
+  },
+  {
+    path: "/student/learn",
+    element: <StudentRedirect targetPage="learn" />,
+  },
+  {
+    path: "/student/learning",
+    element: <StudentRedirect targetPage="learn" />,
+  },
+  {
+    path: "/student/quiz",
+    element: <StudentRedirect targetPage="quiz" />,
+  },
+  {
+    path: "/student/quizzes",
+    element: <StudentRedirect targetPage="quiz" />,
+  },
+  {
+    path: "/student",
+    element: <StudentRedirect targetPage="home" />,
   },
   {
     path: "/verify-student",

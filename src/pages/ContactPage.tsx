@@ -66,16 +66,16 @@ const ContactPage = () => {
           {/* ══════════════════════════════════════
               HERO
           ══════════════════════════════════════ */}
-          <Box position="relative" bg="#07052A" overflow="hidden"
-            pt={{ base: 28, md: 36 }} pb={{ base: 20, md: 28 }}
+          <Box position="relative" bg="#FFFFFF" borderBottom="1px solid #F1F3F9" overflow="hidden"
+            pt={{ base: 28, md: 36 }} pb={{ base: 16, md: 22 }}
             px={{ base: 6, md: 12, lg: 20 }}>
-            <Box position="absolute" inset={0} opacity={0.04}
-              backgroundImage="linear-gradient(#fff 1px,transparent 1px),linear-gradient(90deg,#fff 1px,transparent 1px)"
+            <Box position="absolute" inset={0} opacity={0.025}
+              backgroundImage="linear-gradient(#07052A 1px,transparent 1px),linear-gradient(90deg,#07052A 1px,transparent 1px)"
               backgroundSize="56px 56px" pointerEvents="none" />
             <Box position="absolute" top="-80px" right="-80px" w="500px" h="500px"
-              borderRadius="full" bg="#206CE1" opacity={0.07} filter="blur(100px)" pointerEvents="none" />
+              borderRadius="full" bg="#206CE1" opacity={0.04} filter="blur(100px)" pointerEvents="none" />
             <Box position="absolute" bottom="-60px" left="30%" w="300px" h="300px"
-              borderRadius="full" bg="#F18729" opacity={0.07} filter="blur(80px)" pointerEvents="none" />
+              borderRadius="full" bg="#F18729" opacity={0.05} filter="blur(80px)" pointerEvents="none" />
 
             <Box position="relative" zIndex={1} maxW="760px">
               <HStack className="fu1" mb={6} gap={2}>
@@ -84,13 +84,13 @@ const ContactPage = () => {
                   letterSpacing="0.15em" textTransform="uppercase">Contact Us</Text>
               </HStack>
               <Heading className="fu2"
-                color="white" fontSize={{ base: "3xl", md: "5xl", lg: "6xl" }}
+                color="#07052A" fontSize={{ base: "3xl", md: "5xl", lg: "6xl" }}
                 fontWeight="900" lineHeight="1.05" letterSpacing="-0.025em" mb={6}>
                 We'd love to
                 <Box as="span" color="#F18729"> hear<br />from you.</Box>
               </Heading>
               <Text className="fu3"
-                color="rgba(255,255,255,0.5)" fontSize={{ base: "md", md: "lg" }}
+                color="#474256" fontSize={{ base: "md", md: "lg" }}
                 lineHeight="1.85" maxW="560px">
                 Whether it's a question, a partnership idea, a bug report, or just a hello —
                 our team reads every message and responds within 24 hours.

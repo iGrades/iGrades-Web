@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { supabase } from "@/lib/supabaseClient";
+import { parseRegisteredCourses, isSubjectRegistered, getSubjectDisplayName } from "@/utils/subjectMatching";
 
 export interface WeeklySubjectMetric {
   subjectId: string;
@@ -186,9 +187,8 @@ export const useWeeklyLearningReport = (student: any | null, weekOffset = 0) => 
       // 3. Fetch completed attempts for this student
       const { data: allAttemptsData } = await supabase
         .from("attempts")
-        .select("id, subject_id, score, status, started_at, created_at, updated_at")
+        .select("id, subject_id, score, status, started_at, completed_at")
         .eq("student_id", studentId)
-        .eq("status", "completed")
         .order("started_at", { ascending: false });
 
       const allAttempts = allAttemptsData || [];
@@ -212,7 +212,7 @@ export const useWeeklyLearningReport = (student: any | null, weekOffset = 0) => 
 
       allAttempts.forEach((a) => {
         if (a.score !== null && a.score !== undefined) {
-          const rawDate = a.started_at || a.created_at || a.updated_at;
+          const rawDate = a.completed_at || a.started_at;
           if (rawDate) {
             allSessions.push({
               id: a.id,
@@ -444,7 +444,7 @@ export const useWeeklyLearningReport = (student: any | null, weekOffset = 0) => 
 
         subjectsList.push({
           subjectId: subId,
-          subjectName: subName,
+          subjectName: getSubjectDisplayName(subName),
           accuracy: subAccuracy,
           previousAccuracy: prevAccuracy,
           trend,
@@ -458,21 +458,27 @@ export const useWeeklyLearningReport = (student: any | null, weekOffset = 0) => 
         });
       });
 
+      // Filter strictly to courses the student has registered
+      const registeredList = parseRegisteredCourses(student?.registered_courses);
+      const filteredSubjectsList = registeredList.length > 0
+        ? subjectsList.filter((sub) => isSubjectRegistered(sub, registeredList))
+        : subjectsList;
+
       // Sort by accuracy descending
-      subjectsList.sort((a, b) => b.accuracy - a.accuracy);
+      filteredSubjectsList.sort((a, b) => b.accuracy - a.accuracy);
 
       // Identify Strongest, Most Improved, and Needs Attention
-      const strongestSubject = subjectsList.length > 0 ? subjectsList[0] : null;
+      const strongestSubject = filteredSubjectsList.length > 0 ? filteredSubjectsList[0] : null;
       
-      const improvedSubjects = subjectsList.filter((s) => s.trend === "up" && s.previousAccuracy !== null);
+      const improvedSubjects = filteredSubjectsList.filter((s) => s.trend === "up" && s.previousAccuracy !== null);
       improvedSubjects.sort((a, b) => b.trendDiff - a.trendDiff);
       const mostImprovedSubject = improvedSubjects.length > 0 ? improvedSubjects[0] : null;
 
-      const attentionSubjects = [...subjectsList].filter((s) => s.accuracy < 60 || s.trend === "down");
+      const attentionSubjects = [...filteredSubjectsList].filter((s) => s.accuracy < 60 || s.trend === "down");
       attentionSubjects.sort((a, b) => a.accuracy - b.accuracy);
       const needsAttentionSubject = attentionSubjects.length > 0 ? attentionSubjects[0] : (
-        subjectsList.length > 0 && subjectsList[subjectsList.length - 1].accuracy < 70
-          ? subjectsList[subjectsList.length - 1]
+        filteredSubjectsList.length > 0 && filteredSubjectsList[filteredSubjectsList.length - 1].accuracy < 70
+          ? filteredSubjectsList[filteredSubjectsList.length - 1]
           : null
       );
 
@@ -722,7 +728,7 @@ export const useWeeklyLearningReport = (student: any | null, weekOffset = 0) => 
               estimatedStudyTimeMinutes: priorWeekSessions.length * 15,
             }
           : undefined,
-        subjects: subjectsList,
+        subjects: filteredSubjectsList,
         strongestSubject,
         mostImprovedSubject,
         needsAttentionSubject,

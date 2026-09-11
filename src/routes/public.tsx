@@ -10,6 +10,7 @@ import Login from "@/pages/Login";
 import SignUp from "@/pages/SignUp";
 import Verify from "@/parent-app/auth/Verify";
 import AuthCallback from "@/pages/AuthCallback";
+import UpcomingPage from "@/pages/UpcomingPage";
 
 const publicRoutes: RouteObject[] = [
   {
@@ -19,6 +20,14 @@ const publicRoutes: RouteObject[] = [
   {
     path: "/about",
     element: <AboutPage />,
+  },
+  {
+    path: "/upcoming",
+    element: <UpcomingPage />,
+  },
+  {
+    path: "/start-a-class",
+    element: <UpcomingPage />,
   },
   {
     path: "/download",
@@ -35,6 +44,10 @@ const publicRoutes: RouteObject[] = [
   {
     path: "/login",
     element: <Login />,
+  },
+  {
+    path: "/student-login",
+    element: <Login initialType="student" />,
   },
   {
     path: "/signup",

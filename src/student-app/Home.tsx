@@ -3,6 +3,7 @@ import { useNavigationStore } from "@/store/usenavigationStore";
 import { useState, useEffect } from "react";
 import { useAuthdStudentData } from "@/student-app/context/studentDataContext";
 import { useNavigate, useLocation } from "react-router-dom";
+import { supabase } from "@/lib/supabaseClient";
 import Dashboard from "./layouts/dashboard";
 import Navbar from "./components/navbar";
 import Sidebar from "./components/sidebar";
@@ -28,7 +29,11 @@ const Home = () => {
   useEffect(() => {
     const cached = localStorage.getItem("authdStudent");
     if (!authdStudent && !cached) {
-      navigate("/login", { replace: true });
+      supabase.auth.getSession().then(({ data: { session } }) => {
+        if (!session) {
+          navigate("/login", { replace: true });
+        }
+      });
     }
   }, [authdStudent, navigate]);
 

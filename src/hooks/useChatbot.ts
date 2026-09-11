@@ -15,7 +15,7 @@ export interface Message {
   studentStatus?: string;
 }
 
-const EXCLUDED_PATHS = ["/quiz", "/login", "/auth", "/signin", "/signup"];
+const EXCLUDED_PATHS = ["/login", "/auth", "/signin", "/signup"];
 
 export const useChatbot = () => {
   const { authdStudent } = useAuthdStudentData();
@@ -110,7 +110,7 @@ export const useChatbot = () => {
 
   const studentName = authdStudent?.firstname || "there";
   const studentGradeLevel = authdStudent?.class || authdStudent?.grade_level || "Secondary";
-  const isExcluded = EXCLUDED_PATHS.some((p) => pathname?.includes(p));
+  const isExcluded = !isOpen && EXCLUDED_PATHS.some((p) => pathname?.includes(p));
 
   // Greet on first open with context awareness
   useEffect(() => {
@@ -161,10 +161,10 @@ export const useChatbot = () => {
 
     try {
       const performanceProfile = activeContext?.performance || (intelligence ? {
-        topicAccuracyPercent: intelligence.activity.overallAccuracy,
-        recentAttemptsCount: intelligence.activity.practiceSessionsCount,
-        weakTopics: intelligence.weakTopics.slice(0, 3).map((t) => `${t.topicName} (${t.accuracy}%)`),
-        recentScoreSummary: `Overall readiness ${intelligence.readiness.readinessBand} (${intelligence.readiness.readinessScore}%). Strongest: ${intelligence.strongestSubjects.map((s) => s.subjectName).join(", ") || "foundation"}. Repeated mistakes in: ${intelligence.repeatedMistakes.slice(0, 2).map((m) => m.topicName).join(", ") || "None"}.`,
+        topicAccuracyPercent: intelligence.activity?.overallAccuracy ?? 0,
+        recentAttemptsCount: intelligence.activity?.practiceSessionsCount ?? 0,
+        weakTopics: (intelligence.weakTopics || []).slice(0, 3).map((t) => `${t.topicName} (${t.accuracy}%)`),
+        recentScoreSummary: `Overall readiness ${intelligence.readiness?.readinessBand ?? "Learning"} (${intelligence.readiness?.readinessScore ?? 0}%). Strongest: ${(intelligence.strongestSubjects || []).map((s) => s.subjectName).join(", ") || "foundation"}. Repeated mistakes in: ${(intelligence.repeatedMistakes || []).slice(0, 2).map((m) => m.topicName).join(", ") || "None"}.`,
       } : undefined);
 
       const primaryRec = intelligence?.primaryRecommendation;
@@ -233,12 +233,24 @@ export const useChatbot = () => {
       }
 
       const data = await response.json();
-      const reply =
+      let reply =
         data.reply ||
         data.content?.find((b: any) => b.type === "text")?.text ||
         data.candidates?.[0]?.content?.parts?.[0]?.text ||
-        data.text ||
-        (data.error ? `Spark: ${data.error}` : "Sorry, I couldn't respond right now. Try again!");
+        data.text;
+
+      if (!reply) {
+        if (data.error) {
+          const errText = typeof data.error === "string" ? data.error : data.error?.message || "";
+          if (errText.includes("503") || errText.includes("demand") || errText.includes("UNAVAILABLE")) {
+            reply = "I'm experiencing a brief network surge, but I'm right here with you! Let's examine the core concept together: what fundamental formula or definition applies to this question?";
+          } else {
+            reply = "Let's review this step-by-step together. What key formula or term in the curriculum comes to mind first for this topic?";
+          }
+        } else {
+          reply = "I'm right here! Let's work through this question together: what's the first step or principle we should apply?";
+        }
+      }
 
       const guidanceLevel = typeof data.guidanceLevel === "number" ? data.guidanceLevel : undefined;
       const guidanceLevelName = data.guidanceLevelName || undefined;
@@ -286,15 +298,18 @@ export const useChatbot = () => {
     executeSend(text);
   }, [executeSend]);
 
+  const executeSendRef = useRef(executeSend);
+  executeSendRef.current = executeSend;
+
   // Check and consume pending initial prompt when opened
   useEffect(() => {
     if (isOpen) {
       const pending = consumePendingPrompt();
       if (pending) {
-        executeSend(pending);
+        executeSendRef.current(pending);
       }
     }
-  }, [isOpen, consumePendingPrompt, executeSend]);
+  }, [isOpen, consumePendingPrompt]);
 
   const clearMessages = useCallback(() => {
     setMessages([]);

@@ -150,8 +150,8 @@ const Analytics = () => {
         });
 
         setCourses(courseProgress);
-      } catch (error) {
-        console.error("Error in fetchVideoProgress:", error);
+      } catch (error: any) {
+        console.warn("Notice in fetchVideoProgress:", error?.message || error);
         setCourses(initZero());
       } finally {
         setIsLoading(false);

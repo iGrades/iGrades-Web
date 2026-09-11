@@ -325,7 +325,7 @@ Use the correct answer and explanation solely to diagnose why the student's chos
     // ── 4. AI INTEGRATION WITH MODEL INDEPENDENCE (GEMINI FIRST, ANTHROPIC FALLBACK) ──
     const geminiApiKey = Deno.env.get("GEMINI_API_KEY");
     const anthropicApiKey = Deno.env.get("ANTHROPIC_API_KEY");
-    const geminiModel = Deno.env.get("GEMINI_MODEL") || "gemini-1.5-flash";
+    const geminiModel = Deno.env.get("GEMINI_MODEL") || "gemini-3.8-flash";
 
     let replyText = "";
     let guidanceLevel = 2;

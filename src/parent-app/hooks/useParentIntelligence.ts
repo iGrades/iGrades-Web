@@ -3,6 +3,7 @@
 
 import { useMemo } from "react";
 import { useLearningIntelligence } from "@/services/learningIntelligence";
+import { parseRegisteredCourses, isSubjectRegistered, getSubjectDisplayName } from "@/utils/subjectMatching";
 
 export interface SubjectIntelligence {
   subjectId: string;
@@ -48,9 +49,22 @@ export interface ActivityItem {
 }
 
 export interface ProgressTrendPoint {
+  id?: string;
   period: string;
+  dateLabel?: string;
+  timeLabel?: string;
+  fullDate?: string;
   averageScore: number;
+  score?: number;
   attemptsCount: number;
+  subjectId?: string;
+  subjectName?: string;
+  totalQuestions?: number;
+  scoreDelta?: number;
+  grade?: string;
+  gradeLabel?: string;
+  completedAt?: string;
+  isRegistered?: boolean;
 }
 
 export interface StudentIntelligence {
@@ -181,7 +195,7 @@ export const useParentIntelligence = (student: any | null) => {
 
       return {
         subjectId: sub.subjectId,
-        subjectName: sub.subjectName,
+        subjectName: getSubjectDisplayName(sub.subjectName),
         accuracy: sub.accuracy,
         previousAccuracy: Math.max(0, sub.accuracy - sub.trendDelta),
         trend: trendMapped,
@@ -195,7 +209,14 @@ export const useParentIntelligence = (student: any | null) => {
       };
     });
 
-    const activeSubjects = subjectsList.filter((s) => s.questionsAttempted > 0 || s.sessionsCount > 0);
+    // Ensure ONLY subjects the student has registered are displayed in the parent portal
+    const registeredRaw = student?.registered_courses ?? core.registeredCourses;
+    const registeredList = parseRegisteredCourses(registeredRaw);
+    const displayedSubjects = registeredList.length > 0
+      ? subjectsList.filter((sub) => isSubjectRegistered(sub, registeredList))
+      : subjectsList;
+
+    const activeSubjects = displayedSubjects.filter((s) => s.questionsAttempted > 0 || s.sessionsCount > 0);
     const topSubjects = [...activeSubjects].sort((a, b) => b.accuracy - a.accuracy).slice(0, 3);
     const strugglingSubjects = [...activeSubjects].filter((s) => s.status === "needs_attention").slice(0, 3);
 
@@ -259,33 +280,85 @@ export const useParentIntelligence = (student: any | null) => {
       category: r.actionType === "diagnose_weakness" ? "support" : r.type === "goal" ? "celebrate" : "practice",
     }));
 
-    // Recent activity representation
-    const recentActivities: ActivityItem[] = [
-      {
-        id: "act-latest-quiz",
-        type: "quiz",
-        title: core.readiness.keyFocusSubject ? `${core.readiness.keyFocusSubject} Quiz` : "Practice Session",
-        subtitle: `Overall accuracy ${core.activity.overallAccuracy}% across ${core.activity.totalQuestionsAttempted} questions`,
-        score: core.activity.overallAccuracy,
-        timestamp: core.activity.lastActiveDate || new Date().toISOString(),
-        formattedDate: core.activity.lastActiveDate ? formatTimeAgo(core.activity.lastActiveDate) : "Recent",
-        passed: core.activity.overallAccuracy >= 50,
-      },
-    ];
+    // Build real chronological attempt trend points
+    const timeline = core.attemptTimeline || [];
+    const registeredTimeline = registeredList.length > 0
+      ? timeline.filter((pt) => isSubjectRegistered({ subjectId: pt.subjectId, subjectName: pt.subjectName }, registeredList))
+      : timeline;
 
-    // Synthetic trend history points from intelligence
-    const trendHistory: ProgressTrendPoint[] = [
-      {
-        period: "Baseline",
-        averageScore: core.trends.baselineAccuracy,
-        attemptsCount: core.trends.historicalAttemptsCount || 1,
-      },
-      {
-        period: "Recent",
-        averageScore: core.trends.recentAccuracy,
-        attemptsCount: core.trends.recentAttemptsCount || 1,
-      },
-    ];
+    let trendHistory: ProgressTrendPoint[] = [];
+
+    if (registeredTimeline.length > 0) {
+      trendHistory = registeredTimeline.map((pt, idx) => {
+        const prevScore = idx > 0 ? registeredTimeline[idx - 1].score : null;
+        const scoreDelta = prevScore !== null ? pt.score - prevScore : 0;
+        const gradeInfo = getGradeData(pt.score);
+
+        return {
+          id: pt.attemptId,
+          period: pt.displayLabel,
+          dateLabel: pt.dateLabel,
+          timeLabel: pt.timeLabel,
+          fullDate: pt.completedAt ? new Date(pt.completedAt).toLocaleString("en-US", { month: "short", day: "numeric", year: "numeric", hour: "numeric", minute: "2-digit" }) : pt.displayLabel,
+          averageScore: pt.score,
+          score: pt.score,
+          attemptsCount: 1,
+          subjectId: pt.subjectId,
+          subjectName: pt.subjectName,
+          totalQuestions: pt.totalQuestions,
+          scoreDelta,
+          grade: gradeInfo.grade,
+          gradeLabel: gradeInfo.label,
+          completedAt: pt.completedAt,
+          isRegistered: pt.isRegistered,
+        };
+      });
+    } else if (core.trends.recentAttemptsCount > 0 || core.trends.historicalAttemptsCount > 0) {
+      // Fallback only if no detailed timeline rows exist but trend counts exist
+      trendHistory = [
+        {
+          period: "Baseline",
+          averageScore: core.trends.baselineAccuracy,
+          score: core.trends.baselineAccuracy,
+          attemptsCount: core.trends.historicalAttemptsCount || 1,
+        },
+        {
+          period: "Recent",
+          averageScore: core.trends.recentAccuracy,
+          score: core.trends.recentAccuracy,
+          attemptsCount: core.trends.recentAttemptsCount || 1,
+        },
+      ];
+    }
+
+    // Real recent activities from attempts
+    let recentActivities: ActivityItem[] = [];
+    if (registeredTimeline.length > 0) {
+      const recentAttempts = [...registeredTimeline].reverse().slice(0, 5);
+      recentActivities = recentAttempts.map((att) => ({
+        id: `act-${att.attemptId}`,
+        type: "quiz",
+        title: `${att.subjectName} Practice Quiz`,
+        subtitle: `Scored ${att.score}%${att.totalQuestions ? ` across ${att.totalQuestions} questions` : ""}`,
+        score: att.score,
+        timestamp: att.completedAt || new Date().toISOString(),
+        formattedDate: att.completedAt ? formatTimeAgo(att.completedAt) : "Recently",
+        passed: att.score >= 50,
+      }));
+    } else {
+      recentActivities = [
+        {
+          id: "act-latest-quiz",
+          type: "quiz",
+          title: core.readiness.keyFocusSubject ? `${core.readiness.keyFocusSubject} Quiz` : "Practice Session",
+          subtitle: `Overall accuracy ${core.activity.overallAccuracy}% across ${core.activity.totalQuestionsAttempted} questions`,
+          score: core.activity.overallAccuracy,
+          timestamp: core.activity.lastActiveDate || new Date().toISOString(),
+          formattedDate: core.activity.lastActiveDate ? formatTimeAgo(core.activity.lastActiveDate) : "Recent",
+          passed: core.activity.overallAccuracy >= 50,
+        },
+      ];
+    }
 
     return {
       studentId: core.studentId,
@@ -306,7 +379,7 @@ export const useParentIntelligence = (student: any | null) => {
       totalVideosWatched: core.activity.videosWatchedCount,
       studyStreakDays: core.activity.currentStreakDays,
       lastActiveDate: core.activity.lastActiveDate ? formatTimeAgo(core.activity.lastActiveDate) : null,
-      subjects: subjectsList,
+      subjects: displayedSubjects,
       strengths: {
         highlight: strengthsHighlight,
         description: strengthsDescription,

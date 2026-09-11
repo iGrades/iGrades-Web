@@ -6,12 +6,14 @@ import {
   Heading,
   Text,
 } from "@chakra-ui/react";
+import { useNavigate } from "react-router-dom";
 import instructorsBg from "@/assets/landing-page/instructors_bg.png";
 import studentsBg from "@/assets/landing-page/students_bg.png";
 import resultsImg from "@/assets/landing-page/results_img.png";
 import Goals from "./goals";
 
 const About = () => {
+  const navigate = useNavigate();
   const actions = [
     {
       label: "For Instructors",
@@ -20,6 +22,7 @@ const About = () => {
       borderColor: "white",
       btnLabel: "Start a class today",
       hoverColor: "#23BDEEE5",
+      link: "/upcoming",
     },
     {
       label: "For Students",
@@ -28,6 +31,7 @@ const About = () => {
       borderColor: "transparent",
       btnLabel: "Enter access code",
       hoverColor: "transparent",
+      link: "/student-login",
     },
   ];
   return (
@@ -80,6 +84,8 @@ const About = () => {
               {action.label}
             </Heading>
             <Button
+              onClick={() => navigate(action.link)}
+              cursor="pointer"
               p={8}
               w={56}
               my={4}
@@ -89,7 +95,8 @@ const About = () => {
               rounded="3xl"
               color="white"
               fontSize="md"
-              _hover={{ bg: "black", borderColor: "white", opacity: 0.7 }}
+              _hover={{ bg: "black", borderColor: "white", opacity: 0.9, transform: "scale(1.02)" }}
+              transition="all 0.2s"
             >
               {action.btnLabel}
             </Button>

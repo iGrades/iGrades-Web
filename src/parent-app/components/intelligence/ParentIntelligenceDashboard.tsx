@@ -198,7 +198,10 @@ export const ParentIntelligenceDashboard = () => {
                   <AttentionAndActionsSection intelligence={intelligence} />
 
                   {/* 5. Subject Performance */}
-                  <SubjectPerformanceSection subjects={intelligence.subjects} />
+                  <SubjectPerformanceSection
+                    subjects={intelligence.subjects}
+                    registeredCourses={selectedStudent?.registered_courses}
+                  />
 
                   {/* 6. Strengths & Areas Requiring Attention Deep-Dive */}
                   <StrengthsAndWeaknessesSection intelligence={intelligence} />

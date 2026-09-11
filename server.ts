@@ -2,6 +2,7 @@ import express from "express";
 import path from "path";
 import { createServer as createViteServer } from "vite";
 import { GoogleGenAI } from "@google/genai";
+import { pointsEngine } from "./server/pointsEngine";
 
 interface QuestionContext {
   questionNumber?: number;
@@ -225,6 +226,60 @@ Use the correct answer and explanation solely to diagnose why the student's chos
     .join("\n\n---\n\n");
 }
 
+function generateResilientTutorReply(
+  studentName?: string,
+  learningContext?: LearningContext,
+  lastUserMessage?: string
+): {
+  reply: string;
+  guidanceLevel: number;
+  guidanceLevelName: string;
+  misconceptionType: string | null;
+  studentStatus: string;
+} {
+  const name = studentName ? studentName.trim() : "there";
+  const subject = learningContext?.subject || "this subject";
+  const topic = learningContext?.topic || learningContext?.subtopic || "this topic";
+  const q = learningContext?.currentQuestion;
+
+  if (q?.questionText) {
+    const studentChoice = q.studentAnswer ? `selected option **${q.studentAnswer}**` : "looked at this question";
+    return {
+      reply: `Hi **${name}**! Let's carefully analyze this **${subject}** question on **${topic}** together.
+
+You ${studentChoice}. In Nigerian examinations like WAEC and JAMB, this problem tests how well you recall the core definition or governing principle.
+
+Before calculating or guessing, what is the fundamental formula or rule that relates the given quantities here?`,
+      guidanceLevel: 2,
+      guidanceLevelName: "Small hint",
+      misconceptionType: null,
+      studentStatus: "attempting",
+    };
+  }
+
+  if (lastUserMessage && (lastUserMessage.toLowerCase().includes("answer") || lastUserMessage.toLowerCase().includes("what is"))) {
+    return {
+      reply: `I hear you, **${name}**! As your Spark AI learning companion, I won't just give you the final answer directly, because mastering the reasoning is what guarantees your distinction in WAEC & JAMB.
+
+Let's break it down together: what information has the question provided, and what is the very first step you take?`,
+      guidanceLevel: 1,
+      guidanceLevelName: "Socratic question",
+      misconceptionType: null,
+      studentStatus: "attempting",
+    };
+  }
+
+  return {
+    reply: `Hello **${name}**! I'm here with you on **${subject}** (${topic}).
+
+Every great score starts with a solid grasp of the basics. Which specific part or formula in this section would you like to review first?`,
+    guidanceLevel: 2,
+    guidanceLevelName: "Small hint",
+    misconceptionType: null,
+    studentStatus: "attempting",
+  };
+}
+
 async function startServer() {
   const app = express();
   const PORT = 3000;
@@ -236,91 +291,336 @@ async function startServer() {
     res.json({ status: "ok" });
   });
 
+  // Dedicated iGG Points & Rewards API Endpoints
+  const handleAwardPoints = async (req: express.Request, res: express.Response) => {
+    try {
+      const { event, student_id, quiz_id, score_percentage } = req.body || {};
+      if (!student_id) {
+        return res.status(400).json({ error: "student_id is required" });
+      }
+
+      if (event === "login") {
+        const result = await pointsEngine.awardLogin(student_id);
+        return res.json(result);
+      } else if (event === "quiz_completion") {
+        if (!quiz_id) {
+          return res.status(400).json({ error: "quiz_id is required for quiz_completion" });
+        }
+        const score = typeof score_percentage === "number" ? score_percentage : 50;
+        const result = await pointsEngine.awardQuizCompletion(student_id, quiz_id, score);
+        return res.json(result);
+      } else {
+        return res.status(400).json({ error: `Unsupported event type: ${event}` });
+      }
+    } catch (err: any) {
+      console.error("Error in award-points handler:", err);
+      return res.status(500).json({ error: err?.message || "Internal points calculation error" });
+    }
+  };
+
+  app.post("/api/award-points", handleAwardPoints);
+  app.post("/functions/v1/award-points", handleAwardPoints);
+
+  app.get("/api/points-data/:studentId", (req, res) => {
+    try {
+      const { studentId } = req.params;
+      const data = pointsEngine.getStudentPointsData(studentId);
+      res.json({ success: true, data });
+    } catch (err: any) {
+      res.status(500).json({ error: err?.message || "Internal error fetching points data" });
+    }
+  });
+
+  app.post("/api/convert-points", async (req, res) => {
+    try {
+      const { student_id, points_to_convert } = req.body || {};
+      if (!student_id || !points_to_convert) {
+        return res.status(400).json({ error: "student_id and points_to_convert are required" });
+      }
+      const result = await pointsEngine.convertPoints(student_id, Number(points_to_convert));
+      res.json(result);
+    } catch (err: any) {
+      res.status(400).json({ error: err?.message || "Failed to convert points" });
+    }
+  });
+
+  app.post("/api/apply-credit", async (req, res) => {
+    try {
+      const { student_id, invoice_amount, invoice_id } = req.body || {};
+      if (!student_id || typeof invoice_amount !== "number") {
+        return res.status(400).json({ error: "student_id and invoice_amount are required" });
+      }
+      const result = await pointsEngine.applyCredit(student_id, invoice_amount, invoice_id);
+      res.json(result);
+    } catch (err: any) {
+      res.status(400).json({ error: err?.message || "Failed to apply credit" });
+    }
+  });
+
+  // Supabase proxy route to handle iframe cross-origin requests securely
+  app.use("/api/supabase-proxy", async (req, res) => {
+    try {
+      const urlPath = req.url || "";
+
+      // Authoritative interception for iGG points tables & RPCs
+      if (urlPath.includes("/functions/v1/award-points") || urlPath.includes("/award-points")) {
+        const { event, student_id, quiz_id, score_percentage } = req.body || {};
+        if (event === "login") {
+          const result = await pointsEngine.awardLogin(student_id);
+          return res.json(result);
+        } else if (event === "quiz_completion") {
+          const result = await pointsEngine.awardQuizCompletion(student_id, quiz_id, score_percentage || 50);
+          return res.json(result);
+        }
+      }
+
+      if (urlPath.includes("/rpc/get_points_balance")) {
+        const studentId = req.body?.p_student_id || (req.query?.p_student_id as string);
+        const balance = pointsEngine.getPointsBalance(studentId);
+        return res.json(balance);
+      }
+
+      if (urlPath.includes("/rpc/get_credit_balance")) {
+        const studentId = req.body?.p_student_id || (req.query?.p_student_id as string);
+        const balance = pointsEngine.getCreditBalance(studentId);
+        return res.json(balance);
+      }
+
+      if (urlPath.includes("/rpc/get_daily_earned_points")) {
+        const studentId = req.body?.p_student_id || (req.query?.p_student_id as string);
+        const dateStr = req.body?.p_date || (req.query?.p_date as string);
+        const daily = pointsEngine.getDailyEarnedPoints(studentId, dateStr);
+        return res.json(daily);
+      }
+
+      if (urlPath.includes("/rpc/fn_convert_points_to_credit")) {
+        const studentId = req.body?.p_student_id;
+        const points = Number(req.body?.p_points_to_convert);
+        try {
+          const result = await pointsEngine.convertPoints(studentId, points);
+          return res.json(result);
+        } catch (e: any) {
+          return res.status(400).json({ error: e.message });
+        }
+      }
+
+      if (urlPath.includes("/rpc/fn_apply_credit_to_invoice")) {
+        const studentId = req.body?.p_student_id;
+        const invoiceAmount = Number(req.body?.p_invoice_amount);
+        const invoiceId = req.body?.p_invoice_id;
+        try {
+          const result = await pointsEngine.applyCredit(studentId, invoiceAmount, invoiceId);
+          return res.json(result);
+        } catch (e: any) {
+          return res.status(400).json({ error: e.message });
+        }
+      }
+
+      if (urlPath.includes("/rest/v1/points_transactions")) {
+        const match = urlPath.match(/student_id=eq\.([^&]+)/);
+        const studentId = match ? decodeURIComponent(match[1]) : "";
+        const data = pointsEngine.getStudentPointsData(studentId);
+        res.setHeader("Content-Range", `0-${data.pointsHistory.length}/${data.pointsHistory.length}`);
+        return res.json(data.pointsHistory);
+      }
+
+      if (urlPath.includes("/rest/v1/credit_transactions")) {
+        const match = urlPath.match(/student_id=eq\.([^&]+)/);
+        const studentId = match ? decodeURIComponent(match[1]) : "";
+        const data = pointsEngine.getStudentPointsData(studentId);
+        res.setHeader("Content-Range", `0-${data.creditHistory.length}/${data.creditHistory.length}`);
+        return res.json(data.creditHistory);
+      }
+
+      if (urlPath.includes("/rest/v1/student_streaks")) {
+        const match = urlPath.match(/student_id=eq\.([^&]+)/);
+        const studentId = match ? decodeURIComponent(match[1]) : "";
+        const streak = pointsEngine.getStudentStreak(studentId);
+        const accept = req.headers["accept"] || "";
+        if (typeof accept === "string" && accept.includes("vnd.pgrst.object+json")) {
+          return res.json(streak);
+        }
+        res.setHeader("Content-Range", "0-1/1");
+        return res.json([streak]);
+      }
+      const supabaseBase = process.env.VITE_SUPABASE_URL || "https://jmjballgaxelqhsvhlvl.supabase.co";
+      const targetUrl = new URL(req.url, supabaseBase).toString();
+
+      const headers: Record<string, string> = {};
+      for (const [key, value] of Object.entries(req.headers)) {
+        const lower = key.toLowerCase();
+        if (!["host", "connection", "content-length", "accept-encoding", "content-type"].includes(lower)) {
+          if (typeof value === "string") {
+            headers[key] = value;
+          } else if (Array.isArray(value)) {
+            headers[key] = value.join(", ");
+          }
+        }
+      }
+
+      if (!headers["apikey"] && process.env.VITE_SUPABASE_ANON_KEY) {
+        headers["apikey"] = process.env.VITE_SUPABASE_ANON_KEY;
+      }
+      if (!headers["authorization"] && process.env.VITE_SUPABASE_ANON_KEY) {
+        headers["authorization"] = `Bearer ${process.env.VITE_SUPABASE_ANON_KEY}`;
+      }
+
+      const method = req.method.toUpperCase();
+      const hasBody =
+        req.body &&
+        ((typeof req.body === "object" && Object.keys(req.body).length > 0) ||
+          (typeof req.body === "string" && req.body.trim().length > 0));
+
+      const fetchOptions: RequestInit = {
+        method: req.method,
+        headers,
+      };
+
+      if (["POST", "PUT", "PATCH", "DELETE"].includes(method) && hasBody) {
+        fetchOptions.body = typeof req.body === "string" ? req.body : JSON.stringify(req.body);
+        headers["content-type"] = typeof req.headers["content-type"] === "string" ? req.headers["content-type"] : "application/json";
+      }
+
+      const response = await fetch(targetUrl, fetchOptions);
+
+      response.headers.forEach((val, key) => {
+        const lower = key.toLowerCase();
+        if (!["content-encoding", "content-length", "transfer-encoding"].includes(lower)) {
+          res.setHeader(key, val);
+        }
+      });
+
+      res.status(response.status);
+      const arrayBuf = await response.arrayBuffer();
+      res.send(Buffer.from(arrayBuf));
+    } catch (err: any) {
+      console.warn("Supabase proxy warning:", err?.message || err);
+      res.status(502).json({ error: "Failed to communicate with Supabase", details: err?.message });
+    }
+  });
+
   app.post("/api/spark-chat", async (req, res) => {
     try {
-      const { messages, studentName, gradeLevel, learningContext } = req.body;
+      const { messages, studentName, gradeLevel, learningContext } = req.body || {};
 
       if (!messages || !Array.isArray(messages) || messages.length === 0) {
         return res.status(400).json({ error: "Invalid request: messages array is required." });
       }
 
-      const ai = getGenAI();
-      const systemInstruction = buildSystemInstructions(studentName, gradeLevel, learningContext);
+      const lastUserMsg = [...messages].reverse().find((m: any) => m.role === "user")?.content || "";
 
-      // Map to Gemini contents format
-      const contents = messages.map((m: { role: string; content: string }) => ({
-        role: m.role === "assistant" ? "model" : "user",
-        parts: [{ text: m.content || "" }],
-      }));
+      let ai: GoogleGenAI | null = null;
+      try {
+        ai = getGenAI();
+      } catch (keyErr: any) {
+        console.warn("Gemini client key warning, using pedagogical tutor fallback:", keyErr?.message);
+      }
 
-      const candidateModels = ["gemini-3.1-flash-lite", "gemini-3.6-flash", "gemini-3.8-flash"];
-      let responseText: string | null = null;
-      let lastError: any = null;
+      if (ai) {
+        const systemInstruction = buildSystemInstructions(studentName, gradeLevel, learningContext);
 
-      for (const modelName of candidateModels) {
-        try {
-          const response = await ai.models.generateContent({
-            model: modelName,
-            contents,
-            config: {
-              systemInstruction,
-              responseMimeType: "application/json",
-              temperature: 0.6,
-              maxOutputTokens: 1000,
-            },
-          });
-          if (response?.text) {
-            responseText = response.text;
+        // Map to Gemini contents format
+        const contents = messages.map((m: { role: string; content: string }) => ({
+          role: m.role === "assistant" ? "model" : "user",
+          parts: [{ text: m.content || "" }],
+        }));
+
+        const candidateModels = ["gemini-3.8-flash", "gemini-3.1-flash-lite", "gemini-flash-latest"];
+        let responseText: string | null = null;
+
+        for (const modelName of candidateModels) {
+          // Attempt call with 1 backoff retry on 503 high demand / 429
+          for (let attempt = 0; attempt < 2; attempt++) {
+            try {
+              const response = await ai.models.generateContent({
+                model: modelName,
+                contents,
+                config: {
+                  systemInstruction,
+                  responseMimeType: "application/json",
+                  temperature: 0.6,
+                  maxOutputTokens: 1000,
+                },
+              });
+              if (response?.text) {
+                responseText = response.text;
+                break;
+              }
+            } catch (mErr: any) {
+              const errMsg = String(mErr?.message || mErr || "");
+              const isHighDemand = errMsg.includes("503") || errMsg.includes("high demand") || errMsg.includes("UNAVAILABLE") || errMsg.includes("429");
+              if (isHighDemand && attempt === 0) {
+                // Brief 500ms delay before retrying
+                await new Promise((resolve) => setTimeout(resolve, 500));
+                continue;
+              }
+              console.warn(`Model ${modelName} failed on attempt ${attempt + 1}:`, errMsg.slice(0, 150));
+              break;
+            }
+          }
+          if (responseText) {
             break;
           }
-        } catch (mErr: any) {
-          console.warn(`Model ${modelName} failed, trying next:`, mErr?.message || mErr);
-          lastError = mErr;
         }
-      }
 
-      if (!responseText) {
-        throw lastError || new Error("Unable to obtain a response from Spark.");
-      }
+        if (responseText) {
+          let parsedPayload = {
+            reply: responseText,
+            guidanceLevel: 2,
+            guidanceLevelName: "Small hint",
+            misconceptionType: null as string | null,
+            studentStatus: "attempting",
+          };
 
-      let parsedPayload = {
-        reply: responseText,
-        guidanceLevel: 2,
-        guidanceLevelName: "Small hint",
-        misconceptionType: null as string | null,
-        studentStatus: "attempting",
-      };
-
-      try {
-        const jsonMatch = responseText.match(/\{[\s\S]*\}/);
-        if (jsonMatch) {
-          const raw = JSON.parse(jsonMatch[0]);
-          if (raw.reply) {
-            parsedPayload = {
-              reply: raw.reply,
-              guidanceLevel: Number(raw.guidanceLevel) || 2,
-              guidanceLevelName: raw.guidanceLevelName || "Small hint",
-              misconceptionType: raw.misconceptionType || null,
-              studentStatus: raw.studentStatus || "attempting",
-            };
+          try {
+            const jsonMatch = responseText.match(/\{[\s\S]*\}/);
+            if (jsonMatch) {
+              const raw = JSON.parse(jsonMatch[0]);
+              if (raw.reply) {
+                parsedPayload = {
+                  reply: raw.reply,
+                  guidanceLevel: Number(raw.guidanceLevel) || 2,
+                  guidanceLevelName: raw.guidanceLevelName || "Small hint",
+                  misconceptionType: raw.misconceptionType || null,
+                  studentStatus: raw.studentStatus || "attempting",
+                };
+              }
+            }
+          } catch {
+            // Fallback to raw text if model output was not strictly parseable
           }
+
+          return res.json({
+            reply: parsedPayload.reply,
+            guidanceLevel: parsedPayload.guidanceLevel,
+            guidanceLevelName: parsedPayload.guidanceLevelName,
+            misconceptionType: parsedPayload.misconceptionType,
+            studentStatus: parsedPayload.studentStatus,
+            content: [{ type: "text", text: parsedPayload.reply }],
+          });
         }
-      } catch {
-        // Fallback to raw text if model output was not strictly parseable
       }
 
+      // Resilient educational fallback (used if API models encounter demand spikes or network outage)
+      const fallback = generateResilientTutorReply(studentName, learningContext, lastUserMsg);
       return res.json({
-        reply: parsedPayload.reply,
-        guidanceLevel: parsedPayload.guidanceLevel,
-        guidanceLevelName: parsedPayload.guidanceLevelName,
-        misconceptionType: parsedPayload.misconceptionType,
-        studentStatus: parsedPayload.studentStatus,
-        content: [{ type: "text", text: parsedPayload.reply }],
+        reply: fallback.reply,
+        guidanceLevel: fallback.guidanceLevel,
+        guidanceLevelName: fallback.guidanceLevelName,
+        misconceptionType: fallback.misconceptionType,
+        studentStatus: fallback.studentStatus,
+        content: [{ type: "text", text: fallback.reply }],
       });
     } catch (err: any) {
       console.error("Error in /api/spark-chat:", err);
-      return res.status(500).json({
-        error: err?.message || "An unexpected error occurred while communicating with Spark.",
+      const fallback = generateResilientTutorReply(req.body?.studentName, req.body?.learningContext);
+      return res.json({
+        reply: fallback.reply,
+        guidanceLevel: fallback.guidanceLevel,
+        guidanceLevelName: fallback.guidanceLevelName,
+        misconceptionType: fallback.misconceptionType,
+        studentStatus: fallback.studentStatus,
+        content: [{ type: "text", text: fallback.reply }],
       });
     }
   });

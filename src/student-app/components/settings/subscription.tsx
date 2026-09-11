@@ -21,7 +21,7 @@ import { FiAward } from "react-icons/fi";
 const Subscription: React.FC = () => {
   const { initializePayment, isLoading, loadingPlanId } = useFlutterwave();
   const { authdStudent, refreshStudentData } = useAuthdStudentData();
-  const { pointsBalance, creditBalance, convertPoints, actionLoading } = usePointsSystem();
+  const { pointsBalance, creditBalance, convertPoints, applyCredit, actionLoading } = usePointsSystem();
 
   const subscriptionPlans: SubscriptionPlan[] = [
     {
@@ -77,18 +77,34 @@ const Subscription: React.FC = () => {
 
     const userEmail = authdStudent?.email;
 
-    // 1. Trigger Flutterwave UI (or skip for free plan)
-    const result = await initializePayment(plan, userEmail);
+    // Calculate store credit discount
+    const availableCredit = creditBalance || 0;
+    const creditToApply = plan.amount > 0 ? Math.min(availableCredit, plan.amount) : 0;
+    const payableAmount = Math.max(0, plan.amount - creditToApply);
 
-    // 2. If payment succeeded (or free plan selected)
+    const effectivePlan: SubscriptionPlan = {
+      ...plan,
+      amount: payableAmount,
+    };
+
+    // 1. Trigger Flutterwave UI (or skip for free / 100% store credit covered plan)
+    const result = await initializePayment(effectivePlan, userEmail);
+
+    // 2. If payment succeeded (or free plan / credit-paid selected)
     if (result.success) {
       try {
+        // Atomically deduct store credit if applied
+        if (creditToApply > 0) {
+          const invoiceId = `sub_${plan.id}_${Date.now()}`;
+          await applyCredit(invoiceId, creditToApply);
+        }
+
         const { error } = await supabase
           .from("students")
           .update({
             subscription: plan.id,
             subscription_status: "active",
-            last_payment_ref: result.response?.tx_ref || "free_plan",
+            last_payment_ref: result.response?.tx_ref || (creditToApply >= plan.amount ? "store_credit_full" : "free_plan"),
           })
           .eq("id", authdStudent?.id);
 
@@ -98,9 +114,11 @@ const Subscription: React.FC = () => {
 
         toaster.create({
           title: "Subscription Updated!",
-          description: `You are now on the ${plan.name} plan.`,
+          description: creditToApply > 0
+            ? `Applied ₦${creditToApply.toLocaleString()} store credit! You are now on the ${plan.name} plan.`
+            : `You are now on the ${plan.name} plan.`,
           type: "success",
-          duration: 4000,
+          duration: 5000,
           closable: true,
         });
       } catch (err) {
@@ -228,9 +246,18 @@ const Subscription: React.FC = () => {
               <Text fontSize="xs" color="fieldTextColor">
                 {plan.text}
               </Text>
-              <Heading my={4} fontSize="2xl" color="on_backgroundColor">
-                {plan.price}
-              </Heading>
+              <Box my={3}>
+                <Heading fontSize="2xl" color="on_backgroundColor">
+                  {plan.price}
+                </Heading>
+                {creditBalance > 0 && plan.amount > 0 && (
+                  <Badge colorPalette="green" variant="subtle" mt={1} px={2} py={0.5} fontSize="11px" borderRadius="md">
+                    {creditBalance >= plan.amount
+                      ? "100% Covered by Store Credit"
+                      : `₦${creditBalance.toLocaleString()} credit applied → Pay ₦${(plan.amount - creditBalance).toLocaleString()}`}
+                  </Badge>
+                )}
+              </Box>
 
               <Button
                 w="full"

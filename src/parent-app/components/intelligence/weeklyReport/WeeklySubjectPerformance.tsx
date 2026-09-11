@@ -59,19 +59,21 @@ export const WeeklySubjectPerformance = ({
       </Flex>
 
       {/* 3 Highlight Pills: Strongest, Most Improved, Needs Attention */}
-      <Grid templateColumns={{ base: "repeat(1, 1fr)", md: "repeat(3, 1fr)" }} gap={3} mb={4}>
+      <Grid templateColumns={{ base: "repeat(1, 1fr)", md: "repeat(3, 1fr)" }} gap={3.5} mb={4}>
         {/* Strongest Subject */}
         <Box
           bg="green.50"
-          p={3.5}
-          borderRadius="xl"
-          border="1px solid"
-          borderColor="green.200"
+          p={4}
+          borderRadius="2xl"
+          border="none"
+          boxShadow="0 4px 18px -2px rgba(16, 185, 129, 0.18), 0 2px 6px -1px rgba(0, 0, 0, 0.04)"
+          _hover={{ transform: "translateY(-2px)", boxShadow: "0 8px 24px -2px rgba(16, 185, 129, 0.25)" }}
+          transition="all 0.25s cubic-bezier(0.4, 0, 0.2, 1)"
           display="flex"
           alignItems="center"
-          gap={3}
+          gap={3.5}
         >
-          <Box bg="white" p={2} borderRadius="lg" shadow="xs">
+          <Box bg="white" p={2.5} borderRadius="xl" boxShadow="0 2px 6px rgba(16, 185, 129, 0.15)">
             <Icon as={FiAward} color="green.600" boxSize="18px" />
           </Box>
           <Box>
@@ -92,15 +94,17 @@ export const WeeklySubjectPerformance = ({
         {/* Most Improved Subject */}
         <Box
           bg="blue.50"
-          p={3.5}
-          borderRadius="xl"
-          border="1px solid"
-          borderColor="blue.200"
+          p={4}
+          borderRadius="2xl"
+          border="none"
+          boxShadow="0 4px 18px -2px rgba(32, 108, 225, 0.18), 0 2px 6px -1px rgba(0, 0, 0, 0.04)"
+          _hover={{ transform: "translateY(-2px)", boxShadow: "0 8px 24px -2px rgba(32, 108, 225, 0.25)" }}
+          transition="all 0.25s cubic-bezier(0.4, 0, 0.2, 1)"
           display="flex"
           alignItems="center"
-          gap={3}
+          gap={3.5}
         >
-          <Box bg="white" p={2} borderRadius="lg" shadow="xs">
+          <Box bg="white" p={2.5} borderRadius="xl" boxShadow="0 2px 6px rgba(32, 108, 225, 0.15)">
             <Icon as={FiTrendingUp} color="#206CE1" boxSize="18px" />
           </Box>
           <Box>
@@ -125,15 +129,26 @@ export const WeeklySubjectPerformance = ({
         {/* Needs Attention Subject */}
         <Box
           bg={needsAttentionSubject ? "orange.50" : "gray.50"}
-          p={3.5}
-          borderRadius="xl"
-          border="1px solid"
-          borderColor={needsAttentionSubject ? "orange.200" : "gray.200"}
+          p={4}
+          borderRadius="2xl"
+          border="none"
+          boxShadow={
+            needsAttentionSubject
+              ? "0 4px 18px -2px rgba(245, 158, 11, 0.18), 0 2px 6px -1px rgba(0, 0, 0, 0.04)"
+              : "0 4px 14px -2px rgba(0, 0, 0, 0.05)"
+          }
+          _hover={{
+            transform: "translateY(-2px)",
+            boxShadow: needsAttentionSubject
+              ? "0 8px 24px -2px rgba(245, 158, 11, 0.25)"
+              : "0 6px 18px -2px rgba(0, 0, 0, 0.08)",
+          }}
+          transition="all 0.25s cubic-bezier(0.4, 0, 0.2, 1)"
           display="flex"
           alignItems="center"
-          gap={3}
+          gap={3.5}
         >
-          <Box bg="white" p={2} borderRadius="lg" shadow="xs">
+          <Box bg="white" p={2.5} borderRadius="xl" boxShadow="0 2px 6px rgba(0, 0, 0, 0.08)">
             <Icon as={FiAlertCircle} color={needsAttentionSubject ? "orange.600" : "gray.500"} boxSize="18px" />
           </Box>
           <Box>
@@ -158,31 +173,33 @@ export const WeeklySubjectPerformance = ({
 
       {/* Subject List Cards */}
       {subjects.length === 0 ? (
-        <Box p={6} textAlign="center" bg="gray.50" borderRadius="xl" border="1px dashed" borderColor="gray.200">
+        <Box p={6} textAlign="center" bg="gray.50" borderRadius="2xl" boxShadow="0 2px 10px rgba(0, 0, 0, 0.04)">
           <Text fontSize="xs" color="gray.500">
             No subject practice recorded for this weekly period.
           </Text>
         </Box>
       ) : (
-        <VStack gap={2.5} align="stretch">
+        <VStack gap={3} align="stretch">
           {subjects.map((sub) => {
             const hasPrior = sub.previousAccuracy !== null;
             return (
               <Box
                 key={sub.subjectId}
                 bg="white"
-                p={4}
-                borderRadius="xl"
-                border="1px solid"
-                borderColor="gray.150"
-                boxShadow="0 1px 3px rgba(0,0,0,0.02)"
-                _hover={{ borderColor: "blue.200" }}
-                transition="all 0.2s"
+                p={4.5}
+                borderRadius="2xl"
+                border="none"
+                boxShadow="0 4px 18px -2px rgba(15, 23, 42, 0.06), 0 2px 6px -1px rgba(15, 23, 42, 0.03)"
+                _hover={{
+                  transform: "translateY(-2px)",
+                  boxShadow: "0 10px 26px -3px rgba(32, 108, 225, 0.12), 0 4px 8px -2px rgba(15, 23, 42, 0.04)",
+                }}
+                transition="all 0.25s cubic-bezier(0.4, 0, 0.2, 1)"
               >
                 <Flex justify="space-between" align="center" mb={2} wrap="wrap" gap={2}>
                   <HStack gap={2.5}>
-                    <Box bg="blue.50" p={1.5} borderRadius="md">
-                      <Icon as={FiBook} color="#206CE1" boxSize="14px" />
+                    <Box bg="blue.50" p={2} borderRadius="lg" boxShadow="0 2px 6px rgba(32, 108, 225, 0.08)">
+                      <Icon as={FiBook} color="#206CE1" boxSize="15px" />
                     </Box>
                     <Box>
                       <Text fontSize="sm" fontWeight="800" color="gray.900">
@@ -218,7 +235,7 @@ export const WeeklySubjectPerformance = ({
                 </Flex>
 
                 {/* Progress bar */}
-                <Box mt={2}>
+                <Box mt={2.5}>
                   <Box w="full" bg="gray.100" h="6px" borderRadius="full" overflow="hidden">
                     <Box
                       h="full"

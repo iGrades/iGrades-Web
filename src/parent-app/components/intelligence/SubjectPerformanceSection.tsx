@@ -1,13 +1,22 @@
+import { useMemo } from "react";
 import { Box, Flex, Heading, Text, VStack, HStack, Badge, Progress, Icon, Table } from "@chakra-ui/react";
 import { FiTrendingUp, FiTrendingDown, FiMinus, FiBook, FiClock } from "react-icons/fi";
 import type { SubjectIntelligence } from "@/parent-app/hooks/useParentIntelligence";
+import { filterRegisteredSubjects } from "@/utils/subjectMatching";
 
 type Props = {
   subjects: SubjectIntelligence[];
   onSelectSubject?: (subjectId: string) => void;
+  registeredCourses?: string[] | string | null;
 };
 
-export const SubjectPerformanceSection = ({ subjects, onSelectSubject }: Props) => {
+export const SubjectPerformanceSection = ({ subjects, onSelectSubject, registeredCourses }: Props) => {
+  const displayedSubjects = useMemo(() => {
+    if (registeredCourses !== undefined && registeredCourses !== null) {
+      return filterRegisteredSubjects(subjects, registeredCourses);
+    }
+    return subjects;
+  }, [subjects, registeredCourses]);
   const getStatusBadge = (status: SubjectIntelligence["status"]) => {
     switch (status) {
       case "strong":
@@ -47,11 +56,11 @@ export const SubjectPerformanceSection = ({ subjects, onSelectSubject }: Props) 
           </Box>
         </HStack>
         <Badge colorPalette="gray" variant="surface" size="sm" borderRadius="full">
-          {subjects.length} Registered Subject{subjects.length === 1 ? "" : "s"}
+          {displayedSubjects.length} Registered Subject{displayedSubjects.length === 1 ? "" : "s"}
         </Badge>
       </Flex>
 
-      {subjects.length === 0 ? (
+      {displayedSubjects.length === 0 ? (
         <Box p={6} textAlign="center" bg="gray.50" borderRadius="xl">
           <Text fontSize="xs" color="gray.500">
             No subjects registered yet. Add subjects to view detailed scores and progress.
@@ -83,7 +92,7 @@ export const SubjectPerformanceSection = ({ subjects, onSelectSubject }: Props) 
               </Table.Row>
             </Table.Header>
             <Table.Body>
-              {subjects.map((sub) => {
+              {displayedSubjects.map((sub) => {
                 const trendIcon = sub.trend === "up" ? FiTrendingUp : sub.trend === "down" ? FiTrendingDown : FiMinus;
                 const trendColor = sub.trend === "up" ? "green.600" : sub.trend === "down" ? "red.600" : "gray.600";
                 const trendText =

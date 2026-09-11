@@ -111,8 +111,9 @@ const MyClasses = () => {
         console.log("video progress from active classes : ", videoProgress)
 
         if (error) {
-          console.error("Error fetching video progress:", error);
+          console.warn("Notice fetching video progress:", error?.message || error);
           setActiveClassesCount(0);
+          setRecentActivity([]);
           setIsLoading(false);
           return;
         }
@@ -150,9 +151,10 @@ const MyClasses = () => {
           );
 
         setRecentActivity(activityArray);
-      } catch (error) {
-        console.error("Error calculating active classes:", error);
+      } catch (error: any) {
+        console.warn("Notice calculating active classes:", error?.message || error);
         setActiveClassesCount(0);
+        setRecentActivity([]);
       } finally {
         setIsLoading(false);
       }

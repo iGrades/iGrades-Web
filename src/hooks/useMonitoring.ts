@@ -1,6 +1,7 @@
-import { useState, useCallback, useRef } from "react";
+import { useState, useCallback, useRef, useEffect } from "react";
 
-export const useMonitoring = () => {
+export const useMonitoring = (options?: { disabled?: boolean }) => {
+  const disabled = options?.disabled ?? false;
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const screenVideoRef = useRef<HTMLVideoElement | null>(null);
 
@@ -164,6 +165,12 @@ export const useMonitoring = () => {
     screenVideoRef.current = null;
   }, [webcamStream, screenStream, audioStream]);
 
+  useEffect(() => {
+    if (disabled) {
+      stopAllMonitoring();
+    }
+  }, [disabled, stopAllMonitoring]);
+
   const toggleMonitoring = useCallback(() => setShowMonitoring((p) => !p), []);
 
   return {
@@ -172,20 +179,20 @@ export const useMonitoring = () => {
     setWebcamNode,
     setScreenNode,
     audioStream,
-    hasWebcamAccess,
-    hasScreenAccess,
-    hasAudioAccess,
-    isWebcamLoading,
-    isScreenLoading,
+    hasWebcamAccess: disabled ? false : hasWebcamAccess,
+    hasScreenAccess: disabled ? false : hasScreenAccess,
+    hasAudioAccess: disabled ? false : hasAudioAccess,
+    isWebcamLoading: disabled ? false : isWebcamLoading,
+    isScreenLoading: disabled ? false : isScreenLoading,
     webcamError,
     screenError,
     audioError,
-    showMonitoring,
+    showMonitoring: disabled ? false : showMonitoring,
     bypassedScreenShare,
     proceedWithWebcamOnly,
 
-    // Dialog dismisses when webcam is granted and either screen share is active or bypassed due to policy
-    showAccessDialog: !(hasWebcamAccess && (hasScreenAccess || bypassedScreenShare)),
+    // Dialog dismisses when disabled, or when webcam is granted and either screen share is active or bypassed due to policy
+    showAccessDialog: !disabled && !(hasWebcamAccess && (hasScreenAccess || bypassedScreenShare)),
 
     handleStartMonitoring,
     stopAllMonitoring,

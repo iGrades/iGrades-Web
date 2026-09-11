@@ -1,4 +1,4 @@
-import { useCallback, useEffect, memo } from "react";
+import { useCallback, useEffect, memo, useRef } from "react";
 import { Box, Alert, Text, Button, Dialog, VStack } from "@chakra-ui/react";
 import { toaster } from "@/components/ui/toaster";
 import { supabase } from "@/lib/supabaseClient";
@@ -109,6 +109,12 @@ const QuizAttempt = ({
 
   const { authdStudent } = useAuthdStudentData();
 
+  // Test mode has quiz monitoring functionality completely removed.
+  const isTestMode =
+    quizData.mode === "quick test" ||
+    quizData.mode?.toLowerCase().includes("test");
+  const isMonitoringEnabled = !isTestMode && quizData.mode === "examination";
+
   const {
     videoRef,
     setScreenNode,
@@ -125,14 +131,15 @@ const QuizAttempt = ({
     isScreenLoading,
     showMonitoring,
     showAccessDialog,
+    bypassedScreenShare,
     handleStartMonitoring,
     stopAllMonitoring,
     toggleMonitoring,
     proceedWithWebcamOnly,
-  } = useMonitoring();
+  } = useMonitoring({ disabled: !isMonitoringEnabled });
 
-  // Monitoring should be inactive when quiz is done
-  const isMonitoringDisabled = showResults || isSubmitting;
+  // Monitoring should be inactive when in test mode, or when quiz is completed/submitting
+  const isMonitoringDisabled = !isMonitoringEnabled || showResults || isSubmitting;
 
   const { cheatingScore, reportInfraction } = useCheatingMonitor(
     handleSubmitAll,
@@ -219,6 +226,7 @@ const QuizAttempt = ({
           .select("id")
           .eq("student_id", authdStudent?.id)
           .eq("subject_id", subjectId)
+          .eq("status", "in_progress")
           .gte("started_at", startOfMonth)
           .lte("started_at", endOfMonth)
           .maybeSingle();
@@ -232,9 +240,9 @@ const QuizAttempt = ({
           mode: quizData.mode,
           status: "in_progress",
           total_questions: quizData.questions.filter((q) => q.subject_id === subjectId).length,
-          webcam_monitoring: hasWebcamAccess,
-          screen_sharing: hasScreenAccess,
-          audio_monitoring: hasAudioAccess,
+          webcam_monitoring: isMonitoringEnabled ? hasWebcamAccess : false,
+          screen_sharing: isMonitoringEnabled ? hasScreenAccess : false,
+          audio_monitoring: isMonitoringEnabled ? hasAudioAccess : false,
           started_at: existingAttempt ? undefined : new Date().toISOString(),
         };
 
@@ -261,6 +269,7 @@ const QuizAttempt = ({
     },
     [
       authdStudent?.id,
+      isMonitoringEnabled,
       hasWebcamAccess,
       hasScreenAccess,
       hasAudioAccess,
@@ -270,8 +279,17 @@ const QuizAttempt = ({
     ]
   );
 
+  const hasInitializedAttempts = useRef(false);
+
   useEffect(() => {
-    if (hasWebcamAccess && hasScreenAccess) {
+    // In test mode, initialize attempts immediately without monitoring requirements.
+    // In examination mode, initialize once required media access is granted.
+    const shouldInitialize =
+      !isMonitoringEnabled ||
+      (hasWebcamAccess && (hasScreenAccess || bypassedScreenShare));
+
+    if (shouldInitialize && !hasInitializedAttempts.current) {
+      hasInitializedAttempts.current = true;
       const createAttemptRecords = async () => {
         try {
           setIsLoading(true);
@@ -298,8 +316,10 @@ const QuizAttempt = ({
       createAttemptRecords();
     }
   }, [
+    isMonitoringEnabled,
     hasWebcamAccess,
     hasScreenAccess,
+    bypassedScreenShare,
     createAttemptRecord,
     quizData.quizzes,
     quizData.subjects,
@@ -330,7 +350,7 @@ const QuizAttempt = ({
 
   // ─── Render ───────────────────────────────────────────────────────────────
 
-  if (isMobile) {
+  if (isMobile && isMonitoringEnabled) {
     return (
       <Box h="100vh" display="flex" alignItems="center" justifyContent="center" bg="gray.50" p={6}>
         <VStack maxW="md" p={8} bg="white" borderRadius="xl" boxShadow="lg" textAlign="center" gap={6}>
@@ -372,7 +392,7 @@ const QuizAttempt = ({
     );
   }
 
-  if (showAccessDialog) {
+  if (isMonitoringEnabled && showAccessDialog) {
     return (
       <Dialog.Root
         defaultOpen={true}
@@ -432,18 +452,20 @@ const QuizAttempt = ({
 
   return (
     <Box w={{ lg: "100%" }} m="auto">
-      <MemoizedMonitoring
-        hasWebcamAccess={hasWebcamAccess}
-        hasScreenAccess={hasScreenAccess}
-        hasAudioAccess={hasAudioAccess}
-        showMonitoring={showMonitoring}
-        setWebcamNode={setWebcamNode}
-        setScreenNode={setScreenNode}
-        toggleMonitoring={toggleMonitoring}
-        handleManualPlay={handleManualPlay}
-        cheatingScore={cheatingScore}
-        reportInfraction={reportInfraction}
-      />
+      {isMonitoringEnabled && (
+        <MemoizedMonitoring
+          hasWebcamAccess={hasWebcamAccess}
+          hasScreenAccess={hasScreenAccess}
+          hasAudioAccess={hasAudioAccess}
+          showMonitoring={showMonitoring}
+          setWebcamNode={setWebcamNode}
+          setScreenNode={setScreenNode}
+          toggleMonitoring={toggleMonitoring}
+          handleManualPlay={handleManualPlay}
+          cheatingScore={cheatingScore}
+          reportInfraction={reportInfraction}
+        />
+      )}
 
       {subjectTimeLeft[currentSubjectIndex] !== undefined &&
         subjectTimeLeft[currentSubjectIndex] <= 0 && (

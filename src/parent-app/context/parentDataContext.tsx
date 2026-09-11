@@ -1,5 +1,5 @@
 
-import { createContext, useContext, useEffect, useState } from "react";
+import { createContext, useContext, useEffect, useState, useCallback, useRef } from "react";
 import { supabase } from "@/lib/supabaseClient";
 
 type Parent = {
@@ -16,7 +16,7 @@ type UserContextType = {
   user: any;
   parent: Parent[]; 
   loading: boolean;
-  getParentData: () => void;
+  getParentData: () => Promise<Parent[]>;
   logoutParent: () => Promise<void>;
 };
 
@@ -24,7 +24,7 @@ const UserContext = createContext<UserContextType>({
   user: null,
   parent: [],
   loading: true,
-  getParentData: () => {},
+  getParentData: async () => [],
   logoutParent: async () => {},
 });
 
@@ -39,8 +39,13 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
     }
   });
   const [loading, setLoading] = useState(true);
+  const isLoggingOutRef = useRef(false);
 
-  const getParentData = async (): Promise<Parent[]> => {
+  const getParentData = useCallback(async (): Promise<Parent[]> => {
+    if (isLoggingOutRef.current) {
+      return [];
+    }
+
     try {
       setLoading(true);
 
@@ -63,7 +68,7 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
       if (!authUser) {
         // Retain cached parent from localStorage if available so refreshing does not log the user out
         const cached = localStorage.getItem("authdParent");
-        if (cached) {
+        if (cached && !isLoggingOutRef.current) {
           try {
             const parsed = JSON.parse(cached);
             if (Array.isArray(parsed) && parsed.length > 0) {
@@ -105,12 +110,14 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
 
       const parentList = parents ? (Array.isArray(parents) ? parents : [parents]) : [];
       if (parentList.length > 0) {
-        setParent(parentList);
-        localStorage.setItem("authdParent", JSON.stringify(parentList));
+        if (!isLoggingOutRef.current) {
+          setParent(parentList);
+          localStorage.setItem("authdParent", JSON.stringify(parentList));
+        }
       } else {
         // Check if there's existing cached parent before clearing
         const cached = localStorage.getItem("authdParent");
-        if (cached) {
+        if (cached && !isLoggingOutRef.current) {
           try {
             const parsed = JSON.parse(cached);
             if (Array.isArray(parsed) && parsed.length > 0) {
@@ -121,13 +128,15 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
             // ignore
           }
         }
-        setParent([]);
+        if (!isLoggingOutRef.current) {
+          setParent([]);
+        }
       }
       return parentList;
     } catch {
       // On network failure or error, preserve cache if present
       const cached = localStorage.getItem("authdParent");
-      if (cached) {
+      if (cached && !isLoggingOutRef.current) {
         try {
           const parsed = JSON.parse(cached);
           if (Array.isArray(parsed) && parsed.length > 0) {
@@ -138,15 +147,18 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
           // ignore
         }
       }
-      setUser(null);
-      setParent([]);
+      if (!isLoggingOutRef.current) {
+        setUser(null);
+        setParent([]);
+      }
       return [];
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   const logoutParent = async (): Promise<void> => {
+    isLoggingOutRef.current = true;
     setUser(null);
     setParent([]);
     localStorage.removeItem("authdParent");
@@ -154,6 +166,10 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
       await supabase.auth.signOut();
     } catch (e) {
       console.warn("Parent sign out error:", e);
+    } finally {
+      setTimeout(() => {
+        isLoggingOutRef.current = false;
+      }, 1000);
     }
   };
 
@@ -162,6 +178,8 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
 
     // Listen to Supabase auth events (e.g. login, token refresh)
     const { data: authListener } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (isLoggingOutRef.current) return;
+
       if (event === "SIGNED_IN" || event === "USER_UPDATED" || event === "TOKEN_REFRESHED") {
         if (session?.user) {
           await getParentData();
@@ -176,7 +194,7 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
     return () => {
       authListener?.subscription?.unsubscribe();
     };
-  }, []);
+  }, [getParentData]);
 
   return (
     <UserContext.Provider value={{ user, parent, loading, getParentData, logoutParent }}>

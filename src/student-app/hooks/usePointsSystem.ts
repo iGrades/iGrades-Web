@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/lib/supabaseClient";
 import { useAuthdStudentData } from "@/student-app/context/studentDataContext";
 import { toaster } from "@/components/ui/toaster";
+import { celebratePointsGained } from "@/student-app/components/rewards/pointsCelebrationStore";
 
 export interface PointsTransaction {
   id: string;
@@ -56,7 +57,26 @@ export function usePointsSystem() {
     try {
       setLoading(true);
 
-      // A. Get active points balance via RPC or direct SQL query fallback
+      // Try dedicated server API first
+      try {
+        const res = await fetch(`/api/points-data/${studentId}`);
+        if (res.ok) {
+          const json = await res.json();
+          if (json.data) {
+            setPointsBalance(json.data.pointsBalance ?? 0);
+            setCreditBalance(json.data.creditBalance ?? 0);
+            setDailyEarned(json.data.dailyEarned ?? 0);
+            setStreakInfo(json.data.streakInfo ?? null);
+            setPointsHistory(json.data.pointsHistory ?? []);
+            setCreditHistory(json.data.creditHistory ?? []);
+            return;
+          }
+        }
+      } catch (apiErr) {
+        console.warn("Points API fallback:", apiErr);
+      }
+
+      // Supabase RPC or direct SQL query fallback
       const { data: ptsBalData, error: ptsBalErr } = await supabase.rpc(
         "get_points_balance",
         { p_student_id: studentId }
@@ -64,7 +84,6 @@ export function usePointsSystem() {
       if (!ptsBalErr && typeof ptsBalData === "number") {
         setPointsBalance(ptsBalData);
       } else {
-        // Fallback calculation directly from points_transactions
         const { data: txs } = await supabase
           .from("points_transactions")
           .select("points, expires_at")
@@ -154,38 +173,56 @@ export function usePointsSystem() {
     if (!studentId) return;
 
     try {
-      // Call Edge Function or fallback RPC/direct insert
       const { data: session } = await supabase.auth.getSession();
       const token = session?.session?.access_token;
 
-      const response = await fetch(
-        `${import.meta.env.VITE_SUPABASE_URL || "https://ais-dev-zznm53354f22xrz54kfnwn-544188797831.europe-west2.run.app"}/functions/v1/award-points`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token || import.meta.env.VITE_SUPABASE_ANON_KEY}`,
-          },
-          body: JSON.stringify({
-            event: "login",
-            student_id: studentId,
-          }),
-        }
-      );
+      let response = await fetch("/api/award-points", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token || import.meta.env.VITE_SUPABASE_ANON_KEY}`,
+        },
+        body: JSON.stringify({
+          event: "login",
+          student_id: studentId,
+        }),
+      });
+
+      if (!response.ok) {
+        // Fallback to functions URL
+        response = await fetch(
+          `${import.meta.env.VITE_SUPABASE_URL || ""}/functions/v1/award-points`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token || import.meta.env.VITE_SUPABASE_ANON_KEY}`,
+            },
+            body: JSON.stringify({
+              event: "login",
+              student_id: studentId,
+            }),
+          }
+        );
+      }
 
       if (response.ok) {
         const resData = await response.json();
-        if (resData.login_points_awarded > 0) {
-          toaster.create({
+        const pointsGained = (resData.login_points_awarded || 0) + (resData.milestone_points_awarded || 0);
+        if (pointsGained > 0) {
+          celebratePointsGained({
+            points: pointsGained,
             title: "🌟 Daily Login Bonus!",
-            description: `You earned +${resData.login_points_awarded} iGrades Points (IGG) for logging in today! Streak: ${resData.streak?.current_streak_days || 1} Days 🔥`,
-            type: "success",
-            duration: 5000,
+            description: `You earned +${pointsGained} iGG Points for logging in today! Keep learning and building your streak!`,
+            eventType: "login",
+            streakDays: resData.streak?.current_streak_days,
+            milestonePoints: resData.milestone_points_awarded,
+            newBalance: resData.points_balance,
           });
         }
       }
     } catch (e) {
-      console.warn("Edge function login award notice:", e);
+      console.warn("Login award notice:", e);
     } finally {
       fetchPointsData();
     }
@@ -195,7 +232,7 @@ export function usePointsSystem() {
     if (studentId) {
       awardDailyLogin();
     }
-  }, [studentId]);
+  }, [studentId, awardDailyLogin]);
 
   // 3. Convert Points to Naira Subscription Store Credit
   const convertPoints = async (pointsToConvert: number): Promise<boolean> => {
@@ -231,6 +268,34 @@ export function usePointsSystem() {
     try {
       setActionLoading(true);
 
+      // Try server API first
+      try {
+        const res = await fetch("/api/convert-points", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            student_id: studentId,
+            points_to_convert: pointsToConvert,
+          }),
+        });
+        if (res.ok) {
+          const data = await res.json();
+          if (data && data.success) {
+            const nairaAdded = data.naira_credit_added;
+            toaster.create({
+              title: "🎉 Conversion Successful!",
+              description: `Converted ${pointsToConvert} iGG Points into ₦${nairaAdded.toLocaleString()} subscription store credit!`,
+              type: "success",
+              duration: 6000,
+            });
+            await fetchPointsData();
+            return true;
+          }
+        }
+      } catch (e) {
+        console.warn("API convert fallback to RPC:", e);
+      }
+
       const { data, error } = await supabase.rpc("fn_convert_points_to_credit", {
         p_student_id: studentId,
         p_points_to_convert: pointsToConvert,
@@ -244,7 +309,7 @@ export function usePointsSystem() {
         const nairaAdded = data.naira_credit_added;
         toaster.create({
           title: "🎉 Conversion Successful!",
-          description: `Converted ${pointsToConvert} IGG Points into ₦${nairaAdded.toLocaleString()} subscription store credit!`,
+          description: `Converted ${pointsToConvert} iGG Points into ₦${nairaAdded.toLocaleString()} subscription store credit!`,
           type: "success",
           duration: 6000,
         });
@@ -271,6 +336,34 @@ export function usePointsSystem() {
 
     try {
       setActionLoading(true);
+
+      // Try server API first
+      try {
+        const res = await fetch("/api/apply-credit", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            student_id: studentId,
+            invoice_amount: invoiceAmountNaira,
+            invoice_id: invoiceId,
+          }),
+        });
+        if (res.ok) {
+          const data = await res.json();
+          if (data && data.success) {
+            toaster.create({
+              title: "Store Credit Applied!",
+              description: `Applied ₦${data.credit_applied_naira.toLocaleString()} credit towards subscription. Remaining: ₦${data.remaining_invoice_amount.toLocaleString()}`,
+              type: "success",
+            });
+            await fetchPointsData();
+            return true;
+          }
+        }
+      } catch (e) {
+        console.warn("API apply-credit fallback to RPC:", e);
+      }
+
       const { data, error } = await supabase.rpc("fn_apply_credit_to_invoice", {
         p_student_id: studentId,
         p_invoice_id: invoiceId,

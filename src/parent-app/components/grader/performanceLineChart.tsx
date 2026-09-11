@@ -1,7 +1,7 @@
 "use client"
 
 import { Chart, useChart } from "@chakra-ui/charts"
-import { CartesianGrid, Line, LineChart, Tooltip, XAxis, YAxis, ResponsiveContainer } from "recharts"
+import { CartesianGrid, Line, LineChart, Tooltip, XAxis, YAxis } from "recharts"
 import { Box, Flex, Icon, Text } from "@chakra-ui/react"
 import { GiChart } from "react-icons/gi"
 
@@ -10,8 +10,18 @@ type ChartDataPoint = {
   average: number;
 }
 
-const PerformanceChart = ({ data }: { data: ChartDataPoint[] }) => {
-  const chartData = [...data]
+const defaultDemoData: ChartDataPoint[] = [
+  { month: "January", average: 10 },
+  { month: "February", average: 95 },
+  { month: "March", average: 87 },
+  { month: "May", average: 88 },
+  { month: "June", average: 65 },
+  { month: "August", average: 90 },
+];
+
+const PerformanceChart = ({ data }: { data?: ChartDataPoint[] }) => {
+  const sourceData = data && data.length > 0 ? data : defaultDemoData;
+  const chartData = [...sourceData]
     .reverse()
     .map(item => ({
       month: item.month.split(' ')[0], 
@@ -20,7 +30,7 @@ const PerformanceChart = ({ data }: { data: ChartDataPoint[] }) => {
 
   const chart = useChart({
     data: chartData,
-    series: [{ name: "score", color: "blue.500" }],
+    series: [{ name: "score", color: "teal.solid" }],
   })
 
   return (
@@ -39,46 +49,37 @@ const PerformanceChart = ({ data }: { data: ChartDataPoint[] }) => {
         </Text>
       </Flex>
 
-      <Chart.Root h={{ base: "220px", md: "300px" }} w="full" chart={chart}>
-        <ResponsiveContainer width="100%" height="100%">
-          <LineChart data={chart.data} margin={{ left: -20, right: 10 }}> 
-            <CartesianGrid stroke={chart.color("border")} vertical={false} />
-            <XAxis
-              axisLine={false}
-              dataKey={chart.key("month")}
-              stroke={chart.color("fg.muted")}
-              fontSize={10}
-              tickMargin={10}
-              interval={0} 
+      <Chart.Root maxH="sm" minH="260px" chart={chart}>
+        <LineChart data={chart.data} responsive>
+          <CartesianGrid stroke={chart.color("border")} vertical={false} />
+          <XAxis
+            axisLine={false}
+            dataKey={chart.key("month")}
+            tickFormatter={(value) => value.slice(0, 3)}
+            stroke={chart.color("border")}
+          />
+          <YAxis
+            axisLine={false}
+            tickLine={false}
+            tickMargin={10}
+            stroke={chart.color("border")}
+          />
+          <Tooltip
+            animationDuration={100}
+            cursor={false}
+            content={<Chart.Tooltip />}
+          />
+          {chart.series.map((item) => (
+            <Line
+              key={item.name}
+              isAnimationActive={false}
+              dataKey={chart.key(item.name)}
+              stroke={chart.color(item.color)}
+              strokeWidth={2}
+              dot={false}
             />
-            <YAxis
-              axisLine={false}
-              tickLine={false}
-              domain={[0, 100]}
-              stroke={chart.color("fg.muted")}
-              fontSize={10}
-              tickMargin={10}
-              hide={false} 
-            />
-            <Tooltip
-              animationDuration={100}
-              cursor={{ stroke: chart.color("border"), strokeWidth: 1 }}
-              content={<Chart.Tooltip />}
-            />
-            {chart.series.map((item) => (
-              <Line
-                key={item.name}
-                type="monotone"
-                isAnimationActive={true}
-                dataKey={chart.key(item.name)}
-                stroke={chart.color(item.color)}
-                strokeWidth={3}
-                dot={{ r: 4, fill: chart.color(item.color) }}
-                activeDot={{ r: 6 }}
-              />
-            ))}
-          </LineChart>
-        </ResponsiveContainer>
+          ))}
+        </LineChart>
       </Chart.Root>
     </Box>
   )

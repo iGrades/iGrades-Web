@@ -106,39 +106,40 @@ const AboutPage = () => {
           ══════════════════════════════════════ */}
           <Box
             position="relative"
-            bg="#07052A"
+            bg="#FFFFFF"
+            borderBottom="1px solid #F1F3F9"
             pt={{ base: 28, md: 36 }}
-            pb={{ base: 0, md: 0 }}
+            pb={{ base: 12, md: 16 }}
             px={{ base: 6, md: 12, lg: 20 }}
             overflow="hidden"
-            minH={{ base: "auto", lg: "92vh" }}
+            minH={{ base: "auto", lg: "90vh" }}
           >
             {/* Animated grid lines */}
-            <Box position="absolute" inset={0} opacity={0.04}
-              backgroundImage="linear-gradient(#fff 1px,transparent 1px),linear-gradient(90deg,#fff 1px,transparent 1px)"
+            <Box position="absolute" inset={0} opacity={0.025}
+              backgroundImage="linear-gradient(#07052A 1px,transparent 1px),linear-gradient(90deg,#07052A 1px,transparent 1px)"
               backgroundSize="60px 60px" pointerEvents="none" />
 
             {/* Spinning ring accent */}
             <Box position="absolute" top={{ base: "5%", md: "8%" }} right={{ base: "-60px", md: "-40px" }}
               w={{ base: "260px", md: "420px" }} h={{ base: "260px", md: "420px" }}
-              borderRadius="full" border="1px solid rgba(32,108,225,0.2)"
+              borderRadius="full" border="1px solid rgba(32,108,225,0.15)"
               className="spin-s" pointerEvents="none" />
             <Box position="absolute" top={{ base: "8%", md: "11%" }} right={{ base: "-40px", md: "-20px" }}
               w={{ base: "200px", md: "340px" }} h={{ base: "200px", md: "340px" }}
-              borderRadius="full" border="1px dashed rgba(241,135,41,0.25)"
+              borderRadius="full" border="1px dashed rgba(241,135,41,0.2)"
               pointerEvents="none" />
 
             {/* Blobs */}
             <Box position="absolute" bottom="-100px" left="-80px" w="500px" h="500px"
-              borderRadius="full" bg="#206CE1" opacity={0.06} filter="blur(100px)" pointerEvents="none" />
+              borderRadius="full" bg="#206CE1" opacity={0.04} filter="blur(100px)" pointerEvents="none" />
             <Box position="absolute" top="20%" right="20%" w="300px" h="300px"
-              borderRadius="full" bg="#F18729" opacity={0.07} filter="blur(80px)" pointerEvents="none" />
+              borderRadius="full" bg="#F18729" opacity={0.05} filter="blur(80px)" pointerEvents="none" />
 
             <Grid templateColumns={{ base: "1fr", lg: "1fr 1fr" }}
-              gap={0} alignItems="flex-end" maxW="1300px" mx="auto" position="relative" zIndex={1}>
+              gap={0} alignItems="center" maxW="1300px" mx="auto" position="relative" zIndex={1}>
 
               {/* Left text */}
-              <Box pb={{ base: 14, lg: 24 }}>
+              <Box pb={{ base: 10, lg: 16 }}>
                 <HStack className="fu1" mb={6} gap={2}>
                   <Box w="32px" h="2px" bg="#F18729" borderRadius="full" />
                   <Text color="#F18729" fontSize="xs" fontWeight="700"
@@ -149,7 +150,7 @@ const AboutPage = () => {
 
                 <Heading
                   className="fu2"
-                  color="white"
+                  color="#07052A"
                   fontSize={{ base: "3xl", md: "5xl", lg: "6xl" }}
                   fontWeight="900"
                   lineHeight="1.05"
@@ -170,7 +171,7 @@ const AboutPage = () => {
 
                 <Text
                   className="fu3"
-                  color="rgba(255,255,255,0.55)"
+                  color="#474256"
                   fontSize={{ base: "md", md: "lg" }}
                   lineHeight="1.85"
                   maxW="520px"
@@ -184,13 +185,13 @@ const AboutPage = () => {
 
                 <HStack className="fu4" gap={4} flexWrap="wrap">
                   {["WAEC Ready", "JAMB Ready", "A-Level Ready"].map((tag, i) => (
-                    <HStack key={tag} gap={2} bg="rgba(255,255,255,0.06)"
-                      border="1px solid rgba(255,255,255,0.1)"
+                    <HStack key={tag} gap={2} bg="#F8FAFC"
+                      border="1px solid #E2E8F0"
                       borderRadius="full" px={4} py={2}>
                       <Icon boxSize={3} color={["#F18729","#206CE1","#1FBA79"][i]}>
                         <BsCheckCircleFill />
                       </Icon>
-                      <Text color="white" fontSize="xs" fontWeight="600">{tag}</Text>
+                      <Text color="#1E293B" fontSize="xs" fontWeight="600">{tag}</Text>
                     </HStack>
                   ))}
                 </HStack>
@@ -199,7 +200,7 @@ const AboutPage = () => {
               {/* Right — abstract SVG illustration */}
               <Box
                 display={{ base: "none", lg: "flex" }}
-                alignItems="flex-end" justifyContent="center"
+                alignItems="center" justifyContent="center"
                 position="relative" h="full"
               >
                 {/* Main card stack illustration */}
@@ -207,26 +208,27 @@ const AboutPage = () => {
                   {/* Back card */}
                   <Box
                     className="float-c"
-                    position="absolute" top="60px" left="20px"
+                    position="absolute" top="50px" left="10px"
                     w="360px" borderRadius="24px"
-                    bg="rgba(32,108,225,0.15)"
-                    border="1px solid rgba(32,108,225,0.3)"
-                    p={5} backdropFilter="blur(10px)"
+                    bg="white"
+                    border="1px solid #E2E8F0"
+                    boxShadow="0 20px 48px rgba(32,108,225,0.09)"
+                    p={5}
                   >
                     <HStack gap={3} mb={4}>
                       <Box w="36px" h="36px" borderRadius="xl" bg="#206CE1"
                         display="flex" alignItems="center" justifyContent="center">
                         <Icon boxSize={4} color="white"><MdTrendingUp /></Icon>
                       </Box>
-                      <Text color="white" fontWeight="700" fontSize="sm">Performance Report</Text>
+                      <Text color="#07052A" fontWeight="700" fontSize="sm">Performance Report</Text>
                     </HStack>
                     {[["Mathematics", 88], ["Physics", 72], ["Chemistry", 95]].map(([s, p]) => (
                       <Box key={String(s)} mb={3}>
                         <Flex justify="space-between" mb={1}>
-                          <Text color="rgba(255,255,255,0.6)" fontSize="xs">{s}</Text>
-                          <Text color="white" fontSize="xs" fontWeight="700">{p}%</Text>
+                          <Text color="#64748B" fontSize="xs">{s}</Text>
+                          <Text color="#07052A" fontSize="xs" fontWeight="700">{p}%</Text>
                         </Flex>
-                        <Box h="5px" bg="rgba(255,255,255,0.1)" borderRadius="full">
+                        <Box h="5px" bg="#F1F5F9" borderRadius="full">
                           <Box h="full" w={`${p}%`} borderRadius="full"
                             bg={Number(p) >= 85 ? "#1FBA79" : "#206CE1"} />
                         </Box>
@@ -237,11 +239,12 @@ const AboutPage = () => {
                   {/* Front card — Spark chat */}
                   <Box
                     className="float-a"
-                    position="absolute" bottom="0px" right="0px"
-                    w="300px" borderRadius="24px"
-                    bg="rgba(255,255,255,0.05)"
-                    border="1px solid rgba(255,255,255,0.12)"
-                    p={5} backdropFilter="blur(16px)"
+                    position="absolute" bottom="20px" right="0px"
+                    w="310px" borderRadius="24px"
+                    bg="white"
+                    border="1px solid #E2E8F0"
+                    boxShadow="0 25px 50px rgba(0,0,0,0.09)"
+                    p={5}
                   >
                     <HStack gap={2} mb={4}>
                       <Box w="30px" h="30px" borderRadius="full"
@@ -249,16 +252,16 @@ const AboutPage = () => {
                         display="flex" alignItems="center" justifyContent="center">
                         <Text fontSize="12px">⚡</Text>
                       </Box>
-                      <Text color="white" fontWeight="700" fontSize="xs">Spark AI Tutor</Text>
+                      <Text color="#07052A" fontWeight="700" fontSize="xs">Spark AI Tutor</Text>
                       <Box ml="auto" w="6px" h="6px" borderRadius="full" bg="#1FBA79" />
                     </HStack>
-                    <Box bg="rgba(255,255,255,0.08)" borderRadius="12px 12px 12px 4px" p={3} mb={2}>
-                      <Text fontSize="11px" color="rgba(255,255,255,0.7)">
+                    <Box bg="#F8FAFC" border="1px solid #EEF2F6" borderRadius="12px 12px 12px 4px" p={3} mb={2}>
+                      <Text fontSize="11px" color="#334155">
                         Why does a balloon shrink in the cold?
                       </Text>
                     </Box>
-                    <Box bg="rgba(32,108,225,0.3)" borderRadius="12px 12px 4px 12px" p={3} alignSelf="flex-end">
-                      <Text fontSize="11px" color="rgba(255,255,255,0.8)">
+                    <Box bg="#EBF3FF" border="1px solid #DBEAFE" borderRadius="12px 12px 4px 12px" p={3} alignSelf="flex-end">
+                      <Text fontSize="11px" color="#1D4ED8">
                         Great question! Think about what happens to gas molecules when temperature drops...
                       </Text>
                     </Box>
@@ -269,20 +272,13 @@ const AboutPage = () => {
                     className="float-b"
                     position="absolute" top="10px" right="10px"
                     bg="#F18729" borderRadius="16px" px={4} py={2}
-                    boxShadow="0 8px 24px rgba(241,135,41,0.4)"
+                    boxShadow="0 8px 24px rgba(241,135,41,0.25)"
                   >
                     <Text color="white" fontWeight="800" fontSize="sm">94% Pass Rate</Text>
                   </Box>
                 </Box>
               </Box>
             </Grid>
-
-            {/* Diagonal bottom clip */}
-            <Box
-              position="absolute" bottom="-2px" left={0} right={0} h="80px"
-              bg="white"
-              style={{ clipPath: "polygon(0 100%, 100% 100%, 100% 0)" }}
-            />
           </Box>
 
           {/* ══════════════════════════════════════

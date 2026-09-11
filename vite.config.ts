@@ -14,6 +14,6 @@ export default defineConfig({
     alias: {
       "@": "/src",
     },
-    dedupe: ["react", "react-dom", "@emotion/react", "framer-motion"],
+    dedupe: ["react", "react-dom", "@chakra-ui/react", "@chakra-ui/charts", "@emotion/react", "framer-motion"],
   },
 });

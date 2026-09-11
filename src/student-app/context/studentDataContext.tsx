@@ -66,6 +66,30 @@ export const AuthdStudentDataProvider = ({
     }
   }, [authdStudent]);
 
+  useEffect(() => {
+    if (!authdStudent) {
+      const syncSession = async () => {
+        try {
+          const { data: { session } } = await supabase.auth.getSession();
+          if (session?.user?.email) {
+            const { data } = await supabase
+              .from("students")
+              .select("*")
+              .eq("email", session.user.email)
+              .maybeSingle();
+            if (data) {
+              setAuthdStudent(data);
+              localStorage.setItem("authdStudent", JSON.stringify(data));
+            }
+          }
+        } catch (err) {
+          console.warn("Notice syncing student session:", err);
+        }
+      };
+      syncSession();
+    }
+  }, [authdStudent]);
+
   const refreshStudentData = async (): Promise<void> => {
     // Guard: can't refresh if we don't know who the student is
     if (!authdStudent?.id) return;
@@ -77,7 +101,7 @@ export const AuthdStudentDataProvider = ({
       .single();
 
     if (error) {
-      console.error("Failed to refresh student data:", error);
+      console.warn("Notice refreshing student data:", error?.message || error);
       return;
     }
 
@@ -89,8 +113,10 @@ export const AuthdStudentDataProvider = ({
   const logoutFunc = () => {
     setAuthdStudent(null);
     localStorage.removeItem("authdStudent");
+    localStorage.removeItem("authdParent");
     setIsPopOver(false);
     setAlert({ type: "success", message: "Logged out successfully." });
+    supabase.auth.signOut().catch(() => {});
   };
 
   const clearAlert = () => setAlert(null);

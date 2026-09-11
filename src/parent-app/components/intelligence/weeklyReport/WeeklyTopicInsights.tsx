@@ -30,18 +30,19 @@ export const WeeklyTopicInsights = ({
         </Box>
       </Flex>
 
-      <Grid templateColumns={{ base: "repeat(1, 1fr)", lg: "repeat(3, 1fr)" }} gap={4}>
+      <Grid templateColumns={{ base: "repeat(1, 1fr)", lg: "repeat(3, 1fr)" }} gap={4.5}>
         {/* 1. Topics Showing Improvement / Strong Mastery */}
         <Box
           bg="white"
-          p={4}
-          borderRadius="xl"
-          border="1px solid"
-          borderColor="green.200"
-          boxShadow="0 1px 3px rgba(0,0,0,0.02)"
+          p={5}
+          borderRadius="2xl"
+          border="none"
+          boxShadow="0 6px 24px -3px rgba(15, 23, 42, 0.07), 0 2px 8px -2px rgba(15, 23, 42, 0.04)"
+          _hover={{ transform: "translateY(-2px)", boxShadow: "0 12px 30px -4px rgba(16, 185, 129, 0.15)" }}
+          transition="all 0.25s cubic-bezier(0.4, 0, 0.2, 1)"
         >
-          <Flex align="center" gap={2} mb={3}>
-            <Box bg="green.50" p={1.5} borderRadius="lg">
+          <Flex align="center" gap={2.5} mb={3.5}>
+            <Box bg="green.50" p={2} borderRadius="xl" boxShadow="0 2px 6px rgba(16, 185, 129, 0.15)">
               <Icon as={FiCheckCircle} color="green.600" boxSize="16px" />
             </Box>
             <Box>
@@ -55,7 +56,7 @@ export const WeeklyTopicInsights = ({
           </Flex>
 
           {improvedTopics.length === 0 ? (
-            <Box p={4} textAlign="center" bg="gray.50" borderRadius="lg">
+            <Box p={4} textAlign="center" bg="gray.50" borderRadius="xl" boxShadow="0 2px 6px rgba(0, 0, 0, 0.03)">
               <Text fontSize="xs" color="gray.500">
                 Complete more topic-specific quizzes to record mastery highlights.
               </Text>
@@ -65,11 +66,11 @@ export const WeeklyTopicInsights = ({
               {improvedTopics.map((topic) => (
                 <Box
                   key={`imp-${topic.topicId}`}
-                  p={3}
-                  bg="green.50/50"
-                  borderRadius="lg"
-                  border="1px solid"
-                  borderColor="green.100"
+                  p={3.5}
+                  bg="green.50/70"
+                  borderRadius="xl"
+                  border="none"
+                  boxShadow="0 2px 8px rgba(16, 185, 129, 0.12)"
                 >
                   <Flex justify="space-between" align="start" mb={1}>
                     <Text fontSize="xs" fontWeight="800" color="gray.900">
@@ -94,14 +95,15 @@ export const WeeklyTopicInsights = ({
         {/* 2. Topics Requiring Additional Practice */}
         <Box
           bg="white"
-          p={4}
-          borderRadius="xl"
-          border="1px solid"
-          borderColor="orange.200"
-          boxShadow="0 1px 3px rgba(0,0,0,0.02)"
+          p={5}
+          borderRadius="2xl"
+          border="none"
+          boxShadow="0 6px 24px -3px rgba(15, 23, 42, 0.07), 0 2px 8px -2px rgba(15, 23, 42, 0.04)"
+          _hover={{ transform: "translateY(-2px)", boxShadow: "0 12px 30px -4px rgba(245, 158, 11, 0.15)" }}
+          transition="all 0.25s cubic-bezier(0.4, 0, 0.2, 1)"
         >
-          <Flex align="center" gap={2} mb={3}>
-            <Box bg="orange.50" p={1.5} borderRadius="lg">
+          <Flex align="center" gap={2.5} mb={3.5}>
+            <Box bg="orange.50" p={2} borderRadius="xl" boxShadow="0 2px 6px rgba(245, 158, 11, 0.15)">
               <Icon as={FiTarget} color="orange.600" boxSize="16px" />
             </Box>
             <Box>
@@ -115,7 +117,7 @@ export const WeeklyTopicInsights = ({
           </Flex>
 
           {topicsRequiringPractice.length === 0 ? (
-            <Box p={4} textAlign="center" bg="gray.50" borderRadius="lg">
+            <Box p={4} textAlign="center" bg="gray.50" borderRadius="xl" boxShadow="0 2px 6px rgba(0, 0, 0, 0.03)">
               <Text fontSize="xs" color="gray.500">
                 No challenging topics identified in this practice cycle!
               </Text>
@@ -125,11 +127,11 @@ export const WeeklyTopicInsights = ({
               {topicsRequiringPractice.map((topic) => (
                 <Box
                   key={`prac-${topic.topicId}`}
-                  p={3}
-                  bg="orange.50/50"
-                  borderRadius="lg"
-                  border="1px solid"
-                  borderColor="orange.100"
+                  p={3.5}
+                  bg="orange.50/70"
+                  borderRadius="xl"
+                  border="none"
+                  boxShadow="0 2px 8px rgba(245, 158, 11, 0.12)"
                 >
                   <Flex justify="space-between" align="start" mb={1}>
                     <Text fontSize="xs" fontWeight="800" color="gray.900">
@@ -154,14 +156,15 @@ export const WeeklyTopicInsights = ({
         {/* 3. Topics with Repeated Mistakes */}
         <Box
           bg="white"
-          p={4}
-          borderRadius="xl"
-          border="1px solid"
-          borderColor="red.200"
-          boxShadow="0 1px 3px rgba(0,0,0,0.02)"
+          p={5}
+          borderRadius="2xl"
+          border="none"
+          boxShadow="0 6px 24px -3px rgba(15, 23, 42, 0.07), 0 2px 8px -2px rgba(15, 23, 42, 0.04)"
+          _hover={{ transform: "translateY(-2px)", boxShadow: "0 12px 30px -4px rgba(239, 68, 68, 0.15)" }}
+          transition="all 0.25s cubic-bezier(0.4, 0, 0.2, 1)"
         >
-          <Flex align="center" gap={2} mb={3}>
-            <Box bg="red.50" p={1.5} borderRadius="lg">
+          <Flex align="center" gap={2.5} mb={3.5}>
+            <Box bg="red.50" p={2} borderRadius="xl" boxShadow="0 2px 6px rgba(239, 68, 68, 0.15)">
               <Icon as={FiRepeat} color="red.600" boxSize="16px" />
             </Box>
             <Box>
@@ -175,7 +178,7 @@ export const WeeklyTopicInsights = ({
           </Flex>
 
           {topicsWithRepeatedMistakes.length === 0 ? (
-            <Box p={4} textAlign="center" bg="gray.50" borderRadius="lg">
+            <Box p={4} textAlign="center" bg="gray.50" borderRadius="xl" boxShadow="0 2px 6px rgba(0, 0, 0, 0.03)">
               <Text fontSize="xs" color="gray.500">
                 No repeated error patterns detected this week. Great work!
               </Text>
@@ -185,11 +188,11 @@ export const WeeklyTopicInsights = ({
               {topicsWithRepeatedMistakes.map((topic) => (
                 <Box
                   key={`mis-${topic.topicId}`}
-                  p={3}
-                  bg="red.50/50"
-                  borderRadius="lg"
-                  border="1px solid"
-                  borderColor="red.100"
+                  p={3.5}
+                  bg="red.50/70"
+                  borderRadius="xl"
+                  border="none"
+                  boxShadow="0 2px 8px rgba(239, 68, 68, 0.12)"
                 >
                   <Flex justify="space-between" align="start" mb={1}>
                     <Text fontSize="xs" fontWeight="800" color="gray.900">
