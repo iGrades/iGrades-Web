@@ -177,6 +177,26 @@ class PointsEngine {
     return Math.max(0, balance);
   }
 
+  // Active unexpired points balance directly from Supabase
+  public async getPointsBalanceAsync(studentId: string): Promise<number> {
+    if (this.supabaseClient && studentId) {
+      try {
+        const { data, error } = await this.supabaseClient
+          .from("student_points")
+          .select("points_balance")
+          .eq("student_id", studentId)
+          .maybeSingle();
+
+        if (!error && data && typeof data.points_balance === "number") {
+          return data.points_balance;
+        }
+      } catch (err) {
+        console.warn("Notice querying Supabase student_points in getPointsBalanceAsync:", err);
+      }
+    }
+    return this.getPointsBalance(studentId);
+  }
+
   // Active Naira store credit balance
   public getCreditBalance(studentId: string): number {
     const txs = this.data.credit_transactions.filter((tx) => tx.student_id === studentId);
@@ -214,17 +234,73 @@ class PointsEngine {
     };
   }
 
-  // Complete data bundle for client
-  public getStudentPointsData(studentId: string) {
-    const pointsBalance = this.getPointsBalance(studentId);
+  // Complete data bundle for client with Supabase sync
+  public async getStudentPointsData(studentId: string) {
+    let dbRecord: any = null;
+    let dbHistory: any[] = [];
+
+    if (this.supabaseClient && studentId) {
+      try {
+        const { data: sp, error: spErr } = await this.supabaseClient
+          .from("student_points")
+          .select("*")
+          .eq("student_id", studentId)
+          .maybeSingle();
+
+        if (!spErr && sp) {
+          dbRecord = sp;
+        }
+
+        const { data: hist, error: hErr } = await this.supabaseClient
+          .from("points_history")
+          .select("*")
+          .eq("student_id", studentId)
+          .order("created_at", { ascending: false })
+          .limit(30);
+
+        if (!hErr && hist) {
+          dbHistory = hist;
+        }
+      } catch (err) {
+        console.warn("Notice querying student_points from Supabase:", err);
+      }
+    }
+
+    if (dbRecord) {
+      this.data.student_streaks[studentId] = {
+        student_id: studentId,
+        current_streak_days: dbRecord.current_streak || 0,
+        longest_streak: dbRecord.longest_streak || 0,
+        last_active_date: dbRecord.last_login_date || "",
+        grace_used_in_window: false,
+        window_start_date: dbRecord.last_login_date || "",
+        milestone_7_awarded: (dbRecord.longest_streak || 0) >= 7,
+        milestone_30_awarded: (dbRecord.longest_streak || 0) >= 30,
+        updated_at: dbRecord.updated_at || new Date().toISOString(),
+      };
+    }
+
+    const pointsBalance = dbRecord ? dbRecord.points_balance : this.getPointsBalance(studentId);
     const creditBalance = this.getCreditBalance(studentId);
     const dailyEarned = this.getDailyEarnedPoints(studentId);
     const streakInfo = this.getStudentStreak(studentId);
 
-    const pointsHistory = this.data.points_transactions
-      .filter((tx) => tx.student_id === studentId)
-      .slice(-30)
-      .reverse();
+    const pointsHistory = dbHistory.length > 0
+      ? dbHistory.map((h) => ({
+          id: h.id,
+          student_id: h.student_id,
+          type: h.reason,
+          points: h.amount,
+          description: h.description,
+          created_at: h.created_at,
+          wat_date: h.created_at ? h.created_at.slice(0, 10) : "",
+          expires_at: null,
+          exempt_from_cap: true,
+        }))
+      : this.data.points_transactions
+          .filter((tx) => tx.student_id === studentId)
+          .slice(-30)
+          .reverse();
 
     const creditHistory = this.data.credit_transactions
       .filter((tx) => tx.student_id === studentId)
@@ -359,18 +435,41 @@ class PointsEngine {
       const nowIso = new Date().toISOString();
       const expiryIso = calculatePointsExpiry();
 
-      // Check if already claimed today
-      const alreadyClaimed = this.data.points_transactions.some(
+      // Fetch existing student_points record from Supabase
+      let dbRecord: any = null;
+      if (this.supabaseClient && studentId) {
+        try {
+          const { data, error } = await this.supabaseClient
+            .from("student_points")
+            .select("*")
+            .eq("student_id", studentId)
+            .maybeSingle();
+
+          if (!error && data) {
+            dbRecord = data;
+          }
+        } catch (e) {
+          console.warn("Notice: could not query remote student_points table:", e);
+        }
+      }
+
+      // Check if already claimed today in DB or in-memory ledger
+      const alreadyClaimedInDb = dbRecord && dbRecord.last_login_date === watDateStr;
+      const alreadyClaimedInMemory = this.data.points_transactions.some(
         (tx) =>
           tx.student_id === studentId &&
           tx.wat_date === watDateStr &&
           tx.type === "login"
       );
 
+      const currentBalance = dbRecord ? dbRecord.points_balance : this.getPointsBalance(studentId);
+      const currentStreak = dbRecord ? (dbRecord.current_streak || 0) : (this.data.student_streaks[studentId]?.current_streak_days || 0);
+      const longestStreak = dbRecord ? (dbRecord.longest_streak || 0) : (this.data.student_streaks[studentId]?.longest_streak || 0);
+
       // Always process streak update on login activity
       const { streak, milestoneAwarded } = this.updateStreakAndMilestones(studentId, watDateStr);
 
-      if (alreadyClaimed) {
+      if (alreadyClaimedInDb || alreadyClaimedInMemory) {
         this.saveData();
         return {
           success: true,
@@ -378,11 +477,11 @@ class PointsEngine {
           milestone_points_awarded: milestoneAwarded,
           message: "Daily login bonus already claimed for today (WAT).",
           streak: {
-            current_streak_days: streak.current_streak_days,
-            longest_streak: streak.longest_streak,
+            current_streak_days: currentStreak || streak.current_streak_days,
+            longest_streak: longestStreak || streak.longest_streak,
             grace_used_in_window: streak.grace_used_in_window,
           },
-          points_balance: this.getPointsBalance(studentId),
+          points_balance: currentBalance,
         };
       }
 
@@ -391,6 +490,67 @@ class PointsEngine {
       let pointsToAward = 0;
       if (todayEarned < 100) {
         pointsToAward = Math.min(5, 100 - todayEarned);
+      }
+
+      const totalNewPoints = pointsToAward + milestoneAwarded;
+      const newBalance = currentBalance + totalNewPoints;
+      const newTotalEarned = (dbRecord?.total_earned || 0) + totalNewPoints;
+      const finalStreakDays = Math.max(streak.current_streak_days, currentStreak + 1);
+      const finalLongest = Math.max(longestStreak, finalStreakDays);
+
+      // Persist to Supabase student_points and points_history
+      if (this.supabaseClient && studentId) {
+        try {
+          const { error: upsertErr } = await this.supabaseClient
+            .from("student_points")
+            .upsert({
+              student_id: studentId,
+              points_balance: newBalance,
+              total_earned: newTotalEarned,
+              current_streak: finalStreakDays,
+              longest_streak: finalLongest,
+              last_login_date: watDateStr,
+              updated_at: nowIso,
+            }, { onConflict: "student_id" });
+
+          if (upsertErr) {
+            console.warn("Supabase student_points upsert error in awardLogin:", upsertErr);
+          }
+
+          const historyInserts: any[] = [];
+          if (pointsToAward > 0) {
+            historyInserts.push({
+              student_id: studentId,
+              amount: pointsToAward,
+              reason: "daily_login",
+              description: "🌟 Daily Login Bonus (+5 iGG Points)",
+              balance_after: currentBalance + pointsToAward,
+              created_at: nowIso,
+            });
+          }
+          if (milestoneAwarded > 0) {
+            historyInserts.push({
+              student_id: studentId,
+              amount: milestoneAwarded,
+              reason: finalStreakDays >= 30 ? "streak_milestone_30" : "streak_milestone_7",
+              description: finalStreakDays >= 30 ? "🏆 30-Day Streak Milestone Bonus" : "🔥 7-Day Streak Milestone Bonus",
+              balance_after: newBalance,
+              created_at: nowIso,
+            });
+          }
+
+          if (historyInserts.length > 0) {
+            const { error: histErr } = await this.supabaseClient
+              .from("points_history")
+              .insert(historyInserts);
+
+            if (histErr) {
+              console.warn("Supabase points_history insert error in awardLogin:", histErr);
+            }
+          }
+        } catch (sbErr) {
+          console.warn("Supabase write failed in awardLogin:", sbErr);
+        }
       }
 
       if (pointsToAward > 0) {
@@ -414,11 +574,11 @@ class PointsEngine {
         login_points_awarded: pointsToAward,
         milestone_points_awarded: milestoneAwarded,
         streak: {
-          current_streak_days: streak.current_streak_days,
-          longest_streak: streak.longest_streak,
+          current_streak_days: finalStreakDays,
+          longest_streak: finalLongest,
           grace_used_in_window: streak.grace_used_in_window,
         },
-        points_balance: this.getPointsBalance(studentId),
+        points_balance: newBalance,
         daily_earned: this.getDailyEarnedPoints(studentId, watDateStr),
       };
     } finally {
@@ -438,13 +598,47 @@ class PointsEngine {
       const nowIso = new Date().toISOString();
       const expiryIso = calculatePointsExpiry();
 
-      // Check if points were already awarded for this quiz to this student
-      const alreadyAwarded = this.data.points_transactions.some(
-        (tx) =>
-          tx.student_id === studentId &&
-          tx.type === "quiz_first_attempt" &&
-          tx.related_quiz_id === quizId
-      );
+      let alreadyAwarded = false;
+      let dbRecord: any = null;
+
+      // Check in Supabase first
+      if (this.supabaseClient && studentId) {
+        try {
+          const { data: sp } = await this.supabaseClient
+            .from("student_points")
+            .select("*")
+            .eq("student_id", studentId)
+            .maybeSingle();
+
+          if (sp) dbRecord = sp;
+
+          const { data: existingHistory } = await this.supabaseClient
+            .from("points_history")
+            .select("id")
+            .eq("student_id", studentId)
+            .eq("reason", "quiz_first_attempt")
+            .ilike("description", `%${quizId}%`)
+            .limit(1);
+
+          if (existingHistory && existingHistory.length > 0) {
+            alreadyAwarded = true;
+          }
+        } catch (dbErr) {
+          console.warn("Notice: could not query remote points_history in awardQuizCompletion:", dbErr);
+        }
+      }
+
+      // Check if points were already awarded for this quiz to this student in memory
+      if (!alreadyAwarded) {
+        alreadyAwarded = this.data.points_transactions.some(
+          (tx) =>
+            tx.student_id === studentId &&
+            tx.type === "quiz_first_attempt" &&
+            tx.related_quiz_id === quizId
+        );
+      }
+
+      const currentBalance = dbRecord ? dbRecord.points_balance : this.getPointsBalance(studentId);
 
       if (alreadyAwarded) {
         return {
@@ -452,12 +646,12 @@ class PointsEngine {
           points_awarded: 0,
           is_first_attempt: false,
           message: "Quiz retake: points are only awarded on your first attempt.",
-          points_balance: this.getPointsBalance(studentId),
+          points_balance: currentBalance,
         };
       }
 
       // Check attempts in Supabase database if available
-      if (this.supabaseClient) {
+      if (this.supabaseClient && studentId) {
         try {
           const { data: previousAttempts } = await this.supabaseClient
             .from("attempts")
@@ -473,7 +667,7 @@ class PointsEngine {
               points_awarded: 0,
               is_first_attempt: false,
               message: "Quiz retake: points are only awarded on your first attempt.",
-              points_balance: this.getPointsBalance(studentId),
+              points_balance: currentBalance,
             };
           }
         } catch (dbErr) {
@@ -497,6 +691,36 @@ class PointsEngine {
       let pointsToAward = 0;
       if (todayEarned < 100) {
         pointsToAward = Math.min(basePoints, 100 - todayEarned);
+      }
+
+      const newBalance = currentBalance + pointsToAward;
+      const newTotalEarned = (dbRecord?.total_earned || 0) + pointsToAward;
+
+      // Persist to Supabase
+      if (this.supabaseClient && studentId && pointsToAward > 0) {
+        try {
+          await this.supabaseClient
+            .from("student_points")
+            .upsert({
+              student_id: studentId,
+              points_balance: newBalance,
+              total_earned: newTotalEarned,
+              updated_at: nowIso,
+            }, { onConflict: "student_id" });
+
+          await this.supabaseClient
+            .from("points_history")
+            .insert({
+              student_id: studentId,
+              amount: pointsToAward,
+              reason: "quiz_first_attempt",
+              description: `🎯 Quiz Completion (${scorePercentage}% Score) [${quizId}]`,
+              balance_after: newBalance,
+              created_at: nowIso,
+            });
+        } catch (e) {
+          console.warn("Supabase write in awardQuizCompletion failed:", e);
+        }
       }
 
       if (pointsToAward > 0) {
@@ -530,7 +754,7 @@ class PointsEngine {
           current_streak_days: streak.current_streak_days,
           longest_streak: streak.longest_streak,
         },
-        points_balance: this.getPointsBalance(studentId),
+        points_balance: newBalance,
         daily_earned: this.getDailyEarnedPoints(studentId, watDateStr),
       };
     } finally {
@@ -543,7 +767,23 @@ class PointsEngine {
     const release = await this.acquireLock(studentId);
     try {
       const nowIso = new Date().toISOString();
-      const currentBalance = this.getPointsBalance(studentId);
+      let currentBalance = this.getPointsBalance(studentId);
+
+      // Check remote Supabase balance first
+      if (this.supabaseClient && studentId) {
+        try {
+          const { data } = await this.supabaseClient
+            .from("student_points")
+            .select("*")
+            .eq("student_id", studentId)
+            .maybeSingle();
+          if (data && typeof data.points_balance === "number") {
+            currentBalance = data.points_balance;
+          }
+        } catch (e) {
+          console.warn("Supabase fetch balance in convertPoints:", e);
+        }
+      }
 
       if (pointsToConvert < 100) {
         throw new Error("Minimum 100 iGG points required to convert.");
@@ -557,10 +797,37 @@ class PointsEngine {
 
       // 100 points = ₦1,000 (i.e. 1 point = ₦10)
       const nairaCredit = (pointsToConvert / 100) * 1000;
+      const newBalance = currentBalance - pointsToConvert;
       const pointsTxId = generateId();
       const creditTxId = generateId();
 
-      // Atomic Ledger Operations:
+      // Persist to Supabase
+      if (this.supabaseClient && studentId) {
+        try {
+          await this.supabaseClient
+            .from("student_points")
+            .upsert({
+              student_id: studentId,
+              points_balance: newBalance,
+              updated_at: nowIso,
+            }, { onConflict: "student_id" });
+
+          await this.supabaseClient
+            .from("points_history")
+            .insert({
+              student_id: studentId,
+              amount: -pointsToConvert,
+              reason: "conversion_debit",
+              description: `Converted ${pointsToConvert} iGG Points to ₦${nairaCredit.toLocaleString()} Store Credit`,
+              balance_after: newBalance,
+              created_at: nowIso,
+            });
+        } catch (e) {
+          console.warn("Supabase write in convertPoints:", e);
+        }
+      }
+
+      // Atomic Ledger Operations in memory:
       // 1. Debit points
       this.data.points_transactions.push({
         id: pointsTxId,
@@ -591,7 +858,7 @@ class PointsEngine {
         success: true,
         points_converted: pointsToConvert,
         naira_credit_added: nairaCredit,
-        new_points_balance: this.getPointsBalance(studentId),
+        new_points_balance: newBalance,
         new_credit_balance: this.getCreditBalance(studentId),
       };
     } finally {

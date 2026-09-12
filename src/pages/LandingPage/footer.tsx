@@ -23,9 +23,9 @@ const Footer = () => {
     Support: [
       { label: "Help Centre", href: "/contact" },
       { label: "Contact Us", href: "/contact" },
-      { label: "Privacy Policy", href: "#" },
-      { label: "Terms & Conditions", href: "#" },
-      { label: "Cookie Policy", href: "#" },
+      { label: "Privacy Policy", href: "/privacy-policy" },
+      { label: "Terms of Service", href: "/terms-of-service" },
+      { label: "Cookie Policy", href: "/privacy-policy#cookies" },
     ],
   };
 
@@ -284,14 +284,24 @@ const Footer = () => {
           </HStack>
 
           <HStack gap={5}>
-            {["Privacy Policy", "Terms", "Cookies"].map((t) => (
-              <Link key={t} asChild fontSize="11px" color="rgba(255,255,255,0.25)"
-                letterSpacing="0.06em" textTransform="uppercase"
-                _hover={{ color: "rgba(255,255,255,0.7)", textDecoration: "none" }}
-                transition="color .2s">
-                <RouterLink to="#">{t}</RouterLink>
-              </Link>
-            ))}
+            <Link asChild fontSize="11px" color="rgba(255,255,255,0.25)"
+              letterSpacing="0.06em" textTransform="uppercase"
+              _hover={{ color: "rgba(255,255,255,0.7)", textDecoration: "none" }}
+              transition="color .2s">
+              <RouterLink to="/privacy-policy">Privacy Policy</RouterLink>
+            </Link>
+            <Link asChild fontSize="11px" color="rgba(255,255,255,0.25)"
+              letterSpacing="0.06em" textTransform="uppercase"
+              _hover={{ color: "rgba(255,255,255,0.7)", textDecoration: "none" }}
+              transition="color .2s">
+              <RouterLink to="/terms-of-service">Terms of Service</RouterLink>
+            </Link>
+            <Link asChild fontSize="11px" color="rgba(255,255,255,0.25)"
+              letterSpacing="0.06em" textTransform="uppercase"
+              _hover={{ color: "rgba(255,255,255,0.7)", textDecoration: "none" }}
+              transition="color .2s">
+              <RouterLink to="/privacy-policy#cookies">Cookies</RouterLink>
+            </Link>
           </HStack>
         </Flex>
       </Box>

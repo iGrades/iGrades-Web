@@ -57,17 +57,76 @@ export function usePointsSystem() {
     try {
       setLoading(true);
 
-      // Try dedicated server API first
+      // A. Query Supabase student_points table directly (primary database source of truth)
+      let foundInDb = false;
+      try {
+        const { data: spData, error: spErr } = await supabase
+          .from("student_points")
+          .select("*")
+          .eq("student_id", studentId)
+          .maybeSingle();
+
+        if (!spErr && spData) {
+          foundInDb = true;
+          setPointsBalance(spData.points_balance ?? 0);
+          setStreakInfo({
+            student_id: studentId,
+            current_streak_days: spData.current_streak ?? 0,
+            longest_streak: spData.longest_streak ?? 0,
+            last_active_date: spData.last_login_date ?? "",
+            grace_used_in_window: false,
+            window_start_date: spData.last_login_date ?? "",
+            milestone_7_awarded: (spData.longest_streak ?? 0) >= 7,
+            milestone_30_awarded: (spData.longest_streak ?? 0) >= 30,
+            updated_at: spData.updated_at ?? new Date().toISOString(),
+          });
+        }
+      } catch (dbErr) {
+        console.warn("Direct student_points fetch note:", dbErr);
+      }
+
+      // B. Query Supabase points_history table directly
+      try {
+        const { data: histData, error: histErr } = await supabase
+          .from("points_history")
+          .select("*")
+          .eq("student_id", studentId)
+          .order("created_at", { ascending: false })
+          .limit(30);
+
+        if (!histErr && histData && histData.length > 0) {
+          setPointsHistory(
+            histData.map((h) => ({
+              id: h.id,
+              student_id: h.student_id,
+              type: h.reason,
+              points: h.amount,
+              description: h.description || "",
+              created_at: h.created_at,
+            }))
+          );
+        }
+      } catch (histErr) {
+        console.warn("Direct points_history fetch note:", histErr);
+      }
+
+      // C. Server API call for store credit and enriched data
       try {
         const res = await fetch(`/api/points-data/${studentId}`);
         if (res.ok) {
           const json = await res.json();
           if (json.data) {
-            setPointsBalance(json.data.pointsBalance ?? 0);
+            if (!foundInDb && typeof json.data.pointsBalance === "number") {
+              setPointsBalance(json.data.pointsBalance);
+            }
             setCreditBalance(json.data.creditBalance ?? 0);
             setDailyEarned(json.data.dailyEarned ?? 0);
-            setStreakInfo(json.data.streakInfo ?? null);
-            setPointsHistory(json.data.pointsHistory ?? []);
+            if (!foundInDb && json.data.streakInfo) {
+              setStreakInfo(json.data.streakInfo);
+            }
+            if (json.data.pointsHistory?.length && pointsHistory.length === 0) {
+              setPointsHistory(json.data.pointsHistory);
+            }
             setCreditHistory(json.data.creditHistory ?? []);
             return;
           }
@@ -76,103 +135,66 @@ export function usePointsSystem() {
         console.warn("Points API fallback:", apiErr);
       }
 
-      // Supabase RPC or direct SQL query fallback
-      const { data: ptsBalData, error: ptsBalErr } = await supabase.rpc(
-        "get_points_balance",
-        { p_student_id: studentId }
-      );
-      if (!ptsBalErr && typeof ptsBalData === "number") {
-        setPointsBalance(ptsBalData);
-      } else {
-        const { data: txs } = await supabase
-          .from("points_transactions")
-          .select("points, expires_at")
-          .eq("student_id", studentId);
-
-        if (txs) {
-          const now = new Date();
-          const validSum = txs.reduce((acc, row) => {
-            if (!row.expires_at || new Date(row.expires_at) > now) {
-              return acc + (row.points || 0);
-            }
-            return acc;
-          }, 0);
-          setPointsBalance(validSum);
+      // Supabase RPC or direct SQL query fallback if not found
+      if (!foundInDb) {
+        const { data: ptsBalData, error: ptsBalErr } = await supabase.rpc(
+          "get_points_balance",
+          { p_student_id: studentId }
+        );
+        if (!ptsBalErr && typeof ptsBalData === "number") {
+          setPointsBalance(ptsBalData);
         }
       }
 
-      // B. Get active Naira credit balance
+      // Active Naira credit balance
       const { data: crBalData, error: crBalErr } = await supabase.rpc(
         "get_credit_balance",
         { p_student_id: studentId }
       );
       if (!crBalErr && crBalData !== null) {
         setCreditBalance(Number(crBalData) || 0);
-      } else {
-        const { data: ctxs } = await supabase
-          .from("credit_transactions")
-          .select("amount_naira")
-          .eq("student_id", studentId);
-        if (ctxs) {
-          const csum = ctxs.reduce((acc, row) => acc + (Number(row.amount_naira) || 0), 0);
-          setCreditBalance(csum);
-        }
       }
 
-      // C. Get daily earned points today
+      // Daily earned points today
       const todayWatStr = new Date(Date.now() + 1 * 3600 * 1000).toISOString().split("T")[0];
       const { data: dailyData } = await supabase.rpc("get_daily_earned_points", {
         p_student_id: studentId,
         p_date: todayWatStr,
       });
       setDailyEarned(dailyData || 0);
-
-      // D. Get streak record
-      const { data: streakData } = await supabase
-        .from("student_streaks")
-        .select("*")
-        .eq("student_id", studentId)
-        .maybeSingle();
-
-      if (streakData) {
-        setStreakInfo(streakData);
-      }
-
-      // E. Get Points Transactions
-      const { data: pTxData } = await supabase
-        .from("points_transactions")
-        .select("*")
-        .eq("student_id", studentId)
-        .order("created_at", { ascending: false })
-        .limit(20);
-
-      if (pTxData) {
-        setPointsHistory(pTxData);
-      }
-
-      // F. Get Credit Transactions
-      const { data: cTxData } = await supabase
-        .from("credit_transactions")
-        .select("*")
-        .eq("student_id", studentId)
-        .order("created_at", { ascending: false })
-        .limit(20);
-
-      if (cTxData) {
-        setCreditHistory(cTxData);
-      }
     } catch (err: any) {
       console.warn("Points sync note:", err?.message || "offline");
     } finally {
       setLoading(false);
     }
-  }, [studentId]);
+  }, [studentId, pointsHistory.length]);
 
   // 2. Award Daily Login Points on mount
   const awardDailyLogin = useCallback(async () => {
     if (!studentId) return;
 
     try {
+      const todayWatStr = new Date(Date.now() + 1 * 3600 * 1000).toISOString().split("T")[0];
+
+      // Pre-check if already claimed today in Supabase student_points table
+      try {
+        const { data: spRecord } = await supabase
+          .from("student_points")
+          .select("points_balance, last_login_date, current_streak, longest_streak")
+          .eq("student_id", studentId)
+          .maybeSingle();
+
+        if (spRecord) {
+          setPointsBalance(spRecord.points_balance ?? 0);
+          if (spRecord.last_login_date === todayWatStr) {
+            // Already claimed today! Do not re-award or show popup
+            return;
+          }
+        }
+      } catch (checkErr) {
+        console.warn("Pre-check error in awardDailyLogin:", checkErr);
+      }
+
       const { data: session } = await supabase.auth.getSession();
       const token = session?.session?.access_token;
 
@@ -220,6 +242,58 @@ export function usePointsSystem() {
             newBalance: resData.points_balance,
           });
         }
+        if (typeof resData.points_balance === "number") {
+          setPointsBalance(resData.points_balance);
+        }
+      } else {
+        // Direct Supabase fallback write if server endpoints are not reached
+        const { data: spRecord } = await supabase
+          .from("student_points")
+          .select("*")
+          .eq("student_id", studentId)
+          .maybeSingle();
+
+        if (spRecord && spRecord.last_login_date === todayWatStr) {
+          setPointsBalance(spRecord.points_balance ?? 0);
+          return;
+        }
+
+        const curBal = spRecord?.points_balance ?? 0;
+        const curStreak = spRecord?.current_streak ?? 0;
+        const newBal = curBal + 5;
+        const newStreak = curStreak + 1;
+        const newLongest = Math.max(spRecord?.longest_streak ?? 0, newStreak);
+
+        await supabase.from("student_points").upsert(
+          {
+            student_id: studentId,
+            points_balance: newBal,
+            total_earned: (spRecord?.total_earned ?? 0) + 5,
+            current_streak: newStreak,
+            longest_streak: newLongest,
+            last_login_date: todayWatStr,
+            updated_at: new Date().toISOString(),
+          },
+          { onConflict: "student_id" }
+        );
+
+        await supabase.from("points_history").insert({
+          student_id: studentId,
+          amount: 5,
+          reason: "daily_login",
+          description: "🌟 Daily Login Bonus (+5 iGG Points)",
+          balance_after: newBal,
+        });
+
+        setPointsBalance(newBal);
+        celebratePointsGained({
+          points: 5,
+          title: "🌟 Daily Login Bonus!",
+          description: "You earned +5 iGG Points for logging in today! Keep learning and building your streak!",
+          eventType: "login",
+          streakDays: newStreak,
+          newBalance: newBal,
+        });
       }
     } catch (e) {
       console.warn("Login award notice:", e);

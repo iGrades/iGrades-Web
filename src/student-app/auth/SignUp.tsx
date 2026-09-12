@@ -13,9 +13,11 @@ import {
   Portal,
   Alert,
   PinInput,
+  Text,
+  Link,
 } from "@chakra-ui/react";
 import { groupBy } from "es-toolkit";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link as RouterLink } from "react-router-dom";
 import { useAuthdStudentData } from "../context/studentDataContext";
 
 import { NIGERIA_STATES_DATA } from "@/lib/nigeriaGeoData";
@@ -739,6 +741,31 @@ function StudentSignUp() {
               </Alert.Content>
             </Alert.Root>
           )}
+
+          <Text mt={4} color="#64748B" fontSize="xs" textAlign="center" lineHeight="1.5">
+            By creating an account, you agree to the{" "}
+            <Link
+              asChild
+              color="#206CE1"
+              fontWeight="700"
+              _hover={{ textDecoration: "underline" }}
+            >
+              <RouterLink to="/terms-of-service" target="_blank" rel="noopener noreferrer">
+                Terms of Service
+              </RouterLink>
+            </Link>{" "}
+            and acknowledge our{" "}
+            <Link
+              asChild
+              color="#206CE1"
+              fontWeight="700"
+              _hover={{ textDecoration: "underline" }}
+            >
+              <RouterLink to="/privacy-policy" target="_blank" rel="noopener noreferrer">
+                Privacy Policy
+              </RouterLink>
+            </Link>
+          </Text>
 
           <Flex justify="center" align="center" w="full" mt={6}>
             <Button

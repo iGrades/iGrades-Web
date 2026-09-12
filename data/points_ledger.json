@@ -1,5 +1,29 @@
 {
-  "points_transactions": [],
+  "points_transactions": [
+    {
+      "id": "mtyhmydd-cvh224e85",
+      "student_id": "test-sync-student-1789223771757",
+      "type": "login",
+      "points": 5,
+      "description": "Daily Login Bonus",
+      "created_at": "2026-09-12T14:36:11.813Z",
+      "wat_date": "2026-09-12",
+      "expires_at": "2027-09-30T23:59:59.999Z",
+      "exempt_from_cap": false
+    }
+  ],
   "credit_transactions": [],
-  "student_streaks": {}
+  "student_streaks": {
+    "test-sync-student-1789223771757": {
+      "student_id": "test-sync-student-1789223771757",
+      "current_streak_days": 1,
+      "longest_streak": 1,
+      "last_active_date": "2026-09-12",
+      "grace_used_in_window": false,
+      "window_start_date": "2026-09-12",
+      "milestone_7_awarded": false,
+      "milestone_30_awarded": false,
+      "updated_at": "2026-09-12T14:36:12.084Z"
+    }
+  }
 }

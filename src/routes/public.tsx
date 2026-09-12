@@ -11,6 +11,8 @@ import SignUp from "@/pages/SignUp";
 import Verify from "@/parent-app/auth/Verify";
 import AuthCallback from "@/pages/AuthCallback";
 import UpcomingPage from "@/pages/UpcomingPage";
+import PrivacyPolicy from "@/pages/PrivacyPolicyPage";
+import TermsOfService from "@/pages/TermsOfServicePage";
 
 const publicRoutes: RouteObject[] = [
   {
@@ -20,6 +22,26 @@ const publicRoutes: RouteObject[] = [
   {
     path: "/about",
     element: <AboutPage />,
+  },
+  {
+    path: "/privacy-policy",
+    element: <PrivacyPolicy />,
+  },
+  {
+    path: "/privacy",
+    element: <PrivacyPolicy />,
+  },
+  {
+    path: "/terms-of-service",
+    element: <TermsOfService />,
+  },
+  {
+    path: "/terms",
+    element: <TermsOfService />,
+  },
+  {
+    path: "/terms-of-use",
+    element: <TermsOfService />,
   },
   {
     path: "/upcoming",

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link as RouterLink } from "react-router-dom";
 import { supabase } from "../../lib/supabaseClient";
 import {
   Button,
@@ -12,6 +12,7 @@ import {
   Box,
   Flex,
   Tag,
+  Link,
 } from "@chakra-ui/react";
 import { IoEyeOutline, IoEyeOffOutline } from "react-icons/io5";
 
@@ -257,13 +258,27 @@ export default function ParentSignUp() {
 
           <Text mt={6} color="#64748B" fontSize="xs" textAlign="center" lineHeight="1.5">
             By clicking continue, I agree to{" "}
-            <span style={{ fontWeight: "700", color: "#206CE1", cursor: "pointer" }}>
-              Terms of Use
-            </span>{" "}
+            <Link
+              asChild
+              color="#206CE1"
+              fontWeight="700"
+              _hover={{ textDecoration: "underline" }}
+            >
+              <RouterLink to="/terms-of-service" target="_blank" rel="noopener noreferrer">
+                Terms of Service
+              </RouterLink>
+            </Link>{" "}
             and acknowledge <br /> that I have read the{" "}
-            <span style={{ fontWeight: "700", color: "#206CE1", cursor: "pointer" }}>
-              Privacy Policy
-            </span>
+            <Link
+              asChild
+              color="#206CE1"
+              fontWeight="700"
+              _hover={{ textDecoration: "underline" }}
+            >
+              <RouterLink to="/privacy-policy" target="_blank" rel="noopener noreferrer">
+                Privacy Policy
+              </RouterLink>
+            </Link>
           </Text>
           <Flex justify="center" my={6}>
             <Button

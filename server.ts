@@ -321,10 +321,10 @@ async function startServer() {
   app.post("/api/award-points", handleAwardPoints);
   app.post("/functions/v1/award-points", handleAwardPoints);
 
-  app.get("/api/points-data/:studentId", (req, res) => {
+  app.get("/api/points-data/:studentId", async (req, res) => {
     try {
       const { studentId } = req.params;
-      const data = pointsEngine.getStudentPointsData(studentId);
+      const data = await pointsEngine.getStudentPointsData(studentId);
       res.json({ success: true, data });
     } catch (err: any) {
       res.status(500).json({ error: err?.message || "Internal error fetching points data" });
@@ -376,7 +376,7 @@ async function startServer() {
 
       if (urlPath.includes("/rpc/get_points_balance")) {
         const studentId = req.body?.p_student_id || (req.query?.p_student_id as string);
-        const balance = pointsEngine.getPointsBalance(studentId);
+        const balance = await pointsEngine.getPointsBalanceAsync(studentId);
         return res.json(balance);
       }
 
@@ -419,7 +419,7 @@ async function startServer() {
       if (urlPath.includes("/rest/v1/points_transactions")) {
         const match = urlPath.match(/student_id=eq\.([^&]+)/);
         const studentId = match ? decodeURIComponent(match[1]) : "";
-        const data = pointsEngine.getStudentPointsData(studentId);
+        const data = await pointsEngine.getStudentPointsData(studentId);
         res.setHeader("Content-Range", `0-${data.pointsHistory.length}/${data.pointsHistory.length}`);
         return res.json(data.pointsHistory);
       }
@@ -427,7 +427,7 @@ async function startServer() {
       if (urlPath.includes("/rest/v1/credit_transactions")) {
         const match = urlPath.match(/student_id=eq\.([^&]+)/);
         const studentId = match ? decodeURIComponent(match[1]) : "";
-        const data = pointsEngine.getStudentPointsData(studentId);
+        const data = await pointsEngine.getStudentPointsData(studentId);
         res.setHeader("Content-Range", `0-${data.creditHistory.length}/${data.creditHistory.length}`);
         return res.json(data.creditHistory);
       }

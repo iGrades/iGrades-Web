@@ -388,6 +388,25 @@ export default function Login({ initialType }: LoginProps) {
                 </Link>
               </Text>
 
+              {/* Public Legal Links */}
+              <HStack justify="center" gap={3} mt={4} fontSize="xs" color="#94A3B8">
+                <Link
+                  asChild
+                  color="#64748B"
+                  _hover={{ color: "primaryColor", textDecoration: "underline" }}
+                >
+                  <RouterLink to="/terms-of-service">Terms of Service</RouterLink>
+                </Link>
+                <Text>•</Text>
+                <Link
+                  asChild
+                  color="#64748B"
+                  _hover={{ color: "primaryColor", textDecoration: "underline" }}
+                >
+                  <RouterLink to="/privacy-policy">Privacy Policy</RouterLink>
+                </Link>
+              </HStack>
+
             </Box>
           </Flex>
         </Flex>
