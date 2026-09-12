@@ -50,50 +50,166 @@ export default function AuthCallback() {
     };
 
     const processUser = async (user: any) => {
-      const storedRole = localStorage.getItem("oauth_role") || "parent";
+      const storedRole = localStorage.getItem("oauth_role") || "";
+      const userEmail = user.email ? user.email.trim().toLowerCase() : "";
 
-      // 1. Check if user already exists in 'parents' table
-      const { data: existingParents } = await supabase
-        .from("parents")
-        .select("*")
-        .eq("user_id", user.id);
-
-      if (existingParents && existingParents.length > 0) {
-        const p = existingParents[0];
-        localStorage.removeItem("oauth_role");
-        await getParentData();
-        navigate(p.firstname ? `/parent-dashboard/${p.firstname}` : "/parent-dashboard");
-        return;
-      }
-
-      // 2. Check if user already exists in 'students' table
-      const { data: existingStudents } = await supabase
-        .from("students")
-        .select("*")
-        .or(`id.eq.${user.id},user_id.eq.${user.id}`);
-
-      if (existingStudents && existingStudents.length > 0) {
-        const s = existingStudents[0];
-        localStorage.removeItem("oauth_role");
-        setAuthdStudent(s);
-        localStorage.setItem("authdStudent", JSON.stringify(s));
-        navigate(s.firstname ? `/student-dashboard/${s.firstname}` : "/student-dashboard");
-        return;
-      }
-
-      // 3. User is new - create profile based on stored role or metadata
       const userMeta = user.user_metadata || {};
-      const fullName = userMeta.full_name || userMeta.name || user.email?.split("@")[0] || "User";
+      const fullName = userMeta.full_name || userMeta.name || (userEmail ? userEmail.split("@")[0] : "User");
       const nameParts = fullName.trim().split(" ");
       const firstName = userMeta.given_name || nameParts[0] || "User";
-      const lastName = userMeta.family_name || (nameParts.length > 1 ? nameParts.slice(1).join(" ") : "User");
+      const lastName = userMeta.family_name || (nameParts.length > 1 ? nameParts.slice(1).join(" ") : "");
       const avatar = userMeta.avatar_url || userMeta.picture || "";
 
+      // Helper: complete student login, link user_id & avatar, store in session
+      const completeStudentLogin = async (student: any) => {
+        try {
+          const updates: any = {};
+          if (!student.user_id || student.user_id !== user.id) {
+            updates.user_id = user.id;
+          }
+          if (!student.profile_image && avatar) {
+            updates.profile_image = avatar;
+          }
+          if (Object.keys(updates).length > 0) {
+            await supabase.from("students").update(updates).eq("id", student.id);
+            student = { ...student, ...updates };
+          }
+        } catch (linkErr) {
+          console.warn("Notice updating student user_id link:", linkErr);
+        }
+
+        localStorage.removeItem("oauth_role");
+        localStorage.removeItem("authdParent");
+        setAuthdStudent(student);
+        localStorage.setItem("authdStudent", JSON.stringify(student));
+        const studentName = student.firstname || firstName || "Student";
+        navigate(studentName ? `/student-dashboard/${studentName}` : "/student-dashboard", { replace: true });
+      };
+
+      // Helper: complete parent login, link user_id & avatar, store in session
+      const completeParentLogin = async (parent: any) => {
+        try {
+          const updates: any = {};
+          if (!parent.user_id || parent.user_id !== user.id) {
+            updates.user_id = user.id;
+          }
+          if (!parent.profile_image && avatar) {
+            updates.profile_image = avatar;
+          }
+          if (Object.keys(updates).length > 0) {
+            await supabase.from("parents").update(updates).eq("id", parent.id);
+            parent = { ...parent, ...updates };
+          }
+        } catch (linkErr) {
+          console.warn("Notice updating parent user_id link:", linkErr);
+        }
+
+        localStorage.removeItem("oauth_role");
+        localStorage.removeItem("authdStudent");
+        await getParentData();
+        const parentName = parent.firstname || firstName || "Parent";
+        navigate(parentName ? `/parent-dashboard/${parentName}` : "/parent-dashboard", { replace: true });
+      };
+
+      // Helper query: find student by ID or by email
+      const findStudent = async () => {
+        // 1. By ID / user_id
+        const { data: byId } = await supabase
+          .from("students")
+          .select("*")
+          .or(`id.eq.${user.id},user_id.eq.${user.id}`)
+          .limit(1);
+        if (byId && byId.length > 0) return byId[0];
+
+        // 2. By Email (case-insensitive)
+        if (userEmail) {
+          const { data: byEmail } = await supabase
+            .from("students")
+            .select("*")
+            .ilike("email", userEmail)
+            .limit(1);
+          if (byEmail && byEmail.length > 0) return byEmail[0];
+        }
+        return null;
+      };
+
+      // Helper query: find parent by ID or by email
+      const findParent = async () => {
+        // 1. By user_id
+        const { data: byId } = await supabase
+          .from("parents")
+          .select("*")
+          .or(`id.eq.${user.id},user_id.eq.${user.id}`)
+          .limit(1);
+        if (byId && byId.length > 0) return byId[0];
+
+        // 2. By Email (case-insensitive)
+        if (userEmail) {
+          const { data: byEmail } = await supabase
+            .from("parents")
+            .select("*")
+            .ilike("email", userEmail)
+            .limit(1);
+          if (byEmail && byEmail.length > 0) return byEmail[0];
+        }
+        return null;
+      };
+
+      // --- BRANCH A: User explicitly initiated Student login ---
+      if (storedRole === "children" || storedRole === "student") {
+        const student = await findStudent();
+        if (student) {
+          await completeStudentLogin(student);
+          return;
+        }
+
+        // If not in students, check if they exist as a parent
+        const parent = await findParent();
+        if (parent) {
+          await completeParentLogin(parent);
+          return;
+        }
+      }
+
+      // --- BRANCH B: User explicitly initiated Parent login ---
+      else if (storedRole === "parent") {
+        const parent = await findParent();
+        if (parent) {
+          await completeParentLogin(parent);
+          return;
+        }
+
+        // If not in parents, check if they exist as a student
+        const student = await findStudent();
+        if (student) {
+          await completeStudentLogin(student);
+          return;
+        }
+      }
+
+      // --- BRANCH C: No role specified or generic login ---
+      else {
+        // Check student first
+        const student = await findStudent();
+        if (student) {
+          await completeStudentLogin(student);
+          return;
+        }
+
+        // Then check parent
+        const parent = await findParent();
+        if (parent) {
+          await completeParentLogin(parent);
+          return;
+        }
+      }
+
+      // --- BRANCH D: Brand new user with no matching email in either table ---
       if (storedRole === "children" || storedRole === "student") {
         const newStudent = {
           id: user.id,
           user_id: user.id,
-          email: user.email || "",
+          email: userEmail || user.email || "",
           firstname: firstName,
           lastname: lastName,
           profile_image: avatar,
@@ -112,14 +228,14 @@ export default function AuthCallback() {
         }
 
         localStorage.removeItem("oauth_role");
+        localStorage.removeItem("authdParent");
         setAuthdStudent(newStudent);
         localStorage.setItem("authdStudent", JSON.stringify(newStudent));
-        navigate(`/student-dashboard/${firstName}`);
+        navigate(`/student-dashboard/${firstName}`, { replace: true });
       } else {
-        // Parent role
         const newParent = {
           user_id: user.id,
-          email: user.email,
+          email: userEmail || user.email,
           firstname: firstName,
           lastname: lastName,
           profile_image: avatar,
@@ -132,8 +248,9 @@ export default function AuthCallback() {
         }
 
         localStorage.removeItem("oauth_role");
+        localStorage.removeItem("authdStudent");
         await getParentData();
-        navigate(`/parent-dashboard/${firstName}`);
+        navigate(`/parent-dashboard/${firstName}`, { replace: true });
       }
     };
 
