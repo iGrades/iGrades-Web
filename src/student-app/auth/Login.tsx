@@ -145,17 +145,14 @@ const ChildrenLogin = ({ setAlert }: Props) => {
         </Box>
 
         <Box w="full">
-          <Flex justify="space-between" align="baseline" mb={1}>
+          <Flex justify="space-between" align="baseline" mb={2}>
             <Text color="#334155" fontSize="sm" fontWeight="600">
-              Access Code / Passkey
+              Passkey
             </Text>
             <Text color="gray.400" fontSize="xs">
               6 digits
             </Text>
           </Flex>
-          <Text color="gray.500" fontSize="xs" mb={3}>
-            Enter the 6-digit access code provided by your parent or instructor
-          </Text>
           <HStack justify="center" gap={{ base: 2, md: 4 }} mb={6}>
             <PinInput.Root
               size="md"

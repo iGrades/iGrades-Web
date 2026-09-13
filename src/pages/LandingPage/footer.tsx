@@ -44,7 +44,6 @@ const Footer = () => {
       overflow="hidden"
     >
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@700;800;900&display=swap');
         .footer-link { transition: all 0.2s ease; }
         .footer-link:hover { color: white !important; padding-left: 6px; }
         .social-btn { transition: all 0.2s ease; }
@@ -115,10 +114,12 @@ const Footer = () => {
             <VStack align="start" gap={2.5}>
               <HStack gap={2.5}>
                 <Icon boxSize={3.5} color="#F18729"><MdEmail /></Icon>
-                <Text fontSize="xs" color="rgba(255,255,255,0.4)"
-                  _hover={{ color: "white" }} transition="color .2s" cursor="default">
-                  hello@igrades.ng
-                </Text>
+                <a href="mailto:info@igrades.org" style={{ textDecoration: "none" }}>
+                  <Text fontSize="xs" color="rgba(255,255,255,0.4)"
+                    _hover={{ color: "white" }} transition="color .2s">
+                    info@igrades.org
+                  </Text>
+                </a>
               </HStack>
               <HStack gap={2.5}>
                 <Icon boxSize={3.5} color="#F18729"><MdPhone /></Icon>

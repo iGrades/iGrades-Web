@@ -11,6 +11,10 @@ const parentRoutes: RouteObject[] = [
     path: "/parent-dashboard/:parentName/:page", 
     element: <Home /> 
   },
+  { 
+    path: "/parent-dashboard/:parentName/:page/:subpage", 
+    element: <Home /> 
+  },
    // Fallback for old URLs without parent name
   { 
     path: "/parent-dashboard", 

@@ -44,7 +44,7 @@ interface NotificationItem {
 
 const Navbar = ({ setShowLogoutModal }: Props) => {
   const { parent } = useUser();
-  const { setCurrentParentPage } = useNavigationStore();
+  const { setCurrentParentPage, setParentSettingsTab } = useNavigationStore();
   const { t, i18n } = useTranslation();
 
   const [value, setValue] = useState<string[]>([i18n.language || "en"]);
@@ -343,7 +343,10 @@ const Navbar = ({ setShowLogoutModal }: Props) => {
                   {/* Profile Account Actions (not duplicating sidebar nav) */}
                   <Menu.Item
                     value="parent-profile"
-                    onClick={() => setCurrentParentPage("settings")}
+                    onClick={() => {
+                      setCurrentParentPage("settings");
+                      setParentSettingsTab("igrade");
+                    }}
                     borderRadius="lg"
                     py={2}
                     px={3}
@@ -352,13 +355,16 @@ const Navbar = ({ setShowLogoutModal }: Props) => {
                   >
                     <HStack gap={2.5}>
                       <FiUser size={16} />
-                      <Text fontSize="sm">My Account Profile</Text>
+                      <Text fontSize="sm">My Parent Profile</Text>
                     </HStack>
                   </Menu.Item>
 
                   <Menu.Item
                     value="security"
-                    onClick={() => setCurrentParentPage("settings")}
+                    onClick={() => {
+                      setCurrentParentPage("settings");
+                      setParentSettingsTab("security");
+                    }}
                     borderRadius="lg"
                     py={2}
                     px={3}
@@ -373,7 +379,10 @@ const Navbar = ({ setShowLogoutModal }: Props) => {
 
                   <Menu.Item
                     value="help"
-                    onClick={() => setCurrentParentPage("settings")}
+                    onClick={() => {
+                      setCurrentParentPage("settings");
+                      setParentSettingsTab("support");
+                    }}
                     borderRadius="lg"
                     py={2}
                     px={3}
@@ -382,7 +391,7 @@ const Navbar = ({ setShowLogoutModal }: Props) => {
                   >
                     <HStack gap={2.5}>
                       <FiHelpCircle size={16} />
-                      <Text fontSize="sm">Help & Support</Text>
+                      <Text fontSize="sm">Help & FAQs</Text>
                     </HStack>
                   </Menu.Item>
 

@@ -14,6 +14,10 @@ const studentRoutes: RouteObject[] = [
     path: "/student-dashboard/:studentName/:page",
     element: <Home />,
   },
+  {
+    path: "/student-dashboard/:studentName/:page/:subpage",
+    element: <Home />,
+  },
   // Fallback for old URLs without student name
   {
     path: "/student-dashboard",
@@ -34,6 +38,26 @@ const studentRoutes: RouteObject[] = [
   {
     path: "/student/quizzes",
     element: <StudentRedirect targetPage="quiz" />,
+  },
+  {
+    path: "/student/help",
+    element: <StudentRedirect targetPage="settings" targetTab="help" />,
+  },
+  {
+    path: "/student/faqs",
+    element: <StudentRedirect targetPage="settings" targetTab="help" />,
+  },
+  {
+    path: "/student/security",
+    element: <StudentRedirect targetPage="settings" targetTab="security" />,
+  },
+  {
+    path: "/student/profile",
+    element: <StudentRedirect targetPage="settings" targetTab="profile" />,
+  },
+  {
+    path: "/student/settings",
+    element: <StudentRedirect targetPage="settings" />,
   },
   {
     path: "/student",

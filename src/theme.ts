@@ -2,6 +2,17 @@
 import { createSystem, defaultConfig, defineConfig } from "@chakra-ui/react";
 
 const config = defineConfig({
+  globalCss: {
+    "html, body": {
+      fontFamily: "'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif",
+    },
+    "h1, h2, h3, h4, h5, h6": {
+      fontFamily: "'Lexend', 'Plus Jakarta Sans', sans-serif",
+    },
+    "button, input, optgroup, select, textarea": {
+      fontFamily: "'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif",
+    },
+  },
   theme: {
     tokens: {
       colors: {
@@ -28,6 +39,55 @@ const config = defineConfig({
         mediumGrey: { value: "#464646" },
         greyOthers: { value: "#525071" },
         faintYellow: { value: "#FFF9F3" },
+        slate: {
+          50: { value: "#F8FAFC" },
+          100: { value: "#F1F5F9" },
+          200: { value: "#E2E8F0" },
+          300: { value: "#CBD5E1" },
+          400: { value: "#94A3B8" },
+          500: { value: "#64748B" },
+          600: { value: "#475569" },
+          700: { value: "#334155" },
+          800: { value: "#1E293B" },
+          900: { value: "#0F172A" },
+          950: { value: "#020617" },
+        },
+        amber: {
+          50: { value: "#FFFBEB" },
+          100: { value: "#FEF3C7" },
+          200: { value: "#FDE68A" },
+          300: { value: "#FCD34D" },
+          400: { value: "#FBBF24" },
+          500: { value: "#F59E0B" },
+          600: { value: "#D97706" },
+          700: { value: "#B45309" },
+          800: { value: "#92400E" },
+          900: { value: "#78350F" },
+        },
+        emerald: {
+          50: { value: "#ECFDF5" },
+          100: { value: "#D1FAE5" },
+          200: { value: "#A7F3D0" },
+          300: { value: "#6EE7B7" },
+          400: { value: "#34D399" },
+          500: { value: "#10B981" },
+          600: { value: "#059669" },
+          700: { value: "#047857" },
+          800: { value: "#065F46" },
+          900: { value: "#064E3B" },
+        },
+        rose: {
+          50: { value: "#FFF1F2" },
+          100: { value: "#FFE4E6" },
+          200: { value: "#FECDD3" },
+          300: { value: "#FDA4AF" },
+          400: { value: "#FB7185" },
+          500: { value: "#F43F5E" },
+          600: { value: "#E11D48" },
+          700: { value: "#BE123C" },
+          800: { value: "#9F1239" },
+          900: { value: "#881337" },
+        },
       },
       cursor: {
         button: { value: "pointer" },

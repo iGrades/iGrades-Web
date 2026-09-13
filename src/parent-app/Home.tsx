@@ -17,6 +17,8 @@ const Home = () => {
   const [showLogoutModal, setShowLogoutModal] = useState(false);
   const currentPage = useNavigationStore((state) => state.currentParentPage);
   const setCurrentPage = useNavigationStore((state) => state.setCurrentParentPage);
+  const parentSettingsTab = useNavigationStore((state) => state.parentSettingsTab);
+  const setParentSettingsTab = useNavigationStore((state) => state.setParentSettingsTab);
   
   const { parent, getParentData } = useUser();
   const navigate = useNavigate();
@@ -69,23 +71,48 @@ const Home = () => {
       "": "home",
       students: "student",
       settings: "settings",
+      help: "settings",
+      support: "settings",
+      faqs: "settings",
     };
     
     const currentPath = location.pathname;
-    const pathParts = currentPath.split("/");
-    const urlPage = pathParts[pathParts.length - 1] || "";
+    const pathParts = currentPath.split("/").filter(Boolean);
+    let urlPage = "";
+    let urlSubpage = "";
+
+    if (pathParts[0] === "parent-dashboard") {
+      if (pathParts.length >= 3) {
+        urlPage = pathParts[2];
+        if (pathParts.length >= 4) {
+          urlSubpage = pathParts[3];
+        }
+      }
+    } else {
+      urlPage = pathParts[pathParts.length - 1] || "";
+    }
+
+    const searchParams = new URLSearchParams(location.search);
+    const queryTab = searchParams.get("tab");
     
     const mappedPage: ParentPage = pageMap[urlPage] || "home";
     if (mappedPage != currentPage) {
       setCurrentPage(mappedPage);
     }
-    
+
+    if (urlPage === "help" || urlPage === "support" || urlPage === "faqs") {
+      setParentSettingsTab("support");
+    } else if (mappedPage === "settings") {
+      const targetTab = urlSubpage || queryTab;
+      if (targetTab) {
+        setParentSettingsTab(targetTab === "profile" ? "igrade" : targetTab);
+      }
+    }
   }, []); 
   
-// Update URL only when page changes (not from URL updates)
+  // Update URL only when page changes (not from URL updates)
   useEffect(() => {
     if (parent && parent.length > 0) {
-      
       const parentFullName = getParentFullName();
     
       if (parentFullName) {
@@ -100,7 +127,20 @@ const Home = () => {
         };
       
         const pagePath = pageMap[currentPage] || "";
-        const expectedPath = `/parent-dashboard/${urlFriendlyName}${pagePath ? "/" + pagePath : ""}`;
+        let subPath = "";
+        if (currentPage === "settings" && parentSettingsTab) {
+          const mappedTab =
+            parentSettingsTab === "igrade"
+              ? "profile"
+              : parentSettingsTab === "support"
+              ? "help"
+              : parentSettingsTab;
+          subPath = `/${mappedTab}`;
+        }
+
+        const expectedPath = `/parent-dashboard/${urlFriendlyName}${
+          pagePath ? "/" + pagePath + subPath : ""
+        }`;
       
         // Only navigate if not already on this path
         const currentPath = location.pathname;
@@ -109,7 +149,7 @@ const Home = () => {
         }
       }
     }
-  }, [currentPage, parent, navigate, location.pathname]);
+  }, [currentPage, parentSettingsTab, parent, navigate, location.pathname]);
   
   const renderPage = () => {
     switch (currentPage) {

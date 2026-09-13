@@ -64,10 +64,10 @@ const AdminLogin = () => {
       />
 
       <Box
-        bg="slate.900/80"
+        bg="#1E293B"
         backdropFilter="blur(16px)"
         border="1px solid"
-        borderColor="whiteAlpha.15"
+        borderColor="rgba(255, 255, 255, 0.12)"
         borderRadius="1.5rem"
         p={{ base: 6, sm: 10 }}
         w="full"
@@ -81,8 +81,10 @@ const AdminLogin = () => {
             <Image src={logo} alt="iGrades" h="30px" objectFit="contain" />
           </Box>
           <Badge
-            bg="blue.500/20"
-            color="blue.300"
+            bg="rgba(37, 99, 235, 0.2)"
+            color="#93C5FD"
+            border="1px solid"
+            borderColor="rgba(147, 197, 253, 0.25)"
             borderRadius="full"
             px={3}
             py={1}
@@ -97,7 +99,7 @@ const AdminLogin = () => {
         <Heading fontSize="1.5rem" fontWeight="800" color="white" mb={1} letterSpacing="-0.02em">
           Control Panel Login
         </Heading>
-        <Text fontSize="12px" color="slate.400" mb={8}>
+        <Text fontSize="13px" color="#94A3B8" mb={8}>
           Restricted access for authorised administrative personnel.
         </Text>
 
@@ -108,7 +110,7 @@ const AdminLogin = () => {
                 fontSize="11px"
                 fontWeight="700"
                 letterSpacing="0.05em"
-                color="slate.300"
+                color="#E2E8F0"
                 mb={2}
                 textTransform="uppercase"
               >
@@ -121,13 +123,13 @@ const AdminLogin = () => {
                   onChange={(e) => setEmail(e.target.value)}
                   required
                   placeholder="admin@igrades.org"
-                  bg="whiteAlpha.05"
+                  bg="rgba(255, 255, 255, 0.05)"
                   border="1px solid"
-                  borderColor="whiteAlpha.20"
+                  borderColor="rgba(255, 255, 255, 0.16)"
                   color="white"
                   borderRadius="0.75rem"
-                  _placeholder={{ color: "slate.500" }}
-                  _focus={{ borderColor: "blue.500", boxShadow: "0 0 0 1px #2563EB" }}
+                  _placeholder={{ color: "#64748B" }}
+                  _focus={{ borderColor: "#3B82F6", boxShadow: "0 0 0 1px #3B82F6" }}
                   h="44px"
                   fontSize="13px"
                   px={4}
@@ -140,7 +142,7 @@ const AdminLogin = () => {
                 fontSize="11px"
                 fontWeight="700"
                 letterSpacing="0.05em"
-                color="slate.300"
+                color="#E2E8F0"
                 mb={2}
                 textTransform="uppercase"
               >
@@ -153,13 +155,13 @@ const AdminLogin = () => {
                   onChange={(e) => setPassword(e.target.value)}
                   required
                   placeholder="••••••••••••"
-                  bg="whiteAlpha.05"
+                  bg="rgba(255, 255, 255, 0.05)"
                   border="1px solid"
-                  borderColor="whiteAlpha.20"
+                  borderColor="rgba(255, 255, 255, 0.16)"
                   color="white"
                   borderRadius="0.75rem"
-                  _placeholder={{ color: "slate.500" }}
-                  _focus={{ borderColor: "blue.500", boxShadow: "0 0 0 1px #2563EB" }}
+                  _placeholder={{ color: "#64748B" }}
+                  _focus={{ borderColor: "#3B82F6", boxShadow: "0 0 0 1px #3B82F6" }}
                   h="44px"
                   fontSize="13px"
                   px={4}
@@ -172,7 +174,7 @@ const AdminLogin = () => {
                   right="8px"
                   top="50%"
                   transform="translateY(-50%)"
-                  color="slate.400"
+                  color="#94A3B8"
                   _hover={{ color: "white", bg: "transparent" }}
                   onClick={() => setShowPassword(!showPassword)}
                 >
@@ -182,8 +184,8 @@ const AdminLogin = () => {
             </Box>
 
             {error && (
-              <Box p={3} bg="rose.500/10" border="1px solid" borderColor="rose.500/20" borderRadius="0.75rem">
-                <Text fontSize="12px" color="rose.300" fontWeight="600">
+              <Box p={3} bg="rgba(239, 68, 68, 0.15)" border="1px solid" borderColor="rgba(239, 68, 68, 0.3)" borderRadius="0.75rem">
+                <Text fontSize="12px" color="#FCA5A5" fontWeight="600">
                   {error}
                 </Text>
               </Box>
@@ -191,13 +193,13 @@ const AdminLogin = () => {
 
             <Button
               type="submit"
-              bg="blue.600"
+              bg="#2563EB"
               color="white"
               h="46px"
               borderRadius="0.75rem"
               loading={isLoading}
               loadingText="Authenticating..."
-              _hover={{ bg: "blue.500" }}
+              _hover={{ bg: "#1D4ED8" }}
               transition="all 0.2s"
               fontWeight="700"
               fontSize="14px"
@@ -208,9 +210,9 @@ const AdminLogin = () => {
           </Stack>
         </form>
 
-        <Flex align="center" justify="center" gap={2} mt={8} pt={6} borderTop="1px solid" borderColor="whiteAlpha.10">
-          <Icon as={FiShield} color="slate.500" boxSize={3.5} />
-          <Text fontSize="11px" color="slate.500" fontWeight="500">
+        <Flex align="center" justify="center" gap={2} mt={8} pt={6} borderTop="1px solid" borderColor="rgba(255, 255, 255, 0.1)">
+          <Icon as={FiShield} color="#64748B" boxSize={3.5} />
+          <Text fontSize="11px" color="#94A3B8" fontWeight="500">
             Encrypted End-to-End Session Guard
           </Text>
         </Flex>

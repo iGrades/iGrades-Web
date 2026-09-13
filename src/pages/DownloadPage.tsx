@@ -40,9 +40,6 @@ const DownloadPage = () => {
       <NavBar />
       <Box bg="white" overflow="hidden" >
         <style>{`
-          @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Lexend:wght@700;800;900&display=swap');
-          .dl-root * { font-family: "'Plus Jakarta Sans', sans-serif"; }
-          .dl-root h1,.dl-root h2,.dl-root h3 { font-family: "'Lexend', sans-serif" !important; }
           @keyframes fadeUp { from{opacity:0;transform:translateY(24px)} to{opacity:1;transform:translateY(0)} }
           @keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-12px)} }
           @keyframes float2 { 0%,100%{transform:translateY(0) rotate(-2deg)} 50%{transform:translateY(-10px) rotate(2deg)} }
@@ -92,7 +89,7 @@ const DownloadPage = () => {
                 </HStack>
                 <Heading className="fu2"
                   color="#07052A" fontSize={{ base: "3xl", md: "5xl", lg: "6xl" }}
-                  fontWeight="900" lineHeight="1.05" letterSpacing="-0.025em" mb={7}>
+                  fontWeight="bold" lineHeight="1.15" mb={7}>
                   Your grades<br />
                   <Box as="span" color="#F18729">live in your</Box><br />
                   pocket now.
@@ -259,8 +256,8 @@ const DownloadPage = () => {
                   letterSpacing="0.12em" textTransform="uppercase">Built Different</Text>
                 <Box w="24px" h="2px" bg="#F18729" borderRadius="full" />
               </HStack>
-              <Heading fontSize={{ base: "2xl", md: "3xl" }} fontWeight="900"
-                color="#07052A" letterSpacing="-0.02em" fontFamily="'Lexend', sans-serif">
+              <Heading fontSize={{ base: "2xl", md: "3xl" }} fontWeight="bold"
+                color="#07052A">
                 Everything a serious student needs.
               </Heading>
             </Box>
@@ -295,8 +292,8 @@ const DownloadPage = () => {
                   letterSpacing="0.12em" textTransform="uppercase">Getting Started</Text>
                 <Box w="24px" h="2px" bg="#206CE1" borderRadius="full" />
               </HStack>
-              <Heading fontSize={{ base: "2xl", md: "3xl" }} fontWeight="900"
-                color="#07052A" letterSpacing="-0.02em" fontFamily="'Lexend', sans-serif">
+              <Heading fontSize={{ base: "2xl", md: "3xl" }} fontWeight="bold"
+                color="#07052A">
                 Up and scoring in 4 steps.
               </Heading>
             </Box>
@@ -311,8 +308,7 @@ const DownloadPage = () => {
                     bg={s.color} display="flex" alignItems="center" justifyContent="center"
                     boxShadow={`0 8px 24px ${s.color}44`}
                     border="4px solid white">
-                    <Text color="white" fontWeight="900" fontSize="sm"
-                      fontFamily="'Lexend', sans-serif">{s.num}</Text>
+                    <Text color="white" fontWeight="bold" fontSize="sm">{s.num}</Text>
                   </Box>
                   <Text fontWeight="700" fontSize="md" color="#242E3E" mb={2}>{s.title}</Text>
                   <Text fontSize="sm" color="#474256" lineHeight="1.75">{s.desc}</Text>
@@ -332,8 +328,8 @@ const DownloadPage = () => {
                   letterSpacing="0.12em" textTransform="uppercase">Student Stories</Text>
                 <Box w="24px" h="2px" bg="#F18729" borderRadius="full" />
               </HStack>
-              <Heading fontSize={{ base: "2xl", md: "3xl" }} fontWeight="900"
-                color="#07052A" letterSpacing="-0.02em" fontFamily="'Lexend', sans-serif">
+              <Heading fontSize={{ base: "2xl", md: "3xl" }} fontWeight="bold"
+                color="#07052A">
                 Real results. Real students.
               </Heading>
             </Box>
@@ -379,8 +375,8 @@ const DownloadPage = () => {
             <Box position="absolute" top="-60px" right="-60px" w="400px" h="400px"
               borderRadius="full" bg="#F18729" opacity={0.07} filter="blur(80px)" pointerEvents="none" />
             <Box position="relative" zIndex={1} maxW="640px" mx="auto">
-              <Heading color="white" fontSize={{ base: "2xl", md: "4xl" }} fontWeight="900"
-                letterSpacing="-0.025em" mb={4} fontFamily="'Lexend', sans-serif">
+              <Heading color="white" fontSize={{ base: "2xl", md: "4xl" }} fontWeight="bold"
+                lineHeight="1.2" mb={4}>
                 Download iGrades today.
                 <Box as="span" color="#F18729"> It's free.</Box>
               </Heading>

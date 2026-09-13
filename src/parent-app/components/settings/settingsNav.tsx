@@ -8,10 +8,10 @@ type Props = {
 
 const SettingsNav = ({ settingsState, setSettingsState }: Props) => {
   const navItems = [
-    { text: "My iGrade", state: "igrade" },
+    { text: "My Profile", state: "igrade" },
     { text: "Security", state: "security" },
     { text: "Notifications", state: "notification" },
-    { text: "Help & Support", state: "support" },
+    { text: "Help & FAQs", state: "support" },
   ];
 
   return (
@@ -34,7 +34,10 @@ const SettingsNav = ({ settingsState, setSettingsState }: Props) => {
       }}
     >
       {navItems.map((item, idx) => {
-        const isActive = settingsState === item.state;
+        const isActive =
+          settingsState === item.state ||
+          (item.state === "igrade" && settingsState === "profile") ||
+          (item.state === "support" && (settingsState === "help" || settingsState === "faqs"));
         return (
           <Box
             key={idx}

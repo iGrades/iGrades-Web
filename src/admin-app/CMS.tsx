@@ -133,19 +133,18 @@ const SectionCard = ({ children, accentColor = "blue.500", icon, title, subtitle
   const [colorBase] = accentColor.split(".");
   return (
     <Box
-      bg="white" borderRadius="2xl" border="1px solid" borderColor="gray.100"
+      bg="white" borderRadius="2xl" border="1px solid" borderColor="gray.200"
       overflow="hidden" boxShadow="0 1px 3px rgba(0,0,0,0.04), 0 4px 16px rgba(0,0,0,0.04)"
       h="fit-content"
     >
-      <Box h="3px" bg={accentColor} />
-      <Box px={6} pt={5} pb={4} borderBottom="1px solid" borderColor="gray.50">
+      <Box px={6} pt={5} pb={4} borderBottom="1px solid" borderColor="gray.100">
         <HStack gap={3}>
           <Box bg={`${colorBase}.50`} p={2} borderRadius="lg">
             <Icon as={icon} boxSize={5} color={accentColor} />
           </Box>
           <Box>
             <Text fontWeight="700" fontSize="md" color="gray.800" lineHeight="1.2">{title}</Text>
-            <Text fontSize="xs" color="gray.400" mt={0.5}>{subtitle}</Text>
+            <Text fontSize="xs" color="gray.500" mt={0.5}>{subtitle}</Text>
           </Box>
         </HStack>
       </Box>
@@ -1292,7 +1291,7 @@ const CMS = () => {
                       <Heading fontSize={{ base: "2xl", md: "28px" }} fontWeight="800" color="gray.900" letterSpacing="-0.025em" lineHeight="1">
                         Content Management Dashboard
                       </Heading>
-                      <Text fontSize="sm" color="gray.400" mt={1}>
+                      <Text fontSize="sm" color="gray.600" mt={1.5} fontWeight="500">
                         Manage active subject subtopics, files, and complete dynamic quiz uploads.
                       </Text>
                     </Box>
@@ -1635,8 +1634,8 @@ const CMS = () => {
                   <Box {...getRootProps()} border="2px dashed" borderColor={isDragActive ? "blue.400" : "gray.200"} borderRadius="xl" p={5} textAlign="center" cursor="pointer" bg={isDragActive ? "blue.50" : "gray.50"}>
                     <input {...getInputProps()} />
                     <VStack gap={1.5}>
-                      <Icon as={IoCloudUploadOutline} boxSize={5} color="blue.400" />
-                      <Text fontSize="xs" color="gray.400">{isDragActive ? "Drop here" : "Browse or drop academic file item here"}</Text>
+                      <Icon as={IoCloudUploadOutline} boxSize={5} color="blue.500" />
+                      <Text fontSize="xs" color="gray.600" fontWeight="500">{isDragActive ? "Drop here" : "Browse or drop academic file item here"}</Text>
                     </VStack>
                   </Box>
                 </Box>

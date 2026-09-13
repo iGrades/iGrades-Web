@@ -1,13 +1,23 @@
-import { useState } from "react";
 import { Flex, Box } from "@chakra-ui/react";
 import SettingsNav from "../components/settings/settingsNav";
 import MyIgrade from "../components/settings/myIgrade";
 import Security from "../components/settings/security";
 import Notification from "../components/settings/notification";
 import Support from "../components/settings/support";
+import { useNavigationStore } from "@/store/usenavigationStore";
 
 const SettingsPage = () => {
-  const [settingsState, setSettingsState] = useState<string | null>("igrade");
+  const { parentSettingsTab, setParentSettingsTab } = useNavigationStore();
+  const currentTab = parentSettingsTab || "igrade";
+
+  const handleTabChange: React.Dispatch<React.SetStateAction<string | null>> = (val) => {
+    if (typeof val === "function") {
+      const next = val(currentTab);
+      setParentSettingsTab(next || "igrade");
+    } else {
+      setParentSettingsTab(val || "igrade");
+    }
+  };
 
   return (
     <Flex 
@@ -19,22 +29,20 @@ const SettingsPage = () => {
       direction="column"
     >
       <SettingsNav
-        settingsState={settingsState}
-        setSettingsState={setSettingsState}
+        settingsState={currentTab}
+        setSettingsState={handleTabChange}
       />
       
       {/* Wrapped the content in a Box with responsive top margin 
         to separate it from the navigation tabs/buttons 
       */}
       <Box mt={{ base: 6, md: 8 }}>
-        {settingsState === "support" ? (
+        {currentTab === "support" || currentTab === "help" || currentTab === "faqs" ? (
           <Support />
-        ) : settingsState === "notification" ? (
+        ) : currentTab === "notification" ? (
           <Notification />
-        ) : settingsState === "security" ? (
+        ) : currentTab === "security" ? (
           <Security />
-        ) : settingsState === "igrade" ? (
-          <MyIgrade />
         ) : (
           <MyIgrade />
         )}

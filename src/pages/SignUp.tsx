@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { useNavigate, useSearchParams, Link as RouterLink } from "react-router-dom";
 import {
   Button,
   Box,
@@ -12,7 +12,6 @@ import {
   SimpleGrid,
   Alert,
 } from "@chakra-ui/react";
-import { Link as RouterLink } from "react-router-dom";
 import { FcGoogle } from "react-icons/fc";
 import { FaApple } from "react-icons/fa";
 
@@ -24,9 +23,26 @@ import { supabase } from "@/lib/supabaseClient";
 
 const SignUp = () => {
   const navigate = useNavigate();
-  const [registerState, setRegisterState] = useState("parent");
+  const [searchParams] = useSearchParams();
+  const queryRole = (
+    searchParams.get("type") ||
+    searchParams.get("role") ||
+    searchParams.get("tab") ||
+    ""
+  ).toLowerCase();
+
+  const isStudentDefault = queryRole === "student" || queryRole === "children";
+  const [registerState, setRegisterState] = useState(isStudentDefault ? "children" : "parent");
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
   const [alert, setAlert] = useState<{ type: "error" | "success"; message: string } | null>(null);
+
+  useEffect(() => {
+    if (queryRole === "student" || queryRole === "children") {
+      setRegisterState("children");
+    } else if (queryRole === "parent") {
+      setRegisterState("parent");
+    }
+  }, [queryRole]);
 
   const userType = [
     { type: "iGrade Parent", state: "parent" },
@@ -225,57 +241,60 @@ const SignUp = () => {
                 )}
               </Box>
 
-              {/* Divider */}
-              <HStack my={6} gap={4} width="full" align="center">
-                <Box flex={1} h="1px" bg="gray.100" />
-                <Text fontSize="xs" fontWeight="600" color="gray.400" whiteSpace="nowrap">
-                  or sign up with
-                </Text>
-                <Box flex={1} h="1px" bg="gray.100" />
-              </HStack>
+              {/* Divider & Social Signups (only for parent signup) */}
+              {registerState === "parent" && (
+                <>
+                  <HStack my={6} gap={4} width="full" align="center">
+                    <Box flex={1} h="1px" bg="gray.100" />
+                    <Text fontSize="xs" fontWeight="600" color="gray.400" whiteSpace="nowrap">
+                      or sign up with
+                    </Text>
+                    <Box flex={1} h="1px" bg="gray.100" />
+                  </HStack>
 
-              {/* Social Signups */}
-              <SimpleGrid columns={2} gap={4} mb={6} width="full">
-                <Button
-                  onClick={handleGoogleSignUp}
-                  loading={isGoogleLoading}
-                  loadingText="Connecting..."
-                  variant="outline"
-                  borderRadius="xl"
-                  borderColor="gray.200"
-                  bg="white"
-                  color="#1E293B"
-                  h="12"
-                  fontSize="sm"
-                  fontWeight="600"
-                  _hover={{ bg: "gray.50", borderColor: "gray.300" }}
-                  display="flex"
-                  alignItems="center"
-                  justifyContent="center"
-                  gap={2}
-                >
-                  <FcGoogle size={18} />
-                  Google
-                </Button>
-                <Button
-                  variant="outline"
-                  borderRadius="xl"
-                  borderColor="gray.200"
-                  bg="white"
-                  color="#1E293B"
-                  h="12"
-                  fontSize="sm"
-                  fontWeight="600"
-                  _hover={{ bg: "gray.50", borderColor: "gray.300" }}
-                  display="flex"
-                  alignItems="center"
-                  justifyContent="center"
-                  gap={2}
-                >
-                  <FaApple size={18} />
-                  Apple
-                </Button>
-              </SimpleGrid>
+                  <SimpleGrid columns={2} gap={4} mb={6} width="full">
+                    <Button
+                      onClick={handleGoogleSignUp}
+                      loading={isGoogleLoading}
+                      loadingText="Connecting..."
+                      variant="outline"
+                      borderRadius="xl"
+                      borderColor="gray.200"
+                      bg="white"
+                      color="#1E293B"
+                      h="12"
+                      fontSize="sm"
+                      fontWeight="600"
+                      _hover={{ bg: "gray.50", borderColor: "gray.300" }}
+                      display="flex"
+                      alignItems="center"
+                      justifyContent="center"
+                      gap={2}
+                    >
+                      <FcGoogle size={18} />
+                      Google
+                    </Button>
+                    <Button
+                      variant="outline"
+                      borderRadius="xl"
+                      borderColor="gray.200"
+                      bg="white"
+                      color="#1E293B"
+                      h="12"
+                      fontSize="sm"
+                      fontWeight="600"
+                      _hover={{ bg: "gray.50", borderColor: "gray.300" }}
+                      display="flex"
+                      alignItems="center"
+                      justifyContent="center"
+                      gap={2}
+                    >
+                      <FaApple size={18} />
+                      Apple
+                    </Button>
+                  </SimpleGrid>
+                </>
+              )}
 
               {/* Toggle to Login */}
               <Text fontSize="xs" fontWeight="500" color="#64748B" textAlign="center" mt={4}>

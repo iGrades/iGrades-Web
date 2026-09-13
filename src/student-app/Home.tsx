@@ -20,6 +20,12 @@ const Home = () => {
   const setCurrentPage = useNavigationStore(
     (state) => state.setCurrentStudentPage
   );
+  const studentSettingsTab = useNavigationStore(
+    (state) => state.studentSettingsTab
+  );
+  const setStudentSettingsTab = useNavigationStore(
+    (state) => state.setStudentSettingsTab
+  );
   const [showSideBar, setShowSideBar] = useState<boolean>(true);
   const [showNavBar, setShowNavBar] = useState<boolean>(true);
   const { authdStudent, logoutFunc, isPopOver, setIsPopOver  } = useAuthdStudentData();
@@ -73,15 +79,41 @@ const Home = () => {
       learning: "learn",
       rewards: "rewards",
       settings: "settings",
+      help: "settings",
+      faqs: "settings",
     };
 
     const currentPath = location.pathname;
-    const pathParts = currentPath.split("/");
-    const urlPage = pathParts[pathParts.length - 1] || "";
+    const pathParts = currentPath.split("/").filter(Boolean);
+    let urlPage = "";
+    let urlSubpage = "";
+
+    if (pathParts[0] === "student-dashboard") {
+      if (pathParts.length >= 3) {
+        urlPage = pathParts[2];
+        if (pathParts.length >= 4) {
+          urlSubpage = pathParts[3];
+        }
+      }
+    } else {
+      urlPage = pathParts[pathParts.length - 1] || "";
+    }
+
+    const searchParams = new URLSearchParams(location.search);
+    const queryTab = searchParams.get("tab");
 
     const mappedPage: StudentPage = pageMap[urlPage] || "home";
     if (mappedPage !== currentPage) {
       setCurrentPage(mappedPage);
+    }
+
+    if (urlPage === "help" || urlPage === "faqs") {
+      setStudentSettingsTab("help");
+    } else if (mappedPage === "settings") {
+      const targetTab = urlSubpage || queryTab;
+      if (targetTab) {
+        setStudentSettingsTab(targetTab);
+      }
     }
   }, []); // only run on mount
 
@@ -104,8 +136,13 @@ const Home = () => {
         };
 
         const pagePath = pageMap[currentPage] || "";
+        let subPath = "";
+        if (currentPage === "settings" && studentSettingsTab) {
+          subPath = `/${studentSettingsTab}`;
+        }
+
         const expectedPath = `/student-dashboard/${urlFriendlyName}${
-          pagePath ? "/" + pagePath : ""
+          pagePath ? "/" + pagePath + subPath : ""
         }`;
 
         // Only navigate if we're not already on this path
@@ -115,7 +152,7 @@ const Home = () => {
         }
       }
     }
-  }, [currentPage, authdStudent, navigate, location.pathname]);
+  }, [currentPage, studentSettingsTab, authdStudent, navigate, location.pathname]);
 
   const renderPage = () => {
     switch (currentPage) {

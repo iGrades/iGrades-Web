@@ -83,26 +83,39 @@ const Support = () => {
       <Box
         p={{ base: 5, md: 8 }}
         borderRadius="2xl"
-        bgGradient="linear(to-r, #1E56B3, #206CE1)"
-        color="white"
+        bg="white"
+        border="1px solid"
+        borderColor="gray.100"
+        shadow="sm"
         mb={8}
-        shadow="md"
       >
         <Flex direction={{ base: "column", md: "row" }} justify="space-between" align={{ base: "flex-start", md: "center" }} gap={4}>
           <Box maxW="600px">
             <HStack gap={2} mb={2}>
-              <Badge colorPalette="blue" variant="solid" bg="white/20" color="white" px={2.5} py={0.5} borderRadius="full" fontSize="11px">
+              <Box
+                w={8}
+                h={8}
+                rounded="lg"
+                bg="blue.50"
+                color="primaryColor"
+                display="flex"
+                alignItems="center"
+                justifyContent="center"
+              >
+                <MdHelpOutline size={20} />
+              </Box>
+              <Badge colorPalette="blue" variant="subtle" px={2.5} py={0.5} borderRadius="md" fontSize="11px" fontWeight="semibold">
                 Parent Support Desk
               </Badge>
-              <HStack gap={1}>
-                <Box w={2} h={2} rounded="full" bg="green.400" />
-                <Text fontSize="xs" color="blue.100" fontWeight="medium">Team Online</Text>
+              <HStack gap={1.5}>
+                <Box w={2} h={2} rounded="full" bg="green.500" />
+                <Text fontSize="xs" color="gray.500" fontWeight="medium">Team Online</Text>
               </HStack>
             </HStack>
-            <Heading size={{ base: "lg", md: "xl" }} color="white" fontWeight="extrabold">
+            <Heading size={{ base: "lg", md: "xl" }} color="gray.800" fontWeight="extrabold">
               How can we help your family today?
             </Heading>
-            <Text fontSize="sm" color="blue.100" mt={2} lineHeight="tall">
+            <Text fontSize="sm" color="gray.600" mt={2} lineHeight="tall">
               Whether you need help with your child's curriculum, subscription, analytics, or login credentials, our academic support specialists are ready to assist.
             </Text>
           </Box>
@@ -115,7 +128,7 @@ const Support = () => {
             _hover={{ bg: "#20b859", transform: "translateY(-2px)" }}
             borderRadius="xl"
             fontWeight="bold"
-            shadow="lg"
+            shadow="sm"
           >
             <a href="https://wa.me/2347045422933" target="_blank" rel="noopener noreferrer">
               <HStack gap={2}>
@@ -145,7 +158,7 @@ const Support = () => {
             </Icon>
             <Box>
               <Text fontSize="xs" color="gray.500" fontWeight="semibold">Email Support</Text>
-              <Text fontSize="sm" fontWeight="bold" color="gray.800">hello@igrades.ng</Text>
+              <Text fontSize="sm" fontWeight="bold" color="gray.800">info@igrades.org</Text>
             </Box>
           </Flex>
           <Text fontSize="xs" color="gray.600">

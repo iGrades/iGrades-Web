@@ -176,7 +176,7 @@ const AdminManagementTab = ({ currentAdminId }: { currentAdminId: string }) => {
         borderRadius="1.25rem"
         p={6}
         border="1px solid"
-        borderColor="gray.100"
+        borderColor="gray.200"
         boxShadow="0 1px 3px rgba(15,23,42,0.03)"
       >
         <Flex align="center" gap={2} mb={5}>
@@ -319,7 +319,7 @@ const AdminManagementTab = ({ currentAdminId }: { currentAdminId: string }) => {
         borderRadius="1.25rem"
         p={6}
         border="1px solid"
-        borderColor="gray.100"
+        borderColor="gray.200"
         boxShadow="0 1px 3px rgba(15,23,42,0.03)"
       >
         <Flex justify="space-between" align="center" mb={4}>
@@ -328,12 +328,12 @@ const AdminManagementTab = ({ currentAdminId }: { currentAdminId: string }) => {
           </Text>
         </Flex>
 
-        <Box borderRadius="0.75rem" border="1px solid" borderColor="gray.100" overflow="hidden">
+        <Box borderRadius="0.75rem" border="1px solid" borderColor="gray.200" overflow="hidden">
           <Table.Root size="sm">
             <Table.Header>
               <Table.Row bg="gray.50">
                 {["Administrator", "Email Address", "Role Level", "Created Date", "Actions"].map((h) => (
-                  <Table.ColumnHeader key={h} fontSize="11px" fontWeight="700" color="gray.500" py={3.5} textTransform="uppercase" letterSpacing="0.05em">
+                  <Table.ColumnHeader key={h} fontSize="11px" fontWeight="700" color="gray.600" py={3.5} textTransform="uppercase" letterSpacing="0.05em">
                     {h}
                   </Table.ColumnHeader>
                 ))}
@@ -376,8 +376,10 @@ const AdminManagementTab = ({ currentAdminId }: { currentAdminId: string }) => {
                   <Table.Cell fontSize="12px" color="gray.600">{admin.email}</Table.Cell>
                   <Table.Cell>
                     <Badge
-                      bg={admin.role === "super_admin" ? "amber.50" : "blue.50"}
-                      color={admin.role === "super_admin" ? "amber.700" : "blue.700"}
+                      bg={admin.role === "super_admin" ? "orange.50" : "blue.50"}
+                      color={admin.role === "super_admin" ? "orange.700" : "blue.700"}
+                      border="1px solid"
+                      borderColor={admin.role === "super_admin" ? "orange.200" : "blue.200"}
                       borderRadius="full"
                       px={3}
                       py={0.5}
@@ -395,8 +397,8 @@ const AdminManagementTab = ({ currentAdminId }: { currentAdminId: string }) => {
                       <Button
                         size="xs"
                         variant="ghost"
-                        color="rose.600"
-                        _hover={{ bg: "rose.50" }}
+                        color="red.600"
+                        _hover={{ bg: "red.50" }}
                         borderRadius="md"
                         loading={deleting === admin.id}
                         onClick={() => handleDelete(admin)}

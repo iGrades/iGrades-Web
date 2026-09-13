@@ -8,10 +8,32 @@ import Footer from "./LandingPage/footer";
 import ContactForm from "./LandingPage/contactForm";
 
 const contactInfo = [
-  { icon: <MdEmail />, color: "#206CE1", bg: "#EBF3FF", label: "Email Us", value: "hello@igrades.ng", sub: "We reply within 24 hours" },
-  { icon: <MdPhone />, color: "#F18729", bg: "#FFF4EC", label: "WhatsApp / Call", value: "+234 704 542 2933", sub: "Mon – Sat · 8am – 8pm" },
-  { icon: <MdLocationOn />, color: "#1FBA79", bg: "#EDFAF4", label: "Head Office", value: "Ibadan, Nigeria", sub: "No. 80, Road C, Alagbayun road, Akobo, Oyo State" },
-   
+  {
+    icon: <MdEmail />,
+    color: "#206CE1",
+    bg: "#EBF3FF",
+    label: "Email Us",
+    value: "info@igrades.org",
+    sub: "We reply within 24 hours",
+    href: "mailto:info@igrades.org",
+  },
+  {
+    icon: <MdPhone />,
+    color: "#F18729",
+    bg: "#FFF4EC",
+    label: "WhatsApp / Call",
+    value: "+234 704 542 2933",
+    sub: "Mon – Sat · 8am – 8pm",
+    href: "https://wa.me/2347045422933",
+  },
+  {
+    icon: <MdLocationOn />,
+    color: "#1FBA79",
+    bg: "#EDFAF4",
+    label: "Head Office",
+    value: "Ibadan, Nigeria",
+    sub: "No. 80, Road C, Alagbayun road, Akobo, Oyo State",
+  },
 ];
 
 const socials = [
@@ -41,9 +63,6 @@ const ContactPage = () => {
       <NavBar />
       <Box bg="white" overflow="hidden" >
         <style>{`
-          @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Lexend:wght@700;800;900&display=swap');
-          .ct-root * { font-family: "'Plus Jakarta Sans', sans-serif"; }
-          .ct-root h1,.ct-root h2,.ct-root h3 { font-family: "'Lexend', sans-serif" !important; }
           @keyframes fadeUp { from{opacity:0;transform:translateY(24px)} to{opacity:1;transform:translateY(0)} }
           @keyframes scaleIn { from{opacity:0;transform:scale(.85)} to{opacity:1;transform:scale(1)} }
           @keyframes blink { 0%,100%{opacity:1} 50%{opacity:.3} }
@@ -85,7 +104,7 @@ const ContactPage = () => {
               </HStack>
               <Heading className="fu2"
                 color="#07052A" fontSize={{ base: "3xl", md: "5xl", lg: "6xl" }}
-                fontWeight="900" lineHeight="1.05" letterSpacing="-0.025em" mb={6}>
+                fontWeight="bold" lineHeight="1.15" mb={6}>
                 We'd love to
                 <Box as="span" color="#F18729"> hear<br />from you.</Box>
               </Heading>
@@ -99,29 +118,58 @@ const ContactPage = () => {
           </Box>
 
           {/* ══════════════════════════════════════
-              CONTACT INFO CARDS — overlap hero
+              CONTACT INFO CARDS
           ══════════════════════════════════════ */}
-          <Box px={{ base: 6, md: 12, lg: 20 }} mt={-10} position="relative" zIndex={2}>
+          <Box px={{ base: 6, md: 12, lg: 20 }} mt={{ base: 12, md: 16 }} mb={{ base: 2, md: 4 }} position="relative" zIndex={2}>
             <Grid templateColumns={{ base: "1fr", md: "repeat(3,1fr)" }}
-              gap={4} maxW="1000px" mx="auto">
-              {contactInfo.map((c) => (
-                <Box key={c.label} bg="white" borderRadius="2xl" p={6}
-                  boxShadow="0 8px 32px rgba(0,0,0,0.1)"
-                  border="1px solid #EBEBF7"
-                  display="flex" alignItems="center" gap={4}>
-                  <Box w="52px" h="52px" borderRadius="xl" bg={c.bg} flexShrink={0}
-                    display="flex" alignItems="center" justifyContent="center">
-                    <Icon boxSize={6} color={c.color}>{c.icon}</Icon>
+              gap={5} maxW="1000px" mx="auto">
+              {contactInfo.map((c) => {
+                const cardContent = (
+                  <Box bg="white" borderRadius="2xl" p={6}
+                    boxShadow="0 4px 20px rgba(0,0,0,0.05)"
+                    border="1px solid #EBEBF7"
+                    display="flex" alignItems="center" gap={4}
+                    h="full"
+                    transition="all .2s ease"
+                    _hover={{
+                      transform: c.href ? "translateY(-3px)" : "none",
+                      boxShadow: c.href ? "0 10px 30px rgba(0,0,0,0.08)" : "0 4px 20px rgba(0,0,0,0.05)",
+                      borderColor: c.href ? "#D0D7E8" : "#EBEBF7",
+                    }}>
+                    <Box w="52px" h="52px" borderRadius="xl" bg={c.bg} flexShrink={0}
+                      display="flex" alignItems="center" justifyContent="center">
+                      <Icon boxSize={6} color={c.color}>{c.icon}</Icon>
+                    </Box>
+                    <Box minW={0}>
+                      <Text fontSize="10px" color="gray.400" fontWeight="700"
+                        textTransform="uppercase" letterSpacing="0.08em" mb={0.5}>{c.label}</Text>
+                      <Text fontWeight="bold" fontSize="sm" color="#242E3E" lineHeight="1.3"
+                        whiteSpace="nowrap"
+                        overflow="hidden"
+                        textOverflow="ellipsis">
+                        {c.value}
+                      </Text>
+                      <Text fontSize="xs" color="gray.400" mt={0.5}>{c.sub}</Text>
+                    </Box>
                   </Box>
-                  <Box>
-                    <Text fontSize="10px" color="gray.400" fontWeight="700"
-                      textTransform="uppercase" letterSpacing="0.08em" mb={0.5}>{c.label}</Text>
-                    <Text fontWeight="800" fontSize="sm" color="#242E3E" lineHeight="1.3"
-                      fontFamily="'Lexend', sans-serif">{c.value}</Text>
-                    <Text fontSize="xs" color="gray.400" mt={0.5}>{c.sub}</Text>
+                );
+
+                return c.href ? (
+                  <a
+                    key={c.label}
+                    href={c.href}
+                    target={c.href.startsWith("http") ? "_blank" : undefined}
+                    rel={c.href.startsWith("http") ? "noopener noreferrer" : undefined}
+                    style={{ textDecoration: "none", display: "block", height: "100%" }}
+                  >
+                    {cardContent}
+                  </a>
+                ) : (
+                  <Box key={c.label} h="100%">
+                    {cardContent}
                   </Box>
-                </Box>
-              ))}
+                );
+              })}
             </Grid>
           </Box>
 
@@ -221,9 +269,8 @@ const ContactPage = () => {
                 <Text fontSize="xs" fontWeight="700" color="#F18729"
                   letterSpacing="0.12em" textTransform="uppercase">Quick Answers</Text>
               </HStack>
-              <Heading fontSize={{ base: "xl", md: "2xl" }} fontWeight="900"
-                color="#07052A" letterSpacing="-0.02em" mb={8}
-                fontFamily="'Lexend', sans-serif">
+              <Heading fontSize={{ base: "xl", md: "2xl" }} fontWeight="bold"
+                color="#07052A" mb={8}>
                 Frequently asked questions
               </Heading>
               <VStack align="stretch" gap={3}>

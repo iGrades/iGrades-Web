@@ -42,7 +42,7 @@ interface NotificationItem {
 
 const Navbar = () => {
   const { authdStudent, setIsPopOver } = useAuthdStudentData();
-  const { setCurrentStudentPage } = useNavigationStore();
+  const { setCurrentStudentPage, setStudentSettingsTab } = useNavigationStore();
   const { t, i18n } = useTranslation();
 
   const [value, setValue] = useState<string[]>([i18n.language || "en"]);
@@ -353,7 +353,10 @@ const Navbar = () => {
                   {/* Profile Account Actions (not duplicating sidebar nav) */}
                   <Menu.Item
                     value="my-profile"
-                    onClick={() => setCurrentStudentPage("settings")}
+                    onClick={() => {
+                      setCurrentStudentPage("settings");
+                      setStudentSettingsTab("profile");
+                    }}
                     borderRadius="lg"
                     py={2}
                     px={3}
@@ -368,7 +371,10 @@ const Navbar = () => {
 
                   <Menu.Item
                     value="security"
-                    onClick={() => setCurrentStudentPage("settings")}
+                    onClick={() => {
+                      setCurrentStudentPage("settings");
+                      setStudentSettingsTab("security");
+                    }}
                     borderRadius="lg"
                     py={2}
                     px={3}
@@ -383,7 +389,10 @@ const Navbar = () => {
 
                   <Menu.Item
                     value="help"
-                    onClick={() => setCurrentStudentPage("settings")}
+                    onClick={() => {
+                      setCurrentStudentPage("settings");
+                      setStudentSettingsTab("help");
+                    }}
                     borderRadius="lg"
                     py={2}
                     px={3}

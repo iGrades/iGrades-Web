@@ -72,9 +72,6 @@ const AboutPage = () => {
       <NavBar />
       <Box bg="#FFFFFF" overflow="hidden" >
         <style>{`
-          @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Lexend:wght@700;800;900&display=swap');
-          .about-root * { font-family: "'Plus Jakarta Sans', sans-serif"; }
-          .about-root h1, .about-root h2, .about-root h3 { font-family: "'Lexend', sans-serif" !important; }
           @keyframes fadeUp { from { opacity:0; transform:translateY(28px); } to { opacity:1; transform:translateY(0); } }
           @keyframes fadeIn { from { opacity:0; } to { opacity:1; } }
           @keyframes slideRight { from { opacity:0; transform:translateX(-24px); } to { opacity:1; transform:translateX(0); } }
@@ -152,11 +149,9 @@ const AboutPage = () => {
                   className="fu2"
                   color="#07052A"
                   fontSize={{ base: "3xl", md: "5xl", lg: "6xl" }}
-                  fontWeight="900"
-                  lineHeight="1.05"
-                  letterSpacing="-0.025em"
+                  fontWeight="bold"
+                  lineHeight="1.15"
                   mb={7}
-                  fontFamily="'Lexend', sans-serif"
                 >
                   Built for the<br />
                   <Box as="span" position="relative" display="inline-block">
@@ -294,8 +289,8 @@ const AboutPage = () => {
                   _hover={{ bg: "white", boxShadow: "0 8px 32px rgba(0,0,0,0.08)", transform: "translateY(-4px)" }}
                   transition="all .25s ease">
                   <Text fontSize="2xl" mb={1}>{s.icon}</Text>
-                  <Text fontWeight="900" fontSize={{ base: "xl", md: "2xl" }}
-                    color="#206CE1" fontFamily="'Lexend', sans-serif">{s.value}</Text>
+                  <Text fontWeight="bold" fontSize={{ base: "xl", md: "2xl" }}
+                    color="#206CE1">{s.value}</Text>
                   <Text fontSize="xs" color="gray.500" fontWeight="500" mt={0.5}>{s.label}</Text>
                 </Box>
               ))}
@@ -314,9 +309,8 @@ const AboutPage = () => {
                   <Text fontSize="xs" fontWeight="700" color="#F18729"
                     letterSpacing="0.12em" textTransform="uppercase">Our Story</Text>
                 </HStack>
-                <Heading fontSize={{ base: "2xl", md: "4xl" }} fontWeight="900"
-                  color="#07052A" lineHeight="1.15" mb={6}
-                  letterSpacing="-0.02em" fontFamily="'Lexend', sans-serif">
+                <Heading fontSize={{ base: "2xl", md: "4xl" }} fontWeight="bold"
+                  color="#07052A" lineHeight="1.2" mb={6}>
                   Started in a Ibadan classroom.
                   <Box as="span" color="#206CE1"> Grown across Nigeria.</Box>
                 </Heading>
@@ -402,9 +396,8 @@ const AboutPage = () => {
                     <Text fontSize="xs" fontWeight="700" color="#F18729"
                       letterSpacing="0.12em" textTransform="uppercase">What We Stand For</Text>
                   </HStack>
-                  <Heading fontSize={{ base: "2xl", md: "4xl" }} fontWeight="900"
-                    color="#07052A" letterSpacing="-0.02em" lineHeight="1.15"
-                    fontFamily="'Lexend', sans-serif">
+                  <Heading fontSize={{ base: "2xl", md: "4xl" }} fontWeight="bold"
+                    color="#07052A" lineHeight="1.2">
                     Six principles that<br />guide everything we do.
                   </Heading>
                 </Box>
@@ -428,8 +421,7 @@ const AboutPage = () => {
                       <Icon boxSize={5} color="white">{v.icon}</Icon>
                     </Box>
                     <Box position="absolute" top={5} right={5}>
-                      <Text fontWeight="900" fontSize="3xl" color={v.color} opacity={0.15}
-                        fontFamily="'Lexend', sans-serif">0{i + 1}</Text>
+                      <Text fontWeight="bold" fontSize="3xl" color={v.color} opacity={0.15}>0{i + 1}</Text>
                     </Box>
                     <Text fontWeight="700" fontSize="md" color="#242E3E" mb={3}>{v.title}</Text>
                     <Text fontSize="sm" color="#474256" lineHeight="1.85">{v.desc}</Text>
@@ -451,9 +443,8 @@ const AboutPage = () => {
                     <Text fontSize="xs" fontWeight="700" color="#F18729"
                       letterSpacing="0.12em" textTransform="uppercase">The Team</Text>
                   </HStack>
-                  <Heading fontSize={{ base: "2xl", md: "3xl" }} fontWeight="900"
-                    color="white" letterSpacing="-0.02em" lineHeight="1.2"
-                    fontFamily="'Lexend', sans-serif">
+                  <Heading fontSize={{ base: "2xl", md: "3xl" }} fontWeight="bold"
+                    color="white" lineHeight="1.2">
                     The people behind the mission.
                   </Heading>
                 </Box>
@@ -473,8 +464,7 @@ const AboutPage = () => {
                     borderRadius="2xl">
                     <Box w="60px" h="60px" borderRadius="full" bg={member.color}
                       display="flex" alignItems="center" justifyContent="center" mb={4}>
-                      <Text color="white" fontWeight="900" fontSize="xl"
-                        fontFamily="'Lexend', sans-serif">{member.initials}</Text>
+                      <Text color="white" fontWeight="bold" fontSize="xl">{member.initials}</Text>
                     </Box>
                     <Text fontWeight="700" fontSize="sm" color="white" mb={0.5}>{member.name}</Text>
                     <Text fontSize="xs" color={member.color} fontWeight="600" mb={3}>{member.role}</Text>
@@ -496,8 +486,8 @@ const AboutPage = () => {
             </Text>
             <Flex justify="center" gap={{ base: 6, md: 10 }} flexWrap="wrap">
               {partners.map((p) => (
-                <Text key={p} fontSize={{ base: "md", md: "lg" }} fontWeight="800"
-                  color="#BDBDBD" fontFamily="'Lexend', sans-serif"
+                <Text key={p} fontSize={{ base: "md", md: "lg" }} fontWeight="bold"
+                  color="#BDBDBD"
                   _hover={{ color: "#206CE1" }} transition="color .2s" cursor="default">
                   {p}
                 </Text>
@@ -519,8 +509,8 @@ const AboutPage = () => {
             <Box position="absolute" top="-80px" right="-80px" w="400px" h="400px"
               borderRadius="full" bg="#F18729" opacity={0.08} filter="blur(80px)" pointerEvents="none" />
             <Box position="relative" zIndex={1} maxW="640px" mx="auto">
-              <Heading color="white" fontSize={{ base: "2xl", md: "4xl" }} fontWeight="900"
-                letterSpacing="-0.025em" lineHeight="1.15" mb={5} fontFamily="'Lexend', sans-serif">
+              <Heading color="white" fontSize={{ base: "2xl", md: "4xl" }} fontWeight="bold"
+                lineHeight="1.2" mb={5}>
                 Your academic breakthrough starts today.
               </Heading>
               <Text color="rgba(255,255,255,0.6)" mb={10} fontSize="md" lineHeight="1.8">

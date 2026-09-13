@@ -118,25 +118,24 @@ const ModernKpiCard = ({
     _hover={{ transform: "translateY(-3px)", boxShadow: "0 12px 24px -10px rgba(15, 23, 42, 0.08)" }}
     boxShadow="0 1px 3px rgba(15, 23, 42, 0.04), 0 1px 2px rgba(15, 23, 42, 0.02)"
     border="1px solid"
-    borderColor="gray.100"
+    borderColor="gray.200"
   >
-    {/* Subtle top accent bar */}
-    <Box position="absolute" top={0} left={0} right={0} h="3px" bg={accent} opacity={0.85} />
-
     <Flex justify="space-between" align="flex-start">
       <Box flex={1}>
-        <Text fontSize="11px" fontWeight="700" letterSpacing="0.06em" color="gray.500" textTransform="uppercase">
+        <Text fontSize="11px" fontWeight="700" letterSpacing="0.06em" color="gray.600" textTransform="uppercase">
           {label}
         </Text>
         <Text fontSize="2.25rem" fontWeight="800" color="gray.900" lineHeight="1.1" mt={2} letterSpacing="-0.03em">
           {value}
         </Text>
-        {sub && <Text fontSize="12px" color="gray.500" mt={1.5} fontWeight="500">{sub}</Text>}
+        {sub && <Text fontSize="12px" color="gray.600" mt={1.5} fontWeight="500">{sub}</Text>}
         {trend && trendValue && (
           <Flex align="center" gap={1.5} mt={2.5}>
             <Badge
-              bg={trend === "up" ? "emerald.50" : "rose.50"}
-              color={trend === "up" ? "emerald.700" : "rose.700"}
+              bg={trend === "up" ? "green.50" : "red.50"}
+              color={trend === "up" ? "green.700" : "red.700"}
+              border="1px solid"
+              borderColor={trend === "up" ? "green.200" : "red.200"}
               px={2}
               py={0.5}
               borderRadius="full"
@@ -145,7 +144,7 @@ const ModernKpiCard = ({
             >
               {trend === "up" ? "↑" : "↓"} {trendValue}
             </Badge>
-            <Text fontSize="11px" color="gray.400" fontWeight="500">vs last period</Text>
+            <Text fontSize="11px" color="gray.500" fontWeight="500">vs last period</Text>
           </Flex>
         )}
       </Box>
@@ -481,24 +480,24 @@ const UserGrowthTab = ({ students, parents }: { students: Student[]; parents: Pa
 
       <ModernChartCard title="Parent–Child Account Link Matrix">
         <Grid templateColumns={{ base: "1fr", md: "repeat(3, 1fr)" }} gap={4}>
-          <Box textAlign="center" p={6} bg="emerald.50" borderRadius="1rem" border="1px solid" borderColor="emerald.100">
-            <Text fontSize="2.5rem" fontWeight="800" color="emerald.700" lineHeight="1">{linkedStudents}</Text>
-            <Text fontSize="13px" fontWeight="700" color="emerald.900" mt={2}>Linked Students</Text>
-            <Text fontSize="11px" color="emerald.600" mt={1}>
+          <Box textAlign="center" p={6} bg="green.50" borderRadius="1rem" border="1px solid" borderColor="green.200">
+            <Text fontSize="2.5rem" fontWeight="800" color="green.700" lineHeight="1">{linkedStudents}</Text>
+            <Text fontSize="13px" fontWeight="700" color="green.900" mt={2}>Linked Students</Text>
+            <Text fontSize="11px" color="green.700" mt={1}>
               {students.length ? Math.round((linkedStudents / students.length) * 100) : 0}% of total student base
             </Text>
           </Box>
-          <Box textAlign="center" p={6} bg="rose.50" borderRadius="1rem" border="1px solid" borderColor="rose.100">
-            <Text fontSize="2.5rem" fontWeight="800" color="rose.700" lineHeight="1">{students.length - linkedStudents}</Text>
-            <Text fontSize="13px" fontWeight="700" color="rose.900" mt={2}>Independent Students</Text>
-            <Text fontSize="11px" color="rose.600" mt={1}>
+          <Box textAlign="center" p={6} bg="red.50" borderRadius="1rem" border="1px solid" borderColor="red.200">
+            <Text fontSize="2.5rem" fontWeight="800" color="red.700" lineHeight="1">{students.length - linkedStudents}</Text>
+            <Text fontSize="13px" fontWeight="700" color="red.900" mt={2}>Independent Students</Text>
+            <Text fontSize="11px" color="red.700" mt={1}>
               {students.length ? Math.round(((students.length - linkedStudents) / students.length) * 100) : 0}% unlinked accounts
             </Text>
           </Box>
-          <Box textAlign="center" p={6} bg="amber.50" borderRadius="1rem" border="1px solid" borderColor="amber.100">
-            <Text fontSize="2.5rem" fontWeight="800" color="amber.700" lineHeight="1">{unlinkedParents}</Text>
-            <Text fontSize="13px" fontWeight="700" color="amber.900" mt={2}>Pending Parents</Text>
-            <Text fontSize="11px" color="amber.600" mt={1}>
+          <Box textAlign="center" p={6} bg="orange.50" borderRadius="1rem" border="1px solid" borderColor="orange.200">
+            <Text fontSize="2.5rem" fontWeight="800" color="orange.700" lineHeight="1">{unlinkedParents}</Text>
+            <Text fontSize="13px" fontWeight="700" color="orange.900" mt={2}>Pending Parents</Text>
+            <Text fontSize="11px" color="orange.700" mt={1}>
               {parents.length ? Math.round((unlinkedParents / parents.length) * 100) : 0}% without linked children
             </Text>
           </Box>
@@ -649,8 +648,10 @@ const SubscriptionsTab = ({ students }: { students: Student[] }) => {
                     </Table.Cell>
                     <Table.Cell>
                       <Badge
-                        bg={st.subscription_status === "active" ? "emerald.50" : "rose.50"}
-                        color={st.subscription_status === "active" ? "emerald.700" : "rose.700"}
+                        bg={st.subscription_status === "active" ? "green.50" : "red.50"}
+                        color={st.subscription_status === "active" ? "green.700" : "red.700"}
+                        border="1px solid"
+                        borderColor={st.subscription_status === "active" ? "green.200" : "red.200"}
                         borderRadius="full"
                         px={3}
                         py={0.5}
@@ -847,8 +848,10 @@ const ContentTab = ({ resources }: { resources: Resource[] }) => {
                       </Table.Cell>
                       <Table.Cell>
                         <Badge
-                          bg={r.type === "video" ? "cyan.50" : r.type === "pdf" ? "amber.50" : "gray.100"}
-                          color={r.type === "video" ? "cyan.700" : r.type === "pdf" ? "amber.700" : "gray.700"}
+                          bg={r.type === "video" ? "cyan.50" : r.type === "pdf" ? "orange.50" : "gray.100"}
+                          color={r.type === "video" ? "cyan.700" : r.type === "pdf" ? "orange.700" : "gray.700"}
+                          border="1px solid"
+                          borderColor={r.type === "video" ? "cyan.200" : r.type === "pdf" ? "orange.200" : "gray.200"}
                           borderRadius="full"
                           px={3}
                           py={0.5}
@@ -1012,8 +1015,10 @@ const UserManagementTab = ({ students, parents, onRefresh }: { students: Student
                     </Table.Cell>
                     <Table.Cell>
                       <Badge
-                        bg={st.subscription_status === "active" ? "emerald.50" : "rose.50"}
-                        color={st.subscription_status === "active" ? "emerald.700" : "rose.700"}
+                        bg={st.subscription_status === "active" ? "green.50" : "red.50"}
+                        color={st.subscription_status === "active" ? "green.700" : "red.700"}
+                        border="1px solid"
+                        borderColor={st.subscription_status === "active" ? "green.200" : "red.200"}
                         borderRadius="full"
                         px={2.5}
                         py={0.5}
@@ -1024,7 +1029,7 @@ const UserManagementTab = ({ students, parents, onRefresh }: { students: Student
                       </Badge>
                     </Table.Cell>
                     <Table.Cell textAlign="center">
-                      <Badge bg={st.is_child ? "cyan.50" : "gray.100"} color={st.is_child ? "cyan.700" : "gray.500"} borderRadius="full" px={2} fontSize="10px">
+                      <Badge bg={st.is_child ? "cyan.50" : "gray.100"} color={st.is_child ? "cyan.700" : "gray.600"} borderRadius="full" px={2} fontSize="10px">
                         {st.is_child ? "Yes" : "No"}
                       </Badge>
                     </Table.Cell>
@@ -1034,9 +1039,9 @@ const UserManagementTab = ({ students, parents, onRefresh }: { students: Student
                         <Button
                           size="xs"
                           variant="outline"
-                          borderColor={st.subscription_status === "active" ? "rose.200" : "emerald.200"}
-                          color={st.subscription_status === "active" ? "rose.600" : "emerald.600"}
-                          _hover={{ bg: st.subscription_status === "active" ? "rose.50" : "emerald.50" }}
+                          borderColor={st.subscription_status === "active" ? "red.200" : "green.200"}
+                          color={st.subscription_status === "active" ? "red.600" : "green.600"}
+                          _hover={{ bg: st.subscription_status === "active" ? "red.50" : "green.50" }}
                           borderRadius="md"
                           onClick={() => handleToggleSubscription(st)}
                           fontSize="11px"
@@ -1049,8 +1054,8 @@ const UserManagementTab = ({ students, parents, onRefresh }: { students: Student
                         <Button
                           size="xs"
                           variant="ghost"
-                          color="rose.600"
-                          _hover={{ bg: "rose.50" }}
+                          color="red.600"
+                          _hover={{ bg: "red.50" }}
                           borderRadius="md"
                           onClick={() => handleDeleteStudent(st.id)}
                           fontSize="11px"
@@ -1108,8 +1113,8 @@ const UserManagementTab = ({ students, parents, onRefresh }: { students: Student
                     <Button
                       size="xs"
                       variant="ghost"
-                      color="rose.600"
-                      _hover={{ bg: "rose.50" }}
+                      color="red.600"
+                      _hover={{ bg: "red.50" }}
                       borderRadius="md"
                       onClick={() => handleDeleteParent(p.id)}
                       fontSize="11px"
@@ -1195,7 +1200,7 @@ const AdminDashboard = () => {
   ];
 
   return (
-    <Flex minH="100vh" bg="#F8FAFC" color="gray.800" fontFamily="system-ui, -apple-system, sans-serif">
+    <Flex minH="100vh" bg="#F8FAFC" color="gray.800">
       {/* Sidebar Desktop */}
       <Box
         w="280px"
@@ -1208,36 +1213,38 @@ const AdminDashboard = () => {
         display={{ base: "none", lg: "flex" }}
         flexDirection="column"
         borderRight="1px solid"
-        borderColor="slate.800"
+        borderColor="rgba(255, 255, 255, 0.08)"
       >
         {/* Logo Header */}
-        <Box p={6} borderBottom="1px solid" borderColor="whiteAlpha.100">
+        <Box p={6} borderBottom="1px solid" borderColor="rgba(255, 255, 255, 0.08)">
           <Flex align="center" gap={3}>
             <Box filter="brightness(0) invert(1)" display="inline-block">
               <Image src={logo} alt="iGrades" h="28px" objectFit="contain" />
             </Box>
-            <Badge bg="blue.500/20" color="blue.300" borderRadius="md" px={2} py={0.5} fontSize="9px" fontWeight="700" letterSpacing="0.05em">
+            <Badge bg="rgba(37, 99, 235, 0.2)" color="#93C5FD" border="1px solid" borderColor="rgba(147, 197, 253, 0.25)" borderRadius="md" px={2} py={0.5} fontSize="9px" fontWeight="700" letterSpacing="0.05em">
               ADMIN
             </Badge>
           </Flex>
 
           {/* Admin Profile Summary */}
-          <Box mt={5} p={3} bg="whiteAlpha.05" borderRadius="0.75rem" border="1px solid" borderColor="whiteAlpha.100">
+          <Box mt={5} p={3} bg="rgba(255, 255, 255, 0.04)" borderRadius="0.75rem" border="1px solid" borderColor="rgba(255, 255, 255, 0.08)">
             <Flex align="center" gap={3}>
               <Avatar.Root size="sm">
-                <Avatar.Fallback bg="blue.600" color="white" fontWeight="700">
+                <Avatar.Fallback bg="#2563EB" color="white" fontWeight="700">
                   {admin?.name?.[0] || "A"}
                 </Avatar.Fallback>
               </Avatar.Root>
               <Box flex={1} overflow="hidden">
                 <Text fontSize="13px" fontWeight="700" color="white" truncate>{admin?.name || "Administrator"}</Text>
-                <Text fontSize="11px" color="slate.400" truncate>{admin?.email}</Text>
+                <Text fontSize="11px" color="#94A3B8" truncate>{admin?.email}</Text>
               </Box>
             </Flex>
-            <Flex justify="space-between" align="center" mt={2} pt={2} borderTop="1px solid" borderColor="whiteAlpha.100">
+            <Flex justify="space-between" align="center" mt={2} pt={2} borderTop="1px solid" borderColor="rgba(255, 255, 255, 0.08)">
               <Badge
-                bg={admin?.role === "super_admin" ? "amber.500/20" : "blue.500/20"}
-                color={admin?.role === "super_admin" ? "amber.300" : "blue.300"}
+                bg={admin?.role === "super_admin" ? "rgba(245, 158, 11, 0.2)" : "rgba(37, 99, 235, 0.2)"}
+                color={admin?.role === "super_admin" ? "#FCD34D" : "#93C5FD"}
+                border="1px solid"
+                borderColor={admin?.role === "super_admin" ? "rgba(245, 158, 11, 0.3)" : "rgba(147, 197, 253, 0.25)"}
                 borderRadius="full"
                 px={2}
                 fontSize="9px"
@@ -1245,7 +1252,7 @@ const AdminDashboard = () => {
               >
                 {admin?.role === "super_admin" ? "Super Admin" : "Admin"}
               </Badge>
-              <Text fontSize="10px" color="slate.500" fontFamily="mono">ID: #{admin?.id?.slice(0, 6)}</Text>
+              <Text fontSize="10px" color="#94A3B8" fontFamily="mono">ID: #{admin?.id?.slice(0, 6)}</Text>
             </Flex>
           </Box>
         </Box>
@@ -1255,7 +1262,7 @@ const AdminDashboard = () => {
           <Stack gap={6}>
             {navGroups.map((group) => (
               <Box key={group.group}>
-                <Text fontSize="10px" fontWeight="800" letterSpacing="0.08em" color="slate.500" textTransform="uppercase" mb={2} px={2}>
+                <Text fontSize="10px" fontWeight="800" letterSpacing="0.08em" color="#94A3B8" textTransform="uppercase" mb={2} px={2}>
                   {group.group}
                 </Text>
                 <Stack gap={1}>
@@ -1268,8 +1275,8 @@ const AdminDashboard = () => {
                         py={2.5}
                         borderRadius="0.75rem"
                         cursor="pointer"
-                        bg={isActive ? "blue.600" : "transparent"}
-                        color={isActive ? "white" : "slate.300"}
+                        bg={isActive ? "#2563EB" : "transparent"}
+                        color={isActive ? "white" : "#CBD5E1"}
                         onClick={() => {
                           if (item.path) {
                             window.location.href = item.path;
@@ -1277,20 +1284,20 @@ const AdminDashboard = () => {
                             setTab(item.key as TabKey);
                           }
                         }}
-                        _hover={{ bg: isActive ? "blue.600" : "whiteAlpha.08", color: "white" }}
+                        _hover={{ bg: isActive ? "#2563EB" : "rgba(255, 255, 255, 0.08)", color: "white" }}
                         transition="all 0.15s ease"
                       >
                         <Flex align="center" gap={3}>
                           <Icon
                             as={item.icon}
                             boxSize={4}
-                            color={isActive ? "white" : "slate.400"}
+                            color={isActive ? "white" : "#94A3B8"}
                           />
                           <Box flex={1}>
                             <Text fontSize="13px" fontWeight={isActive ? "700" : "500"} lineHeight="1.2">
                               {item.label}
                             </Text>
-                            <Text fontSize="10px" color={isActive ? "blue.100" : "slate.500"} mt={0.5}>
+                            <Text fontSize="10px" color={isActive ? "#DBEAFE" : "#94A3B8"} mt={0.5}>
                               {item.sub}
                             </Text>
                           </Box>
@@ -1305,13 +1312,13 @@ const AdminDashboard = () => {
         </Box>
 
         {/* Sidebar Footer / Sign Out */}
-        <Box p={4} borderTop="1px solid" borderColor="whiteAlpha.100">
+        <Box p={4} borderTop="1px solid" borderColor="rgba(255, 255, 255, 0.08)">
           <Button
             variant="ghost"
             size="sm"
             w="full"
-            color="rose.300"
-            _hover={{ bg: "rose.500/10", color: "rose.200" }}
+            color="#FCA5A5"
+            _hover={{ bg: "rgba(239, 68, 68, 0.15)", color: "#FECDD3" }}
             onClick={logoutAdmin}
             borderRadius="0.75rem"
             fontSize="12px"
@@ -1354,8 +1361,8 @@ const AdminDashboard = () => {
             </Button>
 
             <Flex align="center" gap={2}>
-              <Text fontSize="12px" fontWeight="600" color="gray.400">Admin Portal</Text>
-              <Text fontSize="12px" color="gray.300">/</Text>
+              <Text fontSize="12px" fontWeight="600" color="gray.500">Admin Portal</Text>
+              <Text fontSize="12px" color="gray.400">/</Text>
               <Text fontSize="14px" fontWeight="800" color="gray.900" textTransform="capitalize">
                 {tab === "overview" && "Platform Overview"}
                 {tab === "growth" && "User Acquisition & Growth"}
@@ -1403,12 +1410,12 @@ const AdminDashboard = () => {
             bg="#0F172A"
             p={4}
             borderBottom="1px solid"
-            borderColor="slate.800"
+            borderColor="rgba(255, 255, 255, 0.08)"
           >
             <Stack gap={4}>
               {navGroups.map((group) => (
                 <Box key={group.group}>
-                  <Text fontSize="10px" fontWeight="800" color="slate.500" textTransform="uppercase" mb={2}>
+                  <Text fontSize="10px" fontWeight="800" color="#94A3B8" textTransform="uppercase" mb={2}>
                     {group.group}
                   </Text>
                   <Grid templateColumns="repeat(2, 1fr)" gap={2}>
@@ -1417,8 +1424,8 @@ const AdminDashboard = () => {
                         key={item.key}
                         size="sm"
                         variant={tab === item.key ? "solid" : "ghost"}
-                        color={tab === item.key ? "white" : "slate.300"}
-                        bg={tab === item.key ? "blue.600" : "transparent"}
+                        color={tab === item.key ? "white" : "#CBD5E1"}
+                        bg={tab === item.key ? "#2563EB" : "transparent"}
                         justifyContent="flex-start"
                         onClick={() => {
                           if (item.path) {
