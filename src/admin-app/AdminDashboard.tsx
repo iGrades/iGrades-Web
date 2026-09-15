@@ -1214,6 +1214,10 @@ const AdminDashboard = () => {
         flexDirection="column"
         borderRight="1px solid"
         borderColor="rgba(255, 255, 255, 0.08)"
+        css={{
+          scrollbarWidth: "none",
+          "&::-webkit-scrollbar": { display: "none" },
+        }}
       >
         {/* Logo Header */}
         <Box p={6} borderBottom="1px solid" borderColor="rgba(255, 255, 255, 0.08)">
@@ -1258,7 +1262,17 @@ const AdminDashboard = () => {
         </Box>
 
         {/* Navigation Groups */}
-        <Box flex={1} overflowY="auto" px={4} py={4}>
+        <Box
+          flex={1}
+          overflowY="auto"
+          px={4}
+          py={4}
+          css={{
+            scrollbarWidth: "none",
+            "&::-webkit-scrollbar": { display: "none" },
+            "-ms-overflow-style": "none",
+          }}
+        >
           <Stack gap={6}>
             {navGroups.map((group) => (
               <Box key={group.group}>

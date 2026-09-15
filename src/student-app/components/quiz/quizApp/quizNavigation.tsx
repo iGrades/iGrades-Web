@@ -14,9 +14,15 @@ export const QuizNavigation = ({
   const isLastQuestionInSubject = currentQuestionIndex === questions.length - 1;
 
   return (
-    <Box m="auto" mt={6} w="80%">
-      <Flex justify="space-between" gap={8} align="center" mb={4}>
-        <HStack gap={2} wrap="wrap" justify="start" w="55%">
+    <Box m="auto" mt={6} w="full" maxW="5xl">
+      <Flex
+        direction={{ base: "column-reverse", md: "row" }}
+        justify="space-between"
+        gap={{ base: 4, md: 6 }}
+        align={{ base: "stretch", md: "center" }}
+        mb={4}
+      >
+        <HStack gap={2} wrap="wrap" justify={{ base: "center", md: "start" }} flex={1}>
           {questions.map((_, index) => {
             const isAnswered = answers[questions[index].id] !== undefined;
             const isCurrent = index === currentQuestionIndex;
@@ -58,8 +64,8 @@ export const QuizNavigation = ({
                 borderColor="primaryColor" // Only visible if border is "1px solid"
                 onClick={() => onQuestionSelect(index)}
                 fontWeight={isCurrent ? "semibold" : "normal"}
-                minW="30px"
-                h="30px"
+                minW="32px"
+                h="32px"
                 p={0}
                 borderRadius="md"
                 _hover={{ opacity: 0.8 }}
@@ -70,14 +76,20 @@ export const QuizNavigation = ({
           })}
         </HStack>
 
-        <Flex w="45%" justify="space-between">
+        <Flex
+          w={{ base: "full", md: "auto" }}
+          justify={{ base: "space-between", md: "flex-end" }}
+          gap={3}
+          flexShrink={0}
+        >
           <Button
             variant="outline"
             border="1px solid"
             borderColor="primaryColor"
-            rounded="3xl"
-            w="40%"
-            p={3}
+            rounded="full"
+            w={{ base: "calc(50% - 6px)", md: "110px" }}
+            py={2.5}
+            px={4}
             color="primaryColor"
             fontWeight={500}
             fontSize="xs"
@@ -85,22 +97,23 @@ export const QuizNavigation = ({
             disabled={currentQuestionIndex === 0}
           >
             <GoArrowLeft />
-            <Text display={{ base: "none", md: "inline" }}>Prev</Text>
+            <Text display="inline">Prev</Text>
           </Button>
           <Button
             variant="outline"
             border="1px solid"
             borderColor="primaryColor"
-            rounded="3xl"
-            w="40%"
-            p={3}
+            rounded="full"
+            w={{ base: "calc(50% - 6px)", md: "110px" }}
+            py={2.5}
+            px={4}
             color="primaryColor"
             fontWeight={500}
             fontSize="xs"
             onClick={onNext}
             disabled={isSubjectCompleted}
           >
-            <Text display={{ base: "none", md: "inline" }}>
+            <Text display="inline">
               {isLastQuestionInSubject ? "Completed" : "Next"}
             </Text>
             <GoArrowRight />

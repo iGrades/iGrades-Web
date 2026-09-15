@@ -1,5 +1,6 @@
-import { Box, Flex, Heading, Text, VStack, HStack, Icon, Badge } from "@chakra-ui/react";
-import { FiCheckCircle, FiPlayCircle, FiClock, FiCalendar } from "react-icons/fi";
+import { useState } from "react";
+import { Box, Flex, Heading, Text, VStack, HStack, Icon, Badge, Button } from "@chakra-ui/react";
+import { FiCheckCircle, FiPlayCircle, FiClock, FiCalendar, FiChevronDown, FiChevronUp } from "react-icons/fi";
 import type { StudentIntelligence } from "@/parent-app/hooks/useParentIntelligence";
 
 type Props = {
@@ -8,6 +9,9 @@ type Props = {
 
 export const RecentActivitySection = ({ intelligence }: Props) => {
   const { recentActivities, lastActiveDate, studyStreakDays } = intelligence;
+  const [isExpanded, setIsExpanded] = useState(false);
+
+  const displayedActivities = isExpanded ? recentActivities : recentActivities.slice(0, 4);
 
   return (
     <Box bg="white" p={{ base: 4, md: 6 }} borderRadius="2xl" border="1px solid" borderColor="gray.100" boxShadow="0 2px 8px rgba(0, 0, 0, 0.04)">
@@ -35,6 +39,11 @@ export const RecentActivitySection = ({ intelligence }: Props) => {
           <Badge colorPalette="orange" variant="subtle" size="sm" borderRadius="full">
             {studyStreakDays} Day Streak
           </Badge>
+          {recentActivities.length > 4 && (
+            <Badge colorPalette="blue" variant="subtle" size="sm" borderRadius="full">
+              {isExpanded ? `${recentActivities.length} total` : `4 of ${recentActivities.length}`}
+            </Badge>
+          )}
         </HStack>
       </Flex>
 
@@ -45,60 +54,86 @@ export const RecentActivitySection = ({ intelligence }: Props) => {
           </Text>
         </Box>
       ) : (
-        <VStack align="stretch" gap={3}>
-          {recentActivities.map((act) => {
-            const isQuiz = act.type === "quiz";
-            const icon = isQuiz ? FiCheckCircle : FiPlayCircle;
-            const iconColor = isQuiz ? "teal.600" : "purple.600";
-            const iconBg = isQuiz ? "teal.50" : "purple.50";
-            const iconBorder = isQuiz ? "teal.200" : "purple.200";
+        <>
+          <VStack align="stretch" gap={3}>
+            {displayedActivities.map((act) => {
+              const isQuiz = act.type === "quiz";
+              const icon = isQuiz ? FiCheckCircle : FiPlayCircle;
+              const iconColor = isQuiz ? "teal.600" : "purple.600";
+              const iconBg = isQuiz ? "teal.50" : "purple.50";
+              const iconBorder = isQuiz ? "teal.200" : "purple.200";
 
-            return (
-              <Box
-                key={act.id}
-                p={3.5}
-                borderRadius="xl"
-                border="1px solid"
-                borderColor="gray.100"
-                bg="white"
-                _hover={{ bg: "gray.50/80", borderColor: "blue.100" }}
-                transition="all 0.15s"
+              return (
+                <Box
+                  key={act.id}
+                  p={3.5}
+                  borderRadius="xl"
+                  border="1px solid"
+                  borderColor="gray.100"
+                  bg="white"
+                  _hover={{ bg: "gray.50/80", borderColor: "blue.100" }}
+                  transition="all 0.15s"
+                >
+                  <Flex justify="space-between" align="center" gap={3}>
+                    <HStack gap={3}>
+                      <Box bg={iconBg} p={2} borderRadius="lg" border="1px solid" borderColor={iconBorder}>
+                        <Icon as={icon} color={iconColor} boxSize="16px" />
+                      </Box>
+                      <Box>
+                        <Text fontSize="xs" fontWeight="700" color="gray.900">
+                          {act.title}
+                        </Text>
+                        <Text fontSize="11px" color="gray.500" mt={0.5}>
+                          {act.subtitle}
+                        </Text>
+                      </Box>
+                    </HStack>
+
+                    <HStack gap={2.5}>
+                      {act.score !== undefined && (
+                        <Badge
+                          colorPalette={act.score >= 75 ? "green" : act.score >= 50 ? "blue" : "orange"}
+                          variant="solid"
+                          size="sm"
+                          borderRadius="md"
+                        >
+                          {act.score}%
+                        </Badge>
+                      )}
+                      <Text fontSize="11px" color="gray.400" fontWeight="600" whiteSpace="nowrap">
+                        {act.formattedDate}
+                      </Text>
+                    </HStack>
+                  </Flex>
+                </Box>
+              );
+            })}
+          </VStack>
+
+          {recentActivities.length > 4 && (
+            <Flex justify="center" mt={4} pt={3} borderTop="1px solid" borderColor="gray.100">
+              <Button
+                variant="subtle"
+                size="xs"
+                colorPalette="blue"
+                borderRadius="full"
+                px={4}
+                py={1.5}
+                fontWeight="600"
+                onClick={() => setIsExpanded(!isExpanded)}
               >
-                <Flex justify="space-between" align="center" gap={3}>
-                  <HStack gap={3}>
-                    <Box bg={iconBg} p={2} borderRadius="lg" border="1px solid" borderColor={iconBorder}>
-                      <Icon as={icon} color={iconColor} boxSize="16px" />
-                    </Box>
-                    <Box>
-                      <Text fontSize="xs" fontWeight="700" color="gray.900">
-                        {act.title}
-                      </Text>
-                      <Text fontSize="11px" color="gray.500" mt={0.5}>
-                        {act.subtitle}
-                      </Text>
-                    </Box>
-                  </HStack>
-
-                  <HStack gap={2.5}>
-                    {act.score !== undefined && (
-                      <Badge
-                        colorPalette={act.score >= 75 ? "green" : act.score >= 50 ? "blue" : "orange"}
-                        variant="solid"
-                        size="sm"
-                        borderRadius="md"
-                      >
-                        {act.score}%
-                      </Badge>
-                    )}
-                    <Text fontSize="11px" color="gray.400" fontWeight="600" whiteSpace="nowrap">
-                      {act.formattedDate}
-                    </Text>
-                  </HStack>
-                </Flex>
-              </Box>
-            );
-          })}
-        </VStack>
+                <HStack gap={1.5}>
+                  <Text>
+                    {isExpanded
+                      ? "Show fewer activities"
+                      : `View all ${recentActivities.length} activities (${recentActivities.length - 4} more)`}
+                  </Text>
+                  <Icon as={isExpanded ? FiChevronUp : FiChevronDown} boxSize="13px" />
+                </HStack>
+              </Button>
+            </Flex>
+          )}
+        </>
       )}
     </Box>
   );

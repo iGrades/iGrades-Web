@@ -9,7 +9,22 @@ export const SubjectNavigation = ({
   onSubjectChange,
 }: SubjectNavigationProps) => {
   return (
-    <Flex align='center' justify='space-around' gap={2} m='auto' my={4} wrap="wrap" bg='white' p={2} rounded='lg' w='80%' >
+    <Flex
+      align="center"
+      justify={{ base: "flex-start", sm: "center" }}
+      gap={2}
+      m="auto"
+      my={4}
+      wrap="wrap"
+      bg="white"
+      p={2.5}
+      rounded="xl"
+      w="full"
+      maxW="5xl"
+      border="1px solid"
+      borderColor="gray.100"
+      boxShadow="xs"
+    >
       {subjects.map((subject, index) => {
         const hasQuizzes = quizzes.some(
           (quiz) => quiz.subject_id === subject.id
@@ -18,8 +33,10 @@ export const SubjectNavigation = ({
           <Button
             key={subject.id}
             size="sm"
-            fontSize='xs'
-            w='20%'
+            fontSize="xs"
+            w={{ base: "calc(50% - 4px)", sm: "auto" }}
+            minW={{ sm: "110px" }}
+            px={{ base: 2, sm: 4 }}
             bg={
               currentSubjectIndex === index
                 ? "blue.100"
@@ -27,11 +44,13 @@ export const SubjectNavigation = ({
                 ? "gray.200"
                 : "white"
             }
-            color={ currentSubjectIndex === index
-              ? "primaryColor"
-              : completedSubjects.has(index)
-              ? "black"
-              : "black"}
+            color={
+              currentSubjectIndex === index
+                ? "primaryColor"
+                : completedSubjects.has(index)
+                ? "black"
+                : "black"
+            }
             variant={currentSubjectIndex === index ? "solid" : "ghost"}
             onClick={() => onSubjectChange(index)}
             disabled={

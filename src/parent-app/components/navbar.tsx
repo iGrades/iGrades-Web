@@ -137,24 +137,8 @@ const Navbar = ({ setShowLogoutModal }: Props) => {
           </Text>
         </Box>
 
-        {/* Right Controls: Role Badge, Language Selector, Notifications, User Avatar */}
+        {/* Right Controls: Language Selector, Notifications, User Avatar */}
         <HStack gap={{ base: 2, md: 3 }}>
-          <Badge
-            display={{ base: "none", md: "inline-flex" }}
-            variant="subtle"
-            colorPalette="purple"
-            px={3}
-            py={1}
-            borderRadius="full"
-            fontSize="xs"
-            fontWeight="medium"
-          >
-            <HStack gap={1}>
-              <FiUser size={13} />
-              <Text>Parent Portal</Text>
-            </HStack>
-          </Badge>
-
           {/* Language Selector */}
           <Select.Root
             collection={languages}

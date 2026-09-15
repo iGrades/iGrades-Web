@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useEffect, useState } from "react";
-import { Box, Flex, Text, Image, Heading } from "@chakra-ui/react";
+import { Box, Flex, Text, Image, Heading, HStack } from "@chakra-ui/react";
 import { Tooltip } from "@/components/ui/tooltip";
 import { supabase } from "@/lib/supabaseClient";
 import { useAuthdStudentData } from "../context/studentDataContext";
@@ -230,46 +230,62 @@ const MyClasses = () => {
               </Box>
             </Tooltip>
           </Flex>
+
+          {/* Sleek, Modern, Minimal Recent Activity Section */}
+          {!isLoading && recentActivity.length > 0 && (
+            <Box mt={4} pt={3.5} borderTop="1px solid" borderColor="gray.100">
+              <Flex
+                direction={{ base: "column", sm: "row" }}
+                align={{ base: "flex-start", sm: "center" }}
+                justify="space-between"
+                gap={2.5}
+              >
+                <HStack gap={2} flexShrink={0}>
+                  <Box w="6px" h="6px" borderRadius="full" bg="#10B981" />
+                  <Text
+                    fontSize="11px"
+                    fontWeight="600"
+                    color="gray.500"
+                    letterSpacing="0.04em"
+                    textTransform="uppercase"
+                  >
+                    {t("recent_activity")}
+                  </Text>
+                </HStack>
+
+                <Flex wrap="wrap" gap={1.5} align="center">
+                  {recentActivity.slice(0, 3).map((activity, index) => (
+                    <HStack
+                      key={index}
+                      bg="gray.50"
+                      px={2.5}
+                      py={1}
+                      borderRadius="full"
+                      border="1px solid"
+                      borderColor="gray.200/80"
+                      gap={1.5}
+                      _hover={{ bg: "gray.100" }}
+                      transition="background 0.15s ease"
+                    >
+                      <Text fontSize="11px" fontWeight="600" color="gray.700">
+                        {activity.subject}
+                      </Text>
+                      <Text fontSize="10px" color="gray.400">
+                        • {formatRelativeTime(activity.lastActivity)}
+                      </Text>
+                    </HStack>
+                  ))}
+                  {recentActivity.length > 3 && (
+                    <Text fontSize="10px" color="gray.400" fontWeight="500" px={1}>
+                      +{recentActivity.length - 3} more
+                    </Text>
+                  )}
+                </Flex>
+              </Flex>
+            </Box>
+          )}
         </Box>
       </Flex>
-
-      {/* Detailed Activity Breakdown Wrapper placed perfectly at row bounds container */}
-      {!isLoading && recentActivity.length > 0 && (
-        <Box p={4} m={1} bg="green.50" borderRadius="xl" border="1px solid" borderColor="green.100">
-          <Text fontSize="xs" fontWeight="semibold" color="green.800" mb={2}>
-            {t("recent_activity")}:
-          </Text>
-          <Flex flexWrap="wrap" gap={2}>
-            {recentActivity.slice(0, 3).map((activity, index) => (
-              <Box
-                key={index}
-                bg="green.100"
-                px={3}
-                py={1}
-                borderRadius="full"
-                fontSize="11px"
-                fontWeight="500"
-                color="green.800"
-              >
-                {activity.subject} ({formatRelativeTime(activity.lastActivity)})
-              </Box>
-            ))}
-            {recentActivity.length > 3 && (
-              <Box
-                bg="green.200"
-                px={3}
-                py={1}
-                borderRadius="full"
-                fontSize="11px"
-                fontWeight="600"
-                color="green.900"
-              >
-                +{recentActivity.length - 3} more
-              </Box>
-            )}
-          </Flex>
-        </Box>
-      )} 
     </>
   );
 };

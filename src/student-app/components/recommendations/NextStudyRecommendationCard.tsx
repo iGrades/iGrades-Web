@@ -161,16 +161,6 @@ export const NextStudyRecommendationCard: React.FC<NextStudyRecommendationCardPr
       overflow="hidden"
       mb={6}
     >
-      {/* Subtle top accent bar */}
-      <Box
-        position="absolute"
-        top={0}
-        left={0}
-        right={0}
-        h="4px"
-        bg="linear-gradient(90deg, #206CE1 0%, #6366F1 50%, #EC4899 100%)"
-      />
-
       {/* Header section */}
       <Flex
         justifyContent="space-between"

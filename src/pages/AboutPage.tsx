@@ -331,7 +331,7 @@ const AboutPage = () => {
                   </Text>
                 </VStack>
 
-                <Grid templateColumns="1fr 1fr" gap={4} mt={8}>
+                <Grid templateColumns={{ base: "1fr", sm: "1fr 1fr" }} gap={4} mt={8}>
                   {[
                     { icon: <FiAward />, label: "Best EdTech Startup 2023", sub: "Ibadan Innovation Awards" },
                     { icon: <FiZap />, label: "Top-Rated Tutoring App", sub: "App Store Nigeria, 2024" },
@@ -456,7 +456,7 @@ const AboutPage = () => {
                 </Flex>
               </Grid>
 
-              <Grid templateColumns={{ base: "1fr 1fr", md: "repeat(4,1fr)" }} gap={5}>
+              <Grid templateColumns={{ base: "1fr", sm: "repeat(2, 1fr)", md: "repeat(4, 1fr)" }} gap={5}>
                 {team.map((member) => (
                   <Box key={member.name} className="team-card" p={6}
                     bg="rgba(255,255,255,0.05)"

@@ -192,7 +192,7 @@ export const ResultsPage = ({
   return (
     <>
       <Box
-        p={6}
+        p={{ base: 3, sm: 5, md: 6 }}
         borderRadius="md"
         boxShadow="md"
         bg="white"
@@ -466,14 +466,21 @@ export const ResultsPage = ({
             <Dialog.Body>
               <Center
                 bg="gray.100"
-                p={6}
+                p={{ base: 2, sm: 6 }}
                 borderRadius="xl"
                 border="1px dashed"
                 borderColor="gray.300"
+                overflow="hidden"
+                maxW="100%"
               >
-                <VStack gap={4}>
+                <VStack gap={4} maxW="100%">
                   {/* Visual Preview (Scale it down so it fits in the modal) */}
-                  <Box transform="scale(0.85)" transformOrigin="center">
+                  <Box
+                    transform={{ base: "scale(0.72)", sm: "scale(0.85)" }}
+                    transformOrigin="center"
+                    my={{ base: -8, sm: 0 }}
+                    maxW="100%"
+                  >
                     <ShareCard
                       quizResults={quizResults}
                       quizData={quizData}

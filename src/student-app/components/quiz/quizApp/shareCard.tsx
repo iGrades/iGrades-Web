@@ -34,7 +34,8 @@ export const ShareCard = ({ quizResults, quizData, studentName}: ShareCardProps)
   return (
     <Box
       id="quiz-report-card" // ID will later be used to "capture" the image
-      w="350px"
+      w={{ base: "100%", sm: "350px" }}
+      maxW="350px"
       bgGradient="linear(to-br, blue.600, purple.700)"
       p={6}
       borderRadius="2xl"

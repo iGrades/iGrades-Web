@@ -1,7 +1,14 @@
 "use client"
 
-import { Chart, useChart } from "@chakra-ui/charts"
-import { CartesianGrid, Line, LineChart, Tooltip, XAxis, YAxis } from "recharts"
+import {
+  Area,
+  AreaChart,
+  CartesianGrid,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from "recharts"
 import { Box, Flex, Icon, Text } from "@chakra-ui/react"
 import { GiChart } from "react-icons/gi"
 
@@ -28,10 +35,7 @@ const PerformanceChart = ({ data }: { data?: ChartDataPoint[] }) => {
       score: item.average
     }));
 
-  const chart = useChart({
-    data: chartData,
-    series: [{ name: "score", color: "teal.solid" }],
-  })
+  const lineColor = "#EA580C";
 
   return (
     <Box 
@@ -41,46 +45,71 @@ const PerformanceChart = ({ data }: { data?: ChartDataPoint[] }) => {
       border="1px solid" 
       borderColor="gray.100"
       w="full"
+      boxShadow="0 2px 8px rgba(0, 0, 0, 0.04)"
     >
       <Flex align="center" gap={2} mb={6}>
-        <Icon as={GiChart} color="primaryColor" />
-        <Text fontWeight="bold" fontSize={{ base: "xs", md: "sm" }}>
-          4-Month Progress Trend
-        </Text>
+        <Box bg="orange.50" p={1.5} borderRadius="lg" border="1px solid" borderColor="orange.200">
+          <Icon as={GiChart} color="#EA580C" boxSize="18px" />
+        </Box>
+        <Box>
+          <Text fontWeight="bold" fontSize={{ base: "xs", md: "sm" }} color="gray.900">
+            Progress Trend
+          </Text>
+          <Text fontSize="xs" color="gray.500">
+            Performance progression over recent learning periods
+          </Text>
+        </Box>
       </Flex>
 
-      <Chart.Root maxH="sm" minH="260px" chart={chart}>
-        <LineChart data={chart.data} responsive>
-          <CartesianGrid stroke={chart.color("border")} vertical={false} />
-          <XAxis
-            axisLine={false}
-            dataKey={chart.key("month")}
-            tickFormatter={(value) => value.slice(0, 3)}
-            stroke={chart.color("border")}
-          />
-          <YAxis
-            axisLine={false}
-            tickLine={false}
-            tickMargin={10}
-            stroke={chart.color("border")}
-          />
-          <Tooltip
-            animationDuration={100}
-            cursor={false}
-            content={<Chart.Tooltip />}
-          />
-          {chart.series.map((item) => (
-            <Line
-              key={item.name}
-              isAnimationActive={false}
-              dataKey={chart.key(item.name)}
-              stroke={chart.color(item.color)}
-              strokeWidth={2}
-              dot={false}
+      <Box w="100%" h="260px" position="relative">
+        <ResponsiveContainer width="100%" height="100%">
+          <AreaChart data={chartData} margin={{ top: 15, right: 15, left: -15, bottom: 5 }}>
+            <defs>
+              <linearGradient id="perfAreaGradient" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="5%" stopColor={lineColor} stopOpacity={0.28} />
+                <stop offset="95%" stopColor={lineColor} stopOpacity={0} />
+              </linearGradient>
+            </defs>
+            <CartesianGrid strokeDasharray="3 3" stroke="#F1F5F9" vertical={false} />
+            <XAxis
+              axisLine={false}
+              tickLine={false}
+              dataKey="month"
+              tickFormatter={(value) => value ? value.slice(0, 3) : ""}
+              tick={{ fontSize: 11, fill: "#64748B" }}
             />
-          ))}
-        </LineChart>
-      </Chart.Root>
+            <YAxis
+              axisLine={false}
+              tickLine={false}
+              domain={[0, 100]}
+              tickFormatter={(val) => `${val}%`}
+              tick={{ fontSize: 11, fill: "#64748B" }}
+            />
+            <Tooltip
+              contentStyle={{
+                backgroundColor: "#0F172A",
+                borderRadius: "12px",
+                border: "none",
+                color: "white",
+                fontSize: "12px",
+                boxShadow: "0 10px 25px -5px rgba(0,0,0,0.3)",
+              }}
+              formatter={(val: any) => [`${val}%`, "Average Score"]}
+              labelStyle={{ fontWeight: "700", color: "#F8FAFC", marginBottom: "4px" }}
+            />
+            <Area
+              type="monotone"
+              dataKey="score"
+              name="Average Score"
+              stroke={lineColor}
+              strokeWidth={2.5}
+              fill="url(#perfAreaGradient)"
+              dot={{ r: 4, fill: lineColor, strokeWidth: 2, stroke: "#FFFFFF" }}
+              activeDot={{ r: 6, fill: lineColor, stroke: "#FFFFFF", strokeWidth: 2 }}
+            />
+          </AreaChart>
+        </ResponsiveContainer>
+      </Box>
     </Box>
   )
 }

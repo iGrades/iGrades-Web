@@ -62,12 +62,15 @@ const NavBar = () => {
       as="header"
       justify="space-between"
       align="center"
-      // 1. Hard limits the vertical height on desktop screens to keep it ultra slim
-      h={{ base: "auto", md: "70px", lg: "80px" }}
-      pt={{ base: 4, md: 0 }} 
+      h={{ base: "64px", md: "70px", lg: "80px" }}
       px={{ base: 4, lg: 12 }}
-      position="relative"
+      position="sticky"
+      top="0"
+      zIndex="1000"
       bg="white"
+
+      borderBottom="1px solid"
+      borderColor="gray.100"
     >
       {/* Logo */}
       <Box 

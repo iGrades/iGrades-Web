@@ -1,7 +1,6 @@
 import {
   Flex,
   Badge,
-  Heading,
   Button,
   Image,
   Box,
@@ -36,108 +35,120 @@ export const QuizHeader = ({
   return (
     <Flex
       align="center"
-      mt={{ base: 4, md: -4 }}
+      justify="space-between"
+      mt={{ base: 2, md: -4 }}
       mb={4}
       bg="white"
       w="full"
       position="sticky"
       top="0"
       zIndex="1000"
+      px={{ base: 2, sm: 4, md: 6 }}
+      py={{ base: 2, md: 3 }}
+      borderBottom="1px solid"
+      borderColor="gray.100"
+      boxShadow="xs"
+      gap={2}
     >
-      {/*logo*/}
-      <Box
-        display="flex"
-        alignItems="center"
-        bg="white"
-        px={{ base: 3, md: 4, lg: 4 }}
-        py={{ base: 7, md: 7, lg: 4.5 }}
-        w={{ base: "25%", md: "10%" }}
-      >
-        <Image
-          src={logo}
-          alt="Logo"
-          w={{ md: "100%", lg: "100%" }}
-          fit="cover"
-        />
-      </Box>
+      {/* Left: Logo & Current Subject */}
+      <HStack gap={{ base: 2, md: 3 }} align="center" flexShrink={0}>
+        <Box w={{ base: "70px", sm: "85px", md: "110px" }}>
+          <Image
+            src={logo}
+            alt="Logo"
+            w="full"
+            fit="contain"
+          />
+        </Box>
 
-      <Flex justify="space-between" w="90%">
-        <Flex
-          align="center"
-          gap={3}
-          w={{ base: "35%", md: "25%", lg: "12%" }}
-          ml="8"
-        >
+        <Box>
           {currentSubjectImage ? (
-           <Image src={currentSubjectImage} alt={currentSubject.displayName} />
-         ) : (
-           <Box
-             boxSize="50px"
-             bg="gray.200"
-             borderRadius="md"
-             display="flex"
-             alignItems="center"
-             justifyContent="center"
-           >
-             <Text fontSize="sm" fontWeight="bold" color="gray.600">
-               {currentSubject.displayName.charAt(0)}
-             </Text>
-           </Box>
-         )}
-          {/*<Text fontSize="md" fontWeight="bold" color="gray.600">
-            {currentSubject.displayName}
-          </Text>*/}
-        </Flex>
+            <Image
+              src={currentSubjectImage}
+              alt={currentSubject.displayName}
+              boxSize={{ base: "32px", md: "40px" }}
+              objectFit="contain"
+            />
+          ) : (
+            <Box
+              boxSize={{ base: "32px", md: "40px" }}
+              bg="blue.50"
+              border="1px solid"
+              borderColor="blue.200"
+              borderRadius="md"
+              display="flex"
+              alignItems="center"
+              justifyContent="center"
+            >
+              <Text fontSize="xs" fontWeight="bold" color="blue.700">
+                {currentSubject.displayName.charAt(0)}
+              </Text>
+            </Box>
+          )}
+        </Box>
+      </HStack>
 
+      {/* Center: Proctoring info if exam mode */}
+      {mode === "examination" && (
+        <Box display={{ base: "none", md: "block" }}>
+          <CheatingProgressBar cheatingScore={cheatingScore} />
+        </Box>
+      )}
+
+      {/* Right: Timer, Calculator, Subject status, Submit Button */}
+      <HStack gap={{ base: 1.5, sm: 3 }} align="center" ml="auto">
+        {/* display timer only if in examination mode */}
         {mode === "examination" && (
-          <Flex>
-            <CheatingProgressBar cheatingScore={cheatingScore} />
-          </Flex>
+          <Badge
+            variant="surface"
+            colorPalette="blue"
+            px={{ base: 1.5, sm: 2.5 }}
+            py={1}
+            borderRadius="lg"
+            display="inline-flex"
+            alignItems="center"
+            gap={1}
+          >
+            <Image src={timerImage} alt="timer" height={{ base: "16px", sm: "20px" }} />
+            <Text
+              color="blue.900"
+              fontSize={{ base: "xs", sm: "sm", md: "md" }}
+              fontWeight="bold"
+              fontFamily="mono"
+            >
+              {formatTime(timeLeft)}
+            </Text>
+          </Badge>
         )}
 
-        <Flex
-          justify="space-between"
-          gap={4}
-          align="center"
-          w={{ base: "55%", md: "50%" }}
-        >
-          {/* display timer only if in examination mode */}
-          {mode === "examination" && (
-            <Badge variant='plain'>
-              <Image src={timerImage} alt="timer" height="25px" />
-              <Heading
-                color="on_backgroundColor"
-                fontSize="2xl"
-                fontWeight="semibold"
-              >
-                {formatTime(timeLeft)}
-              </Heading>
-            </Badge>
-          )}
-          
-          <Calculator />
+        <Calculator />
 
-          <Badge
-            display={{ base: "none", md: "block" }}
-            colorScheme={isSubjectCompleted ? "green" : "blue"}
-          >
-            {isSubjectCompleted ? "Completed" : "In Progress"}
-          </Badge>
-          <Button
-            bg="primaryColor"
-            size="sm"
-            w={{ base: 28, md: 36, lg: 48 }}
-            p={{ base: 5, md: 5, lg: 6 }}
-            mx="2"
-            rounded={{ base: "lg", md: "xl", lg: "3xl" }}
-            fontWeight="500"
-            onClick={onSubmit}
-            loading={isSubmitting}
-          >
-            Submit Quiz <GoArrowRight />
-          </Button>
-        </Flex>
-      </Flex>
+        <Badge
+          display={{ base: "none", lg: "inline-flex" }}
+          colorPalette={isSubjectCompleted ? "green" : "blue"}
+          variant="subtle"
+          borderRadius="full"
+          px={2.5}
+        >
+          {isSubjectCompleted ? "Completed" : "In Progress"}
+        </Badge>
+
+        <Button
+          bg="primaryColor"
+          size="sm"
+          px={{ base: 3, sm: 4, md: 5 }}
+          h={{ base: "34px", sm: "38px" }}
+          rounded={{ base: "lg", md: "full" }}
+          fontWeight="600"
+          fontSize={{ base: "xs", sm: "sm" }}
+          onClick={onSubmit}
+          loading={isSubmitting}
+        >
+          <Text display={{ base: "none", sm: "inline" }}>Submit Quiz</Text>
+          <Text display={{ base: "inline", sm: "none" }}>Submit</Text>
+          <GoArrowRight />
+        </Button>
+      </HStack>
     </Flex>
   );
 };

@@ -199,7 +199,8 @@ const Analytics = () => {
       my={{ base: 5, md: 0 }}
       ml={{ md: 5 }}
       p={4}
-      h="68.5vh"
+      h={{ base: "auto", lg: "68.5vh" }}
+      minH={{ base: "300px", lg: "420px" }}
       display="flex"
       flexDirection="column"
     

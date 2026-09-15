@@ -28,7 +28,6 @@ import {
   FiShield,
 } from "react-icons/fi";
 import { LuGraduationCap } from "react-icons/lu";
-import { NavbarPointsBadge } from "./rewards/NavbarPointsBadge";
 import logo from "../../assets/logo.png";
 import AvatarComp from "../../components/avatar";
 
@@ -136,11 +135,8 @@ const Navbar = () => {
           </Text>
         </Box>
 
-        {/* Right Controls: IGG Points Badge, Class Tag, Language Selector, Notifications, User Avatar */}
+        {/* Right Controls: Class Tag, Language Selector, Notifications, User Avatar */}
         <HStack gap={{ base: 2, md: 3 }}>
-          {/* iGrades Points & Streak Rewards Badge */}
-          <NavbarPointsBadge />
-
           {/* Student Class Pill */}
           {currentStudent?.class && (
             <Badge

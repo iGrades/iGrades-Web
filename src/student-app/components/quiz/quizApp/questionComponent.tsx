@@ -12,7 +12,18 @@ export const QuestionComponent = ({
   const hasImage = Boolean(currentQuestion?.image_url);
 
   return (
-    <Box p={6} bg="white" borderRadius="lg" minH="50vh" w="80%" m="auto">
+    <Box
+      p={{ base: 4, sm: 5, md: 6 }}
+      bg="white"
+      borderRadius="xl"
+      border="1px solid"
+      borderColor="gray.100"
+      boxShadow="xs"
+      minH="45vh"
+      w="full"
+      maxW="5xl"
+      m="auto"
+    >
       <Heading my={2} fontSize="md">
         Question {currentQuestionIndex + 1} of {totalQuestions}
       </Heading>
@@ -20,7 +31,7 @@ export const QuestionComponent = ({
         direction={{ base: "column", md: "row" }}
         justify="space-between"
         align={{ base: "stretch", md: "flex-start" }}
-        my={6}
+        my={{ base: 4, md: 6 }}
         px={{ base: 0, md: 4 }}
         color="on_backgroundColor"
         gap={6}
@@ -54,7 +65,7 @@ export const QuestionComponent = ({
         </Box>
 
         {/* ── Right: answer options ── */}
-        <Box w={{ base: "95%", md: "50%" }}>
+        <Box w={{ base: "100%", md: "50%" }}>
           <Heading my={2} fontSize="md">
             Select only one answer
           </Heading>

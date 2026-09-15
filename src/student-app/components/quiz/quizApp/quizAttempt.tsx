@@ -604,7 +604,7 @@ const QuizAttempt = ({
   }
 
   return (
-    <Box w={{ lg: "100%" }} m="auto">
+    <Box w="full" maxW="6xl" mx="auto" px={{ base: 2, sm: 4, md: 6 }}>
       {isMonitoringEnabled && (
         <MemoizedMonitoring
           hasWebcamAccess={hasWebcamAccess}

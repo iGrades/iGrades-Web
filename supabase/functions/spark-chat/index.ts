@@ -325,7 +325,10 @@ Use the correct answer and explanation solely to diagnose why the student's chos
     // ── 4. AI INTEGRATION WITH MODEL INDEPENDENCE (GEMINI FIRST, ANTHROPIC FALLBACK) ──
     const geminiApiKey = Deno.env.get("GEMINI_API_KEY");
     const anthropicApiKey = Deno.env.get("ANTHROPIC_API_KEY");
-    const geminiModel = Deno.env.get("GEMINI_MODEL") || "gemini-3.8-flash";
+    const configuredModel = Deno.env.get("GEMINI_MODEL");
+    const candidateModels = configuredModel
+      ? [configuredModel, "gemini-3.1-flash-lite", "gemini-flash-latest"]
+      : ["gemini-3.1-flash-lite", "gemini-flash-latest", "gemini-3.8-flash"];
 
     let replyText = "";
     let guidanceLevel = 2;
@@ -340,54 +343,53 @@ Use the correct answer and explanation solely to diagnose why the student's chos
         parts: [{ text: m.content }],
       }));
 
-      const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${geminiModel}:generateContent?key=${geminiApiKey}`;
-
-      const geminiPayload = {
-        systemInstruction: {
-          parts: [{ text: SYSTEM_INSTRUCTIONS }],
-        },
-        contents: geminiContents,
-        generationConfig: {
-          responseMimeType: "application/json",
-          temperature: 0.6,
-          maxOutputTokens: 1000,
-        },
-      };
-
-      const geminiRes = await fetch(geminiUrl, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(geminiPayload),
-      });
-
-      const geminiData = await geminiRes.json();
-
-      if (!geminiRes.ok) {
-        console.error("Gemini API error:", geminiData);
-        // If Gemini has a transient error and Anthropic key is available, fallback below
-        if (!anthropicApiKey) {
-          return new Response(
-            JSON.stringify({ error: geminiData.error?.message || "AI tutor response failed." }),
-            { status: geminiRes.status, headers: { ...CORS_HEADERS, "Content-Type": "application/json" } }
-          );
-        }
-      } else {
-        const rawText = geminiData.candidates?.[0]?.content?.parts?.[0]?.text || "";
+      for (const geminiModel of candidateModels) {
         try {
-          const jsonMatch = rawText.match(/\{[\s\S]*\}/);
-          if (jsonMatch) {
-            const parsed = JSON.parse(jsonMatch[0]);
-            replyText = parsed.reply || rawText;
-            guidanceLevel = Number(parsed.guidanceLevel) || 2;
-            guidanceLevelName = parsed.guidanceLevelName || "Small hint";
-            misconceptionType = parsed.misconceptionType || null;
-            studentStatus = parsed.studentStatus || "attempting";
-          } else {
-            replyText = rawText;
+          const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${geminiModel}:generateContent?key=${geminiApiKey}`;
+
+          const geminiPayload = {
+            systemInstruction: {
+              parts: [{ text: SYSTEM_INSTRUCTIONS }],
+            },
+            contents: geminiContents,
+            generationConfig: {
+              responseMimeType: "application/json",
+              temperature: 0.6,
+              maxOutputTokens: 1000,
+            },
+          };
+
+          const geminiRes = await fetch(geminiUrl, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(geminiPayload),
+          });
+
+          const geminiData = await geminiRes.json();
+
+          if (geminiRes.ok) {
+            const rawText = geminiData.candidates?.[0]?.content?.parts?.[0]?.text || "";
+            try {
+              const jsonMatch = rawText.match(/\{[\s\S]*\}/);
+              if (jsonMatch) {
+                const parsed = JSON.parse(jsonMatch[0]);
+                replyText = parsed.reply || rawText;
+                guidanceLevel = Number(parsed.guidanceLevel) || 2;
+                guidanceLevelName = parsed.guidanceLevelName || "Small hint";
+                misconceptionType = parsed.misconceptionType || null;
+                studentStatus = parsed.studentStatus || "attempting";
+              } else {
+                replyText = rawText;
+              }
+            } catch {
+              replyText = rawText;
+            }
+            break;
           }
         } catch {
-          replyText = rawText;
+          // Try next fallback candidate model
         }
+      }
       }
     }
 

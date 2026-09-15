@@ -375,7 +375,8 @@ export const Calculator = () => {
       <Portal>
         <Popover.Positioner>
           <Popover.Content
-            width={{ base: "325px", sm: "360px" }}
+            width={{ base: "calc(100vw - 24px)", sm: "350px" }}
+            maxW="360px"
             bg="#ffffff"
             shadow="2xl"
             borderRadius="xl"

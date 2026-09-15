@@ -1,6 +1,6 @@
-import { useMemo } from "react";
-import { Box, Flex, Heading, Text, VStack, HStack, Badge, Progress, Icon, Table } from "@chakra-ui/react";
-import { FiTrendingUp, FiTrendingDown, FiMinus, FiBook, FiClock } from "react-icons/fi";
+import { useState, useMemo } from "react";
+import { Box, Flex, Heading, Text, VStack, HStack, Badge, Progress, Icon, Table, Button } from "@chakra-ui/react";
+import { FiTrendingUp, FiTrendingDown, FiMinus, FiBook, FiClock, FiChevronDown, FiChevronUp } from "react-icons/fi";
 import type { SubjectIntelligence } from "@/parent-app/hooks/useParentIntelligence";
 import { filterRegisteredSubjects } from "@/utils/subjectMatching";
 
@@ -11,12 +11,16 @@ type Props = {
 };
 
 export const SubjectPerformanceSection = ({ subjects, onSelectSubject, registeredCourses }: Props) => {
+  const [isExpanded, setIsExpanded] = useState(false);
+
   const displayedSubjects = useMemo(() => {
     if (registeredCourses !== undefined && registeredCourses !== null) {
       return filterRegisteredSubjects(subjects, registeredCourses);
     }
     return subjects;
   }, [subjects, registeredCourses]);
+
+  const visibleSubjects = isExpanded ? displayedSubjects : displayedSubjects.slice(0, 4);
   const getStatusBadge = (status: SubjectIntelligence["status"]) => {
     switch (status) {
       case "strong":
@@ -56,7 +60,9 @@ export const SubjectPerformanceSection = ({ subjects, onSelectSubject, registere
           </Box>
         </HStack>
         <Badge colorPalette="gray" variant="surface" size="sm" borderRadius="full">
-          {displayedSubjects.length} Registered Subject{displayedSubjects.length === 1 ? "" : "s"}
+          {displayedSubjects.length > 4 && !isExpanded
+            ? `4 of ${displayedSubjects.length} Registered Subjects`
+            : `${displayedSubjects.length} Registered Subject${displayedSubjects.length === 1 ? "" : "s"}`}
         </Badge>
       </Flex>
 
@@ -67,32 +73,33 @@ export const SubjectPerformanceSection = ({ subjects, onSelectSubject, registere
           </Text>
         </Box>
       ) : (
-        <Table.ScrollArea border="1px solid" borderColor="gray.100" borderRadius="xl">
-          <Table.Root size={{ base: "sm", md: "md" }} stickyHeader>
-            <Table.Header>
-              <Table.Row bg="gray.50">
-                <Table.ColumnHeader fontSize="xs" fontWeight="700" color="gray.600">
-                  Subject
-                </Table.ColumnHeader>
-                <Table.ColumnHeader fontSize="xs" fontWeight="700" color="gray.600" textAlign="center">
-                  Average Score
-                </Table.ColumnHeader>
-                <Table.ColumnHeader fontSize="xs" fontWeight="700" color="gray.600" textAlign="center">
-                  Score Trend
-                </Table.ColumnHeader>
-                <Table.ColumnHeader fontSize="xs" fontWeight="700" color="gray.600" textAlign="center">
-                  Questions Solved
-                </Table.ColumnHeader>
-                <Table.ColumnHeader fontSize="xs" fontWeight="700" color="gray.600" textAlign="center">
-                  Performance
-                </Table.ColumnHeader>
-                <Table.ColumnHeader fontSize="xs" fontWeight="700" color="gray.600" textAlign="right">
-                  Last Active
-                </Table.ColumnHeader>
-              </Table.Row>
-            </Table.Header>
-            <Table.Body>
-              {displayedSubjects.map((sub) => {
+        <>
+          <Table.ScrollArea border="1px solid" borderColor="gray.100" borderRadius="xl">
+            <Table.Root size={{ base: "sm", md: "md" }} stickyHeader>
+              <Table.Header>
+                <Table.Row bg="gray.50">
+                  <Table.ColumnHeader fontSize="xs" fontWeight="700" color="gray.600">
+                    Subject
+                  </Table.ColumnHeader>
+                  <Table.ColumnHeader fontSize="xs" fontWeight="700" color="gray.600" textAlign="center">
+                    Average Score
+                  </Table.ColumnHeader>
+                  <Table.ColumnHeader fontSize="xs" fontWeight="700" color="gray.600" textAlign="center">
+                    Score Trend
+                  </Table.ColumnHeader>
+                  <Table.ColumnHeader fontSize="xs" fontWeight="700" color="gray.600" textAlign="center">
+                    Questions Solved
+                  </Table.ColumnHeader>
+                  <Table.ColumnHeader fontSize="xs" fontWeight="700" color="gray.600" textAlign="center">
+                    Performance
+                  </Table.ColumnHeader>
+                  <Table.ColumnHeader fontSize="xs" fontWeight="700" color="gray.600" textAlign="right">
+                    Last Active
+                  </Table.ColumnHeader>
+                </Table.Row>
+              </Table.Header>
+              <Table.Body>
+                {visibleSubjects.map((sub) => {
                 const trendIcon = sub.trend === "up" ? FiTrendingUp : sub.trend === "down" ? FiTrendingDown : FiMinus;
                 const trendColor = sub.trend === "up" ? "green.600" : sub.trend === "down" ? "red.600" : "gray.600";
                 const trendText =
@@ -201,7 +208,32 @@ export const SubjectPerformanceSection = ({ subjects, onSelectSubject, registere
             </Table.Body>
           </Table.Root>
         </Table.ScrollArea>
-      )}
-    </Box>
-  );
+
+        {displayedSubjects.length > 4 && (
+          <Flex justify="center" mt={4} pt={2}>
+            <Button
+              variant="subtle"
+              size="xs"
+              colorPalette="blue"
+              borderRadius="full"
+              px={4}
+              py={1.5}
+              fontWeight="600"
+              onClick={() => setIsExpanded(!isExpanded)}
+            >
+              <HStack gap={1.5}>
+                <Text>
+                  {isExpanded
+                    ? "Show fewer subjects"
+                    : `View all ${displayedSubjects.length} subjects (${displayedSubjects.length - 4} more)`}
+                </Text>
+                <Icon as={isExpanded ? FiChevronUp : FiChevronDown} boxSize="13px" />
+              </HStack>
+            </Button>
+          </Flex>
+        )}
+      </>
+    )}
+  </Box>
+);
 };

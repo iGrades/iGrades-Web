@@ -20,15 +20,15 @@ import {
   FiAward,
   FiCheckCircle,
 } from "react-icons/fi";
-import { Chart, useChart } from "@chakra-ui/charts";
 import {
+  Area,
+  AreaChart,
   CartesianGrid,
-  Line,
-  LineChart,
+  ReferenceLine,
+  ResponsiveContainer,
   Tooltip,
   XAxis,
   YAxis,
-  ReferenceLine,
 } from "recharts";
 import type { StudentIntelligence } from "@/parent-app/hooks/useParentIntelligence";
 import { courseConfig } from "@/student-app/utils/courseConstants";
@@ -38,9 +38,9 @@ type Props = {
 };
 
 const getSubjectColor = (name?: string): string => {
-  if (!name) return "#206CE1";
+  if (!name || name === "all") return "#0D9488";
   const key = name.toLowerCase().trim();
-  return courseConfig[key]?.color || "#206CE1";
+  return courseConfig[key]?.color || "#0D9488";
 };
 
 export const ProgressTrendsSection = ({ intelligence }: Props) => {
@@ -173,22 +173,74 @@ export const ProgressTrendsSection = ({ intelligence }: Props) => {
   }, [chartData]);
 
   // Dynamic stroke color based on chosen subject
-  const activeColor = useMemo(() => {
-    if (selectedSubject === "all") return "#206CE1";
+  const activeHexColor = useMemo(() => {
+    if (selectedSubject === "all") return "#0D9488";
     return getSubjectColor(selectedSubject);
   }, [selectedSubject]);
+  const activeColor = activeHexColor;
 
-  // Dynamic series color based on chosen subject
-  const activeSeriesColor = useMemo(() => {
-    if (selectedSubject === "all") return "blue.solid";
-    return getSubjectColor(selectedSubject);
-  }, [selectedSubject]);
+  // Modern tooltip matching the sleek admin chart style
+  const CustomTrendsTooltip = ({ active, payload }: any) => {
+    if (!active || !payload || !payload.length) return null;
+    const pt = payload[0]?.payload;
+    if (!pt) return null;
 
-  // Chakra UI Chart hook
-  const chart = useChart({
-    data: chartData,
-    series: [{ name: "score", color: activeSeriesColor, label: "Score" }],
-  });
+    return (
+      <Box
+        bg="#0F172A"
+        p={3}
+        borderRadius="12px"
+        border="none"
+        color="white"
+        fontSize="12px"
+        boxShadow="0 10px 25px -5px rgba(0,0,0,0.3)"
+        minW="160px"
+      >
+        <Text fontWeight="700" fontSize="13px" color="white" mb={0.5}>
+          {pt.displayLabel}
+        </Text>
+        <Text fontSize="11px" color="#94A3B8" mb={2}>
+          {pt.fullDate || pt.dateLabel}
+        </Text>
+        <Flex align="center" justify="space-between" mb={1.5}>
+          <Text fontSize="12px" color="#CBD5E1">Score:</Text>
+          <Text fontSize="13px" fontWeight="800" color={activeHexColor}>
+            {pt.score}%
+          </Text>
+        </Flex>
+        {pt.subjectName && (
+          <Flex align="center" justify="space-between" mb={1.5}>
+            <Text fontSize="11px" color="#94A3B8">Subject:</Text>
+            <Text fontSize="11px" fontWeight="600" color="#E2E8F0">
+              {pt.subjectName}
+            </Text>
+          </Flex>
+        )}
+        {pt.grade && (
+          <Flex align="center" justify="space-between" pt={1.5} borderTop="1px solid rgba(255,255,255,0.1)">
+            <Text fontSize="11px" color="#94A3B8">Performance:</Text>
+            <Text
+              fontSize="11px"
+              fontWeight="700"
+              color={pt.score >= 70 ? "#34D399" : pt.score >= 50 ? "#FBBF24" : "#F87171"}
+            >
+              Grade {pt.grade} ({pt.gradeLabel})
+            </Text>
+          </Flex>
+        )}
+        {pt.delta !== 0 && (
+          <Text
+            fontSize="10px"
+            fontWeight="600"
+            color={pt.delta > 0 ? "#34D399" : "#F87171"}
+            mt={1.5}
+          >
+            {pt.delta > 0 ? `+${pt.delta}% from previous` : `${pt.delta}% from previous`}
+          </Text>
+        )}
+      </Box>
+    );
+  };
 
   return (
     <Box
@@ -203,15 +255,15 @@ export const ProgressTrendsSection = ({ intelligence }: Props) => {
       {/* Header with Title and Global Trajectory */}
       <Flex justify="space-between" align={{ base: "flex-start", sm: "center" }} mb={4} wrap="wrap" gap={3}>
         <HStack gap={2.5}>
-          <Box bg="blue.50" p={2} borderRadius="xl" border="1px solid" borderColor="blue.200">
-            <Icon as={FiActivity} color="#206CE1" boxSize="18px" />
+          <Box bg="teal.50" p={2} borderRadius="xl" border="1px solid" borderColor="teal.200">
+            <Icon as={FiActivity} color="#0D9488" boxSize="18px" />
           </Box>
           <Box>
             <Heading size={{ base: "sm", md: "md" }} color="gray.900" fontWeight="800">
               Score Progress Over Time
             </Heading>
             <Text fontSize="xs" color="gray.500" mt={0.5}>
-              Chronological score progression line across practice tests and exams.
+              Chronological score progression across practice tests and exams.
             </Text>
           </Box>
         </HStack>
@@ -445,90 +497,94 @@ export const ProgressTrendsSection = ({ intelligence }: Props) => {
         </HStack>
       </Flex>
 
-      {/* The Actual Chakra UI Line Graph */}
+      {/* Score Trajectory Area Chart */}
       {chartData.length > 0 ? (
         <Box position="relative">
-          <Chart.Root maxH="sm" minH={{ base: "260px", md: "300px" }} chart={chart} mb={2}>
-            <LineChart data={chart.data} responsive>
-              <CartesianGrid stroke={chart.color("border")} vertical={false} />
-              <XAxis
-                axisLine={false}
-                dataKey={chart.key("displayLabel")}
-                stroke={chart.color("border")}
-              />
-              <YAxis
-                axisLine={false}
-                tickLine={false}
-                tickMargin={10}
-                domain={[0, 100]}
-                ticks={[0, 25, 50, 75, 100]}
-                tickFormatter={(val) => `${val}%`}
-                stroke={chart.color("border")}
-              />
-
-              {/* Benchmark Guide Reference Lines */}
-              {showBenchmarks && (
-                <ReferenceLine
-                  y={70}
-                  stroke="#10B981"
-                  strokeDasharray="4 4"
-                  strokeWidth={1.5}
-                  label={{
-                    value: "Target 70%",
-                    fill: "#059669",
-                    fontSize: 10,
-                    fontWeight: 700,
-                    position: "insideTopRight",
-                    offset: 8,
-                  }}
+          <Box w="100%" h={{ base: "260px", md: "300px" }} position="relative" mb={3}>
+            <ResponsiveContainer width="100%" height="100%">
+              <AreaChart data={chartData} margin={{ top: 15, right: 15, left: -15, bottom: 5 }}>
+                <defs>
+                  <linearGradient id="scoreAreaGradient" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor={activeHexColor} stopOpacity={0.28} />
+                    <stop offset="95%" stopColor={activeHexColor} stopOpacity={0} />
+                  </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="3 3" stroke="#F1F5F9" vertical={false} />
+                <XAxis
+                  axisLine={false}
+                  tickLine={false}
+                  dataKey="displayLabel"
+                  tick={{ fontSize: 11, fill: "#64748B" }}
                 />
-              )}
-
-              {showBenchmarks && (
-                <ReferenceLine
-                  y={50}
-                  stroke="#F59E0B"
-                  strokeDasharray="3 3"
-                  strokeWidth={1}
-                  label={{
-                    value: "Pass 50%",
-                    fill: "#D97706",
-                    fontSize: 10,
-                    fontWeight: 600,
-                    position: "insideBottomRight",
-                    offset: 4,
-                  }}
+                <YAxis
+                  axisLine={false}
+                  tickLine={false}
+                  domain={[0, 100]}
+                  ticks={[0, 25, 50, 75, 100]}
+                  tickFormatter={(val) => `${val}%`}
+                  tick={{ fontSize: 11, fill: "#64748B" }}
                 />
-              )}
 
-              {/* If only 1 point exists, draw a baseline guideline to give it clear visual presence */}
-              {chartData.length === 1 && (
-                <ReferenceLine
-                  y={chartData[0].score}
-                  stroke={chart.color(chart.series[0]?.color)}
-                  strokeDasharray="3 3"
-                  strokeWidth={1.5}
+                {/* Benchmark Guide Reference Lines */}
+                {showBenchmarks && (
+                  <ReferenceLine
+                    y={70}
+                    stroke="#10B981"
+                    strokeDasharray="4 4"
+                    strokeWidth={1.5}
+                    label={{
+                      value: "Target 70%",
+                      fill: "#059669",
+                      fontSize: 10,
+                      fontWeight: 700,
+                      position: "insideTopRight",
+                      offset: 8,
+                    }}
+                  />
+                )}
+
+                {showBenchmarks && (
+                  <ReferenceLine
+                    y={50}
+                    stroke="#F59E0B"
+                    strokeDasharray="3 3"
+                    strokeWidth={1}
+                    label={{
+                      value: "Pass 50%",
+                      fill: "#D97706",
+                      fontSize: 10,
+                      fontWeight: 600,
+                      position: "insideBottomRight",
+                      offset: 4,
+                    }}
+                  />
+                )}
+
+                {/* If only 1 point exists, draw a baseline guideline to give it clear visual presence */}
+                {chartData.length === 1 && (
+                  <ReferenceLine
+                    y={chartData[0].score}
+                    stroke={activeHexColor}
+                    strokeDasharray="3 3"
+                    strokeWidth={1.5}
+                  />
+                )}
+
+                <Tooltip content={<CustomTrendsTooltip />} />
+
+                <Area
+                  type="monotone"
+                  dataKey="score"
+                  name="Score"
+                  stroke={activeHexColor}
+                  strokeWidth={2.5}
+                  fill="url(#scoreAreaGradient)"
+                  dot={{ r: 4, fill: activeHexColor, strokeWidth: 2, stroke: "#FFFFFF" }}
+                  activeDot={{ r: 6, fill: activeHexColor, stroke: "#FFFFFF", strokeWidth: 2 }}
                 />
-              )}
-
-              <Tooltip
-                animationDuration={100}
-                cursor={false}
-                content={<Chart.Tooltip />}
-              />
-
-              {chart.series.map((item) => (
-                <Line
-                  key={item.name}
-                  isAnimationActive={false}
-                  dataKey={chart.key(item.name)}
-                  stroke={chart.color(item.color)}
-                  strokeWidth={2}
-                  dot={false}
-                />
-              ))}
-            </LineChart>
-          </Chart.Root>
+              </AreaChart>
+            </ResponsiveContainer>
+          </Box>
 
           {/* Single Quiz Informative Banner */}
           {chartData.length === 1 && (
@@ -617,7 +673,7 @@ export const ProgressTrendsSection = ({ intelligence }: Props) => {
               Subject Trajectory Breakdown
             </Text>
             <Text fontSize="10px" color="gray.400">
-              Click a card to filter line graph
+              Click a card to filter trend graph
             </Text>
           </Flex>
 

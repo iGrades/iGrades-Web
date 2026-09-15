@@ -2,8 +2,8 @@
 
 import { Box, Heading, Text, Flex } from "@chakra-ui/react";
 import {
-  Bar,
-  BarChart,
+  Area,
+  AreaChart,
   CartesianGrid,
   ResponsiveContainer,
   Tooltip,
@@ -254,24 +254,27 @@ const HomeChart = () => {
 
     return (
       <Box
-        bg="white"
+        bg="#0F172A"
         p={3}
-        border="1px solid"
-        borderColor="gray.200"
-        borderRadius="md"
-        boxShadow="lg"
+        borderRadius="12px"
+        border="none"
+        boxShadow="0 10px 25px -5px rgba(0,0,0,0.3)"
         zIndex={100}
-        minW="180px"
+        minW="190px"
+        color="white"
       >
-        <Text fontWeight="bold" fontSize="sm" mb={1} color="gray.800">
+        <Text fontWeight="700" fontSize="13px" mb={1} color="white">
           {label}
         </Text>
-        <Text fontSize="sm" mb={2} color="#3182CE">
-          Average Score: <strong>{payload[0]?.value ?? 0}%</strong>
-        </Text>
+        <Flex align="center" justify="space-between" mb={2}>
+          <Text fontSize="12px" color="#94A3B8">Average Score:</Text>
+          <Text fontSize="13px" fontWeight="800" color="#10B981">
+            {payload[0]?.value ?? 0}%
+          </Text>
+        </Flex>
 
-        <Box borderTop="1px solid" borderColor="gray.100" pt={2} mt={1}>
-          <Text fontSize="xs" fontWeight="semibold" color="gray.600" mb={1.5}>
+        <Box borderTop="1px solid rgba(255,255,255,0.1)" pt={2} mt={1}>
+          <Text fontSize="10px" fontWeight="700" color="#94A3B8" mb={1.5} textTransform="uppercase">
             Course Breakdown:
           </Text>
           {activeCourses.length > 0 ? (
@@ -279,21 +282,21 @@ const HomeChart = () => {
               const color = getSubjectColor(courseName);
               return (
                 <Flex key={courseName} align="center" justify="space-between" gap={3} mb={1}>
-                  <Flex align="center" gap={1.5}>
-                    <Box w="8px" h="8px" borderRadius="full" bg={color} flexShrink={0} />
-                    <Text fontSize="xs" color="gray.700" noOfLines={1}>
+                  <Flex align="center" gap={1.5} overflow="hidden">
+                    <Box w="7px" h="7px" borderRadius="full" bg={color} flexShrink={0} />
+                    <Text fontSize="11px" color="#CBD5E1" truncate>
                       {courseName}
                     </Text>
                   </Flex>
-                  <Text fontSize="xs" fontWeight="bold" color="gray.800">
+                  <Text fontSize="11px" fontWeight="700" color="white">
                     {score}%
                   </Text>
                 </Flex>
               );
             })
           ) : (
-            <Text fontSize="xs" color="gray.400" fontStyle="italic">
-              No completed quizzes in this month
+            <Text fontSize="11px" color="#64748B" fontStyle="italic">
+              No completed quizzes this month
             </Text>
           )}
         </Box>
@@ -325,8 +328,10 @@ const HomeChart = () => {
       boxShadow="md"
       borderRadius="lg"
       w={{ base: "100%", md: "60%" }}
+      minW="0"
       p={4}
-      h="68.5vh"
+      h={{ base: "auto", lg: "68.5vh" }}
+      minH={{ base: "340px", lg: "420px" }}
       display="flex"
       flexDirection="column"
     >
@@ -361,36 +366,45 @@ const HomeChart = () => {
         )}
       </Flex>
 
-      <Box flex="1" w="100%" minH="260px" position="relative">
-        <ResponsiveContainer width="100%" height="100%">
-          <BarChart
+      <Box w="100%" h={{ base: "260px", sm: "280px", md: "300px", lg: "340px" }} minH="240px" position="relative">
+        <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={240}>
+          <AreaChart
             data={quizProgress}
             margin={{ top: 15, right: 15, left: -15, bottom: 5 }}
           >
-            <CartesianGrid strokeDasharray="3 3" stroke="#E2E8F0" vertical={false} />
+            <defs>
+              <linearGradient id="studentQuizGradient" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="5%" stopColor="#10B981" stopOpacity={0.28} />
+                <stop offset="95%" stopColor="#10B981" stopOpacity={0} />
+              </linearGradient>
+            </defs>
+            <CartesianGrid strokeDasharray="3 3" stroke="#F1F5F9" vertical={false} />
             <XAxis
               dataKey="month"
               tickFormatter={(v) => (v ? v.slice(0, 3) : "")}
               axisLine={false}
               tickLine={false}
-              tick={{ fill: "#718096", fontSize: 12 }}
+              tick={{ fill: "#64748B", fontSize: 11 }}
             />
             <YAxis
               domain={[0, 100]}
               tickFormatter={(v) => `${v}%`}
               axisLine={false}
               tickLine={false}
-              tick={{ fill: "#718096", fontSize: 12 }}
+              tick={{ fill: "#64748B", fontSize: 11 }}
             />
-            <Tooltip content={<CustomTooltip />} cursor={{ fill: "#EDF2F7", opacity: 0.6 }} />
-            <Bar
+            <Tooltip content={<CustomTooltip />} />
+            <Area
+              type="monotone"
               dataKey="averageScore"
-              fill="#3182CE"
-              barSize={44}
-              radius={[6, 6, 0, 0]}
-              minPointSize={6}
+              name="Average Score"
+              stroke="#10B981"
+              strokeWidth={2.5}
+              fill="url(#studentQuizGradient)"
+              dot={{ r: 4, fill: "#10B981", strokeWidth: 2, stroke: "#FFFFFF" }}
+              activeDot={{ r: 6, fill: "#10B981", stroke: "#FFFFFF", strokeWidth: 2 }}
             />
-          </BarChart>
+          </AreaChart>
         </ResponsiveContainer>
       </Box>
 
@@ -407,7 +421,7 @@ const HomeChart = () => {
 
       {totalAttempts === 0 && (
         <Text fontSize="xs" color="gray.400" textAlign="center" mt={1} flexShrink={0}>
-          Take quizzes in your subjects to grow your monthly performance bars
+          Take quizzes in your subjects to grow your monthly performance trend
         </Text>
       )}
     </Box>

@@ -525,7 +525,7 @@ async function startServer() {
           parts: [{ text: m.content || "" }],
         }));
 
-        const candidateModels = ["gemini-3.8-flash", "gemini-3.1-flash-lite", "gemini-flash-latest"];
+        const candidateModels = ["gemini-3.1-flash-lite", "gemini-flash-latest", "gemini-3.8-flash"];
         let responseText: string | null = null;
 
         for (const modelName of candidateModels) {
@@ -550,11 +550,11 @@ async function startServer() {
               const errMsg = String(mErr?.message || mErr || "");
               const isHighDemand = errMsg.includes("503") || errMsg.includes("high demand") || errMsg.includes("UNAVAILABLE") || errMsg.includes("429");
               if (isHighDemand && attempt === 0) {
-                // Brief 500ms delay before retrying
-                await new Promise((resolve) => setTimeout(resolve, 500));
+                // Brief 300ms delay before retrying
+                await new Promise((resolve) => setTimeout(resolve, 300));
                 continue;
               }
-              console.warn(`Model ${modelName} failed on attempt ${attempt + 1}:`, errMsg.slice(0, 150));
+              // Proceed to next fallback model
               break;
             }
           }

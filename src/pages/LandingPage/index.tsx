@@ -12,9 +12,7 @@ import ScrollReveal from "./scrollReveal";
 const LandingPage = () => {
   return (
     <Box>
-      <ScrollReveal direction="left" delay={0.2}>
-        <NavBar />
-      </ScrollReveal>
+      <NavBar />
 
       <ScrollReveal direction="up">
         <Hero />
