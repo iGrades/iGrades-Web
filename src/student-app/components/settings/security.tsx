@@ -149,7 +149,7 @@ const Security = () => {
   };
 
   return (
-    <Box bg="white" rounded="lg" shadow="sm" p={4} mb={20} h="75vh">
+    <Box bg="white" rounded="lg" shadow="sm" p={4} mb={20} h="auto">
       {/* Header with back button */}
       <Heading
         as="h3"

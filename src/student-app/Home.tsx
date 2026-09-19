@@ -190,8 +190,10 @@ const Home = () => {
         <Box
           position="relative"
           flexShrink={0}
-          w={{ base: "0%", lg: "15%" }}
-          overflowY="auto"
+          w={{ base: "0px", md: "76px", lg: "16%" }}
+          minW={{ md: "76px", lg: "190px" }}
+          overflow="visible"
+          zIndex={90}
         >
           <Sidebar />
         </Box>

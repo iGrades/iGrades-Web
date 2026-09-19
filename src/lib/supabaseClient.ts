@@ -16,7 +16,8 @@ const customFetch: typeof fetch = async (input, init) => {
   const rawUrl = typeof input === "string" ? input : input instanceof URL ? input.toString() : input.url;
 
   // In the browser, route through same-origin proxy ONLY in dev sandbox environments
-  if (shouldUseProxy() && rawUrl.includes(".supabase.co")) {
+  // Direct public storage objects have global CORS and should fetch directly
+  if (shouldUseProxy() && rawUrl.includes(".supabase.co") && !rawUrl.includes("/storage/v1/object/public/")) {
     const proxyUrl = rawUrl.replace(/^https?:\/\/[^/]+/, "/api/supabase-proxy");
     try {
       const response = await fetch(proxyUrl, init);

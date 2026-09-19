@@ -1270,7 +1270,7 @@ const AdminDashboard = () => {
           css={{
             scrollbarWidth: "none",
             "&::-webkit-scrollbar": { display: "none" },
-            "-ms-overflow-style": "none",
+            msOverflowStyle: "none",
           }}
         >
           <Stack gap={6}>

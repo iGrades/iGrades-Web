@@ -214,7 +214,7 @@ const QuizPage = ({ setShowSideBar, setShowNavBar }: Props) => {
             </Box>
           )}
 
-          <Box bg="white" rounded="lg" shadow="lg" p={4} mb={20} h={{base: 'auto', lg: '75vh'}}>
+          <Box bg="white" rounded="lg" shadow="lg" p={4} mb={20} h="auto">
             <QuizSubjectsList
               onCourseSelect={handleCourseSelect}
               setSelectedCourse={setSelectedCourse}

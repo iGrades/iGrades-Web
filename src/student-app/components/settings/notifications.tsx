@@ -94,7 +94,7 @@ const Notifications = () => {
   ];
 
   return (
-    <Box bg="white" rounded="2xl" shadow="sm" p={{ base: 4, md: 6 }} mb={20} minH="70vh">
+    <Box bg="white" rounded="2xl" shadow="sm" p={{ base: 4, md: 6 }} mb={20} h="auto">
       <Flex justify="space-between" align={{ base: "flex-start", sm: "center" }} mb={6} direction={{ base: "column", sm: "row" }} gap={2}>
         <Box>
           <Heading as="h3" fontSize={{ base: "lg", md: "xl" }} color="gray.800">

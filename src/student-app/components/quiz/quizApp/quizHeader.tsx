@@ -5,6 +5,7 @@ import {
   Image,
   Box,
   Text,
+  HStack,
 } from "@chakra-ui/react";
 import { GoArrowRight } from "react-icons/go";
 import type { QuizHeaderProps } from "./types";

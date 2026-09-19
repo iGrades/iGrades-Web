@@ -25,7 +25,7 @@ const Homepage = () => {
         align="stretch"
         gap={5}
       >
-        <Box w={{ base: "full", lg: "80%" }} mb={{ md: 20, lg: 0 }}>
+        <Box w={{ base: "full", lg: "80%" }} mb={{ base: 20, md: 6, lg: 0 }}>
           <MyClasses />
           <NextStudyRecommendationCard
             recommendation={primaryRecommendation}
@@ -41,7 +41,7 @@ const Homepage = () => {
         </Box>
         <Box
           w={{ base: "full", lg: "20%" }}
-          mb={{ base: 20, lg: 0 }}
+          mb={{ base: 20, md: 6, lg: 0 }}
           position={{ md: "sticky" }}
           top={{ md: "0" }}
           alignSelf="flex-start"

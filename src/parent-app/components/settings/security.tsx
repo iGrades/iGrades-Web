@@ -102,7 +102,7 @@ const Security = () => {
       shadow="sm" 
       p={{ base: 4, md: 8 }} 
       mb={{ base: "100px", lg: 10 }} 
-      minH={{ base: "auto", md: "70vh" }}
+      h="auto"
     >
       {/* Alert Positioned to not disrupt layout flow */}
       {alert && (

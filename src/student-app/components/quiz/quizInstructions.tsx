@@ -423,7 +423,7 @@ const QuizInstructions = ({
             p={{ base: 3, md: 5, lg: 6 }}
             bg="white"
             borderRadius="xl"
-            minH="75vh"
+            h="auto"
             shadow="sm"
           >
             <Heading

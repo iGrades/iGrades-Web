@@ -148,7 +148,7 @@ const Subscription: React.FC = () => {
       shadow="sm"
       p={4}
       mb={10}
-      minH={{ base: "auto", md: "75vh" }}
+      h="auto"
     >
       {/* iGrades Points & Store Credit Discount Banner */}
       <Box

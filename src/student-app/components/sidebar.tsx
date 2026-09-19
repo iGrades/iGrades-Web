@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Box, Icon, Text, Flex, IconButton, Badge, HStack } from "@chakra-ui/react";
 import { AiTwotoneSetting } from "react-icons/ai";
 import { TbHomeFilled } from "react-icons/tb";
@@ -14,6 +15,8 @@ const Sidebar = () => {
   const { currentStudentPage, setCurrentStudentPage } = useNavigationStore();
   const { t } = useTranslation();
   const { pointsBalance } = usePointsSystem();
+  const [hoveredItem, setHoveredItem] = useState<StudentPage | null>(null);
+  const [clickedItem, setClickedItem] = useState<StudentPage | null>(null);
 
   const parentsAsideElem: {
     icon: IconType;
@@ -28,15 +31,16 @@ const Sidebar = () => {
   ];
   return (
     <>
+      {/* Tablet & Desktop Sidebar */}
       <Box
         as="aside"
-        display={{ base: "none", lg: "block" }}
+        display={{ base: "none", md: "block" }}
         width="full"
         h="full"
-        overflow="hidden"
+        overflow="visible"
         bg="white"
-        px={4}
-        py={10}
+        px={{ base: 4, md: 2, lg: 4 }}
+        py={{ base: 10, md: 6, lg: 10 }}
         shadow={"xs"}
         left={0}
         position="sticky"
@@ -45,15 +49,21 @@ const Sidebar = () => {
         {parentsAsideElem.map((item, index) => {
           const isActive = currentStudentPage === item.value;
           const isRewards = item.value === "rewards";
+          const isHovered = hoveredItem === item.value;
+          const isClicked = clickedItem === item.value;
+          const showTabletText = isHovered || isClicked;
 
           return (
             <Box
               key={index}
+              position="relative"
               display="flex"
+              flexDirection={{ base: "row", md: "column", lg: "row" }}
               alignItems="center"
-              justifyContent="space-between"
-              mb={4}
-              p={3}
+              justifyContent={{ base: "flex-start", md: "center", lg: "space-between" }}
+              mb={3}
+              p={{ base: 3, md: 2, lg: 3 }}
+              minH={{ md: "52px", lg: "auto" }}
               borderRadius="lg"
               cursor="pointer"
               color={
@@ -72,48 +82,131 @@ const Sidebar = () => {
               }
               _hover={{ bg: isRewards ? "amber.50" : "gray.50" }}
               fontWeight={"400"}
-              onClick={() => setCurrentStudentPage(item.value)}
+              onMouseEnter={() => setHoveredItem(item.value)}
+              onMouseLeave={() => setHoveredItem(null)}
+              onClick={() => {
+                setCurrentStudentPage(item.value);
+                setClickedItem(item.value);
+              }}
             >
-              <HStack gap={2}>
+              {/* Desktop layout: Icon + Text in HStack */}
+              <HStack
+                gap={2}
+                display={{ base: "none", lg: "flex" }}
+                align="center"
+                w="full"
+              >
                 <Icon as={item.icon} size="sm" color={isRewards ? "amber.600" : undefined} />
                 <Text fontSize={"sm"} fontWeight={500}>
                   {item.label}
                 </Text>
               </HStack>
 
+              {/* Tablet layout: Icon centered, with text shown only on hover and clicking */}
+              <Flex
+                direction="column"
+                align="center"
+                justify="center"
+                display={{ base: "none", md: "flex", lg: "none" }}
+                w="full"
+                position="relative"
+              >
+                <Icon
+                  as={item.icon}
+                  boxSize="20px"
+                  color={isRewards ? "amber.600" : undefined}
+                />
+
+                {/* On tablet: text label shown only on hover or clicking */}
+                {showTabletText && (
+                  <Text
+                    fontSize="10px"
+                    fontWeight="600"
+                    lineHeight="1.1"
+                    mt={1}
+                    textAlign="center"
+                    whiteSpace="nowrap"
+                    maxW="64px"
+                    noOfLines={1}
+                  >
+                    {item.label}
+                  </Text>
+                )}
+
+                {/* Floating pill flyout on tablet hover/click for clear readability */}
+                {showTabletText && (
+                  <Box
+                    position="absolute"
+                    left="calc(100% + 12px)"
+                    top="50%"
+                    transform="translateY(-50%)"
+                    bg="gray.900"
+                    color="white"
+                    px={2.5}
+                    py={1.5}
+                    borderRadius="md"
+                    fontSize="xs"
+                    fontWeight="600"
+                    whiteSpace="nowrap"
+                    boxShadow="md"
+                    zIndex={1200}
+                    pointerEvents="none"
+                  >
+                    {item.label}
+                  </Box>
+                )}
+              </Flex>
+
+              {/* Rewards points badge */}
               {isRewards && (
-                <Badge
-                  colorPalette="amber"
-                  variant="solid"
-                  borderRadius="full"
-                  px={1.5}
-                  fontSize="10px"
-                  fontWeight="bold"
-                >
-                  {pointsBalance.toLocaleString()} Pts
-                </Badge>
+                <>
+                  {/* Desktop badge */}
+                  <Badge
+                    display={{ base: "none", lg: "inline-flex" }}
+                    colorPalette="amber"
+                    variant="solid"
+                    borderRadius="full"
+                    px={1.5}
+                    fontSize="10px"
+                    fontWeight="bold"
+                  >
+                    {pointsBalance.toLocaleString()} Pts
+                  </Badge>
+
+                  {/* Tablet mini indicator */}
+                  <Box
+                    display={{ base: "none", md: "block", lg: "none" }}
+                    position="absolute"
+                    top="4px"
+                    right="8px"
+                    w="6px"
+                    h="6px"
+                    bg="amber.500"
+                    borderRadius="full"
+                  />
+                </>
               )}
             </Box>
           );
         })}
       </Box>
 
-      {/* medium and smaller screens floating nav */}
+      {/* mobile devices ONLY floating nav */}
       <Box
         as="aside"
-        display={{ base: "block", lg: "none" }}
+        display={{ base: "block", md: "none" }}
         position="fixed"
-        bottom={{ base: 0, md: 2 }}
+        bottom={0}
         left="50%"
         transform="translateX(-50%)"
         bg="white"
-        borderRadius={{ base: "none", md: "2xl" }}
-        boxShadow={{ base: "none", md: "xl" }}
-        px={{ base: 0, md: 1 }}
-        py={{ base: 0, md: 1 }}
-        mt={40}
-        maxW="lg"
-        width={{ base: "100%", md: "90%" }}
+        borderRadius="none"
+        boxShadow="none"
+        borderTop="1px solid"
+        borderColor="gray.200"
+        px={0}
+        py={0}
+        width="100%"
         zIndex={1000}
       >
         <Flex justify="space-between" align="center">

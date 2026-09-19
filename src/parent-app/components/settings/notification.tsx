@@ -98,7 +98,7 @@ const Notification = () => {
       rounded="2xl"
       shadow="sm"
       p={{ base: 4, md: 6 }}
-      minH="70vh"
+      h="auto"
       mb={{ base: "100px", lg: 10 }}
     >
       <Flex justify="space-between" align={{ base: "flex-start", sm: "center" }} mb={6} direction={{ base: "column", sm: "row" }} gap={2}>

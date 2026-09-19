@@ -141,7 +141,7 @@ const YearsList = ({
   };
 
   return (
-    <Box bg="white" rounded="lg" shadow="lg" p={4} mb={20} minH="75vh">
+    <Box bg="white" rounded="lg" shadow="lg" p={4} mb={20} h="auto">
       {/* Header with back button */}
       <Heading
         as="h3"

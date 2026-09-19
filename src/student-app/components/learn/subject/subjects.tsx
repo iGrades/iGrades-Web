@@ -125,7 +125,7 @@ const Subjects = () => {
     };
   });
   return (
-    <Box bg="white" rounded="lg" shadow="sm" p={4} mb={20} h={{ base: 'auto', lg: '75vh' }}>
+    <Box bg="white" rounded="lg" shadow="sm" p={4} mb={20} h="auto">
       {!topicList ? (
         <Grid
           templateColumns={{

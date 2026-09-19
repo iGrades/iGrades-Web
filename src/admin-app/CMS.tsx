@@ -24,11 +24,13 @@ import {
 } from "@chakra-ui/react";
 import { useState, useEffect, useMemo } from "react";
 import { useDropzone } from "react-dropzone";
-import { FiFile, FiX, FiPlus, FiTrash2, FiDownload, FiUpload, FiImage } from "react-icons/fi";
+import {
+  FiFile, FiX, FiPlus, FiTrash2, FiDownload, FiUpload, FiImage,
+  FiAlertCircle, FiCheckCircle, FiExternalLink, FiCheck
+} from "react-icons/fi";
 import { IoCloudUploadOutline } from "react-icons/io5";
-import { MdQuiz } from "react-icons/md";
+import { MdQuiz, MdPlaylistAdd, MdVideoLibrary, MdPictureAsPdf } from "react-icons/md";
 import { HiOutlineDocumentArrowUp } from "react-icons/hi2";
-import { MdPlaylistAdd } from "react-icons/md";
 import * as XLSX from "xlsx";
 import { supabase } from "@/lib/supabaseClient";
 
@@ -51,6 +53,68 @@ interface NewSubTopicEntry {
   name: string;
   desc: string;
 }
+export interface BulkParsedSubtopic {
+  name: string;
+  description: string;
+}
+export interface BulkParsedTopic {
+  topicName: string;
+  topicDescription: string;
+  subtopics: BulkParsedSubtopic[];
+}
+
+const SAMPLE_TOPIC_OUTLINE = `Topic: Algebraic Processes
+Description: Operations on algebraic expressions and equations
+- Simultaneous Linear Equations: Elimination and substitution methods
+- Quadratic Equations: Factoring, completing the square, and quadratic formula
+- Linear Inequalities in One Variable: Graphical representation and number lines
+
+Topic: Plane Geometry & Trigonometry
+Description: Properties of geometric figures, angles, and trigonometric ratios
+- Trigonometric Ratios (Sine, Cosine, Tangent): Definitions for right-angled triangles
+- Angles of Elevation and Depression: Real-world problems and height calculations
+- Circle Theorems: Angles subtended by arcs and cyclic quadrilaterals
+
+Topic: Statistics & Data Presentation
+Description: Measures of central tendency and frequency distributions
+- Mean, Median and Mode of Grouped Data: Calculating averages from tables
+- Cumulative Frequency Curves (Ogive): Median, quartiles, and percentiles
+- Measures of Dispersion: Variance and standard deviation`;
+
+export interface BulkParsedResource {
+  id: string;
+  title: string;
+  type: "pdf" | "video" | "pqs";
+  fileName: string;
+  url?: string;
+  topicName: string;
+  subTopicName?: string;
+  description?: string;
+  matchedTopicId?: string;
+  matchedSubTopicId?: string;
+  isNewTopic?: boolean;
+  status: "ready" | "fallback" | "missing_topic" | "invalid_url";
+}
+
+export interface BatchResourceFileItem {
+  id: string;
+  file: File;
+  name: string;
+  title: string;
+  type: "pdf" | "video" | "pqs";
+  topicId: string;
+  subTopicId?: string;
+  description?: string;
+  status: "queued" | "uploading" | "done" | "error";
+  errorMsg?: string;
+}
+
+const SAMPLE_RESOURCE_PASTE = `Title | Type | File Name | Topic | Subtopic | Description
+Simultaneous Linear Equations Video Tutorial | video | simultaneous_linear_equations.mp4 | Algebraic Processes | Simultaneous Linear Equations | Comprehensive video walkthrough with worked examples
+Quadratic Equations Revision Notes | pdf | quadratic_equations_notes.pdf | Algebraic Processes | Quadratic Equations | Formulas, derivations, and practice problems
+Circle Theorems Masterclass | video | circle_theorems_proofs.mp4 | Plane Geometry & Trigonometry | Circle Theorems | Visual geometry proofs and exam techniques
+Geometry Formula Compendium | pdf | trig_geometry_handout.pdf | Plane Geometry & Trigonometry | Trigonometric Ratios | Quick reference guide for revision`;
+
 interface Quiz {
   id: string;
   subject_id: string;
@@ -174,7 +238,7 @@ const CMS = () => {
   const [topics, setTopics] = useState<Topic[]>([]);
 
   // Standalone Topic Management states
-  const [topicCreationTab, setTopicCreationTab] = useState<"new_topic" | "existing_topic">("new_topic");
+  const [topicCreationTab, setTopicCreationTab] = useState<"new_topic" | "existing_topic" | "bulk_import">("new_topic");
   const [newTopicName, setNewTopicName] = useState("");
   const [newTopicDescription, setNewTopicDescription] = useState("");
   const [topicClass, setTopicClass] = useState<string[]>([]);
@@ -193,13 +257,35 @@ const CMS = () => {
   const [existingTopicCurrentSubTopics, setExistingTopicCurrentSubTopics] = useState<SubTopic[]>([]);
   const [existingSubLoading, setExistingSubLoading] = useState(false);
 
+  // Bulk Topic & Subtopic Import states
+  const [bulkTopicMode, setBulkTopicMode] = useState<"file" | "paste">("file");
+  const [bulkImportFileName, setBulkImportFileName] = useState<string | null>(null);
+  const [bulkImportText, setBulkImportText] = useState("");
+  const [bulkParsedTopics, setBulkParsedTopics] = useState<BulkParsedTopic[]>([]);
+  const [bulkImportError, setBulkImportError] = useState<string | null>(null);
+  const [bulkImportLoading, setBulkImportLoading] = useState(false);
+
   // Left Column (Resources) States
+  const [resourceActiveTab, setResourceActiveTab] = useState<"single" | "batch_files" | "spreadsheet">("single");
   const [selectedClass, setSelectedClass] = useState<string[]>([]);
   const [selectedSubject, setSelectedSubject] = useState<string[]>([]);
   const [selectedTopicId, setSelectedTopicId] = useState<string[]>([]);
   const [resourceSubTopics, setResourceSubTopics] = useState<SubTopic[]>([]);
   const [selectedSubTopicId, setSelectedSubTopicId] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
+
+  // Batch Files Upload states
+  const [batchResourceFiles, setBatchResourceFiles] = useState<BatchResourceFileItem[]>([]);
+  const [batchUploading, setBatchUploading] = useState(false);
+
+  // Spreadsheet / Links Bulk Import states
+  const [bulkResourceMode, setBulkResourceMode] = useState<"file" | "paste">("file");
+  const [bulkResourceFileName, setBulkResourceFileName] = useState<string | null>(null);
+  const [bulkResourceText, setBulkResourceText] = useState("");
+  const [bulkParsedResources, setBulkParsedResources] = useState<BulkParsedResource[]>([]);
+  const [bulkResourceAttachedFiles, setBulkResourceAttachedFiles] = useState<File[]>([]);
+  const [bulkResourceImportError, setBulkResourceImportError] = useState<string | null>(null);
+  const [bulkResourceImportLoading, setBulkResourceImportLoading] = useState(false);
 
   // Right Column (Quiz) States
   const [quizSelectedClass, setQuizSelectedClass] = useState<string[]>([]);
@@ -622,6 +708,532 @@ const CMS = () => {
     }
   };
 
+  // ── Bulk Topic & Subtopic Import Handlers ──
+  const totalBulkSubtopicsCount = useMemo(() => {
+    return bulkParsedTopics.reduce((sum, t) => sum + t.subtopics.length, 0);
+  }, [bulkParsedTopics]);
+
+  const removeBulkParsedTopic = (indexToRemove: number) => {
+    setBulkParsedTopics((prev) => prev.filter((_, idx) => idx !== indexToRemove));
+  };
+
+  const downloadTopicTemplate = (format: "xlsx" | "csv" = "xlsx") => {
+    const sampleRows = [
+      {
+        topic_name: "Algebraic Processes",
+        topic_description: "Operations on algebraic expressions, equations, and inequalities",
+        subtopic_name: "Simultaneous Linear Equations",
+        subtopic_description: "Solving linear systems via elimination and substitution methods",
+      },
+      {
+        topic_name: "Algebraic Processes",
+        topic_description: "",
+        subtopic_name: "Quadratic Equations",
+        subtopic_description: "Factorization, completing the square, and quadratic formula",
+      },
+      {
+        topic_name: "Algebraic Processes",
+        topic_description: "",
+        subtopic_name: "Linear Inequalities in One Variable",
+        subtopic_description: "Graphing and solving linear inequalities on number lines",
+      },
+      {
+        topic_name: "Plane Geometry & Trigonometry",
+        topic_description: "Properties of geometric figures, angles, and trigonometric ratios",
+        subtopic_name: "Trigonometric Ratios",
+        subtopic_description: "Sine, cosine, and tangent ratios for acute angles in right triangles",
+      },
+      {
+        topic_name: "Plane Geometry & Trigonometry",
+        topic_description: "",
+        subtopic_name: "Angles of Elevation and Depression",
+        subtopic_description: "Application of trigonometry to real-world surveying and height calculations",
+      },
+      {
+        topic_name: "Plane Geometry & Trigonometry",
+        topic_description: "",
+        subtopic_name: "Circle Theorems",
+        subtopic_description: "Angles at center, angles in same segment, and cyclic quadrilaterals",
+      },
+      {
+        topic_name: "Statistics & Data Presentation",
+        topic_description: "Measures of central tendency, dispersion, and theoretical probability",
+        subtopic_name: "Mean, Median & Mode of Grouped Data",
+        subtopic_description: "Calculating averages from frequency distribution tables",
+      },
+      {
+        topic_name: "Statistics & Data Presentation",
+        topic_description: "",
+        subtopic_name: "Theoretical and Experimental Probability",
+        subtopic_description: "Sample spaces, mutually exclusive events, and independent events",
+      },
+    ];
+
+    if (format === "xlsx") {
+      const wb = XLSX.utils.book_new();
+      const ws = XLSX.utils.json_to_sheet(sampleRows);
+      ws["!cols"] = [
+        { wch: 32 },
+        { wch: 45 },
+        { wch: 35 },
+        { wch: 55 },
+      ];
+      XLSX.utils.book_append_sheet(wb, ws, "Curriculum_Import");
+      XLSX.writeFile(wb, "topics_and_subtopics_template.xlsx");
+    } else {
+      const headers = ["topic_name", "topic_description", "subtopic_name", "subtopic_description"];
+      const csvLines = [
+        headers.join(","),
+        ...sampleRows.map((r) => [
+          `"${r.topic_name.replace(/"/g, '""')}"`,
+          `"${r.topic_description.replace(/"/g, '""')}"`,
+          `"${r.subtopic_name.replace(/"/g, '""')}"`,
+          `"${r.subtopic_description.replace(/"/g, '""')}"`,
+        ].join(",")),
+      ];
+      const blob = new Blob([csvLines.join("\n")], { type: "text/csv;charset=utf-8;" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "topics_and_subtopics_template.csv";
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+  };
+
+  const parseTopicSpreadsheetFile = (file: File) => {
+    setBulkImportFileName(file.name);
+    setBulkImportError(null);
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      try {
+        const data = new Uint8Array(e.target?.result as ArrayBuffer);
+        const wb = XLSX.read(data, { type: "array" });
+        const sheetName = wb.SheetNames[0];
+        if (!sheetName) {
+          setBulkImportError("The uploaded workbook has no sheets.");
+          return;
+        }
+        const rawRows = XLSX.utils.sheet_to_json<Record<string, any>>(wb.Sheets[sheetName], { defval: "" });
+
+        if (!rawRows || rawRows.length === 0) {
+          setBulkImportError("The spreadsheet is empty. Please ensure it contains topic headers and rows.");
+          return;
+        }
+
+        const topicMap = new Map<string, BulkParsedTopic>();
+        let currentTopicKey: string | null = null;
+
+        for (const rawRow of rawRows) {
+          const row: Record<string, string> = {};
+          for (const k of Object.keys(rawRow)) {
+            row[k.trim().toLowerCase()] = String(rawRow[k] ?? "").trim();
+          }
+
+          // Detect topic name
+          const topicName =
+            row["topic_name"] ||
+            row["topic"] ||
+            row["topic title"] ||
+            row["topictitle"] ||
+            row["course_topic"] ||
+            row["course topic"] ||
+            row["topic_title"] ||
+            "";
+
+          // Detect topic description
+          const topicDesc =
+            row["topic_description"] ||
+            row["topic_desc"] ||
+            row["topic description"] ||
+            row["topic summary"] ||
+            "";
+
+          // Detect subtopic name
+          const subtopicName =
+            row["subtopic_name"] ||
+            row["subtopic"] ||
+            row["sub_topic"] ||
+            row["sub topic"] ||
+            row["sub_topic_name"] ||
+            row["subtopic title"] ||
+            "";
+
+          // Detect subtopic description
+          const subtopicDesc =
+            row["subtopic_description"] ||
+            row["subtopic_desc"] ||
+            row["subtopic description"] ||
+            row["sub_topic_desc"] ||
+            row["description"] ||
+            row["desc"] ||
+            "";
+
+          // If topicName is present, update current active topic
+          const effectiveTopicName = topicName || (currentTopicKey ? topicMap.get(currentTopicKey)?.topicName : null);
+
+          if (!effectiveTopicName) {
+            continue;
+          }
+
+          const topicKey = effectiveTopicName.toLowerCase();
+          currentTopicKey = topicKey;
+
+          if (!topicMap.has(topicKey)) {
+            topicMap.set(topicKey, {
+              topicName: effectiveTopicName,
+              topicDescription: topicDesc,
+              subtopics: [],
+            });
+          } else if (topicDesc && !topicMap.get(topicKey)!.topicDescription) {
+            topicMap.get(topicKey)!.topicDescription = topicDesc;
+          }
+
+          if (subtopicName) {
+            const currentSubtopics = topicMap.get(topicKey)!.subtopics;
+            const subKey = subtopicName.toLowerCase();
+            if (!currentSubtopics.some((s) => s.name.toLowerCase() === subKey)) {
+              currentSubtopics.push({
+                name: subtopicName,
+                description: subtopicDesc,
+              });
+            }
+          }
+        }
+
+        const parsedList = Array.from(topicMap.values());
+        if (parsedList.length === 0) {
+          setBulkImportError("No topics found in file. Please ensure column header 'topic_name' or 'topic' exists.");
+          return;
+        }
+
+        setBulkParsedTopics(parsedList);
+      } catch (err: any) {
+        setBulkImportError("Failed to parse spreadsheet: " + err.message);
+      }
+    };
+    reader.readAsArrayBuffer(file);
+  };
+
+  const parseTopicOutlineText = (rawText: string) => {
+    setBulkImportError(null);
+    if (!rawText.trim()) {
+      setBulkParsedTopics([]);
+      return;
+    }
+
+    try {
+      const lines = rawText.split(/\r?\n/);
+      const topicMap = new Map<string, BulkParsedTopic>();
+      let activeTopic: BulkParsedTopic | null = null;
+
+      // Check if text is table/delimited (pipes or tabs)
+      const hasDelimiters = lines.some((l) => l.includes("|") || l.includes("\t"));
+
+      if (hasDelimiters) {
+        for (const line of lines) {
+          const trimmed = line.trim();
+          if (!trimmed || trimmed.startsWith("#") || trimmed.toLowerCase().startsWith("topic_name")) continue;
+          
+          const delimiter = trimmed.includes("\t") ? "\t" : "|";
+          const cols = trimmed.split(delimiter).map((c) => c.trim());
+          if (cols.length === 0) continue;
+
+          let tName = "";
+          let tDesc = "";
+          let sName = "";
+          let sDesc = "";
+
+          if (cols.length >= 4) {
+            tName = cols[0];
+            tDesc = cols[1];
+            sName = cols[2];
+            sDesc = cols[3];
+          } else if (cols.length === 3) {
+            tName = cols[0];
+            sName = cols[1];
+            sDesc = cols[2];
+          } else if (cols.length === 2) {
+            tName = cols[0];
+            sName = cols[1];
+          } else {
+            tName = cols[0];
+          }
+
+          if (!tName) continue;
+          const tKey = tName.toLowerCase();
+          if (!topicMap.has(tKey)) {
+            topicMap.set(tKey, {
+              topicName: tName,
+              topicDescription: tDesc,
+              subtopics: [],
+            });
+          }
+          if (sName) {
+            const subs = topicMap.get(tKey)!.subtopics;
+            if (!subs.some((s) => s.name.toLowerCase() === sName.toLowerCase())) {
+              subs.push({ name: sName, description: sDesc });
+            }
+          }
+        }
+      } else {
+        // Hierarchical / Outline style
+        for (let i = 0; i < lines.length; i++) {
+          const rawLine = lines[i];
+          const trimmed = rawLine.trim();
+          if (!trimmed) continue;
+
+          const isIndented = rawLine.startsWith("  ") || rawLine.startsWith("\t");
+          const isBullet = /^[-\*+•]\s+/.test(trimmed) || /^\d+[\.\)]\s+/.test(trimmed);
+
+          if (isBullet || (isIndented && activeTopic)) {
+            if (!activeTopic) {
+              activeTopic = {
+                topicName: "General Topics",
+                topicDescription: "",
+                subtopics: [],
+              };
+              topicMap.set("general topics", activeTopic);
+            }
+
+            const cleanSubLine = trimmed.replace(/^[-\*+•]\s+/, "").replace(/^\d+[\.\)]\s+/, "").trim();
+            if (!cleanSubLine) continue;
+
+            let subName = cleanSubLine;
+            let subDesc = "";
+            if (cleanSubLine.includes(":") && !cleanSubLine.toLowerCase().startsWith("http")) {
+              const colonIdx = cleanSubLine.indexOf(":");
+              subName = cleanSubLine.substring(0, colonIdx).trim();
+              subDesc = cleanSubLine.substring(colonIdx + 1).trim();
+            } else if (cleanSubLine.includes(" - ")) {
+              const dashIdx = cleanSubLine.indexOf(" - ");
+              subName = cleanSubLine.substring(0, dashIdx).trim();
+              subDesc = cleanSubLine.substring(dashIdx + 3).trim();
+            }
+
+            if (subName) {
+              if (!activeTopic.subtopics.some((s) => s.name.toLowerCase() === subName.toLowerCase())) {
+                activeTopic.subtopics.push({ name: subName, description: subDesc });
+              }
+            }
+          } else {
+            // It's a Topic declaration
+            let tName = trimmed;
+            let tDesc = "";
+
+            if (tName.toLowerCase().startsWith("topic:")) {
+              tName = tName.substring(6).trim();
+            } else if (tName.startsWith("# ")) {
+              tName = tName.substring(2).trim();
+            } else if (tName.startsWith("## ")) {
+              tName = tName.substring(3).trim();
+            }
+
+            // Check if next line is a Description: line
+            if (i + 1 < lines.length) {
+              const nextTrimmed = lines[i + 1].trim();
+              if (nextTrimmed.toLowerCase().startsWith("description:") || nextTrimmed.toLowerCase().startsWith("desc:")) {
+                const colonIdx = nextTrimmed.indexOf(":");
+                tDesc = nextTrimmed.substring(colonIdx + 1).trim();
+                i++; // skip next line
+              }
+            }
+
+            if (!tName) continue;
+            const tKey = tName.toLowerCase();
+            if (!topicMap.has(tKey)) {
+              activeTopic = {
+                topicName: tName,
+                topicDescription: tDesc,
+                subtopics: [],
+              };
+              topicMap.set(tKey, activeTopic);
+            } else {
+              activeTopic = topicMap.get(tKey)!;
+              if (tDesc && !activeTopic.topicDescription) {
+                activeTopic.topicDescription = tDesc;
+              }
+            }
+          }
+        }
+      }
+
+      const parsedList = Array.from(topicMap.values());
+      setBulkParsedTopics(parsedList);
+    } catch (err: any) {
+      setBulkImportError("Error parsing outline text: " + err.message);
+    }
+  };
+
+  const handleExecuteBulkImport = async () => {
+    if (!topicClass[0] || !topicSubject[0]) {
+      setAlert({ type: "error", message: "Please select Target Class and Target Subject first." });
+      return;
+    }
+    if (bulkParsedTopics.length === 0) {
+      setAlert({ type: "error", message: "No topics or subtopics parsed to import." });
+      return;
+    }
+
+    setBulkImportLoading(true);
+    setBulkImportError(null);
+
+    let createdTopicsCount = 0;
+    let reusedTopicsCount = 0;
+    let createdSubtopicsCount = 0;
+    let skippedSubtopicsCount = 0;
+
+    try {
+      // 1. Fetch current topics in DB for this class + subject to find matches and max order_index
+      const { data: currentTopicsData } = await supabase
+        .from("topics")
+        .select("id, name, order_index")
+        .eq("class_id", topicClass[0])
+        .eq("subject_id", topicSubject[0]);
+
+      const existingTopics = (currentTopicsData || []).map((t: any) => ({
+        id: t.id,
+        name: t.name,
+        order_index: typeof t.order_index === "number" ? t.order_index : 0,
+      }));
+
+      let nextTopicOrder = existingTopics.reduce((max, t) => Math.max(max, t.order_index || 0), 0) + 1;
+
+      for (const item of bulkParsedTopics) {
+        const trimmedTopicName = item.topicName.trim();
+        if (!trimmedTopicName) continue;
+
+        // Check if topic exists in DB (case-insensitive name match)
+        const matchedTopic = existingTopics.find(
+          (t) => t.name.trim().toLowerCase() === trimmedTopicName.toLowerCase()
+        );
+
+        let topicId: string;
+
+        if (matchedTopic) {
+          topicId = matchedTopic.id;
+          reusedTopicsCount++;
+        } else {
+          // Insert new topic
+          const { data: newTopic, error: topicErr } = await supabase
+            .from("topics")
+            .insert([{
+              name: trimmedTopicName,
+              description: item.topicDescription.trim() || "Managed subject course component entry",
+              class_id: topicClass[0],
+              subject_id: topicSubject[0],
+              order_index: nextTopicOrder++,
+            }])
+            .select("id, name")
+            .single();
+
+          if (topicErr) throw new Error(`Failed to create topic "${trimmedTopicName}": ${topicErr.message}`);
+          topicId = newTopic.id;
+          createdTopicsCount++;
+          existingTopics.push({ id: topicId, name: trimmedTopicName, order_index: nextTopicOrder });
+        }
+
+        // 2. Now process subtopics for this topic
+        const validSubs = item.subtopics.filter((st) => st.name.trim().length > 0);
+        if (validSubs.length > 0) {
+          // Fetch existing subtopics for this topic to avoid duplicate inserts
+          let currentSubs: { id: string; name: string; order_index?: number }[] = [];
+          const { data: dbSubs, error: subFetchErr } = await supabase
+            .from("sub_topics")
+            .select("id, name, order_index")
+            .eq("topic_id", topicId);
+
+          if (!subFetchErr && dbSubs) {
+            currentSubs = dbSubs;
+          } else {
+            const { data: altSubs } = await supabase
+              .from("subtopics")
+              .select("id, name, order_index")
+              .eq("topic_id", topicId);
+            if (altSubs) currentSubs = altSubs;
+          }
+
+          let nextSubOrder = currentSubs.reduce((max, s) => Math.max(max, s.order_index || 0), 0) + 1;
+
+          // Filter out subtopics that already exist for this topic
+          const subsToInsert = validSubs.filter((st) => {
+            const exists = currentSubs.some(
+              (cs) => cs.name.trim().toLowerCase() === st.name.trim().toLowerCase()
+            );
+            if (exists) {
+              skippedSubtopicsCount++;
+              return false;
+            }
+            return true;
+          });
+
+          if (subsToInsert.length > 0) {
+            const subPayloads = subsToInsert.map((st) => ({
+              name: st.name.trim(),
+              description: st.description.trim() || "",
+              topic_id: topicId,
+              class_id: topicClass[0],
+              subject_id: topicSubject[0],
+              order_index: nextSubOrder++,
+            }));
+
+            const { error: subInsertErr } = await supabase
+              .from("sub_topics")
+              .insert(subPayloads);
+
+            if (subInsertErr) {
+              const { error: altInsertErr } = await supabase
+                .from("subtopics")
+                .insert(subPayloads);
+              if (altInsertErr) {
+                console.warn("Subtopic insert error:", altInsertErr.message);
+              } else {
+                createdSubtopicsCount += subsToInsert.length;
+              }
+            } else {
+              createdSubtopicsCount += subsToInsert.length;
+            }
+          }
+        }
+      }
+
+      // Refresh all related topic and subtopic caches
+      await fetchTopicModeTopics(topicClass[0], topicSubject[0]);
+      if (selectedClass[0] || selectedSubject[0]) {
+        await fetchTopics(selectedClass[0] || topicClass[0], selectedSubject[0] || topicSubject[0]);
+      }
+      if (quizSelectedClass[0] || quizSelectedSubject[0]) {
+        await fetchQuizTopics(quizSelectedClass[0] || topicClass[0], quizSelectedSubject[0] || topicSubject[0]);
+      }
+
+      const targetClassName = classes.find((c) => c.id === topicClass[0])?.name || "Class";
+      const targetSubjectName = subjects.find((s) => s.id === topicSubject[0])?.name || "Subject";
+
+      const parts: string[] = [];
+      if (createdTopicsCount > 0) parts.push(`${createdTopicsCount} new topic(s) created`);
+      if (reusedTopicsCount > 0) parts.push(`${reusedTopicsCount} existing topic(s) updated`);
+      if (createdSubtopicsCount > 0) parts.push(`${createdSubtopicsCount} subtopic(s) added`);
+      if (skippedSubtopicsCount > 0) parts.push(`${skippedSubtopicsCount} duplicate subtopic(s) skipped`);
+
+      setAlert({
+        type: "success",
+        message: `Bulk Import Complete for ${targetClassName} — ${targetSubjectName}: ${parts.join(", ") || "No changes needed"}.`,
+      });
+
+      // Clear draft
+      setBulkImportFileName(null);
+      setBulkImportText("");
+      setBulkParsedTopics([]);
+    } catch (err: any) {
+      console.error("Bulk import failed:", err);
+      setAlert({ type: "error", message: "Bulk Import Error: " + err.message });
+      setBulkImportError(err.message);
+    } finally {
+      setBulkImportLoading(false);
+    }
+  };
+
   // ── Resource Upload Handlers ──
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop: (accepted) => setFiles((p) => [...p, ...accepted]),
@@ -629,11 +1241,24 @@ const CMS = () => {
   });
   const removeFile = (i: number) => setFiles((p) => p.filter((_, j) => j !== i));
 
+  const {
+    getRootProps: getBatchRootProps,
+    getInputProps: getBatchInputProps,
+    isDragActive: isBatchDragActive,
+  } = useDropzone({
+    onDrop: (accepted) => handleAddBatchFiles(accepted),
+    multiple: true,
+  });
+
   const uploadFileToSupabase = async (file: File, type: string) => {
     const folder = type === "video" ? "Videos" : type === "pqs" ? "PastQuestions" : "PDFs";
-    const ext = file.name.split(".").pop();
+    const ext = (file.name.split(".").pop() || "").toLowerCase();
     const path = `${folder}/${Math.random().toString(36).substring(2)}_${Date.now()}.${ext}`;
-    const { error } = await supabase.storage.from("test-resource").upload(path, file);
+    const mimeType = ext === "pdf" ? "application/pdf" : ext === "mp4" ? "video/mp4" : ext === "webm" ? "video/webm" : file.type || "application/octet-stream";
+    const { error } = await supabase.storage.from("test-resource").upload(path, file, {
+      contentType: mimeType,
+      upsert: true,
+    });
     if (error) throw error;
     const { data: { publicUrl } } = supabase.storage.from("test-resource").getPublicUrl(path);
     return publicUrl;
@@ -680,6 +1305,804 @@ const CMS = () => {
     } catch (err) {
       setAlert({ type: "error", message: "Upload failed: " + (err as Error).message });
     } finally { setLoading(false); }
+  };
+
+  // ── Academic Resources Bulk / Batch Handlers ──
+  const handleAddBatchFiles = (accepted: File[]) => {
+    if (!accepted || accepted.length === 0) return;
+    const newItems: BatchResourceFileItem[] = accepted.map((file) => {
+      const ext = file.name.split(".").pop()?.toLowerCase() || "";
+      let detectedType: "pdf" | "video" | "pqs" = "pdf";
+      if (["mp4", "webm", "mov", "mkv", "avi", "m4v"].includes(ext)) {
+        detectedType = "video";
+      } else if (fileType[0] === "pqs") {
+        detectedType = "pqs";
+      }
+
+      let cleanTitle = file.name
+        .replace(/\.[^/.]+$/, "")
+        .replace(/^[0-9]+[._\s-]+/, "")
+        .replace(/[_-]+/g, " ")
+        .trim();
+      if (!cleanTitle) cleanTitle = file.name;
+
+      return {
+        id: Math.random().toString(36).substring(2),
+        file,
+        name: file.name,
+        title: cleanTitle,
+        type: detectedType,
+        topicId: selectedTopicId[0] || (topics[0]?.id ?? ""),
+        subTopicId: selectedSubTopicId[0] || "",
+        description: "",
+        status: "queued",
+      };
+    });
+
+    setBatchResourceFiles((prev) => [...prev, ...newItems]);
+  };
+
+  const removeBatchFile = (index: number) => {
+    setBatchResourceFiles((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  const updateBatchFile = (index: number, key: keyof BatchResourceFileItem, value: any) => {
+    setBatchResourceFiles((prev) =>
+      prev.map((item, i) => (i === index ? { ...item, [key]: value } : item))
+    );
+  };
+
+  const applyTopicToAllBatchFiles = (targetTopicId: string, targetSubTopicId: string = "") => {
+    if (!targetTopicId) return;
+    setBatchResourceFiles((prev) =>
+      prev.map((item) => ({
+        ...item,
+        topicId: targetTopicId,
+        subTopicId: targetSubTopicId,
+      }))
+    );
+  };
+
+  const handleUploadBatchFiles = async () => {
+    if (!selectedClass[0] || !selectedSubject[0]) {
+      setAlert({ type: "error", message: "Please select Class and Subject first." });
+      return;
+    }
+    const pendingFiles = batchResourceFiles.filter((f) => f.status !== "done");
+    if (pendingFiles.length === 0) {
+      setAlert({ type: "error", message: "No queued files to upload." });
+      return;
+    }
+
+    const missingTopic = batchResourceFiles.some(
+      (f) => f.status !== "done" && !f.topicId && !selectedTopicId[0]
+    );
+    if (missingTopic) {
+      setAlert({
+        type: "error",
+        message: "Please assign a topic to all queued files before uploading.",
+      });
+      return;
+    }
+
+    setBatchUploading(true);
+    let successCount = 0;
+    let errorCount = 0;
+
+    for (let i = 0; i < batchResourceFiles.length; i++) {
+      const item = batchResourceFiles[i];
+      if (item.status === "done") continue;
+
+      const targetTopicId = item.topicId || selectedTopicId[0];
+
+      setBatchResourceFiles((prev) =>
+        prev.map((f, idx) => (idx === i ? { ...f, status: "uploading" } : f))
+      );
+
+      try {
+        const fileUrl = await uploadFileToSupabase(item.file, item.type);
+        const selectedSubTopicObj = resourceSubTopics.find(
+          (st) => st.id === (item.subTopicId || selectedSubTopicId[0])
+        );
+
+        let finalTitle = item.title.trim() || item.name;
+        if (selectedSubTopicObj && !finalTitle.includes(selectedSubTopicObj.name)) {
+          finalTitle = `${finalTitle} — ${selectedSubTopicObj.name}`;
+        }
+
+        const resourceDesc = item.description?.trim()
+          ? (selectedSubTopicObj ? `${item.description.trim()} (Subtopic: ${selectedSubTopicObj.name})` : item.description.trim())
+          : (selectedSubTopicObj ? `Subtopic: ${selectedSubTopicObj.name}` : "");
+
+        const insertPayload = {
+          class_id: selectedClass[0],
+          subject_id: selectedSubject[0],
+          topic_id: targetTopicId,
+          title: finalTitle,
+          description: resourceDesc,
+          type: item.type,
+          duration: 0,
+          order_index: i,
+          url: fileUrl,
+        };
+
+        const { error } = await supabase.from("resources").insert([insertPayload]);
+        if (error) throw error;
+
+        setBatchResourceFiles((prev) =>
+          prev.map((f, idx) => (idx === i ? { ...f, status: "done" } : f))
+        );
+        successCount++;
+      } catch (err: any) {
+        console.error("File upload error:", err);
+        setBatchResourceFiles((prev) =>
+          prev.map((f, idx) =>
+            idx === i ? { ...f, status: "error", errorMsg: err.message || "Failed" } : f
+          )
+        );
+        errorCount++;
+      }
+    }
+
+    setBatchUploading(false);
+    if (successCount > 0) {
+      setAlert({
+        type: "success",
+        message: `Batch Upload Complete: ${successCount} resource(s) uploaded successfully!${errorCount > 0 ? ` (${errorCount} failed)` : ""}`,
+      });
+    } else if (errorCount > 0) {
+      setAlert({
+        type: "error",
+        message: `Batch Upload Failed for ${errorCount} file(s). Please review individual item errors.`,
+      });
+    }
+  };
+
+  const downloadResourceTemplate = (format: "xlsx" | "csv" = "xlsx") => {
+    const sampleRows = [
+      {
+        title: "Simultaneous Linear Equations Video Tutorial",
+        type: "video",
+        file_name: "simultaneous_linear_equations.mp4",
+        topic_name: "Algebraic Processes",
+        subtopic_name: "Simultaneous Linear Equations",
+        description: "Complete walkthrough on solving systems using substitution and elimination",
+      },
+      {
+        title: "Quadratic Equations Revision Notes & Practice Sheet",
+        type: "pdf",
+        file_name: "quadratic_equations_notes.pdf",
+        topic_name: "Algebraic Processes",
+        subtopic_name: "Quadratic Equations",
+        description: "Formulas, worked exam problems, and practice questions with answer keys",
+      },
+      {
+        title: "Circle Theorems Masterclass & Visual Proofs",
+        type: "video",
+        file_name: "circle_theorems_proofs.mp4",
+        topic_name: "Plane Geometry & Trigonometry",
+        subtopic_name: "Circle Theorems",
+        description: "Interactive visual demonstrations of angles at center, semicircle, and tangents",
+      },
+      {
+        title: "Plane Geometry & Trigonometry Formula Compendium",
+        type: "pdf",
+        file_name: "trig_geometry_handout.pdf",
+        topic_name: "Plane Geometry & Trigonometry",
+        subtopic_name: "Trigonometric Ratios",
+        description: "Key identity ratios and geometric theorems quick reference guide",
+      },
+      {
+        title: "Past Exam Questions Collection (1995-2024)",
+        type: "pqs",
+        file_name: "past_questions_compilation.pdf",
+        topic_name: "Algebraic Processes",
+        subtopic_name: "",
+        description: "Comprehensive compilation of past examination questions",
+      },
+    ];
+
+    if (format === "xlsx") {
+      const wb = XLSX.utils.book_new();
+      const ws = XLSX.utils.json_to_sheet(sampleRows);
+      ws["!cols"] = [
+        { wch: 40 },
+        { wch: 12 },
+        { wch: 35 },
+        { wch: 32 },
+        { wch: 32 },
+        { wch: 55 },
+      ];
+      XLSX.utils.book_append_sheet(wb, ws, "Academic_Resources");
+      XLSX.writeFile(wb, "academic_resources_template.xlsx");
+    } else {
+      const headers = ["title", "type", "file_name", "topic_name", "subtopic_name", "description"];
+      const csvLines = [
+        headers.join(","),
+        ...sampleRows.map((r) => [
+          `"${r.title.replace(/"/g, '""')}"`,
+          `"${r.type.replace(/"/g, '""')}"`,
+          `"${r.file_name.replace(/"/g, '""')}"`,
+          `"${r.topic_name.replace(/"/g, '""')}"`,
+          `"${r.subtopic_name.replace(/"/g, '""')}"`,
+          `"${r.description.replace(/"/g, '""')}"`,
+        ].join(",")),
+      ];
+      const blob = new Blob([csvLines.join("\n")], { type: "text/csv;charset=utf-8;" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "academic_resources_template.csv";
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+  };
+
+  // Helper to normalize topic string for flexible matching
+  const normalizeTopicString = (str: string): string => {
+    return (str || "")
+      .toLowerCase()
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .replace(/^(topic|unit|chapter|module|section|week|lecture)\s*\d+[\s:.-]*/i, "")
+      .replace(/^\d+[\s:.-]+/, "")
+      .replace(/[^a-z0-9]/g, "")
+      .trim();
+  };
+
+  // Resilient topic matcher against existing topics in state or database
+  const findMatchingTopic = (
+    topicName: string,
+    availableTopics: { id: string; name: string }[]
+  ): { id: string; name: string } | undefined => {
+    const trimmed = (topicName || "").trim();
+    if (!trimmed) return undefined;
+
+    // 1. Exact case-insensitive match
+    const exact = availableTopics.find(
+      (t) => t.name.trim().toLowerCase() === trimmed.toLowerCase()
+    );
+    if (exact) return exact;
+
+    // 2. Normalized match (ignoring numbering, punctuation, extra whitespace, accents)
+    const normTarget = normalizeTopicString(trimmed);
+    if (normTarget) {
+      const normMatch = availableTopics.find(
+        (t) => normalizeTopicString(t.name) === normTarget
+      );
+      if (normMatch) return normMatch;
+
+      // 3. Substring match for names with sufficient length
+      if (normTarget.length >= 4) {
+        const subMatch = availableTopics.find((t) => {
+          const nt = normalizeTopicString(t.name);
+          return nt.length >= 4 && (nt.includes(normTarget) || normTarget.includes(nt));
+        });
+        if (subMatch) return subMatch;
+      }
+    }
+
+    return undefined;
+  };
+
+  const parseResourceSpreadsheetFile = (file: File) => {
+    setBulkResourceFileName(file.name);
+    setBulkResourceImportError(null);
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      try {
+        const data = new Uint8Array(e.target?.result as ArrayBuffer);
+        const wb = XLSX.read(data, { type: "array" });
+        const sheetName = wb.SheetNames[0];
+        if (!sheetName) {
+          setBulkResourceImportError("The uploaded workbook has no sheets.");
+          return;
+        }
+        const rawRows = XLSX.utils.sheet_to_json<Record<string, any>>(wb.Sheets[sheetName], { defval: "" });
+        if (!rawRows || rawRows.length === 0) {
+          setBulkResourceImportError("The spreadsheet is empty. Please ensure it contains resource headers and rows.");
+          return;
+        }
+
+        const parsedList: BulkParsedResource[] = [];
+
+        rawRows.forEach((rawRow, idx) => {
+          const row: Record<string, string> = {};
+          for (const k of Object.keys(rawRow)) {
+            const val = String(rawRow[k] ?? "").trim();
+            row[k.trim().toLowerCase()] = val;
+            row[k.trim().toLowerCase().replace(/[\s_-]+/g, "")] = val;
+          }
+
+          const title =
+            row["title"] ||
+            row["resource_title"] ||
+            row["resource title"] ||
+            row["resourcetitle"] ||
+            row["document_title"] ||
+            row["document title"] ||
+            row["documenttitle"] ||
+            row["name"] ||
+            "";
+
+          const rawType = (
+            row["type"] ||
+            row["file_type"] ||
+            row["file type"] ||
+            row["filetype"] ||
+            row["format"] ||
+            "pdf"
+          ).toLowerCase();
+
+          let type: "pdf" | "video" | "pqs" = "pdf";
+          if (rawType.includes("vid") || rawType.includes("mp4") || rawType.includes("youtube")) {
+            type = "video";
+          } else if (rawType.includes("pq") || rawType.includes("past")) {
+            type = "pqs";
+          }
+
+          const fileName =
+            row["file_name"] ||
+            row["file name"] ||
+            row["filename"] ||
+            row["file"] ||
+            row["files"] ||
+            row["resource_file_name"] ||
+            row["resource file name"] ||
+            row["resourcefilename"] ||
+            row["resource_file"] ||
+            row["resource file"] ||
+            row["resourcefile"] ||
+            row["resource_name"] ||
+            row["resource name"] ||
+            row["resourcename"] ||
+            row["asset_name"] ||
+            row["asset name"] ||
+            row["assetname"] ||
+            row["attachment"] ||
+            row["name"] ||
+            "";
+
+          const url =
+            row["url"] ||
+            row["link"] ||
+            row["file_url"] ||
+            row["file url"] ||
+            row["fileurl"] ||
+            row["download_url"] ||
+            row["downloadurl"] ||
+            row["web_url"] ||
+            row["weburl"] ||
+            "";
+
+          const topicName =
+            row["topic_name"] ||
+            row["topic name"] ||
+            row["topicname"] ||
+            row["topic"] ||
+            row["topics"] ||
+            row["topic_title"] ||
+            row["topic title"] ||
+            row["topictitle"] ||
+            row["course_topic"] ||
+            row["course topic"] ||
+            row["coursetopic"] ||
+            row["course_topic_name"] ||
+            row["course topic name"] ||
+            row["coursetopicname"] ||
+            row["chapter"] ||
+            row["chapter_name"] ||
+            row["chapter name"] ||
+            row["chaptername"] ||
+            row["module"] ||
+            row["module_name"] ||
+            row["module name"] ||
+            row["modulename"] ||
+            row["unit"] ||
+            row["unit_name"] ||
+            row["unit name"] ||
+            row["unitname"] ||
+            row["lesson_topic"] ||
+            row["lesson topic"] ||
+            row["lessontopic"] ||
+            row["subject_topic"] ||
+            row["subject topic"] ||
+            row["subjecttopic"] ||
+            "";
+
+          const subTopicName =
+            row["subtopic_name"] ||
+            row["subtopic name"] ||
+            row["subtopicname"] ||
+            row["subtopic"] ||
+            row["subtopics"] ||
+            row["sub_topic"] ||
+            row["sub topic"] ||
+            row["sub_topic_name"] ||
+            row["sub topic name"] ||
+            row["subtopictitle"] ||
+            row["sub_topic_title"] ||
+            row["section"] ||
+            row["section_name"] ||
+            "";
+
+          const description =
+            row["description"] ||
+            row["desc"] ||
+            row["summary"] ||
+            "";
+
+          const finalTitle =
+            title ||
+            (fileName ? fileName.replace(/\.[^/.]+$/, "").replace(/[-_]+/g, " ").trim() : `Resource Item ${idx + 1}`);
+
+          if (!finalTitle && !fileName && !url) return;
+
+          const matchedTopic = findMatchingTopic(topicName, topics);
+          let matchedTopicId: string | undefined = undefined;
+          let isNewTopic = false;
+          let status: "ready" | "fallback" | "missing_topic" | "invalid_url" = "ready";
+
+          if (!fileName && !url) {
+            status = "invalid_url";
+          } else if (matchedTopic) {
+            matchedTopicId = matchedTopic.id;
+            status = "ready";
+          } else if (topicName.trim().length > 0) {
+            // Topic provided in CSV/spreadsheet! It will be automatically synced & created in the database on import
+            isNewTopic = true;
+            status = "ready";
+          } else if (selectedTopicId[0]) {
+            matchedTopicId = selectedTopicId[0];
+            status = "fallback";
+          } else {
+            status = "ready";
+          }
+
+          parsedList.push({
+            id: `res-${idx}-${Math.random().toString(36).substring(2, 7)}`,
+            title: finalTitle,
+            type,
+            fileName,
+            url,
+            topicName: topicName.trim(),
+            subTopicName: subTopicName.trim(),
+            description: description.trim(),
+            matchedTopicId,
+            isNewTopic,
+            status,
+          });
+        });
+
+        if (parsedList.length === 0) {
+          setBulkResourceImportError("No valid rows could be extracted from this spreadsheet.");
+          return;
+        }
+
+        setBulkParsedResources(parsedList);
+      } catch (err: any) {
+        setBulkResourceImportError("Failed to parse spreadsheet: " + err.message);
+      }
+    };
+    reader.readAsArrayBuffer(file);
+  };
+
+  const parseResourceOutlineText = (rawText: string) => {
+    setBulkResourceImportError(null);
+    if (!rawText.trim()) {
+      setBulkParsedResources([]);
+      return;
+    }
+
+    try {
+      const lines = rawText.split(/\r?\n/);
+      const parsedList: BulkParsedResource[] = [];
+
+      lines.forEach((line, idx) => {
+        const trimmed = line.trim();
+        if (!trimmed || trimmed.startsWith("#") || trimmed.toLowerCase().startsWith("title")) return;
+
+        const delimiter = trimmed.includes("\t") ? "\t" : trimmed.includes("|") ? "|" : ",";
+        const cols = trimmed.split(delimiter).map((c) => c.trim().replace(/^["']|["']$/g, ""));
+        if (cols.length === 0) return;
+
+        const rawTitle = cols[0] || "";
+        const rawType = (cols[1] || "pdf").toLowerCase();
+        let type: "pdf" | "video" | "pqs" = "pdf";
+        if (rawType.includes("vid") || rawType.includes("mp4") || rawType.includes("youtube")) {
+          type = "video";
+        } else if (rawType.includes("pq") || rawType.includes("past")) {
+          type = "pqs";
+        }
+
+        const fileNameOrUrl = cols[2] || "";
+        const isLikelyUrl = fileNameOrUrl.startsWith("http://") || fileNameOrUrl.startsWith("https://");
+        const fileName = isLikelyUrl ? "" : fileNameOrUrl;
+        const url = isLikelyUrl ? fileNameOrUrl : "";
+
+        const topicName = cols[3] || "";
+        const subTopicName = cols[4] || "";
+        const description = cols[5] || "";
+
+        const finalTitle =
+          rawTitle ||
+          (fileName ? fileName.replace(/\.[^/.]+$/, "").replace(/[-_]+/g, " ").trim() : `Resource Item ${idx + 1}`);
+
+        if (!finalTitle && !fileName && !url) return;
+
+        const matchedTopic = findMatchingTopic(topicName, topics);
+        let matchedTopicId: string | undefined = undefined;
+        let isNewTopic = false;
+        let status: "ready" | "fallback" | "missing_topic" | "invalid_url" = "ready";
+
+        if (!fileName && !url) {
+          status = "invalid_url";
+        } else if (matchedTopic) {
+          matchedTopicId = matchedTopic.id;
+          status = "ready";
+        } else if (topicName.trim().length > 0) {
+          isNewTopic = true;
+          status = "ready";
+        } else if (selectedTopicId[0]) {
+          matchedTopicId = selectedTopicId[0];
+          status = "fallback";
+        } else {
+          status = "ready";
+        }
+
+        parsedList.push({
+          id: `res-paste-${idx}-${Math.random().toString(36).substring(2, 7)}`,
+          title: finalTitle,
+          type,
+          fileName,
+          url,
+          topicName: topicName.trim(),
+          subTopicName: subTopicName.trim(),
+          description: description.trim(),
+          matchedTopicId,
+          isNewTopic,
+          status,
+        });
+      });
+
+      setBulkParsedResources(parsedList);
+    } catch (err: any) {
+      setBulkResourceImportError("Failed to parse outline text: " + err.message);
+    }
+  };
+
+  const removeBulkParsedResource = (index: number) => {
+    setBulkParsedResources((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  const commitBulkResourceImport = async () => {
+    if (!selectedClass[0] || !selectedSubject[0]) {
+      setAlert({ type: "error", message: "Please select Target Class and Target Subject first." });
+      return;
+    }
+    if (bulkParsedResources.length === 0) {
+      setAlert({ type: "error", message: "No parsed resources available to import." });
+      return;
+    }
+
+    // Validate that files referenced in the sheet are uploaded in bulkResourceAttachedFiles
+    const missingFiles: string[] = [];
+    for (const res of bulkParsedResources) {
+      if (res.fileName) {
+        const isPresent = bulkResourceAttachedFiles.some(
+          (f) => f.name.toLowerCase() === res.fileName.toLowerCase()
+        );
+        if (!isPresent && !res.url) {
+          if (!missingFiles.includes(res.fileName)) {
+            missingFiles.push(res.fileName);
+          }
+        }
+      } else if (!res.url) {
+        missingFiles.push(`(Missing file for "${res.title}")`);
+      }
+    }
+
+    if (missingFiles.length > 0) {
+      setAlert({
+        type: "error",
+        message: `Missing ${missingFiles.length} file(s) in Step 2: ${missingFiles.slice(0, 4).join(", ")}${missingFiles.length > 4 ? "..." : ""}. Please select and upload them before importing.`,
+      });
+      return;
+    }
+
+    setBulkResourceImportLoading(true);
+    try {
+      // 1. Fetch current topics from database for target class and subject
+      const { data: currentTopicsData, error: topicFetchErr } = await supabase
+        .from("topics")
+        .select("id, name, order_index")
+        .eq("class_id", selectedClass[0])
+        .eq("subject_id", selectedSubject[0]);
+
+      if (topicFetchErr) throw topicFetchErr;
+
+      const currentTopicsList = (currentTopicsData || []).map((t: any) => ({
+        id: t.id,
+        name: t.name,
+        order_index: typeof t.order_index === "number" ? t.order_index : 0,
+      }));
+
+      let nextTopicOrder = currentTopicsList.reduce((max, t) => Math.max(max, t.order_index || 0), 0) + 1;
+      let newlyCreatedTopicsCount = 0;
+      let newlyCreatedSubtopicsCount = 0;
+
+      const topicNameToIdMap: Record<string, string> = {};
+      currentTopicsList.forEach((t) => {
+        topicNameToIdMap[t.name.trim().toLowerCase()] = t.id;
+        const norm = normalizeTopicString(t.name);
+        if (norm) topicNameToIdMap[norm] = t.id;
+      });
+
+      const subtopicCache: Record<string, Set<string>> = {};
+
+      const resolveAndSyncTopicId = async (rawTopicName?: string): Promise<string> => {
+        const trimmed = (rawTopicName || "").trim();
+        if (!trimmed) {
+          if (selectedTopicId[0]) return selectedTopicId[0];
+          if (currentTopicsList.length > 0) return currentTopicsList[0].id;
+          return await resolveAndSyncTopicId("General Course Resources");
+        }
+
+        const lower = trimmed.toLowerCase();
+        if (topicNameToIdMap[lower]) return topicNameToIdMap[lower];
+
+        const norm = normalizeTopicString(trimmed);
+        if (norm && topicNameToIdMap[norm]) return topicNameToIdMap[norm];
+
+        const matched = findMatchingTopic(trimmed, currentTopicsList);
+        if (matched) {
+          topicNameToIdMap[lower] = matched.id;
+          if (norm) topicNameToIdMap[norm] = matched.id;
+          return matched.id;
+        }
+
+        // Auto-create/sync new topic in database
+        const targetSubjectName = subjects.find((s) => s.id === selectedSubject[0])?.name || "Subject";
+        const { data: newTopic, error: createTopicErr } = await supabase
+          .from("topics")
+          .insert([{
+            name: trimmed,
+            class_id: selectedClass[0],
+            subject_id: selectedSubject[0],
+            description: `Course topic for ${targetSubjectName}`,
+            order_index: nextTopicOrder++,
+          }])
+          .select("id, name")
+          .single();
+
+        if (createTopicErr || !newTopic) {
+          throw new Error(`Failed to sync topic "${trimmed}": ${createTopicErr?.message || "Insert failed"}`);
+        }
+
+        newlyCreatedTopicsCount++;
+        currentTopicsList.push({ id: newTopic.id, name: trimmed, order_index: nextTopicOrder });
+        topicNameToIdMap[lower] = newTopic.id;
+        if (norm) topicNameToIdMap[norm] = newTopic.id;
+        return newTopic.id;
+      };
+
+      // Resolve topic ID for all items
+      const itemResolvedTopicIds: string[] = [];
+      for (const res of bulkParsedResources) {
+        let tid: string;
+        if (res.matchedTopicId && currentTopicsList.some((t) => t.id === res.matchedTopicId)) {
+          tid = res.matchedTopicId;
+        } else if (res.topicName?.trim()) {
+          tid = await resolveAndSyncTopicId(res.topicName);
+        } else if (selectedTopicId[0]) {
+          tid = selectedTopicId[0];
+        } else {
+          tid = await resolveAndSyncTopicId("General Course Resources");
+        }
+        itemResolvedTopicIds.push(tid);
+
+        // Auto-sync subtopic if present
+        if (res.subTopicName?.trim()) {
+          const subName = res.subTopicName.trim();
+          if (!subtopicCache[tid]) {
+            const { data: existingSubs } = await supabase
+              .from("sub_topics")
+              .select("name")
+              .eq("topic_id", tid);
+            subtopicCache[tid] = new Set(
+              (existingSubs || []).map((s: any) => s.name.trim().toLowerCase())
+            );
+          }
+
+          if (!subtopicCache[tid].has(subName.toLowerCase())) {
+            const subPayload = {
+              name: subName,
+              description: `Subtopic for ${res.topicName || "topic"}`,
+              topic_id: tid,
+              class_id: selectedClass[0],
+              subject_id: selectedSubject[0],
+              order_index: 0,
+            };
+            const { error: subErr } = await supabase.from("sub_topics").insert([subPayload]);
+            if (subErr) {
+              await supabase.from("subtopics").insert([subPayload]);
+            }
+            subtopicCache[tid].add(subName.toLowerCase());
+            newlyCreatedSubtopicsCount++;
+          }
+        }
+      }
+
+      // 2. Upload all accompanying files to Supabase and cache their public URLs
+      const nameToUrlMap: Record<string, string> = {};
+      for (const file of bulkResourceAttachedFiles) {
+        const matchingRes = bulkParsedResources.find(
+          (r) => r.fileName && r.fileName.toLowerCase() === file.name.toLowerCase()
+        );
+        const ext = file.name.split(".").pop()?.toLowerCase() || "";
+        const uploadType = matchingRes?.type || (["mp4", "webm", "mov", "mkv"].includes(ext) ? "video" : "pdf");
+
+        const publicUrl = await uploadFileToSupabase(file, uploadType);
+        if (publicUrl) {
+          nameToUrlMap[file.name.toLowerCase()] = publicUrl;
+        }
+      }
+
+      // 3. Prepare database insert payloads
+      const payloads = bulkParsedResources.map((item, idx) => {
+        const topicId = itemResolvedTopicIds[idx];
+        const desc = item.description?.trim()
+          ? (item.subTopicName ? `${item.description.trim()} (Subtopic: ${item.subTopicName})` : item.description.trim())
+          : (item.subTopicName ? `Subtopic: ${item.subTopicName}` : "");
+
+        const resolvedUrl =
+          (item.fileName && nameToUrlMap[item.fileName.toLowerCase()]) ||
+          item.url ||
+          "";
+
+        return {
+          class_id: selectedClass[0],
+          subject_id: selectedSubject[0],
+          topic_id: topicId,
+          title: item.title.trim(),
+          description: desc,
+          type: item.type,
+          duration: 0,
+          order_index: idx,
+          url: resolvedUrl,
+        };
+      });
+
+      const { error } = await supabase.from("resources").insert(payloads);
+      if (error) throw error;
+
+      // 4. Refresh topics in CMS
+      await fetchTopics(selectedClass[0], selectedSubject[0]);
+      await fetchTopicModeTopics(selectedClass[0], selectedSubject[0]);
+
+      const targetClassName = classes.find((c) => c.id === selectedClass[0])?.name || "Class";
+      const targetSubjectName = subjects.find((s) => s.id === selectedSubject[0])?.name || "Subject";
+      const distinctTopicsCount = new Set(itemResolvedTopicIds).size;
+
+      setAlert({
+        type: "success",
+        message: `Successfully imported ${payloads.length} academic resource(s) across ${distinctTopicsCount} topic(s)${newlyCreatedTopicsCount > 0 ? ` (${newlyCreatedTopicsCount} new topic(s) synced to database)` : ""}${newlyCreatedSubtopicsCount > 0 ? ` with ${newlyCreatedSubtopicsCount} subtopic(s)` : ""} for ${targetClassName} — ${targetSubjectName}!`,
+      });
+
+      // Reset draft
+      setBulkParsedResources([]);
+      setBulkResourceAttachedFiles([]);
+      setBulkResourceFileName(null);
+      setBulkResourceText("");
+      setBulkResourceImportError(null);
+    } catch (err: any) {
+      console.error("Bulk resource import failed:", err);
+      setAlert({ type: "error", message: "Bulk Resource Import Error: " + err.message });
+      setBulkResourceImportError(err.message);
+    } finally {
+      setBulkResourceImportLoading(false);
+    }
   };
 
   // ── Quiz Question Handlers ──
@@ -1327,7 +2750,7 @@ const CMS = () => {
             {/* 1. Add New Topic & Subtopic Management */}
             <SectionCard icon={MdPlaylistAdd} title="Create Course Topic" subtitle="Add topics and manage subtopics in the database" accentColor="blue.500">
               <VStack gap={4} align="stretch">
-                {/* Tabs to switch between creating a new topic or adding subtopics to an existing topic */}
+                {/* Tabs to switch between creating a new topic, adding subtopics to an existing topic, or bulk import */}
                 <HStack p={1} bg="gray.100" borderRadius="xl" gap={1}>
                   <Button
                     size="xs"
@@ -1341,7 +2764,7 @@ const CMS = () => {
                     boxShadow={topicCreationTab === "new_topic" ? "0 1px 3px rgba(0,0,0,0.08)" : "none"}
                     onClick={() => setTopicCreationTab("new_topic")}
                   >
-                    ＋ New Course Topic
+                    ＋ New Topic
                   </Button>
                   <Button
                     size="xs"
@@ -1355,7 +2778,21 @@ const CMS = () => {
                     boxShadow={topicCreationTab === "existing_topic" ? "0 1px 3px rgba(0,0,0,0.08)" : "none"}
                     onClick={() => setTopicCreationTab("existing_topic")}
                   >
-                    Add Subtopics to Existing Topic
+                    Add Subtopics
+                  </Button>
+                  <Button
+                    size="xs"
+                    flex={1}
+                    borderRadius="lg"
+                    fontSize="xs"
+                    fontWeight="600"
+                    variant={topicCreationTab === "bulk_import" ? "solid" : "ghost"}
+                    bg={topicCreationTab === "bulk_import" ? "white" : "transparent"}
+                    color={topicCreationTab === "bulk_import" ? "blue.600" : "gray.600"}
+                    boxShadow={topicCreationTab === "bulk_import" ? "0 1px 3px rgba(0,0,0,0.08)" : "none"}
+                    onClick={() => setTopicCreationTab("bulk_import")}
+                  >
+                    📥 Bulk Import
                   </Button>
                 </HStack>
 
@@ -1446,7 +2883,7 @@ const CMS = () => {
                       Add New Topic {subTopicsList.some(s => s.name.trim()) ? "& Subtopics" : ""}
                     </Button>
                   </>
-                ) : (
+                ) : topicCreationTab === "existing_topic" ? (
                   <>
                     <Grid templateColumns="1fr 1fr" gap={3}>
                       <StyledSelect collection={classCollection} value={topicClass} onValueChange={(e) => setTopicClass(e.value)} label="Target Class" placeholder="Select class" />
@@ -1584,72 +3021,1143 @@ const CMS = () => {
                       Save Subtopics to Topic
                     </Button>
                   </>
+                ) : (
+                  <>
+                    {/* ── Bulk Import Topics & Subtopics Section ── */}
+                    <Grid templateColumns="1fr 1fr" gap={3}>
+                      <StyledSelect
+                        collection={classCollection}
+                        value={topicClass}
+                        onValueChange={(e) => setTopicClass(e.value)}
+                        label="Target Class"
+                        placeholder="Select class"
+                      />
+                      <StyledSelect
+                        collection={subjectCollection}
+                        value={topicSubject}
+                        onValueChange={(e) => setTopicSubject(e.value)}
+                        label="Target Subject"
+                        placeholder="Select subject"
+                      />
+                    </Grid>
+
+                    {(!topicClass[0] || !topicSubject[0]) && (
+                      <Box bg="amber.50" border="1px solid" borderColor="amber.200" borderRadius="lg" p={2.5} fontSize="xs" color="amber.800">
+                        💡 Please select the Target Class and Target Subject above to organize your imported curriculum topics.
+                      </Box>
+                    )}
+
+                    {/* Sub-mode selector */}
+                    <HStack p={1} bg="gray.100" borderRadius="lg" gap={1}>
+                      <Button
+                        size="xs"
+                        flex={1}
+                        borderRadius="md"
+                        fontSize="xs"
+                        fontWeight="600"
+                        variant={bulkTopicMode === "file" ? "solid" : "ghost"}
+                        bg={bulkTopicMode === "file" ? "white" : "transparent"}
+                        color={bulkTopicMode === "file" ? "blue.600" : "gray.600"}
+                        boxShadow={bulkTopicMode === "file" ? "0 1px 2px rgba(0,0,0,0.06)" : "none"}
+                        onClick={() => setBulkTopicMode("file")}
+                      >
+                        📁 Upload Spreadsheet (.xlsx / .csv)
+                      </Button>
+                      <Button
+                        size="xs"
+                        flex={1}
+                        borderRadius="md"
+                        fontSize="xs"
+                        fontWeight="600"
+                        variant={bulkTopicMode === "paste" ? "solid" : "ghost"}
+                        bg={bulkTopicMode === "paste" ? "white" : "transparent"}
+                        color={bulkTopicMode === "paste" ? "blue.600" : "gray.600"}
+                        boxShadow={bulkTopicMode === "paste" ? "0 1px 2px rgba(0,0,0,0.06)" : "none"}
+                        onClick={() => setBulkTopicMode("paste")}
+                      >
+                        📝 Paste Syllabus Outline
+                      </Button>
+                    </HStack>
+
+                    {/* File Upload Mode */}
+                    {bulkTopicMode === "file" && (
+                      <VStack align="stretch" gap={3}>
+                        <label
+                          htmlFor="bulk-topic-file-input"
+                          style={{
+                            display: "block",
+                            padding: "20px 16px",
+                            border: "2px dashed #CBD5E0",
+                            borderRadius: "12px",
+                            textAlign: "center",
+                            cursor: "pointer",
+                            background: "#F8FAFC",
+                            transition: "all 0.2s",
+                          }}
+                        >
+                          <input
+                            id="bulk-topic-file-input"
+                            type="file"
+                            accept=".xlsx,.xls,.csv"
+                            style={{ display: "none" }}
+                            onChange={(e) => {
+                              const f = e.target.files?.[0];
+                              if (f) parseTopicSpreadsheetFile(f);
+                              e.target.value = "";
+                            }}
+                          />
+                          <VStack gap={1.5} align="center">
+                            <Icon as={IoCloudUploadOutline} boxSize={7} color="blue.500" />
+                            <Text fontSize="xs" fontWeight="600" color="gray.700">
+                              {bulkImportFileName ? `Selected File: ${bulkImportFileName}` : "Click or drag spreadsheet file (.xlsx, .xls, .csv)"}
+                            </Text>
+                            <Text fontSize="11px" color="gray.500">
+                              Columns: topic_name, topic_description, subtopic_name, subtopic_description
+                            </Text>
+                          </VStack>
+                        </label>
+
+                        {/* Download sample templates */}
+                        <HStack justify="space-between" flexWrap="wrap" gap={2}>
+                          <HStack gap={1.5}>
+                            <Button
+                              size="xs"
+                              variant="outline"
+                              borderColor="gray.300"
+                              color="gray.700"
+                              bg="white"
+                              borderRadius="md"
+                              onClick={() => downloadTopicTemplate("xlsx")}
+                            >
+                              <Icon as={FiDownload} mr={1} /> Download .xlsx Template
+                            </Button>
+                            <Button
+                              size="xs"
+                              variant="outline"
+                              borderColor="gray.300"
+                              color="gray.700"
+                              bg="white"
+                              borderRadius="md"
+                              onClick={() => downloadTopicTemplate("csv")}
+                            >
+                              <Icon as={FiDownload} mr={1} /> Download .csv Template
+                            </Button>
+                          </HStack>
+
+                          {bulkImportFileName && (
+                            <Button
+                              size="xs"
+                              variant="ghost"
+                              color="red.500"
+                              _hover={{ bg: "red.50" }}
+                              onClick={() => {
+                                setBulkImportFileName(null);
+                                setBulkParsedTopics([]);
+                                setBulkImportError(null);
+                              }}
+                            >
+                              <Icon as={FiX} mr={1} /> Clear File
+                            </Button>
+                          )}
+                        </HStack>
+                      </VStack>
+                    )}
+
+                    {/* Paste Outline Mode */}
+                    {bulkTopicMode === "paste" && (
+                      <VStack align="stretch" gap={2}>
+                        <HStack justify="space-between" align="center">
+                          <Text {...fieldLabelProps}>Syllabus Outline Text</Text>
+                          <HStack gap={1.5}>
+                            <Button
+                              size="xs"
+                              variant="outline"
+                              borderColor="blue.300"
+                              color="blue.600"
+                              bg="white"
+                              borderRadius="md"
+                              onClick={() => {
+                                setBulkImportText(SAMPLE_TOPIC_OUTLINE);
+                                parseTopicOutlineText(SAMPLE_TOPIC_OUTLINE);
+                              }}
+                            >
+                              Load Sample Outline
+                            </Button>
+                            {bulkImportText && (
+                              <Button
+                                size="xs"
+                                variant="ghost"
+                                color="gray.500"
+                                onClick={() => {
+                                  setBulkImportText("");
+                                  setBulkParsedTopics([]);
+                                  setBulkImportError(null);
+                                }}
+                              >
+                                Clear
+                              </Button>
+                            )}
+                          </HStack>
+                        </HStack>
+
+                        <Textarea
+                          placeholder={`Topic: Algebraic Processes\nDescription: Linear and quadratic equations\n- Simultaneous Linear Equations: Elimination and substitution\n- Quadratic Equations: Factoring and formula method\n\nTopic: Plane Geometry\n- Circle Theorems: Angles subtended by arcs`}
+                          value={bulkImportText}
+                          onChange={(e) => {
+                            setBulkImportText(e.target.value);
+                            parseTopicOutlineText(e.target.value);
+                          }}
+                          rows={6}
+                          bg="gray.50"
+                          border="1px solid"
+                          borderColor="gray.200"
+                          borderRadius="lg"
+                          fontSize="xs"
+                          fontFamily="monospace"
+                        />
+                        <Text fontSize="11px" color="gray.500">
+                          Format: `Topic: Topic Name`, optional `Description: ...`, followed by bulleted subtopics (`- Subtopic: Description` or `• Subtopic Name`).
+                        </Text>
+                      </VStack>
+                    )}
+
+                    {/* Error Notice */}
+                    {bulkImportError && (
+                      <Box bg="red.50" border="1px solid" borderColor="red.200" borderRadius="lg" p={2.5} fontSize="xs" color="red.700">
+                        <HStack gap={1.5}>
+                          <Icon as={FiAlertCircle} boxSize={4} color="red.500" />
+                          <Text>{bulkImportError}</Text>
+                        </HStack>
+                      </Box>
+                    )}
+
+                    {/* Parsed Topics Preview */}
+                    {bulkParsedTopics.length > 0 && (
+                      <Box border="1px solid" borderColor="blue.100" borderRadius="xl" p={3.5} bg="blue.50/30">
+                        <HStack justify="space-between" align="center" mb={2.5} flexWrap="wrap" gap={2}>
+                          <HStack gap={2}>
+                            <Text fontSize="xs" fontWeight="700" color="gray.700" textTransform="uppercase" letterSpacing="0.04em">
+                              Parsed Topics & Subtopics
+                            </Text>
+                            <Badge colorPalette="blue" size="sm" variant="surface">
+                              {bulkParsedTopics.length} Topics
+                            </Badge>
+                            <Badge colorPalette="purple" size="sm" variant="surface">
+                              {totalBulkSubtopicsCount} Subtopics
+                            </Badge>
+                          </HStack>
+
+                          {topicClass[0] && topicSubject[0] && (
+                            <Badge colorPalette="teal" size="sm" variant="subtle">
+                              Target: {classes.find(c => c.id === topicClass[0])?.name || "Class"} — {subjects.find(s => s.id === topicSubject[0])?.name || "Subject"}
+                            </Badge>
+                          )}
+                        </HStack>
+
+                        <VStack gap={2} align="stretch" maxH="280px" overflowY="auto" pr={1}>
+                          {bulkParsedTopics.map((topicItem, tIdx) => {
+                            const existingMatch = topicModeTopics.find(
+                              (t) => t.name.trim().toLowerCase() === topicItem.topicName.trim().toLowerCase()
+                            );
+                            return (
+                              <Box
+                                key={tIdx}
+                                bg="white"
+                                border="1px solid"
+                                borderColor={existingMatch ? "orange.200" : "gray.200"}
+                                borderRadius="lg"
+                                p={2.5}
+                                boxShadow="0 1px 2px rgba(0,0,0,0.04)"
+                              >
+                                <HStack justify="space-between" align="flex-start">
+                                  <VStack align="flex-start" gap={0.5} flex={1}>
+                                    <HStack gap={1.5} flexWrap="wrap">
+                                      <Badge colorPalette="gray" size="xs">#{tIdx + 1}</Badge>
+                                      <Text fontSize="xs" fontWeight="700" color="gray.800">
+                                        {topicItem.topicName}
+                                      </Text>
+                                      {existingMatch ? (
+                                        <Badge colorPalette="orange" size="xs" variant="subtle">
+                                          ⚡ Existing in DB (Will append new subtopics)
+                                        </Badge>
+                                      ) : (
+                                        <Badge colorPalette="green" size="xs" variant="subtle">
+                                          ✨ New Topic
+                                        </Badge>
+                                      )}
+                                      <Badge colorPalette="blue" size="xs" variant="outline">
+                                        {topicItem.subtopics.length} subtopic{topicItem.subtopics.length !== 1 ? "s" : ""}
+                                      </Badge>
+                                    </HStack>
+                                    {topicItem.topicDescription && (
+                                      <Text fontSize="11px" color="gray.500" fontStyle="italic">
+                                        {topicItem.topicDescription}
+                                      </Text>
+                                    )}
+                                  </VStack>
+
+                                  <IconButton
+                                    aria-label="Remove topic from import"
+                                    size="xs"
+                                    variant="ghost"
+                                    color="gray.400"
+                                    _hover={{ color: "red.500", bg: "red.50" }}
+                                    onClick={() => removeBulkParsedTopic(tIdx)}
+                                  >
+                                    <Icon as={FiTrash2} boxSize={3.5} />
+                                  </IconButton>
+                                </HStack>
+
+                                {/* Subtopics list */}
+                                {topicItem.subtopics.length > 0 ? (
+                                  <VStack align="stretch" gap={1} mt={2} pt={1.5} borderTop="1px solid" borderColor="gray.100">
+                                    {topicItem.subtopics.map((sub, sIdx) => (
+                                      <HStack
+                                        key={sIdx}
+                                        bg="gray.50"
+                                        px={2}
+                                        py={1}
+                                        borderRadius="md"
+                                        justify="space-between"
+                                        align="center"
+                                      >
+                                        <Text fontSize="11px" fontWeight="600" color="gray.700">
+                                          • {sub.name}
+                                        </Text>
+                                        {sub.description && (
+                                          <Text fontSize="10px" color="gray.500" maxW="50%" isTruncated>
+                                            {sub.description}
+                                          </Text>
+                                        )}
+                                      </HStack>
+                                    ))}
+                                  </VStack>
+                                ) : (
+                                  <Text fontSize="10px" color="gray.400" fontStyle="italic" mt={1}>
+                                    No subtopics defined (Topic only)
+                                  </Text>
+                                )}
+                              </Box>
+                            );
+                          })}
+                        </VStack>
+                      </Box>
+                    )}
+
+                    {/* Import Execute Button */}
+                    <Button
+                      bg="blue.500"
+                      color="white"
+                      rounded="xl"
+                      h={10}
+                      fontSize="sm"
+                      fontWeight="600"
+                      onClick={handleExecuteBulkImport}
+                      loading={bulkImportLoading}
+                      disabled={
+                        !topicClass[0] ||
+                        !topicSubject[0] ||
+                        bulkParsedTopics.length === 0 ||
+                        bulkImportLoading
+                      }
+                    >
+                      {bulkParsedTopics.length > 0
+                        ? `Import ${bulkParsedTopics.length} Topic${bulkParsedTopics.length !== 1 ? "s" : ""} & ${totalBulkSubtopicsCount} Subtopic${totalBulkSubtopicsCount !== 1 ? "s" : ""}`
+                        : "Import Topics & Subtopics"}
+                    </Button>
+                  </>
                 )}
               </VStack>
             </SectionCard>
 
             {/* 2. Academic Resources */}
-            <SectionCard icon={HiOutlineDocumentArrowUp} title="Academic Resources" subtitle="PDFs, videos & resource documents" accentColor="blue.500">
+            <SectionCard icon={HiOutlineDocumentArrowUp} title="Academic Resources" subtitle="PDFs, videos, past questions & bulk asset imports" accentColor="blue.500">
               <VStack gap={4} align="stretch">
-                <Grid templateColumns="1fr 1fr" gap={3}>
-                  <StyledSelect collection={classCollection} value={selectedClass} onValueChange={(e) => setSelectedClass(e.value)} label="Class Filter" placeholder="Select class" />
-                  <StyledSelect collection={subjectCollection} value={selectedSubject} onValueChange={(e) => setSelectedSubject(e.value)} label="Subject Filter" placeholder="Select subject" />
-                </Grid>
+                {/* Mode Selector Tabs */}
+                <HStack bg="gray.100" p={1} borderRadius="xl" gap={1}>
+                  <Button
+                    size="xs"
+                    flex={1}
+                    borderRadius="lg"
+                    fontSize="xs"
+                    fontWeight="600"
+                    variant={resourceActiveTab === "single" ? "solid" : "ghost"}
+                    bg={resourceActiveTab === "single" ? "white" : "transparent"}
+                    color={resourceActiveTab === "single" ? "blue.600" : "gray.600"}
+                    boxShadow={resourceActiveTab === "single" ? "0 1px 3px rgba(0,0,0,0.08)" : "none"}
+                    onClick={() => setResourceActiveTab("single")}
+                  >
+                    ＋ Single Resource
+                  </Button>
+                  <Button
+                    size="xs"
+                    flex={1}
+                    borderRadius="lg"
+                    fontSize="xs"
+                    fontWeight="600"
+                    variant={resourceActiveTab === "batch_files" ? "solid" : "ghost"}
+                    bg={resourceActiveTab === "batch_files" ? "white" : "transparent"}
+                    color={resourceActiveTab === "batch_files" ? "blue.600" : "gray.600"}
+                    boxShadow={resourceActiveTab === "batch_files" ? "0 1px 3px rgba(0,0,0,0.08)" : "none"}
+                    onClick={() => setResourceActiveTab("batch_files")}
+                  >
+                    📂 Batch Files ({batchResourceFiles.length})
+                  </Button>
+                  <Button
+                    size="xs"
+                    flex={1}
+                    borderRadius="lg"
+                    fontSize="xs"
+                    fontWeight="600"
+                    variant={resourceActiveTab === "spreadsheet" ? "solid" : "ghost"}
+                    bg={resourceActiveTab === "spreadsheet" ? "white" : "transparent"}
+                    color={resourceActiveTab === "spreadsheet" ? "blue.600" : "gray.600"}
+                    boxShadow={resourceActiveTab === "spreadsheet" ? "0 1px 3px rgba(0,0,0,0.08)" : "none"}
+                    onClick={() => setResourceActiveTab("spreadsheet")}
+                  >
+                    📥 Spreadsheet Import
+                  </Button>
+                </HStack>
 
-                {/* Course Topic Selector */}
-                <StyledSelect 
-                  collection={topicCollection} value={selectedTopicId} onValueChange={(e) => setSelectedTopicId(e.value)} 
-                  label="Select Course Topic" 
-                  placeholder={!selectedClass[0] || !selectedSubject[0] ? "Select class & subject first" : topics.length === 0 ? "No topics found matching selections" : "Choose topic..."} 
-                  disabled={!selectedClass[0] || !selectedSubject[0] || topics.length === 0} 
-                />
+                {/* ── TAB 1: Single Resource Upload ── */}
+                {resourceActiveTab === "single" && (
+                  <>
+                    <Grid templateColumns="1fr 1fr" gap={3}>
+                      <StyledSelect collection={classCollection} value={selectedClass} onValueChange={(e) => setSelectedClass(e.value)} label="Class Filter" placeholder="Select class" />
+                      <StyledSelect collection={subjectCollection} value={selectedSubject} onValueChange={(e) => setSelectedSubject(e.value)} label="Subject Filter" placeholder="Select subject" />
+                    </Grid>
 
-                {/* Subtopic Filter Select */}
-                <StyledSelect 
-                  collection={subTopicCollection} 
-                  value={selectedSubTopicId} 
-                  onValueChange={(e) => setSelectedSubTopicId(e.value)} 
-                  label="Subtopic Filter (Optional)" 
-                  placeholder={
-                    !selectedClass[0] || !selectedSubject[0] 
-                      ? "Select class & subject first" 
-                      : !selectedTopicId[0] 
-                      ? "Select topic first" 
-                      : resourceSubTopics.length === 0 
-                      ? "No subtopics found for this topic (Optional)" 
-                      : "Select subtopic (Optional)..."
-                  } 
-                  disabled={!selectedTopicId[0] || resourceSubTopics.length === 0} 
-                />
+                    {/* Course Topic Selector */}
+                    <StyledSelect 
+                      collection={topicCollection} value={selectedTopicId} onValueChange={(e) => setSelectedTopicId(e.value)} 
+                      label="Select Course Topic" 
+                      placeholder={!selectedClass[0] || !selectedSubject[0] ? "Select class & subject first" : topics.length === 0 ? "No topics found matching selections" : "Choose topic..."} 
+                      disabled={!selectedClass[0] || !selectedSubject[0] || topics.length === 0} 
+                    />
 
-                <StyledSelect collection={fileTypeCollection} value={fileType} onValueChange={(e) => setFileType(e.value)} label="File Type" placeholder="Select type" />
+                    {/* Subtopic Filter Select */}
+                    <StyledSelect 
+                      collection={subTopicCollection} 
+                      value={selectedSubTopicId} 
+                      onValueChange={(e) => setSelectedSubTopicId(e.value)} 
+                      label="Subtopic Filter (Optional)" 
+                      placeholder={
+                        !selectedClass[0] || !selectedSubject[0] 
+                          ? "Select class & subject first" 
+                          : !selectedTopicId[0] 
+                          ? "Select topic first" 
+                          : resourceSubTopics.length === 0 
+                          ? "No subtopics found for this topic (Optional)" 
+                          : "Select subtopic (Optional)..."
+                      } 
+                      disabled={!selectedTopicId[0] || resourceSubTopics.length === 0} 
+                    />
 
-                <Box>
-                  <Text {...fieldLabelProps}>Description</Text>
-                  <Textarea placeholder="Summary logs (optional)" value={description} onChange={(e) => setDescription(e.target.value)} rows={3} bg="gray.50" border="1px solid" borderColor="gray.200" borderRadius="lg" fontSize="sm" resize="none" />
-                </Box>
+                    <StyledSelect collection={fileTypeCollection} value={fileType} onValueChange={(e) => setFileType(e.value)} label="File Type" placeholder="Select type" />
 
-                <Box>
-                  <Text {...fieldLabelProps}>Upload Resource Asset File</Text>
-                  <Box {...getRootProps()} border="2px dashed" borderColor={isDragActive ? "blue.400" : "gray.200"} borderRadius="xl" p={5} textAlign="center" cursor="pointer" bg={isDragActive ? "blue.50" : "gray.50"}>
-                    <input {...getInputProps()} />
-                    <VStack gap={1.5}>
-                      <Icon as={IoCloudUploadOutline} boxSize={5} color="blue.500" />
-                      <Text fontSize="xs" color="gray.600" fontWeight="500">{isDragActive ? "Drop here" : "Browse or drop academic file item here"}</Text>
-                    </VStack>
-                  </Box>
-                </Box>
+                    <Box>
+                      <Text {...fieldLabelProps}>Description</Text>
+                      <Textarea placeholder="Summary logs (optional)" value={description} onChange={(e) => setDescription(e.target.value)} rows={3} bg="gray.50" border="1px solid" borderColor="gray.200" borderRadius="lg" fontSize="sm" resize="none" />
+                    </Box>
 
-                {files.map((file, i) => (
-                  <HStack key={i} p={3} bg="blue.50" borderRadius="xl" justify="space-between">
-                    <HStack gap={2}><Icon as={FiFile} color="blue.600" /><Text fontSize="xs" fontWeight="600" truncate maxW="180px">{file.name}</Text></HStack>
-                    <IconButton aria-label="Remove" size="xs" variant="ghost" onClick={() => removeFile(i)}><Icon as={FiX} /></IconButton>
-                  </HStack>
-                ))}
+                    <Box>
+                      <Text {...fieldLabelProps}>Upload Resource Asset File</Text>
+                      <Box {...getRootProps()} border="2px dashed" borderColor={isDragActive ? "blue.400" : "gray.200"} borderRadius="xl" p={5} textAlign="center" cursor="pointer" bg={isDragActive ? "blue.50" : "gray.50"}>
+                        <input {...getInputProps()} />
+                        <VStack gap={1.5}>
+                          <Icon as={IoCloudUploadOutline} boxSize={5} color="blue.500" />
+                          <Text fontSize="xs" color="gray.600" fontWeight="500">{isDragActive ? "Drop here" : "Browse or drop academic file item here"}</Text>
+                        </VStack>
+                      </Box>
+                    </Box>
 
-                <Button bg="blue.500" color="white" rounded="xl" h={11} onClick={handleUploadResource} disabled={!files.length || !selectedTopicId[0] || loading} loading={loading}>
-                  Upload Resource Item
-                </Button>
+                    {files.map((file, i) => (
+                      <HStack key={i} p={3} bg="blue.50" borderRadius="xl" justify="space-between">
+                        <HStack gap={2}><Icon as={FiFile} color="blue.600" /><Text fontSize="xs" fontWeight="600" truncate maxW="180px">{file.name}</Text></HStack>
+                        <IconButton aria-label="Remove" size="xs" variant="ghost" onClick={() => removeFile(i)}><Icon as={FiX} /></IconButton>
+                      </HStack>
+                    ))}
+
+                    <Button bg="blue.500" color="white" rounded="xl" h={11} onClick={handleUploadResource} disabled={!files.length || !selectedTopicId[0] || loading} loading={loading}>
+                      Upload Resource Item
+                    </Button>
+                  </>
+                )}
+
+                {/* ── TAB 2: Batch Multi-File Upload ── */}
+                {resourceActiveTab === "batch_files" && (
+                  <>
+                    <Grid templateColumns="1fr 1fr" gap={3}>
+                      <StyledSelect collection={classCollection} value={selectedClass} onValueChange={(e) => setSelectedClass(e.value)} label="Target Class" placeholder="Select class" />
+                      <StyledSelect collection={subjectCollection} value={selectedSubject} onValueChange={(e) => setSelectedSubject(e.value)} label="Target Subject" placeholder="Select subject" />
+                    </Grid>
+
+                    {/* Default Topic and Subtopic for batch assignment */}
+                    <Grid templateColumns="1.2fr 1fr" gap={3}>
+                      <StyledSelect 
+                        collection={topicCollection} 
+                        value={selectedTopicId} 
+                        onValueChange={(e) => setSelectedTopicId(e.value)} 
+                        label="Default Course Topic" 
+                        placeholder={!selectedClass[0] || !selectedSubject[0] ? "Select class & subject first" : topics.length === 0 ? "No topics found" : "Assign to topic..."} 
+                        disabled={!selectedClass[0] || !selectedSubject[0] || topics.length === 0} 
+                      />
+                      <StyledSelect 
+                        collection={subTopicCollection} 
+                        value={selectedSubTopicId} 
+                        onValueChange={(e) => setSelectedSubTopicId(e.value)} 
+                        label="Subtopic (Optional)" 
+                        placeholder={!selectedTopicId[0] ? "Topic first" : resourceSubTopics.length === 0 ? "None" : "Select subtopic..."} 
+                        disabled={!selectedTopicId[0] || resourceSubTopics.length === 0} 
+                      />
+                    </Grid>
+
+                    {batchResourceFiles.length > 0 && selectedTopicId[0] && (
+                      <Button
+                        size="xs"
+                        variant="subtle"
+                        colorPalette="blue"
+                        alignSelf="flex-start"
+                        borderRadius="md"
+                        fontSize="11px"
+                        onClick={() => applyTopicToAllBatchFiles(selectedTopicId[0], selectedSubTopicId[0] || "")}
+                      >
+                        <Icon as={FiCheck} mr={1} /> Apply Selected Topic & Subtopic to All ({batchResourceFiles.length}) Files
+                      </Button>
+                    )}
+
+                    {/* Batch Multi-File Dropzone */}
+                    <Box>
+                      <Text {...fieldLabelProps}>Select or Drop Multiple Academic Files</Text>
+                      <Box
+                        {...getBatchRootProps()}
+                        border="2px dashed"
+                        borderColor={isBatchDragActive ? "blue.400" : "blue.200"}
+                        borderRadius="xl"
+                        p={5}
+                        textAlign="center"
+                        cursor="pointer"
+                        bg={isBatchDragActive ? "blue.50" : "blue.50/30"}
+                        _hover={{ borderColor: "blue.400", bg: "blue.50/50" }}
+                        transition="all 0.15s"
+                      >
+                        <input {...getBatchInputProps()} />
+                        <VStack gap={1.5}>
+                          <Icon as={IoCloudUploadOutline} boxSize={7} color="blue.500" />
+                          <Text fontSize="xs" color="gray.800" fontWeight="600">
+                            {isBatchDragActive ? "Drop multiple files here..." : "Click or drag & drop multiple files at once"}
+                          </Text>
+                          <Text fontSize="11px" color="gray.500">
+                            Supports PDF documents, MP4/WebM videos, and past question compilations.
+                          </Text>
+                        </VStack>
+                      </Box>
+                    </Box>
+
+                    {/* Queued Files List */}
+                    {batchResourceFiles.length > 0 && (
+                      <Box bg="gray.50" border="1px solid" borderColor="gray.200" borderRadius="xl" p={3}>
+                        <HStack justify="space-between" mb={2}>
+                          <HStack gap={2}>
+                            <Text fontSize="xs" fontWeight="700" color="gray.800" textTransform="uppercase" letterSpacing="0.04em">
+                              Queued Files ({batchResourceFiles.length})
+                            </Text>
+                            <Badge colorPalette="blue" size="sm" variant="subtle">
+                              {batchResourceFiles.filter(f => f.status === "done").length} / {batchResourceFiles.length} Uploaded
+                            </Badge>
+                          </HStack>
+                          <Button
+                            size="xs"
+                            variant="ghost"
+                            color="gray.400"
+                            _hover={{ color: "red.500" }}
+                            onClick={() => setBatchResourceFiles([])}
+                            disabled={batchUploading}
+                          >
+                            Clear All
+                          </Button>
+                        </HStack>
+
+                        <VStack align="stretch" gap={2} maxH="320px" overflowY="auto" pr={1}>
+                          {batchResourceFiles.map((item, idx) => {
+                            const assignedTopic = topics.find(t => t.id === (item.topicId || selectedTopicId[0]));
+                            return (
+                              <Box
+                                key={item.id}
+                                bg="white"
+                                border="1px solid"
+                                borderColor={item.status === "error" ? "red.200" : item.status === "done" ? "green.200" : "gray.200"}
+                                borderRadius="lg"
+                                p={2.5}
+                                boxShadow="0 1px 2px rgba(0,0,0,0.02)"
+                              >
+                                <HStack justify="space-between" align="center" mb={1.5}>
+                                  <HStack gap={2} flex={1} overflow="hidden">
+                                    <Icon
+                                      as={item.type === "video" ? MdVideoLibrary : MdPictureAsPdf}
+                                      boxSize={4}
+                                      color={item.type === "video" ? "purple.500" : "blue.500"}
+                                    />
+                                    <Text fontSize="xs" fontWeight="600" color="gray.700" isTruncated maxW="220px">
+                                      {item.name}
+                                    </Text>
+                                    <Text fontSize="10px" color="gray.400">
+                                      ({(item.file.size / 1024 / 1024).toFixed(2)} MB)
+                                    </Text>
+                                  </HStack>
+
+                                  <HStack gap={1.5}>
+                                    {/* Type Pill Selector */}
+                                    <HStack bg="gray.100" p={0.5} borderRadius="md" gap={0.5}>
+                                      {(["pdf", "video", "pqs"] as const).map((t) => (
+                                        <Button
+                                          key={t}
+                                          size="2xs"
+                                          variant="ghost"
+                                          bg={item.type === t ? "white" : "transparent"}
+                                          color={item.type === t ? "blue.600" : "gray.500"}
+                                          fontSize="9px"
+                                          fontWeight="700"
+                                          textTransform="uppercase"
+                                          px={1.5}
+                                          h={4}
+                                          borderRadius="sm"
+                                          onClick={() => updateBatchFile(idx, "type", t)}
+                                        >
+                                          {t}
+                                        </Button>
+                                      ))}
+                                    </HStack>
+
+                                    {/* Status Badge */}
+                                    {item.status === "done" && (
+                                      <Badge colorPalette="green" size="sm" variant="subtle" fontSize="9px">
+                                        <Icon as={FiCheckCircle} mr={0.5} /> Done
+                                      </Badge>
+                                    )}
+                                    {item.status === "uploading" && (
+                                      <Badge colorPalette="blue" size="sm" variant="surface" fontSize="9px">
+                                        Uploading...
+                                      </Badge>
+                                    )}
+                                    {item.status === "error" && (
+                                      <Badge colorPalette="red" size="sm" variant="subtle" fontSize="9px">
+                                        Error
+                                      </Badge>
+                                    )}
+
+                                    <IconButton
+                                      aria-label="Remove"
+                                      size="xs"
+                                      variant="ghost"
+                                      color="gray.400"
+                                      _hover={{ color: "red.500" }}
+                                      onClick={() => removeBatchFile(idx)}
+                                      disabled={batchUploading}
+                                    >
+                                      <Icon as={FiTrash2} boxSize={3} />
+                                    </IconButton>
+                                  </HStack>
+                                </HStack>
+
+                                {/* Editable Title */}
+                                <Input
+                                  size="xs"
+                                  placeholder="Resource Display Title"
+                                  value={item.title}
+                                  onChange={(e) => updateBatchFile(idx, "title", e.target.value)}
+                                  fontSize="xs"
+                                  borderRadius="md"
+                                  bg="gray.50"
+                                  border="1px solid"
+                                  borderColor="gray.200"
+                                  h={7}
+                                  mb={1.5}
+                                />
+
+                                <HStack justify="space-between" fontSize="10px" color="gray.500">
+                                  <Text>
+                                    Topic: <Text as="span" fontWeight="600" color={assignedTopic ? "blue.600" : "red.500"}>
+                                      {assignedTopic ? assignedTopic.name : "Select Default Topic Above"}
+                                    </Text>
+                                  </Text>
+                                  {item.errorMsg && (
+                                    <Text color="red.500" fontSize="10px" fontWeight="500">
+                                      {item.errorMsg}
+                                    </Text>
+                                  )}
+                                </HStack>
+                              </Box>
+                            );
+                          })}
+                        </VStack>
+                      </Box>
+                    )}
+
+                    {/* Batch Upload Action Button */}
+                    <Button
+                      bg="blue.500"
+                      color="white"
+                      rounded="xl"
+                      h={11}
+                      onClick={handleUploadBatchFiles}
+                      disabled={
+                        !selectedClass[0] ||
+                        !selectedSubject[0] ||
+                        batchResourceFiles.length === 0 ||
+                        batchResourceFiles.every(f => f.status === "done") ||
+                        batchUploading
+                      }
+                      loading={batchUploading}
+                    >
+                      {batchResourceFiles.length > 0
+                        ? `Upload All (${batchResourceFiles.filter(f => f.status !== "done").length}) Queued Resource File(s)`
+                        : "Upload Queued Resources"}
+                    </Button>
+                  </>
+                )}
+
+                {/* ── TAB 3: Spreadsheet / Links Bulk Import ── */}
+                {resourceActiveTab === "spreadsheet" && (
+                  <>
+                    <Grid templateColumns="1fr 1fr" gap={3}>
+                      <StyledSelect collection={classCollection} value={selectedClass} onValueChange={(e) => setSelectedClass(e.value)} label="Target Class" placeholder="Select class" />
+                      <StyledSelect collection={subjectCollection} value={selectedSubject} onValueChange={(e) => setSelectedSubject(e.value)} label="Target Subject" placeholder="Select subject" />
+                    </Grid>
+
+                    {/* Fallback Course Topic Selector */}
+                    <StyledSelect 
+                      collection={topicCollection} 
+                      value={selectedTopicId} 
+                      onValueChange={(e) => setSelectedTopicId(e.value)} 
+                      label="Fallback Course Topic (Optional — Topics in CSV sync automatically)" 
+                      placeholder={!selectedClass[0] || !selectedSubject[0] ? "Select class & subject first" : topics.length === 0 ? "No existing topics (CSV topics will auto-create)" : "Select fallback topic (optional)..."} 
+                      disabled={!selectedClass[0] || !selectedSubject[0] || topics.length === 0} 
+                    />
+
+                    {/* Format Toggle: Upload File vs Paste Links/Outline */}
+                    <HStack bg="gray.100" p={1} borderRadius="lg" gap={1}>
+                      <Button
+                        size="xs"
+                        flex={1}
+                        borderRadius="md"
+                        fontSize="xs"
+                        fontWeight="600"
+                        variant={bulkResourceMode === "file" ? "solid" : "ghost"}
+                        bg={bulkResourceMode === "file" ? "white" : "transparent"}
+                        color={bulkResourceMode === "file" ? "blue.600" : "gray.600"}
+                        onClick={() => setBulkResourceMode("file")}
+                      >
+                        📄 Spreadsheet File (.xlsx, .csv)
+                      </Button>
+                      <Button
+                        size="xs"
+                        flex={1}
+                        borderRadius="md"
+                        fontSize="xs"
+                        fontWeight="600"
+                        variant={bulkResourceMode === "paste" ? "solid" : "ghost"}
+                        bg={bulkResourceMode === "paste" ? "white" : "transparent"}
+                        color={bulkResourceMode === "paste" ? "blue.600" : "gray.600"}
+                        onClick={() => setBulkResourceMode("paste")}
+                      >
+                        📝 Paste Outline
+                      </Button>
+                    </HStack>
+
+                    {/* Step 1: Upload Spreadsheet or Paste Outline */}
+                    <Box>
+                      <Text {...fieldLabelProps}>Step 1: Upload CSV/Excel Sheet or Outline</Text>
+                      {bulkResourceMode === "file" ? (
+                        <VStack align="stretch" gap={2}>
+                          <label
+                            htmlFor="bulk-resource-file-input"
+                            style={{
+                              border: "2px dashed #CBD5E1",
+                              borderRadius: "12px",
+                              padding: "16px",
+                              textAlign: "center",
+                              cursor: "pointer",
+                              background: "#F8FAFC",
+                              display: "block",
+                            }}
+                          >
+                            <input
+                              id="bulk-resource-file-input"
+                              type="file"
+                              accept=".xlsx,.xls,.csv"
+                              style={{ display: "none" }}
+                              onChange={(e) => {
+                                const f = e.target.files?.[0];
+                                if (f) parseResourceSpreadsheetFile(f);
+                                e.target.value = "";
+                              }}
+                            />
+                            <VStack gap={1.5} align="center">
+                              <Icon as={IoCloudUploadOutline} boxSize={6} color="blue.500" />
+                              <Text fontSize="xs" fontWeight="600" color="gray.700">
+                                {bulkResourceFileName ? `Selected: ${bulkResourceFileName}` : "Click to select spreadsheet (.xlsx, .xls, .csv)"}
+                              </Text>
+                              <Text fontSize="11px" color="gray.500">
+                                Columns: title, type, file_name, topic_name, subtopic_name, description
+                              </Text>
+                            </VStack>
+                          </label>
+
+                          {/* Download sample templates */}
+                          <HStack justify="space-between" flexWrap="wrap" gap={2}>
+                            <HStack gap={1.5}>
+                              <Button
+                                size="xs"
+                                variant="outline"
+                                fontSize="11px"
+                                h={7}
+                                borderRadius="md"
+                                onClick={() => downloadResourceTemplate("xlsx")}
+                              >
+                                <Icon as={FiDownload} mr={1} /> Excel Template (.xlsx)
+                              </Button>
+                              <Button
+                                size="xs"
+                                variant="outline"
+                                fontSize="11px"
+                                h={7}
+                                borderRadius="md"
+                                onClick={() => downloadResourceTemplate("csv")}
+                              >
+                                <Icon as={FiDownload} mr={1} /> CSV Template (.csv)
+                              </Button>
+                            </HStack>
+                            {bulkResourceFileName && (
+                              <Button
+                                size="xs"
+                                variant="ghost"
+                                color="red.500"
+                                fontSize="11px"
+                                h={7}
+                                onClick={() => {
+                                  setBulkResourceFileName(null);
+                                  setBulkParsedResources([]);
+                                  setBulkResourceImportError(null);
+                                }}
+                              >
+                                Clear Sheet
+                              </Button>
+                            )}
+                          </HStack>
+                        </VStack>
+                      ) : (
+                        <VStack align="stretch" gap={2}>
+                          <HStack justify="space-between" align="center">
+                            <Text fontSize="11px" color="gray.500">Separated by Tab, Pipe | or Comma</Text>
+                            <Button
+                              size="2xs"
+                              variant="subtle"
+                              colorPalette="blue"
+                              fontSize="10px"
+                              borderRadius="md"
+                              onClick={() => {
+                                setBulkResourceText(SAMPLE_RESOURCE_PASTE);
+                                parseResourceOutlineText(SAMPLE_RESOURCE_PASTE);
+                              }}
+                            >
+                              Load Sample Data
+                            </Button>
+                          </HStack>
+
+                          <Textarea
+                            placeholder="Title | Type (pdf/video/pqs) | File Name | Topic | Subtopic | Description"
+                            value={bulkResourceText}
+                            onChange={(e) => {
+                              setBulkResourceText(e.target.value);
+                              parseResourceOutlineText(e.target.value);
+                            }}
+                            rows={4}
+                            bg="gray.50"
+                            border="1px solid"
+                            borderColor="gray.200"
+                            borderRadius="lg"
+                            fontSize="xs"
+                            fontFamily="monospace"
+                          />
+                        </VStack>
+                      )}
+                    </Box>
+
+                    {/* Step 2: Upload Accompanying Resource Files */}
+                    <Box>
+                      <Text {...fieldLabelProps}>Step 2: Upload Accompanying Resource Files</Text>
+                      <label
+                        htmlFor="resource-bulk-assets-node"
+                        style={{
+                          display: "block",
+                          padding: "16px",
+                          border: "2px dashed #CBD5E1",
+                          borderRadius: "12px",
+                          textAlign: "center",
+                          cursor: "pointer",
+                          background: "#F8FAFC",
+                        }}
+                      >
+                        <input
+                          id="resource-bulk-assets-node"
+                          type="file"
+                          multiple
+                          accept=".pdf,.mp4,.webm,.mov,.mkv,.avi,.doc,.docx,.zip,.pqs"
+                          style={{ display: "none" }}
+                          onChange={(e) => {
+                            if (e.target.files) {
+                              const files = Array.from(e.target.files);
+                              setBulkResourceAttachedFiles((prev) => {
+                                const map = new Map(prev.map((f) => [f.name, f]));
+                                files.forEach((f) => map.set(f.name, f));
+                                return Array.from(map.values());
+                              });
+                              e.target.value = "";
+                            }
+                          }}
+                        />
+                        <VStack gap={1} align="center">
+                          <Icon as={FiUpload} boxSize={5} color="blue.500" mb={0.5} />
+                          <Text fontSize="xs" fontWeight="600" color="gray.700">
+                            Select or drop all files referenced under the <Text as="span" color="blue.600" fontFamily="monospace">file_name / name</Text> column
+                          </Text>
+                          <Text fontSize="11px" color="gray.500">
+                            PDF study notes, video tutorials (.mp4, .webm), and past exam questions
+                          </Text>
+                        </VStack>
+                      </label>
+                      {bulkResourceAttachedFiles.length > 0 && (
+                        <HStack justify="space-between" mt={2} align="center" bg="blue.50" px={3} py={1.5} borderRadius="lg">
+                          <Badge colorPalette="blue" variant="subtle" fontSize="11px">
+                            📁 {bulkResourceAttachedFiles.length} file{bulkResourceAttachedFiles.length !== 1 ? "s" : ""} cross-referenced
+                          </Badge>
+                          <Button
+                            size="2xs"
+                            variant="ghost"
+                            color="red.500"
+                            fontSize="10px"
+                            h={5}
+                            onClick={() => setBulkResourceAttachedFiles([])}
+                          >
+                            Clear Files
+                          </Button>
+                        </HStack>
+                      )}
+                    </Box>
+
+                    {/* Error Notice */}
+                    {bulkResourceImportError && (
+                      <Alert.Root status="error" borderRadius="xl">
+                        <Alert.Indicator />
+                        <Alert.Content>
+                          <Alert.Title fontSize="xs">Parse Issue</Alert.Title>
+                          <Alert.Description fontSize="xs">{bulkResourceImportError}</Alert.Description>
+                        </Alert.Content>
+                      </Alert.Root>
+                    )}
+
+                    {/* Parsed Resources Preview */}
+                    {bulkParsedResources.length > 0 && (
+                      <Box bg="gray.50" border="1px solid" borderColor="gray.200" borderRadius="xl" p={3}>
+                        <HStack justify="space-between" mb={2}>
+                          <HStack gap={2} wrap="wrap">
+                            <Text fontSize="xs" fontWeight="700" color="gray.800" textTransform="uppercase" letterSpacing="0.04em">
+                              Parsed Resources ({bulkParsedResources.length})
+                            </Text>
+                            {(() => {
+                              const matchedCount = bulkParsedResources.filter(
+                                (r) => r.fileName && bulkResourceAttachedFiles.some(
+                                  (f) => f.name.toLowerCase() === r.fileName.toLowerCase()
+                                )
+                              ).length;
+                              const totalWithFile = bulkParsedResources.filter((r) => r.fileName).length;
+                              return totalWithFile > 0 ? (
+                                <Badge
+                                  colorPalette={matchedCount === totalWithFile ? "green" : "orange"}
+                                  size="sm"
+                                  variant="subtle"
+                                  fontSize="10px"
+                                >
+                                  {matchedCount}/{totalWithFile} Files Matched
+                                </Badge>
+                              ) : null;
+                            })()}
+                            {(() => {
+                              const uniqueTopics = Array.from(new Set(bulkParsedResources.map(r => r.topicName.trim()).filter(Boolean)));
+                              const newTopicsCount = bulkParsedResources.filter(r => r.isNewTopic && r.topicName.trim()).reduce((acc, r) => acc.add(r.topicName.trim().toLowerCase()), new Set<string>()).size;
+                              return (
+                                <HStack gap={1} wrap="wrap">
+                                  {uniqueTopics.length > 0 && (
+                                    <Badge colorPalette="cyan" size="sm" variant="subtle" fontSize="10px">
+                                      📚 {uniqueTopics.length} Topic{uniqueTopics.length !== 1 ? "s" : ""}
+                                    </Badge>
+                                  )}
+                                  {newTopicsCount > 0 && (
+                                    <Badge colorPalette="purple" size="sm" variant="subtle" fontSize="10px">
+                                      ✨ {newTopicsCount} New to Sync
+                                    </Badge>
+                                  )}
+                                </HStack>
+                              );
+                            })()}
+                            <HStack gap={1}>
+                              <Badge colorPalette="blue" size="sm" variant="subtle" fontSize="10px">
+                                {bulkParsedResources.filter(r => r.type === "pdf").length} PDFs
+                              </Badge>
+                              <Badge colorPalette="purple" size="sm" variant="subtle" fontSize="10px">
+                                {bulkParsedResources.filter(r => r.type === "video").length} Videos
+                              </Badge>
+                              <Badge colorPalette="teal" size="sm" variant="subtle" fontSize="10px">
+                                {bulkParsedResources.filter(r => r.type === "pqs").length} PQs
+                              </Badge>
+                            </HStack>
+                          </HStack>
+                          <Button
+                            size="xs"
+                            variant="ghost"
+                            color="gray.400"
+                            _hover={{ color: "red.500" }}
+                            onClick={() => {
+                              setBulkParsedResources([]);
+                              setBulkResourceFileName(null);
+                              setBulkResourceText("");
+                            }}
+                          >
+                            Clear
+                          </Button>
+                        </HStack>
+
+                        {/* List of parsed resources */}
+                        <VStack align="stretch" gap={2} maxH="320px" overflowY="auto" pr={1}>
+                          {bulkParsedResources.map((item, idx) => {
+                            const effectiveTopicId = item.matchedTopicId || selectedTopicId[0];
+                            const effectiveTopicObj = topics.find(t => t.id === effectiveTopicId);
+                            const isFileMatched = item.fileName
+                              ? bulkResourceAttachedFiles.some(
+                                  (f) => f.name.toLowerCase() === item.fileName.toLowerCase()
+                                )
+                              : false;
+
+                            return (
+                              <Box
+                                key={item.id}
+                                bg="white"
+                                border="1px solid"
+                                borderColor={item.fileName && !isFileMatched ? "orange.200" : "gray.200"}
+                                borderRadius="lg"
+                                p={2.5}
+                                boxShadow="0 1px 2px rgba(0,0,0,0.02)"
+                              >
+                                <HStack justify="space-between" align="flex-start">
+                                  <VStack align="start" gap={1} flex={1} overflow="hidden">
+                                    <HStack gap={1.5} wrap="wrap">
+                                      <Badge
+                                        colorPalette={item.type === "video" ? "purple" : item.type === "pqs" ? "teal" : "blue"}
+                                        size="xs"
+                                        variant="solid"
+                                        textTransform="uppercase"
+                                        fontSize="9px"
+                                      >
+                                        {item.type}
+                                      </Badge>
+                                      <Text fontSize="xs" fontWeight="700" color="gray.800" isTruncated maxW="280px">
+                                        {item.title}
+                                      </Text>
+                                    </HStack>
+
+                                    {/* File Matching Status Badge */}
+                                    {item.fileName ? (
+                                      <Badge
+                                        colorPalette={isFileMatched ? "green" : "red"}
+                                        size="sm"
+                                        variant="subtle"
+                                        fontSize="9px"
+                                      >
+                                        📁 File: {item.fileName} {isFileMatched ? "(Matched)" : "(Not Uploaded Yet)"}
+                                      </Badge>
+                                    ) : item.url ? (
+                                      <HStack gap={1} fontSize="10px" color="blue.600">
+                                        <Icon as={FiExternalLink} boxSize={2.5} />
+                                        <Text as="a" href={item.url} target="_blank" rel="noopener noreferrer" isTruncated maxW="280px" _hover={{ textDecoration: "underline" }}>
+                                          {item.url}
+                                        </Text>
+                                      </HStack>
+                                    ) : (
+                                      <Badge colorPalette="red" size="sm" variant="subtle" fontSize="9px">
+                                        ⚠️ Missing File Name
+                                      </Badge>
+                                    )}
+
+                                    {item.description && (
+                                      <Text fontSize="11px" color="gray.500" noOfLines={2}>
+                                        {item.description}
+                                      </Text>
+                                    )}
+
+                                    {/* Topic matching status */}
+                                    <HStack gap={1.5} mt={0.5} wrap="wrap">
+                                      {effectiveTopicObj ? (
+                                        <Badge colorPalette={item.matchedTopicId ? "green" : "blue"} size="sm" variant="subtle" fontSize="9px">
+                                          Topic: {effectiveTopicObj.name} {item.matchedTopicId ? "(Matched)" : "(Fallback)"}
+                                        </Badge>
+                                      ) : item.topicName ? (
+                                        <Badge colorPalette="purple" size="sm" variant="subtle" fontSize="9px">
+                                          ✨ Sync Topic: {item.topicName} (Auto-created)
+                                        </Badge>
+                                      ) : (
+                                        <Badge colorPalette="orange" size="sm" variant="subtle" fontSize="9px">
+                                          Default Topic: General Resources
+                                        </Badge>
+                                      )}
+
+                                      {item.subTopicName && (
+                                        <Badge colorPalette="teal" size="sm" variant="outline" fontSize="9px">
+                                          Subtopic: {item.subTopicName} (Auto-synced)
+                                        </Badge>
+                                      )}
+                                    </HStack>
+                                  </VStack>
+
+                                  <IconButton
+                                    aria-label="Remove resource"
+                                    size="xs"
+                                    variant="ghost"
+                                    color="gray.400"
+                                    _hover={{ color: "red.500" }}
+                                    onClick={() => removeBulkParsedResource(idx)}
+                                  >
+                                    <Icon as={FiTrash2} boxSize={3} />
+                                  </IconButton>
+                                </HStack>
+                              </Box>
+                            );
+                          })}
+                        </VStack>
+                      </Box>
+                    )}
+
+                    {/* Commit Bulk Resource Button */}
+                    <Button
+                      bg="blue.500"
+                      color="white"
+                      rounded="xl"
+                      h={11}
+                      onClick={commitBulkResourceImport}
+                      loading={bulkResourceImportLoading}
+                      disabled={
+                        !selectedClass[0] ||
+                        !selectedSubject[0] ||
+                        bulkParsedResources.length === 0 ||
+                        bulkResourceImportLoading
+                      }
+                    >
+                      {bulkParsedResources.length > 0
+                        ? `Import ${bulkParsedResources.length} Academic Resource${bulkParsedResources.length !== 1 ? "s" : ""}`
+                        : "Import Academic Resources"}
+                    </Button>
+                  </>
+                )}
               </VStack>
             </SectionCard>
           </VStack>

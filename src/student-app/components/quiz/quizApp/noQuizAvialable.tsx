@@ -11,14 +11,14 @@ export const NoQuizAvailable = ({
   onCancel,
 }: NoQuizAvailableProps) => {
   return (
-    <Box p={4} bg="white" borderRadius="lg" minH="75vh">
+    <Box p={4} bg="white" borderRadius="lg" h="auto">
       <Box
         display="flex"
         alignItems="center"
         justifyContent="center"
         flexDirection="column"
         gap={4}
-        minH="60vh"
+        py={12}
       >
         <Heading size="lg" color="gray.600">
           No Quiz Available

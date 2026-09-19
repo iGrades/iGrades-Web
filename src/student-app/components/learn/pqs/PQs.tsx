@@ -127,7 +127,7 @@ const PQs = () => {
           selectedExam={selectedExam}
         />
       ) : (
-        <Box bg="white" rounded="lg" shadow="sm" p={{ base: 4, md: 6 }} mb={20} minH="75vh">
+        <Box bg="white" rounded="lg" shadow="sm" p={{ base: 4, md: 6 }} mb={20} h="auto">
           <Flex
             direction={{ base: "column", md: "row" }}
             justify="space-between"

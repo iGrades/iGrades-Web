@@ -24,6 +24,8 @@ interface PDFsResource {
   duration?: number;
   type: string;
   topic_id?: string;
+  description?: string;
+  file_size?: number;
 }
 
 const Pdfs = () => {
@@ -108,7 +110,7 @@ const Pdfs = () => {
   );
 
   return (
-    <Box bg="white" rounded="lg" shadow="sm" p={4} mb={20} h={{base: 'auto', lg: '75vh'}}>
+    <Box bg="white" rounded="lg" shadow="sm" p={4} mb={20} h="auto">
       {!topicList ? (
         <Grid
           templateColumns={{

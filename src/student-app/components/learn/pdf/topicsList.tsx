@@ -16,6 +16,8 @@ interface PDFsResource {
   duration?: number;
   type: string;
   topic_id?: string;
+  description?: string;
+  file_size?: number;
 }
 
 type Props = {
@@ -53,7 +55,7 @@ const TopicsList = ({
   };
 
   return (
-    <Box bg="white" rounded="lg"  p={4} mb={20} h="75vh">
+    <Box h="auto">
       {pdfList && selectedTopic ? (
         <PdfList
           topic={selectedTopic}
