@@ -1236,7 +1236,13 @@ const CMS = () => {
 
   // ── Resource Upload Handlers ──
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
-    onDrop: (accepted) => setFiles((p) => [...p, ...accepted]),
+    onDrop: (accepted) => {
+      const valid = accepted.filter((f) => f.size > 0);
+      if (valid.length < accepted.length) {
+        setAlert({ type: "error", message: "Selected file has 0 bytes (empty). Please select a valid document." });
+      }
+      setFiles((p) => [...p, ...valid]);
+    },
     multiple: false,
   });
   const removeFile = (i: number) => setFiles((p) => p.filter((_, j) => j !== i));
@@ -1251,11 +1257,40 @@ const CMS = () => {
   });
 
   const uploadFileToSupabase = async (file: File, type: string) => {
+    if (!file) {
+      throw new Error("No file was provided for upload.");
+    }
+    if (file.size === 0) {
+      throw new Error(`The file "${file.name}" has 0 bytes. Please choose a valid non-empty file.`);
+    }
+
     const folder = type === "video" ? "Videos" : type === "pqs" ? "PastQuestions" : "PDFs";
     const ext = (file.name.split(".").pop() || "").toLowerCase();
     const path = `${folder}/${Math.random().toString(36).substring(2)}_${Date.now()}.${ext}`;
-    const mimeType = ext === "pdf" ? "application/pdf" : ext === "mp4" ? "video/mp4" : ext === "webm" ? "video/webm" : file.type || "application/octet-stream";
-    const { error } = await supabase.storage.from("test-resource").upload(path, file, {
+    const mimeType =
+      ext === "pdf"
+        ? "application/pdf"
+        : ext === "mp4"
+        ? "video/mp4"
+        : ext === "webm"
+        ? "video/webm"
+        : ext === "mov"
+        ? "video/quicktime"
+        : ext === "mkv"
+        ? "video/x-matroska"
+        : ext === "avi"
+        ? "video/x-msvideo"
+        : file.type || "application/octet-stream";
+
+    // Read full file into memory to prevent detached browser file stream / 0-byte upload
+    const arrayBuffer = await file.arrayBuffer();
+    if (!arrayBuffer || arrayBuffer.byteLength === 0) {
+      throw new Error(`Failed to read binary data from "${file.name}". File stream was empty (0 bytes).`);
+    }
+
+    const binaryBlob = new Blob([arrayBuffer], { type: mimeType });
+
+    const { error } = await supabase.storage.from("test-resource").upload(path, binaryBlob, {
       contentType: mimeType,
       upsert: true,
     });
@@ -1310,7 +1345,16 @@ const CMS = () => {
   // ── Academic Resources Bulk / Batch Handlers ──
   const handleAddBatchFiles = (accepted: File[]) => {
     if (!accepted || accepted.length === 0) return;
-    const newItems: BatchResourceFileItem[] = accepted.map((file) => {
+    const validFiles = accepted.filter((f) => f.size > 0);
+    if (validFiles.length < accepted.length) {
+      setAlert({
+        type: "error",
+        message: `${accepted.length - validFiles.length} file(s) were 0 bytes (empty) and were skipped.`,
+      });
+    }
+    if (validFiles.length === 0) return;
+
+    const newItems: BatchResourceFileItem[] = validFiles.map((file) => {
       const ext = file.name.split(".").pop()?.toLowerCase() || "";
       let detectedType: "pdf" | "video" | "pqs" = "pdf";
       if (["mp4", "webm", "mov", "mkv", "avi", "m4v"].includes(ext)) {
@@ -2122,9 +2166,17 @@ const CMS = () => {
   };
 
   const uploadQuestionImage = async (file: File): Promise<string | null> => {
-    const ext = file.name.split(".").pop();
+    if (!file || file.size === 0) return null;
+    const ext = file.name.split(".").pop() || "jpg";
+    const mimeType = file.type || (ext === "png" ? "image/png" : ext === "webp" ? "image/webp" : "image/jpeg");
     const path = `questions/${Math.random().toString(36).substring(2)}_${Date.now()}.${ext}`;
-    const { error } = await supabase.storage.from("question-images").upload(path, file);
+    const arrayBuffer = await file.arrayBuffer();
+    if (!arrayBuffer || arrayBuffer.byteLength === 0) return null;
+    const blob = new Blob([arrayBuffer], { type: mimeType });
+    const { error } = await supabase.storage.from("question-images").upload(path, blob, {
+      contentType: mimeType,
+      upsert: true,
+    });
     if (error) { console.error("Image upload error:", error); return null; }
     const { data: { publicUrl } } = supabase.storage.from("question-images").getPublicUrl(path);
     return publicUrl;
@@ -3905,15 +3957,17 @@ const CMS = () => {
                           multiple
                           accept=".pdf,.mp4,.webm,.mov,.mkv,.avi,.doc,.docx,.zip,.pqs"
                           style={{ display: "none" }}
+                          onClick={(e) => {
+                            (e.target as HTMLInputElement).value = "";
+                          }}
                           onChange={(e) => {
-                            if (e.target.files) {
+                            if (e.target.files && e.target.files.length > 0) {
                               const files = Array.from(e.target.files);
                               setBulkResourceAttachedFiles((prev) => {
                                 const map = new Map(prev.map((f) => [f.name, f]));
                                 files.forEach((f) => map.set(f.name, f));
                                 return Array.from(map.values());
                               });
-                              e.target.value = "";
                             }
                           }}
                         />
@@ -3928,21 +3982,41 @@ const CMS = () => {
                         </VStack>
                       </label>
                       {bulkResourceAttachedFiles.length > 0 && (
-                        <HStack justify="space-between" mt={2} align="center" bg="blue.50" px={3} py={1.5} borderRadius="lg">
-                          <Badge colorPalette="blue" variant="subtle" fontSize="11px">
-                            📁 {bulkResourceAttachedFiles.length} file{bulkResourceAttachedFiles.length !== 1 ? "s" : ""} cross-referenced
-                          </Badge>
-                          <Button
-                            size="2xs"
-                            variant="ghost"
-                            color="red.500"
-                            fontSize="10px"
-                            h={5}
-                            onClick={() => setBulkResourceAttachedFiles([])}
-                          >
-                            Clear Files
-                          </Button>
-                        </HStack>
+                        <Box mt={2}>
+                          <HStack justify="space-between" align="center" bg="blue.50" px={3} py={1.5} borderRadius="lg">
+                            <Badge colorPalette="blue" variant="subtle" fontSize="11px">
+                              📁 {bulkResourceAttachedFiles.length} file{bulkResourceAttachedFiles.length !== 1 ? "s" : ""} attached
+                            </Badge>
+                            <Button
+                              size="2xs"
+                              variant="ghost"
+                              color="red.500"
+                              fontSize="10px"
+                              h={5}
+                              onClick={() => setBulkResourceAttachedFiles([])}
+                            >
+                              Clear Files
+                            </Button>
+                          </HStack>
+                          <VStack align="stretch" gap={1} mt={1.5} maxH="120px" overflowY="auto">
+                            {bulkResourceAttachedFiles.map((f) => {
+                              const sizeInMB = (f.size / (1024 * 1024)).toFixed(2);
+                              const sizeInKB = Math.round(f.size / 1024);
+                              return (
+                                <HStack key={f.name} justify="space-between" px={2} py={0.5} bg="gray.50" borderRadius="md" fontSize="11px">
+                                  <Text truncate color="gray.700" maxW="70%">{f.name}</Text>
+                                  {f.size === 0 ? (
+                                    <Badge colorPalette="red" variant="solid" fontSize="10px">⚠️ 0 Bytes (Empty)</Badge>
+                                  ) : (
+                                    <Text color="gray.500" fontSize="10px">
+                                      {f.size >= 1024 * 1024 ? `${sizeInMB} MB` : `${sizeInKB} KB`}
+                                    </Text>
+                                  )}
+                                </HStack>
+                              );
+                            })}
+                          </VStack>
+                        </Box>
                       )}
                     </Box>
 

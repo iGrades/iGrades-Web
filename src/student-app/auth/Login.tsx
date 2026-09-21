@@ -35,7 +35,7 @@ const ChildrenLogin = ({ setAlert }: Props) => {
 
   const passcodeRef = useRef<string[]>([]);
 
-  const encKey = import.meta.env.VITE_ENC_KEY;
+  const encKey = (import.meta.env.VITE_ENC_KEY as string) || "783921";
 
   const handlePasscodeChange = useCallback((e: any) => {
     const val = Array.isArray(e) ? e : (e?.value || []);
@@ -44,67 +44,96 @@ const ChildrenLogin = ({ setAlert }: Props) => {
   }, []);
 
   const handleLogin = async () => {
-    const rawPasscode = passcodeRef.current || passcode || [];
-    const passcodeArr = Array.isArray(rawPasscode) ? rawPasscode : ((rawPasscode as any)?.value || []);
-    const currentPasscode = passcodeArr.join("");
-
-    if (!email || !currentPasscode || currentPasscode.length < 6) {
-      setAlert({ type: "error", message: "Please enter your email and full passcode" });
-      return;
-    }
-
-    setIsLoading(true);
-
-    const encrypted = encrypt(currentPasscode, encKey);
-
-    let student: any = null;
-
     try {
-      const { data, error } = await supabase.rpc("get_student_by_credentials", {
-        p_email: email,
-        p_enc_passcode: encrypted,
-      });
+      const rawPasscode = passcodeRef.current || passcode || [];
+      const passcodeArr = Array.isArray(rawPasscode) ? rawPasscode : ((rawPasscode as any)?.value || []);
+      const currentPasscode = passcodeArr.join("").trim();
+      const cleanEmail = email.trim().toLowerCase();
 
-      if (!error && data) {
-        if (Array.isArray(data) && data.length > 0) {
-          student = data[0];
-        } else if (!Array.isArray(data) && typeof data === "object" && (data as any)?.id) {
-          student = data;
+      if (!cleanEmail || !currentPasscode || currentPasscode.length < 6) {
+        setAlert({ type: "error", message: "Please enter your email and full 6-digit passcode" });
+        return;
+      }
+
+      setIsLoading(true);
+
+      const safeKey = encKey || "783921";
+      const encrypted = encrypt(currentPasscode, safeKey);
+
+      let student: any = null;
+
+      try {
+        const { data, error } = await supabase.rpc("get_student_by_credentials", {
+          p_email: cleanEmail,
+          p_enc_passcode: encrypted,
+        });
+
+        if (!error && data) {
+          if (Array.isArray(data) && data.length > 0) {
+            student = data[0];
+          } else if (!Array.isArray(data) && typeof data === "object" && (data as any)?.id) {
+            student = data;
+          }
+        }
+      } catch (err) {
+        console.warn("RPC get_student_by_credentials warning:", err);
+      }
+
+      // Fallback 1: Direct query by email + encrypted passcode
+      if (!student) {
+        const { data: directData, error: directError } = await supabase
+          .from("students")
+          .select("*")
+          .ilike("email", cleanEmail)
+          .eq("passcode", encrypted);
+
+        if (!directError && directData && Array.isArray(directData) && directData.length > 0) {
+          student = directData[0];
         }
       }
-    } catch (err) {
-      console.warn("RPC get_student_by_credentials warning:", err);
-    }
 
-    // Direct fallback query if RPC failed or returned no match
-    if (!student) {
-      const { data: directData, error: directError } = await supabase
-        .from("students")
-        .select("*")
-        .eq("email", email)
-        .eq("passcode", encrypted);
+      // Fallback 2: Direct query by email + plain passcode
+      if (!student && currentPasscode !== encrypted) {
+        const { data: plainData, error: plainError } = await supabase
+          .from("students")
+          .select("*")
+          .ilike("email", cleanEmail)
+          .eq("passcode", currentPasscode);
 
-      if (!directError && directData && Array.isArray(directData) && directData.length > 0) {
-        student = directData[0];
+        if (!plainError && plainData && Array.isArray(plainData) && plainData.length > 0) {
+          student = plainData[0];
+        }
       }
-    }
 
-    if (!student) {
-      setAlert({ type: "error", message: "Invalid email or passcode" });
+      if (!student) {
+        setAlert({ type: "error", message: "Invalid email or passcode" });
+        setIsLoading(false);
+        return;
+      }
+
+      localStorage.removeItem("authdParent");
+      setAuthdStudent(student);
       setIsLoading(false);
-      return;
+
+      setAlert({
+        type: "success",
+        message: `Welcome back, ${student.firstname || "Student"}!`,
+      });
+
+      const name = student.firstname
+        ? `${student.firstname} ${student.lastname || ""}`.trim().toLowerCase().replace(/\s+/g, "-")
+        : "";
+      const targetDashboard = name ? `/student-dashboard/${name}` : "/student-dashboard";
+
+      setTimeout(() => navigate(targetDashboard), 800);
+    } catch (err: any) {
+      console.error("Student login error:", err);
+      setAlert({
+        type: "error",
+        message: err?.message || "An unexpected error occurred during login. Please try again.",
+      });
+      setIsLoading(false);
     }
-
-    localStorage.removeItem("authdParent");
-    setAuthdStudent(student);
-    setIsLoading(false);
-
-    setAlert({
-      type: "success",
-      message: `Welcome back, ${student.firstname || "Student"}!`,
-    });
-
-    setTimeout(() => navigate("/student-dashboard"), 1000);
   };
 
   return (

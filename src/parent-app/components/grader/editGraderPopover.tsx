@@ -24,7 +24,7 @@ const EditGraderPopup = ({ student, setStudent, onClose, showEditBtn, showDelete
   const [showEditBox, setShowEditBox] = useState(false)
   const [view, setView] = useState<"info" | "history">("info")
   const { handleGeneratePassKey, decrypt } = usePassKey()
-  const encKey = import.meta.env.VITE_ENC_KEY
+  const encKey = (import.meta.env.VITE_ENC_KEY as string) || "783921"
 
   const isHistory = view === "history";
 

@@ -2,7 +2,8 @@ import { createContext, useContext, useState } from "react";
 
 // Only digits 1–9, skip 0
 const DIGITS = "123456789";
-const encKey = import.meta.env.VITE_ENC_KEY;
+export const DEFAULT_ENC_KEY = "783921";
+export const encKey = (import.meta.env.VITE_ENC_KEY as string) || DEFAULT_ENC_KEY;
 
 function generateNumericPasskey(length = 6) {
   return Array.from(
@@ -20,24 +21,32 @@ function numberToLetter(num: number) {
   return num.toString();
 }
 
-function encrypt(passkey: string, key: string) {
+export function encrypt(passkey: string, key?: string) {
+  if (!passkey) return "";
+  const safeKey = key || encKey || DEFAULT_ENC_KEY;
+  if (!safeKey || safeKey.length === 0) return passkey;
   return passkey
     .split("")
     .map((char, i) => {
       const p = letterToNumber(char);
-      const k = letterToNumber(key[i % key.length]);
+      const k = letterToNumber(safeKey[i % safeKey.length]);
+      if (isNaN(p) || isNaN(k)) return char;
       const encryptedNum = ((p + k - 1) % 9) + 1;
       return numberToLetter(encryptedNum);
     })
     .join("");
 }
 
-function decrypt(cipher: string, key: string) {
+export function decrypt(cipher: string, key?: string) {
+  if (!cipher) return "";
+  const safeKey = key || encKey || DEFAULT_ENC_KEY;
+  if (!safeKey || safeKey.length === 0) return cipher;
   return cipher
     .split("")
     .map((char, i) => {
       const c = letterToNumber(char);
-      const k = letterToNumber(key[i % key.length]);
+      const k = letterToNumber(safeKey[i % safeKey.length]);
+      if (isNaN(c) || isNaN(k)) return char;
       const decryptedNum = ((c - k + 9 - 1) % 9) + 1;
       return numberToLetter(decryptedNum);
     })

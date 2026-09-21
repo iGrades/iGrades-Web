@@ -11,7 +11,6 @@ import {
   CloseButton,
   Badge,
 } from "@chakra-ui/react";
-import { DancingLogoLoader } from "@/components/DancingLogoLoader";
 import {
   LuArrowLeft,
   LuDownload,
@@ -21,10 +20,11 @@ import {
   LuCircleCheck,
   LuSparkles,
 } from "react-icons/lu";
-import { useState, useRef, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/lib/supabaseClient";
 import PdfCustomThumbnail from "./PdfCustomThumbnail";
 import { getCurriculumNote } from "./curriculumStudyNotes";
+import NativePdfCanvasViewer from "./NativePdfCanvasViewer";
 
 interface PDFsResource {
   id: string;
@@ -52,12 +52,8 @@ const PdfList = ({ topic, pdf, onBack }: Props) => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [selectedPDF, setSelectedPDF] = useState<PDFsResource | null>(null);
   const [activeTab, setActiveTab] = useState<"notes" | "pdf">("pdf");
-  const [pdfLoading, setPdfLoading] = useState(true);
   const [pdfBlobUrl, setPdfBlobUrl] = useState<string | null>(null);
-  const [loadError, setLoadError] = useState<string | null>(null);
   const [isDownloading, setIsDownloading] = useState(false);
-
-  const iframeRef = useRef<HTMLIFrameElement>(null);
 
   const formatFileSize = (bytes?: number) => {
     if (!bytes) return "Curriculum Guide";
@@ -88,54 +84,15 @@ const PdfList = ({ topic, pdf, onBack }: Props) => {
     };
   }, [pdfBlobUrl]);
 
-  const loadPdfBlob = useCallback(async (pdfFile: PDFsResource) => {
-    const rawUrl = getPdfUrl(pdfFile);
-    if (!rawUrl) return;
-
-    setPdfLoading(true);
-    setLoadError(null);
-
-    // Safety timeout: prevent indefinite loader
-    const safetyTimer = setTimeout(() => {
-      setPdfLoading(false);
-    }, 2500);
-
-    try {
-      const response = await fetch(rawUrl);
-      if (!response.ok) {
-        throw new Error(`Failed to load PDF (${response.status})`);
-      }
-      const blob = await response.blob();
-
-      // Check if received valid content
-      if (blob.size < 100) {
-        console.warn("Received empty or corrupt blob, defaulting to curriculum notes view");
-        setActiveTab("notes");
-      } else {
-        const objectUrl = URL.createObjectURL(new Blob([blob], { type: "application/pdf" }));
-        setPdfBlobUrl(objectUrl);
-      }
-    } catch (err: any) {
-      console.warn("Could not create blob URL for PDF, fallback to direct URL:", err?.message);
-      // Even if fetch blob fails, fallback to direct URL and do not get stuck
-      setLoadError("Notice: Using direct document stream");
-    } finally {
-      clearTimeout(safetyTimer);
-      setPdfLoading(false);
-    }
-  }, [getPdfUrl]);
-
   const handlePdfClick = (pdfFile: PDFsResource, initialTab: "notes" | "pdf" = "pdf") => {
     setSelectedPDF(pdfFile);
     setActiveTab(initialTab);
     setIsDialogOpen(true);
-    loadPdfBlob(pdfFile);
   };
 
   const handleCloseDialog = () => {
     setIsDialogOpen(false);
     setSelectedPDF(null);
-    setPdfLoading(false);
     if (pdfBlobUrl) {
       URL.revokeObjectURL(pdfBlobUrl);
       setPdfBlobUrl(null);
@@ -169,10 +126,6 @@ const PdfList = ({ topic, pdf, onBack }: Props) => {
     } finally {
       setIsDownloading(false);
     }
-  };
-
-  const handleIframeLoad = () => {
-    setPdfLoading(false);
   };
 
   const currentNote = selectedPDF ? getCurriculumNote(selectedPDF.title, selectedPDF.description) : null;
@@ -639,89 +592,13 @@ const PdfList = ({ topic, pdf, onBack }: Props) => {
                 )}
 
                 {selectedPDF && activeTab === "pdf" && (
-                  <Box w="100%" h="100%" position="relative" bg="gray.900">
-                    {pdfLoading && (
-                      <Flex
-                        position="absolute"
-                        top="0"
-                        left="0"
-                        right="0"
-                        bottom="0"
-                        align="center"
-                        justify="center"
-                        bg="rgba(15, 23, 42, 0.9)"
-                        zIndex={10}
-                      >
-                        <DancingLogoLoader size="lg" text="Opening verified study guide..." />
-                      </Flex>
-                    )}
-
-                    {/* Modern Embedded PDF Object with Iframe Fallback */}
-                    <object
-                      data={pdfBlobUrl || `${getPdfUrl(selectedPDF)}#toolbar=1&view=FitH`}
-                      type="application/pdf"
-                      width="100%"
-                      height="100%"
-                      style={{
-                        width: "100%",
-                        height: "100%",
-                        border: "none",
-                        display: "block",
-                      }}
-                      onLoad={handleIframeLoad}
-                    >
-                      <iframe
-                        ref={iframeRef}
-                        src={pdfBlobUrl || `${getPdfUrl(selectedPDF)}#toolbar=1&view=FitH`}
-                        width="100%"
-                        height="100%"
-                        style={{
-                          border: "none",
-                          display: "block",
-                          width: "100%",
-                          height: "100%",
-                        }}
-                        onLoad={handleIframeLoad}
-                        title={selectedPDF.title}
-                      />
-                    </object>
-
-                    {/* Bottom Floating Bar to Toggle Notes if PDF is uncomfortable to read on mobile */}
-                    <Box
-                      position="absolute"
-                      bottom="16px"
-                      left="50%"
-                      transform="translateX(-50%)"
-                      zIndex={5}
-                      bg="rgba(15, 23, 42, 0.85)"
-                      backdropFilter="blur(8px)"
-                      px={4}
-                      py={2}
-                      borderRadius="full"
-                      boxShadow="0 4px 20px rgba(0,0,0,0.4)"
-                      border="1px solid rgba(255,255,255,0.15)"
-                    >
-                      <Flex align="center" gap={3}>
-                        {loadError && (
-                          <Text fontSize="10px" color="yellow.300">
-                            {loadError}
-                          </Text>
-                        )}
-                        <Text fontSize="xs" color="white" fontWeight="medium">
-                          Prefer responsive text notes?
-                        </Text>
-                        <Button
-                          size="xs"
-                          colorScheme="blue"
-                          borderRadius="full"
-                          px={3}
-                          onClick={() => setActiveTab("notes")}
-                        >
-                          <LuBookOpen size={12} style={{ marginRight: "4px" }} />
-                          Switch to Notes
-                        </Button>
-                      </Flex>
-                    </Box>
+                  <Box w="100%" h="100%" position="relative">
+                    <NativePdfCanvasViewer
+                      url={getPdfUrl(selectedPDF)}
+                      title={selectedPDF.title}
+                      onDownload={() => handleDownloadPdf(selectedPDF)}
+                      onOpenNotes={() => setActiveTab("notes")}
+                    />
                   </Box>
                 )}
               </Dialog.Body>

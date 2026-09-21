@@ -91,6 +91,7 @@ function AddGrader({
 
     classes: createListCollection({
       items: [
+        /*
         {
           label: "Junior Secondary School 1",
           value: "JSS 1",
@@ -106,6 +107,7 @@ function AddGrader({
           value: "JSS 3",
           category: "Junior School",
         },
+        */
         {
           label: "Senior Secondary School 1",
           value: "SSS 1",

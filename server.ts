@@ -284,7 +284,9 @@ async function startServer() {
   const app = express();
   const PORT = 3000;
 
-  app.use(express.json({ limit: "5mb" }));
+  app.use(express.json({ limit: "15mb" }));
+  // Raw body parser for /api/supabase-proxy to capture binary uploads (PDFs, media, octet-stream) up to 150MB
+  app.use("/api/supabase-proxy", express.raw({ type: "*/*", limit: "150mb" }));
 
   // API Routes FIRST
   app.get("/api/health", (_req, res) => {
@@ -466,19 +468,30 @@ async function startServer() {
       }
 
       const method = req.method.toUpperCase();
-      const hasBody =
-        req.body &&
-        ((typeof req.body === "object" && Object.keys(req.body).length > 0) ||
-          (typeof req.body === "string" && req.body.trim().length > 0));
+      let bodyPayload: any = undefined;
+      if (Buffer.isBuffer(req.body) && req.body.length > 0) {
+        bodyPayload = req.body;
+      } else if (typeof req.body === "string" && req.body.trim().length > 0) {
+        bodyPayload = req.body;
+      } else if (req.body && typeof req.body === "object" && Object.keys(req.body).length > 0) {
+        bodyPayload = JSON.stringify(req.body);
+      }
 
       const fetchOptions: RequestInit = {
         method: req.method,
         headers,
       };
 
-      if (["POST", "PUT", "PATCH", "DELETE"].includes(method) && hasBody) {
-        fetchOptions.body = typeof req.body === "string" ? req.body : JSON.stringify(req.body);
-        headers["content-type"] = typeof req.headers["content-type"] === "string" ? req.headers["content-type"] : "application/json";
+      if (["POST", "PUT", "PATCH", "DELETE"].includes(method) && bodyPayload !== undefined) {
+        fetchOptions.body = bodyPayload;
+        const incomingContentType = req.headers["content-type"];
+        if (incomingContentType) {
+          headers["content-type"] = incomingContentType;
+        } else if (Buffer.isBuffer(bodyPayload)) {
+          headers["content-type"] = "application/octet-stream";
+        } else {
+          headers["content-type"] = "application/json";
+        }
       }
 
       const response = await fetch(targetUrl, fetchOptions);

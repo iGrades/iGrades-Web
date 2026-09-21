@@ -49,7 +49,7 @@ function StudentSignUp() {
   } | null>(null);
   const navigate = useNavigate();
   const { encrypt } = usePassKey();
-  const encKey = import.meta.env.VITE_ENC_KEY;
+  const encKey = (import.meta.env.VITE_ENC_KEY as string) || "783921";
 
   const selectCollections = {
     genders: createListCollection({
@@ -75,6 +75,7 @@ function StudentSignUp() {
 
     classes: createListCollection({
       items: [
+        /*
         {
           label: "Junior Secondary School 1",
           value: "JSS 1",
@@ -90,6 +91,7 @@ function StudentSignUp() {
           value: "JSS 3",
           category: "Junior School",
         },
+        */
         {
           label: "Senior Secondary School 1",
           value: "SSS 1",
