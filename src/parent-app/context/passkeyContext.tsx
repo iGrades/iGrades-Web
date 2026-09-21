@@ -2,8 +2,7 @@ import { createContext, useContext, useState } from "react";
 
 // Only digits 1–9, skip 0
 const DIGITS = "123456789";
-export const DEFAULT_ENC_KEY = "783921";
-export const encKey = (import.meta.env.VITE_ENC_KEY as string) || DEFAULT_ENC_KEY;
+export const encKey = (import.meta.env.ENC_KEY as string) || "";
 
 function generateNumericPasskey(length = 6) {
   return Array.from(
@@ -23,7 +22,7 @@ function numberToLetter(num: number) {
 
 export function encrypt(passkey: string, key?: string) {
   if (!passkey) return "";
-  const safeKey = key || encKey || DEFAULT_ENC_KEY;
+  const safeKey = key || encKey;
   if (!safeKey || safeKey.length === 0) return passkey;
   return passkey
     .split("")
@@ -39,7 +38,7 @@ export function encrypt(passkey: string, key?: string) {
 
 export function decrypt(cipher: string, key?: string) {
   if (!cipher) return "";
-  const safeKey = key || encKey || DEFAULT_ENC_KEY;
+  const safeKey = key || encKey;
   if (!safeKey || safeKey.length === 0) return cipher;
   return cipher
     .split("")

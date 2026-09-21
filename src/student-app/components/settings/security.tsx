@@ -22,7 +22,7 @@ const Security = () => {
   const [currentPasskey, setCurrentPasskey] = useState("");
   const [showPasskey, setShowPasskey] = useState(false);
 
-  const encKey = (import.meta.env.VITE_ENC_KEY as string) || "783921";
+  const encKey = (import.meta.env.ENC_KEY as string) || "";
 
   // fetch passkey from the student's table in the database
   const getPassKey = async () => {

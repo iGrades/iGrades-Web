@@ -96,8 +96,8 @@ class PointsEngine {
     this.data = this.loadData();
 
     // Supabase client for reading attempts if available
-    const sbUrl = process.env.VITE_SUPABASE_URL || "https://jmjballgaxelqhsvhlvl.supabase.co";
-    const sbKey = process.env.VITE_SUPABASE_ANON_KEY || "";
+    const sbUrl = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL || "https://jmjballgaxelqhsvhlvl.supabase.co";
+    const sbKey = process.env.SUPABASE_ANON_KEY || process.env.VITE_SUPABASE_ANON_KEY || "";
     if (sbUrl && sbKey) {
       try {
         this.supabaseClient = createClient(sbUrl, sbKey);

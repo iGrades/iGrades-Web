@@ -202,7 +202,7 @@ export function usePointsSystem() {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${token || import.meta.env.VITE_SUPABASE_ANON_KEY}`,
+          Authorization: `Bearer ${token || import.meta.env.SUPABASE_ANON_KEY}`,
         },
         body: JSON.stringify({
           event: "login",
@@ -213,12 +213,12 @@ export function usePointsSystem() {
       if (!response.ok) {
         // Fallback to functions URL
         response = await fetch(
-          `${import.meta.env.VITE_SUPABASE_URL || ""}/functions/v1/award-points`,
+          `${import.meta.env.SUPABASE_URL || ""}/functions/v1/award-points`,
           {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
-              Authorization: `Bearer ${token || import.meta.env.VITE_SUPABASE_ANON_KEY}`,
+              Authorization: `Bearer ${token || import.meta.env.SUPABASE_ANON_KEY}`,
             },
             body: JSON.stringify({
               event: "login",

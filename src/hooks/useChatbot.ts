@@ -222,14 +222,14 @@ export const useChatbot = () => {
       }
 
       // 2. Fallback to Supabase edge function if local server route is unavailable
-      if (!response && import.meta.env.VITE_SUPABASE_URL) {
+      if (!response && import.meta.env.SUPABASE_URL) {
         response = await fetch(
-          `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/spark-chat`,
+          `${import.meta.env.SUPABASE_URL}/functions/v1/spark-chat`,
           {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
-              Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
+              Authorization: `Bearer ${import.meta.env.SUPABASE_ANON_KEY}`,
             },
             body: JSON.stringify(payload),
           }

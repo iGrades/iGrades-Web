@@ -49,7 +49,7 @@ function StudentSignUp() {
   } | null>(null);
   const navigate = useNavigate();
   const { encrypt } = usePassKey();
-  const encKey = (import.meta.env.VITE_ENC_KEY as string) || "783921";
+  const encKey = (import.meta.env.ENC_KEY as string) || "";
 
   const selectCollections = {
     genders: createListCollection({

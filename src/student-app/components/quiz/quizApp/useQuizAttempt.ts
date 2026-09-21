@@ -262,7 +262,7 @@ export const useQuizAttempt = (quizData: QuizAttemptProps["quizData"]) => {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
-              Authorization: `Bearer ${token || import.meta.env.VITE_SUPABASE_ANON_KEY}`,
+              Authorization: `Bearer ${token || import.meta.env.SUPABASE_ANON_KEY}`,
             },
             body: JSON.stringify({
               event: "quiz_completion",

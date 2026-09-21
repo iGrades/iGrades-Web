@@ -192,7 +192,7 @@ export const useFlutterwave = () => {
 
       return new Promise((resolve) => {
         window.FlutterwaveCheckout({
-          public_key: import.meta.env.VITE_FLUTTERWAVE_PUBLIC_KEY,
+          public_key: import.meta.env.FLUTTERWAVE_PUBLIC_KEY,
           tx_ref: `txref-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
 
           amount: plan.amount,

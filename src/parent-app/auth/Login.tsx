@@ -137,7 +137,7 @@ const ParentLogin = ({ setAlert }: Props) => {
       
        {/*<Flex justify={"center"} my={10}>
       <HCaptcha
-        sitekey={import.meta.env.VITE_HCAPTCHA_SITE_KEY}
+        sitekey={import.meta.env.HCAPTCHA_SITE_KEY}
         onVerify={(token) => setCaptchaToken(token)}
         onExpire={() => setCaptchaToken(null)}
       />

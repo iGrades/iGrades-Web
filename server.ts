@@ -445,7 +445,7 @@ async function startServer() {
         res.setHeader("Content-Range", "0-1/1");
         return res.json([streak]);
       }
-      const supabaseBase = process.env.VITE_SUPABASE_URL || "https://jmjballgaxelqhsvhlvl.supabase.co";
+      const supabaseBase = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL || "https://jmjballgaxelqhsvhlvl.supabase.co";
       const targetUrl = new URL(req.url, supabaseBase).toString();
 
       const headers: Record<string, string> = {};
@@ -460,11 +460,12 @@ async function startServer() {
         }
       }
 
-      if (!headers["apikey"] && process.env.VITE_SUPABASE_ANON_KEY) {
-        headers["apikey"] = process.env.VITE_SUPABASE_ANON_KEY;
+      const sbAnonKey = process.env.SUPABASE_ANON_KEY || process.env.VITE_SUPABASE_ANON_KEY;
+      if (!headers["apikey"] && sbAnonKey) {
+        headers["apikey"] = sbAnonKey;
       }
-      if (!headers["authorization"] && process.env.VITE_SUPABASE_ANON_KEY) {
-        headers["authorization"] = `Bearer ${process.env.VITE_SUPABASE_ANON_KEY}`;
+      if (!headers["authorization"] && sbAnonKey) {
+        headers["authorization"] = `Bearer ${sbAnonKey}`;
       }
 
       const method = req.method.toUpperCase();

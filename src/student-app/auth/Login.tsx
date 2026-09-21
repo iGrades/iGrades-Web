@@ -35,7 +35,7 @@ const ChildrenLogin = ({ setAlert }: Props) => {
 
   const passcodeRef = useRef<string[]>([]);
 
-  const encKey = (import.meta.env.VITE_ENC_KEY as string) || "783921";
+  const encKey = (import.meta.env.ENC_KEY as string) || "";
 
   const handlePasscodeChange = useCallback((e: any) => {
     const val = Array.isArray(e) ? e : (e?.value || []);
@@ -57,8 +57,7 @@ const ChildrenLogin = ({ setAlert }: Props) => {
 
       setIsLoading(true);
 
-      const safeKey = encKey || "783921";
-      const encrypted = encrypt(currentPasscode, safeKey);
+      const encrypted = encrypt(currentPasscode, encKey);
 
       let student: any = null;
 

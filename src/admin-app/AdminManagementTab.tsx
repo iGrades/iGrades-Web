@@ -68,7 +68,7 @@ const AdminManagementTab = ({ currentAdminId }: { currentAdminId: string }) => {
       if (!session) throw new Error("No active session.");
 
       const res = await fetch(
-        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/create-admin`,
+        `${import.meta.env.SUPABASE_URL}/functions/v1/create-admin`,
         {
           method: "POST",
           headers: {
