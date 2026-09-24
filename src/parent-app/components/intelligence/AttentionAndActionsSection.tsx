@@ -1,5 +1,11 @@
 import { Box, Grid, GridItem, Flex, Heading, Text, VStack, HStack, Icon, Badge } from "@chakra-ui/react";
-import { FiAlertCircle, FiHeart, FiCheck, FiInfo } from "react-icons/fi";
+import {
+  PiWarningCircleFill,
+  PiCheckCircleFill,
+  PiInfoFill,
+  PiHandHeartFill,
+} from "react-icons/pi";
+import { useTranslation } from "react-i18next";
 import type { StudentIntelligence } from "@/parent-app/hooks/useParentIntelligence";
 
 type Props = {
@@ -7,6 +13,7 @@ type Props = {
 };
 
 export const AttentionAndActionsSection = ({ intelligence }: Props) => {
+  const { t } = useTranslation();
   const { needsAttentionAlerts, parentRecommendations } = intelligence;
 
   return (
@@ -31,19 +38,19 @@ export const AttentionAndActionsSection = ({ intelligence }: Props) => {
           <Flex justify="space-between" align="center" mb={4}>
             <HStack gap={2.5}>
               <Box bg="amber.50" p={2.5} borderRadius="xl" border="none" boxShadow="0 2px 8px rgba(245, 158, 11, 0.2)">
-                <Icon as={FiAlertCircle} color="amber.600" boxSize="18px" />
+                <Icon as={PiWarningCircleFill} color="amber.600" boxSize="18px" />
               </Box>
               <Box>
                 <Heading size={{ base: "sm", md: "md" }} color="gray.900" fontWeight="800">
-                  What Needs Attention?
+                  {t("What Needs Attention?")}
                 </Heading>
                 <Text fontSize="xs" color="gray.500" mt={0.5}>
-                  Topics and areas where your child could use extra practice or support.
+                  {t("Topics and areas where your child could use extra practice or support.")}
                 </Text>
               </Box>
             </HStack>
             <Badge colorPalette="amber" variant="subtle" size="sm" borderRadius="full" px={2.5} py={0.5}>
-              {needsAttentionAlerts.length} Points
+              {needsAttentionAlerts.length} {t("Points")}
             </Badge>
           </Flex>
 
@@ -54,7 +61,7 @@ export const AttentionAndActionsSection = ({ intelligence }: Props) => {
 
               const bgCol = isWarning ? "amber.50/60" : isPositive ? "green.50/60" : "blue.50/60";
               const iconCol = isWarning ? "amber.600" : isPositive ? "green.600" : "#206CE1";
-              const iconComponent = isWarning ? FiAlertCircle : isPositive ? FiCheck : FiInfo;
+              const iconComponent = isWarning ? PiWarningCircleFill : isPositive ? PiCheckCircleFill : PiInfoFill;
               const shadowCol = isWarning
                 ? "0 2px 10px rgba(245, 158, 11, 0.14)"
                 : isPositive
@@ -110,19 +117,19 @@ export const AttentionAndActionsSection = ({ intelligence }: Props) => {
           <Flex justify="space-between" align="center" mb={4}>
             <HStack gap={2.5}>
               <Box bg="blue.50" p={2.5} borderRadius="xl" border="none" boxShadow="0 2px 8px rgba(32, 108, 225, 0.18)">
-                <Icon as={FiHeart} color="#206CE1" boxSize="18px" />
+                <Icon as={PiHandHeartFill} color="#206CE1" boxSize="18px" />
               </Box>
               <Box>
                 <Heading size={{ base: "sm", md: "md" }} color="gray.900" fontWeight="800">
-                  What Can I Do?
+                  {t("What Can I Do?")}
                 </Heading>
                 <Text fontSize="xs" color="gray.500" mt={0.5}>
-                  Simple, practical tips you can use to help your child improve right now.
+                  {t("Simple, practical tips you can use to help your child improve right now.")}
                 </Text>
               </Box>
             </HStack>
             <Badge colorPalette="blue" variant="subtle" size="sm" borderRadius="full" px={2.5} py={0.5}>
-              Helpful Tips
+              {t("Helpful Tips")}
             </Badge>
           </Flex>
 

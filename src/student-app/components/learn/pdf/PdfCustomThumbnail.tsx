@@ -7,6 +7,7 @@ interface Props {
   description?: string;
   className?: string;
   style?: React.CSSProperties;
+  badgeText?: string;
 }
 
 interface ThemeConfig {
@@ -148,7 +149,7 @@ export function getTopicTheme(title: string): ThemeConfig {
 /**
  * Returns an inline SVG Data URL for situations requiring a standard image URL
  */
-export function getPdfCustomThumbnailDataUrl(title: string): string {
+export function getPdfCustomThumbnailDataUrl(title: string, subtitle = "Curriculum Study Guide"): string {
   const theme = getTopicTheme(title);
   const cleanTitle = title.replace(/[<>&"]/g, "");
   
@@ -186,7 +187,7 @@ export function getPdfCustomThumbnailDataUrl(title: string): string {
     
     <!-- Subtitle -->
     <text x="20" y="145" font-family="system-ui, sans-serif" font-size="12" fill="rgba(255,255,255,0.7)">
-      SSS 1 • WAEC / JAMB Syllabus
+      ${subtitle}
     </text>
 
     <!-- Bottom Bar -->
@@ -207,7 +208,7 @@ export function getPdfCustomThumbnailDataUrl(title: string): string {
   return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg.trim())}`;
 }
 
-export const PdfCustomThumbnail: React.FC<Props> = ({ title, description }) => {
+export const PdfCustomThumbnail: React.FC<Props> = ({ title, description, badgeText }) => {
   const theme = getTopicTheme(title);
 
   return (
@@ -262,7 +263,7 @@ export const PdfCustomThumbnail: React.FC<Props> = ({ title, description }) => {
         </Badge>
         <Flex align="center" gap={1} color="whiteAlpha.700" fontSize="10px">
           <LuBookOpen size={12} />
-          <Text fontWeight="medium">SSS 1</Text>
+          <Text fontWeight="medium">{badgeText || "Study Guide"}</Text>
         </Flex>
       </Flex>
 
@@ -295,7 +296,7 @@ export const PdfCustomThumbnail: React.FC<Props> = ({ title, description }) => {
         <Flex align="center" gap={1}>
           <LuGraduationCap size={12} color={theme.accentColor} />
           <Text fontSize="10px" color="whiteAlpha.900" fontWeight="semibold">
-            WAEC • JAMB
+            Curriculum Guide
           </Text>
         </Flex>
 

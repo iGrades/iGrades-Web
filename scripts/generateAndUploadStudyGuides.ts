@@ -443,7 +443,7 @@ function generateCurriculumPdf(resource: { id: string; title: string; descriptio
 
     doc.setFont("helvetica", "normal");
     doc.setFontSize(9);
-    doc.text(`Mathematics • SSS 1 Curriculum • WAEC / JAMB Standards`, margin, 44);
+    doc.text(`Mathematics • Standard Curriculum Guide`, margin, 44);
 
     doc.text(`Page ${pageNumber} of ${totalPages}`, pageWidth - margin - 60, 36);
 
@@ -477,7 +477,7 @@ function generateCurriculumPdf(resource: { id: string; title: string; descriptio
   doc.setFontSize(10);
   doc.setFont("helvetica", "normal");
   doc.setTextColor(71, 85, 105);
-  doc.text(`Category: ${info.category}  |  Level: Senior Secondary School (SSS 1)`, margin + 16, y + 46);
+  doc.text(`Category: ${info.category}  |  Level: Curriculum Study Guide`, margin + 16, y + 46);
 
   y += 85;
 

@@ -96,9 +96,11 @@ const Footer = () => {
         >
           {/* Brand block */}
           <Box maxW="360px">
-            <Box mb={5} filter="brightness(0) invert(1)" display="inline-block">
-              <Image src={logo} alt="iGrades" width="130px" />
-            </Box>
+            <RouterLink to="/" aria-label="iGrades Home" style={{ display: "inline-block" }}>
+              <Box mb={5} filter="brightness(0) invert(1)" display="inline-block" cursor="pointer">
+                <Image src={logo} alt="iGrades" width="130px" />
+              </Box>
+            </RouterLink>
             <Text
               color="rgba(255,255,255,0.45)"
               fontSize="sm"
@@ -150,19 +152,42 @@ const Footer = () => {
                   {category}
                 </Text>
                 <VStack align="start" gap={3}>
-                  {items.map((item) => (
-                    <Link
-                      key={item.label}
-                      asChild
-                      className="footer-link"
-                      fontSize="sm"
-                      color="rgba(255,255,255,0.45)"
-                      textDecoration="none"
-                      _hover={{ textDecoration: "none" }}
-                    >
-                      <RouterLink to={item.href}>{item.label}</RouterLink>
-                    </Link>
-                  ))}
+                  {items.map((item) => {
+                    if (item.label === "How It Works") {
+                      return (
+                        <Box
+                          key={item.label}
+                          as="button"
+                          className="footer-link"
+                          fontSize="sm"
+                          color="rgba(255,255,255,0.45)"
+                          textAlign="left"
+                          cursor="pointer"
+                          _hover={{ color: "white", textDecoration: "none" }}
+                          onClick={(e) => {
+                            e.preventDefault();
+                            window.dispatchEvent(new CustomEvent("open-how-it-works-video"));
+                            window.scrollTo({ top: 0, behavior: "smooth" });
+                          }}
+                        >
+                          {item.label}
+                        </Box>
+                      );
+                    }
+                    return (
+                      <Link
+                        key={item.label}
+                        asChild
+                        className="footer-link"
+                        fontSize="sm"
+                        color="rgba(255,255,255,0.45)"
+                        textDecoration="none"
+                        _hover={{ textDecoration: "none" }}
+                      >
+                        <RouterLink to={item.href}>{item.label}</RouterLink>
+                      </Link>
+                    );
+                  })}
                 </VStack>
               </Box>
             ))}

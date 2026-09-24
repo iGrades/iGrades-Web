@@ -5,6 +5,7 @@ import { Box, Text, VStack, Alert, Flex } from "@chakra-ui/react";
 import { DancingLogoLoader } from "@/components/DancingLogoLoader";
 import { useAuthdStudentData } from "@/student-app/context/studentDataContext";
 import { useUser } from "@/parent-app/context/parentDataContext";
+import { recordActivity } from "@/lib/authSessionManager";
 
 export default function AuthCallback() {
   const navigate = useNavigate();
@@ -82,6 +83,7 @@ export default function AuthCallback() {
         localStorage.removeItem("authdParent");
         setAuthdStudent(student);
         localStorage.setItem("authdStudent", JSON.stringify(student));
+        recordActivity(true);
         const studentName = student.firstname || firstName || "Student";
         navigate(studentName ? `/student-dashboard/${studentName}` : "/student-dashboard", { replace: true });
       };
@@ -106,6 +108,7 @@ export default function AuthCallback() {
 
         localStorage.removeItem("oauth_role");
         localStorage.removeItem("authdStudent");
+        recordActivity(true);
         await getParentData();
         const parentName = parent.firstname || firstName || "Parent";
         navigate(parentName ? `/parent-dashboard/${parentName}` : "/parent-dashboard", { replace: true });

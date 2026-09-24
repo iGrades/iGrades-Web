@@ -9,10 +9,15 @@ import {
   Grid,
   GridItem,
   Flex,
+  Text,
+  Badge,
+  Icon,
 } from "@chakra-ui/react";
+import { FiLock, FiSend } from "react-icons/fi";
 import { useStudentsData } from "../../context/studentsDataContext";
 import { supabase } from "@/lib/supabaseClient";
 import UpdateGraderSuccessPopover from "./updateGraderSuccessPopover";
+import { ParentClassChangeModal } from "./ParentClassChangeModal";
 
 type Props = {
   student: any;
@@ -20,15 +25,15 @@ type Props = {
 };
 
 const EditGrader = ({ student, onClose }: Props) => {
-  const { getGraderDetails } = useStudentsData();
+  const { getGraderDetails, studentsData } = useStudentsData();
 
   const [formData, setFormData] = useState({
     firstname: student.firstname || "",
     lastname: student.lastname || "",
-    class: student.class || "",
     email: student.email || "",
     school: student.school || "",
   });
+  const [showClassChangeModal, setShowClassChangeModal] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [showBox, setShowBox] = useState(false);
@@ -182,6 +187,50 @@ const EditGrader = ({ student, onClose }: Props) => {
               </Box>
             </GridItem>
           ))}
+
+          {/* Protected Class Assignment Row */}
+          <GridItem colSpan={{ base: 1, md: 2 }}>
+            <Box
+              w="100%"
+              p={4}
+              bg="blue.50/50"
+              border="1px solid"
+              borderColor="blue.100"
+              borderRadius="xl"
+            >
+              <Flex justify="space-between" align="center" flexWrap="wrap" gap={3}>
+                <Box>
+                  <Flex align="center" gap={1.5} mb={0.5}>
+                    <Icon as={FiLock} color="blue.600" boxSize={3.5} />
+                    <Text fontSize="xs" fontWeight="bold" color="gray.700">
+                      Enrolled Academic Class
+                    </Text>
+                    <Badge colorPalette="blue" size="sm" ml={1}>
+                      Official Placement
+                    </Badge>
+                  </Flex>
+                  <Text fontSize="sm" fontWeight="800" color="gray.900">
+                    {student.class || "Unassigned"}
+                  </Text>
+                  <Text fontSize="11px" color="gray.500" mt={0.5}>
+                    Class changes require academic review and approval to ensure correct syllabus progression.
+                  </Text>
+                </Box>
+                <Button
+                  size="sm"
+                  colorPalette="blue"
+                  variant="outline"
+                  onClick={() => setShowClassChangeModal(true)}
+                  borderRadius="lg"
+                  fontSize="xs"
+                  fontWeight="700"
+                >
+                  <Icon as={FiSend} mr={1.5} boxSize={3.5} />
+                  Request Class Change
+                </Button>
+              </Flex>
+            </Box>
+          </GridItem>
         </Grid>
 
         {/* Sticky-ready Action Button */}
@@ -207,6 +256,19 @@ const EditGrader = ({ student, onClose }: Props) => {
 
       {showBox && (
         <UpdateGraderSuccessPopover setShowBox={setShowBox} onClose={onClose} />
+      )}
+
+      {showClassChangeModal && (
+        <ParentClassChangeModal
+          isOpen={true}
+          onClose={() => setShowClassChangeModal(false)}
+          childrenList={studentsData?.length ? studentsData : [student]}
+          selectedStudentId={student.id}
+          onSuccess={() => {
+            getGraderDetails();
+            setShowClassChangeModal(false);
+          }}
+        />
       )}
     </>
   );

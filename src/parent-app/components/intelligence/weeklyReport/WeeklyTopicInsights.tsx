@@ -1,9 +1,11 @@
-import { Box, Flex, Heading, Text, VStack, Badge, Icon, Grid } from "@chakra-ui/react";
+import { Box, Flex, Heading, Text, VStack, Badge, Icon, Grid, HStack } from "@chakra-ui/react";
 import {
-  FiCheckCircle,
-  FiRepeat,
-  FiTarget,
-} from "react-icons/fi";
+  PiCheckCircleFill,
+  PiNotebookFill,
+  PiArrowCounterClockwiseBold,
+  PiTargetFill,
+} from "react-icons/pi";
+import { useTranslation } from "react-i18next";
 import type { WeeklyTopicInsight } from "@/parent-app/hooks/useWeeklyLearningReport";
 
 type Props = {
@@ -17,17 +19,24 @@ export const WeeklyTopicInsights = ({
   topicsRequiringPractice,
   topicsWithRepeatedMistakes,
 }: Props) => {
+  const { t } = useTranslation();
+
   return (
     <Box mb={6}>
       <Flex justify="space-between" align="center" mb={3.5} wrap="wrap" gap={2}>
-        <Box>
-          <Heading size="sm" color="gray.900" fontWeight="800">
-            Granular Topic Insights
-          </Heading>
-          <Text fontSize="xs" color="gray.500" mt={0.5}>
-            Pinpointing specific concepts where your child is excelling and where practice will help most.
-          </Text>
-        </Box>
+        <HStack gap={2.5}>
+          <Box bg="purple.50" p={2} borderRadius="xl" border="1px solid" borderColor="purple.200" boxShadow="0 2px 6px rgba(147, 51, 234, 0.12)">
+            <Icon as={PiTargetFill} color="purple.600" boxSize="18px" />
+          </Box>
+          <Box>
+            <Heading size="sm" color="gray.900" fontWeight="800">
+              {t("Granular Topic Insights")}
+            </Heading>
+            <Text fontSize="xs" color="gray.500" mt={0.5}>
+              {t("Pinpointing specific concepts where your child is excelling and where practice will help most.")}
+            </Text>
+          </Box>
+        </HStack>
       </Flex>
 
       <Grid templateColumns={{ base: "repeat(1, 1fr)", lg: "repeat(3, 1fr)" }} gap={4.5}>
@@ -43,14 +52,14 @@ export const WeeklyTopicInsights = ({
         >
           <Flex align="center" gap={2.5} mb={3.5}>
             <Box bg="green.50" p={2} borderRadius="xl" boxShadow="0 2px 6px rgba(16, 185, 129, 0.15)">
-              <Icon as={FiCheckCircle} color="green.600" boxSize="16px" />
+              <Icon as={PiCheckCircleFill} color="green.600" boxSize="18px" />
             </Box>
             <Box>
               <Text fontSize="xs" fontWeight="800" color="green.900" textTransform="uppercase" letterSpacing="0.04em">
-                Strong & Improving Topics
+                {t("Strong & Improving Topics")}
               </Text>
               <Text fontSize="11px" color="gray.500">
-                High accuracy demonstrated
+                {t("High accuracy demonstrated")}
               </Text>
             </Box>
           </Flex>
@@ -58,7 +67,7 @@ export const WeeklyTopicInsights = ({
           {improvedTopics.length === 0 ? (
             <Box p={4} textAlign="center" bg="gray.50" borderRadius="xl" boxShadow="0 2px 6px rgba(0, 0, 0, 0.03)">
               <Text fontSize="xs" color="gray.500">
-                Complete more topic-specific quizzes to record mastery highlights.
+                {t("Complete more topic-specific quizzes to record mastery highlights.")}
               </Text>
             </Box>
           ) : (
@@ -81,7 +90,7 @@ export const WeeklyTopicInsights = ({
                     </Badge>
                   </Flex>
                   <Text fontSize="11px" color="gray.600" mb={1}>
-                    {topic.subjectName} • {topic.correctQuestions}/{topic.totalQuestions} correct
+                    {topic.subjectName} • {topic.correctQuestions}/{topic.totalQuestions} {t("correct")}
                   </Text>
                   <Text fontSize="10px" color="green.800" fontWeight="500">
                     {topic.reason}
@@ -104,14 +113,14 @@ export const WeeklyTopicInsights = ({
         >
           <Flex align="center" gap={2.5} mb={3.5}>
             <Box bg="orange.50" p={2} borderRadius="xl" boxShadow="0 2px 6px rgba(245, 158, 11, 0.15)">
-              <Icon as={FiTarget} color="orange.600" boxSize="16px" />
+              <Icon as={PiNotebookFill} color="orange.600" boxSize="18px" />
             </Box>
             <Box>
               <Text fontSize="xs" fontWeight="800" color="orange.900" textTransform="uppercase" letterSpacing="0.04em">
-                Requires Practice
+                {t("Requires Practice")}
               </Text>
               <Text fontSize="11px" color="gray.500">
-                Concepts needing another review
+                {t("Concepts needing another review")}
               </Text>
             </Box>
           </Flex>
@@ -119,7 +128,7 @@ export const WeeklyTopicInsights = ({
           {topicsRequiringPractice.length === 0 ? (
             <Box p={4} textAlign="center" bg="gray.50" borderRadius="xl" boxShadow="0 2px 6px rgba(0, 0, 0, 0.03)">
               <Text fontSize="xs" color="gray.500">
-                No challenging topics identified in this practice cycle!
+                {t("No challenging topics identified in this practice cycle!")}
               </Text>
             </Box>
           ) : (
@@ -142,7 +151,7 @@ export const WeeklyTopicInsights = ({
                     </Badge>
                   </Flex>
                   <Text fontSize="11px" color="gray.600" mb={1}>
-                    {topic.subjectName} • {topic.totalQuestions} questions attempted
+                    {topic.subjectName} • {topic.totalQuestions} {t("questions attempted")}
                   </Text>
                   <Text fontSize="10px" color="orange.800" fontWeight="500">
                     {topic.reason}
@@ -165,14 +174,14 @@ export const WeeklyTopicInsights = ({
         >
           <Flex align="center" gap={2.5} mb={3.5}>
             <Box bg="red.50" p={2} borderRadius="xl" boxShadow="0 2px 6px rgba(239, 68, 68, 0.15)">
-              <Icon as={FiRepeat} color="red.600" boxSize="16px" />
+              <Icon as={PiArrowCounterClockwiseBold} color="red.600" boxSize="16px" />
             </Box>
             <Box>
               <Text fontSize="xs" fontWeight="800" color="red.900" textTransform="uppercase" letterSpacing="0.04em">
-                Repeated Mistakes
+                {t("Repeated Mistakes")}
               </Text>
               <Text fontSize="11px" color="gray.500">
-                Tricky question patterns
+                {t("Tricky question patterns")}
               </Text>
             </Box>
           </Flex>
@@ -180,7 +189,7 @@ export const WeeklyTopicInsights = ({
           {topicsWithRepeatedMistakes.length === 0 ? (
             <Box p={4} textAlign="center" bg="gray.50" borderRadius="xl" boxShadow="0 2px 6px rgba(0, 0, 0, 0.03)">
               <Text fontSize="xs" color="gray.500">
-                No repeated error patterns detected this week. Great work!
+                {t("No repeated error patterns detected this week. Great work!")}
               </Text>
             </Box>
           ) : (
@@ -199,11 +208,11 @@ export const WeeklyTopicInsights = ({
                       {topic.topicName}
                     </Text>
                     <Badge colorPalette="red" variant="subtle" size="xs" borderRadius="full">
-                      {topic.incorrectQuestions} Missed
+                      {topic.incorrectQuestions} {t("Missed")}
                     </Badge>
                   </Flex>
                   <Text fontSize="11px" color="gray.600" mb={1}>
-                    {topic.subjectName} • {topic.accuracy}% accuracy
+                    {topic.subjectName} • {topic.accuracy}% {t("accuracy")}
                   </Text>
                   <Text fontSize="10px" color="red.800" fontWeight="500">
                     {topic.reason}

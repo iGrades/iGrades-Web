@@ -5,15 +5,18 @@ import AvatarComp from "@/components/avatar";
 import MenuModal from "../menuModal";
 import EditGraderPopup from "./editGraderPopover";
 import DeleteGraderPopover from "./deleteGraderPopover";
+import { ParentClassChangeModal } from "./ParentClassChangeModal";
 import addFiles_img from "@/assets/addFiles_img.svg";
+import { useStudentsData } from "../../context/studentsDataContext";
 
 type Props = {
   studentsData: any[];
 };
 
 const GraderTable = ({ studentsData }: Props) => {
-  const [modal, setModal] = useState<"" | "edit" | "delete">("");
+  const [modal, setModal] = useState<"" | "edit" | "delete" | "class_change">("");
   const [selectedStudent, setSelectedStudent] = useState<any | null>(null);
+  const { fetchStudents } = useStudentsData();
 
   return (
     <>
@@ -179,6 +182,20 @@ const GraderTable = ({ studentsData }: Props) => {
           onClose={() => {
             setModal("");
             setSelectedStudent(null);
+          }}
+        />
+      )}
+      {modal === "class_change" && selectedStudent && (
+        <ParentClassChangeModal
+          isOpen={true}
+          onClose={() => {
+            setModal("");
+            setSelectedStudent(null);
+          }}
+          childrenList={studentsData}
+          selectedStudentId={selectedStudent.id}
+          onSuccess={() => {
+            fetchStudents?.();
           }}
         />
       )}

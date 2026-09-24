@@ -38,9 +38,9 @@ const Pdfs = () => {
   const { onOpen } = useDisclosure();
 
   const { subjectImages } = useStudentData();
-  const { getSubjectByName } = useSubjects();
+  const { subjects, getSubjectByName } = useSubjects();
   const { getTopicsBySubjectId } = useTopics();
-  const { getClassByName } = useClasses();
+  const { classes, getClassByName } = useClasses();
   const { getResourcesByType } = useResources();
 
   // 2. HELPER TO PARSE COURSES (Simplified)
@@ -57,19 +57,33 @@ const Pdfs = () => {
   };
 
   const handleCourseClick = async (courseName: string, dbCourseId: string) => {
-    // setLoading(true);
     setSelectedCourse(courseName);
 
     try {
-      const classData = getClassByName(authdStudent?.class || "");
-      if (!classData) return;
+      const studentClass = authdStudent?.class || "SSS 1";
+      const normalizedClass = studentClass.toLowerCase().replace(/\s+/g, "");
+      const classData =
+        getClassByName(studentClass) ||
+        classes.find((c: any) => c.name.toLowerCase().replace(/\s+/g, "") === normalizedClass) ||
+        classes[0];
 
-      // Notice we use the ID (dbCourseId) which is now "mathematics"
-      const subjectData = getSubjectByName(dbCourseId);
+      const subjectData =
+        getSubjectByName(dbCourseId) ||
+        getSubjectByName(courseName) ||
+        subjects.find(
+          (s: any) =>
+            s.name?.toLowerCase() === dbCourseId.toLowerCase() ||
+            s.display_name?.toLowerCase() === courseName.toLowerCase()
+        ) ||
+        subjects[0];
+
       if (!subjectData) return;
 
       const allTopics = getTopicsBySubjectId(subjectData.id);
-      const classTopics = allTopics.filter((t: any) => t.class_id === classData.id);
+      let classTopics = classData ? allTopics.filter((t: any) => t.class_id === classData.id) : [];
+      if (!classTopics || classTopics.length === 0) {
+        classTopics = allTopics;
+      }
 
       setTopics(classTopics || []);
       
@@ -85,19 +99,20 @@ const Pdfs = () => {
       setTopicList(true);
     } catch (error) {
       console.error(error);
-    } finally {
-      // setLoading(false);
     }
   };
 
   // 3. MAP COURSES USING THE CENTRAL CONFIG
   const registeredCoursesArray = getStudentCoursesArray();
+  const rawCoursesToDisplay = registeredCoursesArray.length > 0
+    ? registeredCoursesArray
+    : ["mathematics", "english", "physics", "chemistry", "biology"];
 
-  const studentCourses = registeredCoursesArray.map((id) => {
+  const studentCourses = rawCoursesToDisplay.map((id) => {
     // Look up the ID (e.g., "mathematics") in our central config
     const config = courseConfig[id.toLowerCase()] || {
-      displayName: id, 
-      color: "#718096",
+      displayName: id.charAt(0).toUpperCase() + id.slice(1), 
+      color: "#2563eb",
     };
 
     return {
@@ -106,8 +121,7 @@ const Pdfs = () => {
       image: subjectImages[id] || null,
       color: config.color,
     };
-  }
-  );
+  });
 
   return (
     <Box bg="white" rounded="lg" shadow="sm" p={4} mb={20} h="auto">

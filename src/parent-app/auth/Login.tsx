@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/lib/supabaseClient";
 import { useUser } from "@/parent-app/context/parentDataContext";
+import { recordActivity } from "@/lib/authSessionManager";
 import {
   Box,
   Field,
@@ -63,6 +64,7 @@ const ParentLogin = ({ setAlert }: Props) => {
     }
 
     localStorage.removeItem("authdStudent");
+    recordActivity(true);
     try {
       await getParentData();
     } catch {

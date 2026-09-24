@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/lib/supabaseClient";
+import { recordActivity } from "@/lib/authSessionManager";
 import {
   Box,
   Field,
@@ -80,6 +81,7 @@ const StudentLogin = ({ setAlert }: Props) => {
         };
         localStorage.setItem("authdStudent", JSON.stringify(fallbackStudent));
       }
+      recordActivity(true);
     }
 
     setIsLoading(false); // Stop loading on success

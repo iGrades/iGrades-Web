@@ -1,6 +1,15 @@
 import { useState, useMemo } from "react";
 import { Box, Flex, Heading, Text, VStack, HStack, Badge, Progress, Icon, Table, Button } from "@chakra-ui/react";
-import { FiTrendingUp, FiTrendingDown, FiMinus, FiBook, FiClock, FiChevronDown, FiChevronUp } from "react-icons/fi";
+import { FiMinus } from "react-icons/fi";
+import {
+  PiBookOpenTextFill,
+  PiChartLineUpFill,
+  PiTrendDownBold,
+  PiClockFill,
+  PiCaretDownBold,
+  PiCaretUpBold,
+} from "react-icons/pi";
+import { useTranslation } from "react-i18next";
 import type { SubjectIntelligence } from "@/parent-app/hooks/useParentIntelligence";
 import { filterRegisteredSubjects } from "@/utils/subjectMatching";
 
@@ -11,6 +20,7 @@ type Props = {
 };
 
 export const SubjectPerformanceSection = ({ subjects, onSelectSubject, registeredCourses }: Props) => {
+  const { t } = useTranslation();
   const [isExpanded, setIsExpanded] = useState(false);
 
   const displayedSubjects = useMemo(() => {
@@ -24,15 +34,15 @@ export const SubjectPerformanceSection = ({ subjects, onSelectSubject, registere
   const getStatusBadge = (status: SubjectIntelligence["status"]) => {
     switch (status) {
       case "strong":
-        return <Badge colorPalette="green" variant="solid" size="sm" borderRadius="full">Strong</Badge>;
+        return <Badge colorPalette="green" variant="solid" size="sm" borderRadius="full">{t("Strong")}</Badge>;
       case "good":
-        return <Badge colorPalette="blue" variant="subtle" size="sm" borderRadius="full">On Track</Badge>;
+        return <Badge colorPalette="blue" variant="subtle" size="sm" borderRadius="full">{t("On Track")}</Badge>;
       case "fair":
-        return <Badge colorPalette="yellow" variant="subtle" size="sm" borderRadius="full">Fair</Badge>;
+        return <Badge colorPalette="yellow" variant="subtle" size="sm" borderRadius="full">{t("Fair")}</Badge>;
       case "needs_attention":
-        return <Badge colorPalette="orange" variant="subtle" size="sm" borderRadius="full">Needs Practice</Badge>;
+        return <Badge colorPalette="orange" variant="subtle" size="sm" borderRadius="full">{t("Needs Practice")}</Badge>;
       default:
-        return <Badge colorPalette="gray" variant="surface" size="sm" borderRadius="full">Not Started</Badge>;
+        return <Badge colorPalette="gray" variant="surface" size="sm" borderRadius="full">{t("Not Started")}</Badge>;
     }
   };
 
@@ -47,29 +57,29 @@ export const SubjectPerformanceSection = ({ subjects, onSelectSubject, registere
     <Box bg="white" p={{ base: 4, md: 6 }} borderRadius="2xl" border="1px solid" borderColor="gray.100" boxShadow="0 2px 8px rgba(0, 0, 0, 0.04)" mb={6}>
       <Flex justify="space-between" align="center" mb={4} wrap="wrap" gap={2}>
         <HStack gap={2.5}>
-          <Box bg="blue.50" p={2} borderRadius="xl" border="1px solid" borderColor="blue.200">
-            <Icon as={FiBook} color="#206CE1" boxSize="18px" />
+          <Box bg="blue.50" p={2} borderRadius="xl" border="1px solid" borderColor="blue.200" boxShadow="0 2px 6px rgba(32, 108, 225, 0.12)">
+            <Icon as={PiBookOpenTextFill} color="#206CE1" boxSize="18px" />
           </Box>
           <Box>
             <Heading size={{ base: "sm", md: "md" }} color="gray.900" fontWeight="800">
-              Subject Performance
+              {t("Subject Performance")}
             </Heading>
             <Text fontSize="xs" color="gray.500" mt={0.5}>
-              See your child's average quiz scores, progress, and activity in each subject.
+              {t("See your child's average quiz scores, progress, and activity in each subject.")}
             </Text>
           </Box>
         </HStack>
         <Badge colorPalette="gray" variant="surface" size="sm" borderRadius="full">
           {displayedSubjects.length > 4 && !isExpanded
-            ? `4 of ${displayedSubjects.length} Registered Subjects`
-            : `${displayedSubjects.length} Registered Subject${displayedSubjects.length === 1 ? "" : "s"}`}
+            ? `${displayedSubjects.length} ${t("Registered Subjects")}`
+            : `${displayedSubjects.length} ${t("Registered Subject")}${displayedSubjects.length === 1 ? "" : "s"}`}
         </Badge>
       </Flex>
 
       {displayedSubjects.length === 0 ? (
         <Box p={6} textAlign="center" bg="gray.50" borderRadius="xl">
           <Text fontSize="xs" color="gray.500">
-            No subjects registered yet. Add subjects to view detailed scores and progress.
+            {t("No subjects registered yet. Add subjects to view detailed scores and progress.")}
           </Text>
         </Box>
       ) : (
@@ -79,28 +89,28 @@ export const SubjectPerformanceSection = ({ subjects, onSelectSubject, registere
               <Table.Header>
                 <Table.Row bg="gray.50">
                   <Table.ColumnHeader fontSize="xs" fontWeight="700" color="gray.600">
-                    Subject
+                    {t("Subject")}
                   </Table.ColumnHeader>
                   <Table.ColumnHeader fontSize="xs" fontWeight="700" color="gray.600" textAlign="center">
-                    Average Score
+                    {t("Average Score")}
                   </Table.ColumnHeader>
                   <Table.ColumnHeader fontSize="xs" fontWeight="700" color="gray.600" textAlign="center">
-                    Score Trend
+                    {t("Score Trend")}
                   </Table.ColumnHeader>
                   <Table.ColumnHeader fontSize="xs" fontWeight="700" color="gray.600" textAlign="center">
-                    Questions Solved
+                    {t("Questions Solved")}
                   </Table.ColumnHeader>
                   <Table.ColumnHeader fontSize="xs" fontWeight="700" color="gray.600" textAlign="center">
-                    Performance
+                    {t("Performance")}
                   </Table.ColumnHeader>
                   <Table.ColumnHeader fontSize="xs" fontWeight="700" color="gray.600" textAlign="right">
-                    Last Active
+                    {t("Last Active")}
                   </Table.ColumnHeader>
                 </Table.Row>
               </Table.Header>
               <Table.Body>
                 {visibleSubjects.map((sub) => {
-                const trendIcon = sub.trend === "up" ? FiTrendingUp : sub.trend === "down" ? FiTrendingDown : FiMinus;
+                const trendIcon = sub.trend === "up" ? PiChartLineUpFill : sub.trend === "down" ? PiTrendDownBold : FiMinus;
                 const trendColor = sub.trend === "up" ? "green.600" : sub.trend === "down" ? "red.600" : "gray.600";
                 const trendText =
                   sub.trend === "up"
@@ -108,8 +118,8 @@ export const SubjectPerformanceSection = ({ subjects, onSelectSubject, registere
                     : sub.trend === "down"
                     ? `↓ ${sub.trendDiff}%`
                     : sub.trend === "stable"
-                    ? "→ Stable"
-                    : "— New";
+                    ? `→ ${t("Stable")}`
+                    : `— ${t("New")}`;
 
                 return (
                   <Table.Row
@@ -124,7 +134,7 @@ export const SubjectPerformanceSection = ({ subjects, onSelectSubject, registere
                           {sub.subjectName}
                         </Text>
                         <Text fontSize="10px" color="gray.500">
-                          {sub.sessionsCount} test{sub.sessionsCount === 1 ? "" : "s"} taken
+                          {sub.sessionsCount} {t("test")}{sub.sessionsCount === 1 ? "" : "s"} {t("taken")}
                         </Text>
                       </VStack>
                     </Table.Cell>
@@ -153,7 +163,7 @@ export const SubjectPerformanceSection = ({ subjects, onSelectSubject, registere
                               variant="solid"
                               borderRadius="md"
                             >
-                              Grade {sub.grade}
+                              {t("Grade")} {sub.grade}
                             </Badge>
                           </Flex>
                           <Progress.Root value={sub.accuracy} size="xs" colorPalette="blue">
@@ -164,7 +174,7 @@ export const SubjectPerformanceSection = ({ subjects, onSelectSubject, registere
                         </Box>
                       ) : (
                         <Text fontSize="xs" color="gray.400" textAlign="center" fontStyle="italic">
-                          No tests yet
+                          {t("No tests yet")}
                         </Text>
                       )}
                     </Table.Cell>
@@ -180,7 +190,7 @@ export const SubjectPerformanceSection = ({ subjects, onSelectSubject, registere
                     {/* Questions Attempted */}
                     <Table.Cell py={3.5} textAlign="center">
                       <Text fontSize="xs" fontWeight="600" color="gray.800">
-                        {sub.questionsAttempted} Qs
+                        {sub.questionsAttempted} {t("Qs")}
                       </Text>
                     </Table.Cell>
 
@@ -193,12 +203,12 @@ export const SubjectPerformanceSection = ({ subjects, onSelectSubject, registere
                     <Table.Cell py={3.5} textAlign="right">
                       {sub.lastActivity ? (
                         <HStack justify="end" gap={1} color="gray.600" fontSize="xs">
-                          <Icon as={FiClock} boxSize="12px" color="gray.400" />
+                          <Icon as={PiClockFill} boxSize="12px" color="gray.400" />
                           <Text>{sub.lastActivity}</Text>
                         </HStack>
                       ) : (
                         <Text fontSize="xs" color="gray.400" fontStyle="italic">
-                          Not started
+                          {t("Not started")}
                         </Text>
                       )}
                     </Table.Cell>
@@ -224,10 +234,10 @@ export const SubjectPerformanceSection = ({ subjects, onSelectSubject, registere
               <HStack gap={1.5}>
                 <Text>
                   {isExpanded
-                    ? "Show fewer subjects"
-                    : `View all ${displayedSubjects.length} subjects (${displayedSubjects.length - 4} more)`}
+                    ? t("Show fewer subjects")
+                    : `${t("View all")} ${displayedSubjects.length} ${t("subjects")}`}
                 </Text>
-                <Icon as={isExpanded ? FiChevronUp : FiChevronDown} boxSize="13px" />
+                <Icon as={isExpanded ? PiCaretUpBold : PiCaretDownBold} boxSize="13px" />
               </HStack>
             </Button>
           </Flex>

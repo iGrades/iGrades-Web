@@ -1,5 +1,13 @@
 import { Grid, GridItem, Box, Flex, Text, Heading, Icon, Badge } from "@chakra-ui/react";
-import { FiTrendingUp, FiTrendingDown, FiMinus, FiCheckCircle, FiPlayCircle, FiZap, FiBookOpen } from "react-icons/fi";
+import { FiMinus } from "react-icons/fi";
+import {
+  PiGraduationCapFill,
+  PiFlameFill,
+  PiChartLineUpFill,
+  PiTrendDownBold,
+} from "react-icons/pi";
+import { MdAssignmentTurnedIn, MdPlayLesson } from "react-icons/md";
+import { useTranslation } from "react-i18next";
 import type { StudentIntelligence } from "@/parent-app/hooks/useParentIntelligence";
 
 type Props = {
@@ -7,6 +15,7 @@ type Props = {
 };
 
 export const OverviewMetricsGrid = ({ intelligence }: Props) => {
+  const { t } = useTranslation();
   const {
     overallAccuracy,
     overallGrade,
@@ -19,14 +28,14 @@ export const OverviewMetricsGrid = ({ intelligence }: Props) => {
     learningStatus,
   } = intelligence;
 
-  const trendIcon = overallTrend === "up" ? FiTrendingUp : overallTrend === "down" ? FiTrendingDown : FiMinus;
+  const trendIcon = overallTrend === "up" ? PiChartLineUpFill : overallTrend === "down" ? PiTrendDownBold : FiMinus;
   const trendColor = overallTrend === "up" ? "green.600" : overallTrend === "down" ? "red.600" : "gray.600";
   const trendText =
     overallTrend === "up"
-      ? `+${overallTrendDiff}% improving`
+      ? `+${overallTrendDiff}% ${t("improving")}`
       : overallTrend === "down"
-      ? `${overallTrendDiff}% needs review`
-      : "Steady performance";
+      ? `${overallTrendDiff}% ${t("needs review")}`
+      : t("Steady performance");
 
   return (
     <Grid templateColumns={{ base: "repeat(2, 1fr)", lg: "repeat(4, 1fr)" }} gap={4} mb={6}>
@@ -48,10 +57,10 @@ export const OverviewMetricsGrid = ({ intelligence }: Props) => {
         >
           <Flex justify="space-between" align="start">
             <Text fontSize="xs" fontWeight="800" color="gray.500" textTransform="uppercase" letterSpacing="0.05em">
-              Average Score
+              {t("Average Score")}
             </Text>
-            <Box bg="blue.50" p={2} borderRadius="xl">
-              <Icon as={FiBookOpen} color="#206CE1" boxSize="18px" />
+            <Box bg="blue.50" p={2} borderRadius="xl" boxShadow="0 2px 6px rgba(32, 108, 225, 0.12)">
+              <Icon as={PiGraduationCapFill} color="#206CE1" boxSize="18px" />
             </Box>
           </Flex>
 
@@ -67,11 +76,11 @@ export const OverviewMetricsGrid = ({ intelligence }: Props) => {
                 px={2}
                 borderRadius="md"
               >
-                Grade {overallGrade}
+                {t("Grade")} {overallGrade}
               </Badge>
             </Flex>
             <Text fontSize="xs" color="gray.500" mt={0.5}>
-              Across all quiz attempts
+              {t("Across all quiz attempts")}
             </Text>
           </Box>
 
@@ -100,10 +109,10 @@ export const OverviewMetricsGrid = ({ intelligence }: Props) => {
         >
           <Flex justify="space-between" align="start">
             <Text fontSize="xs" fontWeight="800" color="gray.500" textTransform="uppercase" letterSpacing="0.05em">
-              Questions Solved
+              {t("Questions Solved")}
             </Text>
-            <Box bg="teal.50" p={2} borderRadius="xl">
-              <Icon as={FiCheckCircle} color="teal.600" boxSize="18px" />
+            <Box bg="teal.50" p={2} borderRadius="xl" boxShadow="0 2px 6px rgba(20, 184, 166, 0.12)">
+              <Icon as={MdAssignmentTurnedIn} color="teal.600" boxSize="18px" />
             </Box>
           </Flex>
 
@@ -112,12 +121,12 @@ export const OverviewMetricsGrid = ({ intelligence }: Props) => {
               {totalQuestionsAnswered}
             </Heading>
             <Text fontSize="xs" color="gray.500" mt={0.5}>
-              Across {totalPracticeSessions} practice test{totalPracticeSessions === 1 ? "" : "s"}
+              {t("Across")} {totalPracticeSessions} {t("practice test")}{totalPracticeSessions === 1 ? "" : "s"}
             </Text>
           </Box>
 
           <Text fontSize="xs" color="teal.700" fontWeight="600">
-            {totalPracticeSessions > 0 ? "Active practice" : "Ready to start"}
+            {totalPracticeSessions > 0 ? t("Active practice") : t("Ready to start")}
           </Text>
         </Box>
       </GridItem>
@@ -140,10 +149,10 @@ export const OverviewMetricsGrid = ({ intelligence }: Props) => {
         >
           <Flex justify="space-between" align="start">
             <Text fontSize="xs" fontWeight="800" color="gray.500" textTransform="uppercase" letterSpacing="0.05em">
-              Video Lessons
+              {t("Video Lessons")}
             </Text>
-            <Box bg="purple.50" p={2} borderRadius="xl">
-              <Icon as={FiPlayCircle} color="purple.600" boxSize="18px" />
+            <Box bg="purple.50" p={2} borderRadius="xl" boxShadow="0 2px 6px rgba(168, 85, 247, 0.12)">
+              <Icon as={MdPlayLesson} color="purple.600" boxSize="18px" />
             </Box>
           </Flex>
 
@@ -152,12 +161,12 @@ export const OverviewMetricsGrid = ({ intelligence }: Props) => {
               {totalVideosWatched}
             </Heading>
             <Text fontSize="xs" color="gray.500" mt={0.5}>
-              Completed topics
+              {t("Completed topics")}
             </Text>
           </Box>
 
           <Text fontSize="xs" color="purple.700" fontWeight="600">
-            Concept learning
+            {t("Concept learning")}
           </Text>
         </Box>
       </GridItem>
@@ -180,10 +189,10 @@ export const OverviewMetricsGrid = ({ intelligence }: Props) => {
         >
           <Flex justify="space-between" align="start">
             <Text fontSize="xs" fontWeight="800" color="gray.500" textTransform="uppercase" letterSpacing="0.05em">
-              Study Streak
+              {t("Study Streak")}
             </Text>
-            <Box bg="orange.50" p={2} borderRadius="xl">
-              <Icon as={FiZap} color="orange.500" boxSize="18px" />
+            <Box bg="orange.50" p={2} borderRadius="xl" boxShadow="0 2px 6px rgba(249, 115, 22, 0.15)">
+              <Icon as={PiFlameFill} color="orange.500" boxSize="18px" />
             </Box>
           </Flex>
 
@@ -193,16 +202,16 @@ export const OverviewMetricsGrid = ({ intelligence }: Props) => {
                 {studyStreakDays}
               </Heading>
               <Text fontSize="sm" fontWeight="700" color="orange.600">
-                Days
+                {t("Days")}
               </Text>
             </Flex>
             <Text fontSize="xs" color="gray.500" mt={0.5}>
-              Status: {learningStatus}
+              {t("Status")}: {learningStatus}
             </Text>
           </Box>
 
           <Text fontSize="xs" color="orange.700" fontWeight="600">
-            {studyStreakDays > 0 ? "Daily study habit" : "Ready for next lesson"}
+            {studyStreakDays > 0 ? t("Daily study habit") : t("Ready for next lesson")}
           </Text>
         </Box>
       </GridItem>

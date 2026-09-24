@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Navigate } from "react-router-dom";
 import { supabase } from "@/lib/supabaseClient";
+import { checkAndEnforceSessionExpiry, recordActivity } from "@/lib/authSessionManager";
 import { Center } from "@chakra-ui/react";
 import { DancingLogoLoader } from "@/components/DancingLogoLoader";
 import type { ReactNode } from "react";
@@ -11,6 +12,14 @@ const AdminGuard = ({ children }: { children: ReactNode }) => {
 
   useEffect(() => {
     const verify = async () => {
+      // 1. Check 14-day inactivity
+      const isValid = await checkAndEnforceSessionExpiry(supabase);
+      if (!isValid) {
+        setIsAdmin(false);
+        setChecking(false);
+        return;
+      }
+
       // Check active Supabase Auth session
       const { data: { session } } = await supabase.auth.getSession();
 
@@ -27,6 +36,9 @@ const AdminGuard = ({ children }: { children: ReactNode }) => {
         .eq("id", session.user.id)
         .maybeSingle();
 
+      if (data) {
+        recordActivity();
+      }
       setIsAdmin(!!data);
       setChecking(false);
     };

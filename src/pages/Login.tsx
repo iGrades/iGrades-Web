@@ -20,6 +20,13 @@ import sideImage from "../assets/login_illustration-removebg-preview.png";
 import ParentLogin from "@/parent-app/auth/Login";
 import StudentLogin from "@/student-app/auth/Login";
 import { supabase } from "@/lib/supabaseClient";
+import {
+  isSessionExpired,
+  clearAllLocalSessionData,
+  consumeSessionExpiredNotice,
+  recordActivity,
+  SESSION_EXPIRED_MESSAGE,
+} from "@/lib/authSessionManager";
 
 interface LoginProps {
   initialType?: "parent" | "children" | "student";
@@ -66,12 +73,35 @@ export default function Login({ initialType }: LoginProps) {
   }, [initialType, queryType, location.pathname]);
 
   useEffect(() => {
+    // 0. Check if user arrived after session expiration
+    const notice = consumeSessionExpiredNotice();
+    const hasExpiredParam = searchParams.get("session_expired") === "1" || searchParams.get("expired") === "true";
+    if (notice || hasExpiredParam) {
+      clearAllLocalSessionData();
+      setAlert({
+        type: "error",
+        message: notice || SESSION_EXPIRED_MESSAGE,
+      });
+      return;
+    }
+
+    // Check if the currently stored session is expired due to 14 days of inactivity
+    if (isSessionExpired()) {
+      clearAllLocalSessionData();
+      setAlert({
+        type: "error",
+        message: SESSION_EXPIRED_MESSAGE,
+      });
+      return;
+    }
+
     // 1. Check student session
     try {
       const storedStudent = localStorage.getItem("authdStudent");
       if (storedStudent) {
         const student = JSON.parse(storedStudent);
         if (student?.id || student?.firstname) {
+          recordActivity();
           const name = student.firstname
             ? `${student.firstname} ${student.lastname || ""}`.trim().toLowerCase().replace(/\s+/g, "-")
             : "";
@@ -90,6 +120,7 @@ export default function Login({ initialType }: LoginProps) {
         const parentData = JSON.parse(storedParent);
         const p = Array.isArray(parentData) ? parentData[0] : parentData;
         if (p?.id || p?.firstname || p?.email) {
+          recordActivity();
           const name = p.firstname
             ? `${p.firstname} ${p.lastname || ""}`.trim().toLowerCase().replace(/\s+/g, "-")
             : "";
@@ -100,7 +131,7 @@ export default function Login({ initialType }: LoginProps) {
     } catch {
       // ignore
     }
-  }, [navigate]);
+  }, [navigate, searchParams]);
 
   const userType = [
     { type: "iGrade Parent", state: "parent" },

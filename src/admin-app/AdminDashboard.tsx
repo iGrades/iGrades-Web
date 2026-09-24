@@ -2,13 +2,19 @@ import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/lib/supabaseClient";
 import { useAdminAuth } from "./hooks/useAdminAuth";
 import {
-  Box, Flex, Heading, Text, Button, Input, Stack,
+  Box, Flex, Heading, Text, Button, Input, Stack, HStack,
   Badge, Grid, Table, Select, Center,
   Tabs, Avatar, Icon, Image, createListCollection
 } from "@chakra-ui/react";
 import { DancingLogoLoader } from "@/components/DancingLogoLoader";
 import { toaster } from "@/components/ui/toaster";
 import AdminManagementTab from "./AdminManagementTab";
+import StudentManagementTab from "./StudentManagementTab";
+import { classChangeService } from "@/services/classChangeService";
+import type {
+  ClassChangeRequest,
+  AdminNotification,
+} from "@/services/classChangeService";
 import {
   BarChart, Bar, PieChart, Pie, Cell,
   XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend,
@@ -17,7 +23,7 @@ import {
 import {
   FiUsers, FiBookOpen, FiVideo, FiDollarSign, FiTrendingUp,
   FiUserCheck, FiArchive, FiGrid, FiRefreshCw,
-  FiLogOut, FiMenu, FiX, FiShield, FiClock, FiLayers
+  FiLogOut, FiMenu, FiX, FiShield, FiClock, FiLayers, FiBell,
 } from "react-icons/fi";
 import logo from "../assets/landing-page/logo.png";
 
@@ -1137,7 +1143,7 @@ const UserManagementTab = ({ students, parents, onRefresh }: { students: Student
 
 // ─── MAIN DASHBOARD CONTAINER ──────────────────────────────────────────────────
 
-type TabKey = "overview" | "growth" | "subscriptions" | "courses" | "content" | "users" | "admins";
+type TabKey = "overview" | "growth" | "subscriptions" | "courses" | "content" | "users" | "admins" | "student_management";
 
 const AdminDashboard = () => {
   const { logoutAdmin, getAdmin } = useAdminAuth();
@@ -1146,6 +1152,10 @@ const AdminDashboard = () => {
   const [students, setStudents] = useState<Student[]>([]);
   const [parents, setParents] = useState<Parent[]>([]);
   const [resources, setResources] = useState<Resource[]>([]);
+  const [classChangeRequests, setClassChangeRequests] = useState<ClassChangeRequest[]>([]);
+  const [notifications, setNotifications] = useState<AdminNotification[]>([]);
+  const [selectedRequestId, setSelectedRequestId] = useState<string | null>(null);
+  const [showNotificationsMenu, setShowNotificationsMenu] = useState(false);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [lastRefreshed, setLastRefreshed] = useState<Date>(new Date());
@@ -1153,14 +1163,18 @@ const AdminDashboard = () => {
 
   const fetchAll = useCallback(async () => {
     setRefreshing(true);
-    const [{ data: sts }, { data: pts }, { data: res }] = await Promise.all([
+    const [{ data: sts }, { data: pts }, { data: res }, reqList, notifList] = await Promise.all([
       supabase.from("students").select("*").order("created_at", { ascending: false }),
       supabase.from("parents").select("*").order("created_at", { ascending: false }),
       supabase.from("resources").select("*").order("created_at", { ascending: false }),
+      classChangeService.getAllRequests(),
+      classChangeService.getAdminNotifications(),
     ]);
     setStudents((sts as Student[]) || []);
     setParents((pts as Parent[]) || []);
     setResources((res as Resource[]) || []);
+    setClassChangeRequests(reqList || []);
+    setNotifications(notifList || []);
     setLoading(false);
     setRefreshing(false);
     setLastRefreshed(new Date());
@@ -1168,9 +1182,36 @@ const AdminDashboard = () => {
 
   useEffect(() => { fetchAll(); }, [fetchAll]);
 
+  const pendingRequestsCount = classChangeRequests.filter((r) => r.status === "pending").length;
+  const unreadNotificationsCount = notifications.filter((n) => !n.is_read).length;
+
+  const handleNotificationClick = async (notif: AdminNotification) => {
+    await classChangeService.markNotificationRead(notif.id);
+    setNotifications((prev) =>
+      prev.map((n) => (n.id === notif.id ? { ...n, is_read: true } : n))
+    );
+    setShowNotificationsMenu(false);
+    setTab("student_management");
+    if (notif.related_request_id) {
+      setSelectedRequestId(notif.related_request_id);
+    }
+  };
+
+  const handleMarkAllNotificationsRead = async () => {
+    await classChangeService.markAllNotificationsRead();
+    setNotifications((prev) => prev.map((n) => ({ ...n, is_read: true })));
+  };
+
   const navGroups: {
     group: string;
-    items: { key: TabKey | "cms"; label: string; sub: string; icon: React.ElementType; path?: string }[];
+    items: {
+      key: TabKey | "cms";
+      label: string;
+      sub: string;
+      icon: React.ElementType;
+      path?: string;
+      badgeCount?: number;
+    }[];
   }[] = [
     {
       group: "Analytics & Operations",
@@ -1191,7 +1232,14 @@ const AdminDashboard = () => {
     {
       group: "Administration",
       items: [
-        { key: "users", label: "User Management", sub: "Students & parents", icon: FiUsers },
+        {
+          key: "student_management",
+          label: "Student Management",
+          sub: "Class transfers & students",
+          icon: FiUserCheck,
+          badgeCount: pendingRequestsCount,
+        },
+        { key: "users", label: "User Accounts", sub: "Students & parents", icon: FiUsers },
         ...(admin?.role === "super_admin"
           ? [{ key: "admins" as TabKey, label: "Admin Team", sub: "Manage administrators", icon: FiShield }]
           : []),
@@ -1308,9 +1356,24 @@ const AdminDashboard = () => {
                             color={isActive ? "white" : "#94A3B8"}
                           />
                           <Box flex={1}>
-                            <Text fontSize="13px" fontWeight={isActive ? "700" : "500"} lineHeight="1.2">
-                              {item.label}
-                            </Text>
+                            <Flex align="center" justify="space-between">
+                              <Text fontSize="13px" fontWeight={isActive ? "700" : "500"} lineHeight="1.2">
+                                {item.label}
+                              </Text>
+                              {item.badgeCount && item.badgeCount > 0 ? (
+                                <Badge
+                                  bg="#F59E0B"
+                                  color="#0F172A"
+                                  borderRadius="full"
+                                  px={2}
+                                  py={0.2}
+                                  fontSize="10px"
+                                  fontWeight="800"
+                                >
+                                  {item.badgeCount}
+                                </Badge>
+                              ) : null}
+                            </Flex>
                             <Text fontSize="10px" color={isActive ? "#DBEAFE" : "#94A3B8"} mt={0.5}>
                               {item.sub}
                             </Text>
@@ -1385,11 +1448,127 @@ const AdminDashboard = () => {
                 {tab === "content" && "Resource Library"}
                 {tab === "users" && "User Accounts"}
                 {tab === "admins" && "Admin Team"}
+                {tab === "student_management" && "Student Management & Class Transfers"}
               </Text>
             </Flex>
           </Flex>
 
           <Flex align="center" gap={3}>
+            {/* Admin Notifications Bell & Dropdown */}
+            <Box position="relative">
+              <Button
+                size="xs"
+                variant="outline"
+                borderColor="gray.200"
+                color="gray.700"
+                _hover={{ bg: "gray.50" }}
+                borderRadius="lg"
+                onClick={() => setShowNotificationsMenu(!showNotificationsMenu)}
+                h="32px"
+                px={3}
+                position="relative"
+              >
+                <Icon as={FiBell} boxSize={3.5} />
+                {unreadNotificationsCount > 0 && (
+                  <Box
+                    position="absolute"
+                    top="-4px"
+                    right="-4px"
+                    bg="#EF4444"
+                    color="white"
+                    borderRadius="full"
+                    fontSize="9px"
+                    fontWeight="800"
+                    minW="16px"
+                    h="16px"
+                    display="flex"
+                    alignItems="center"
+                    justifyContent="center"
+                    px={1}
+                    boxShadow="0 0 0 2px white"
+                  >
+                    {unreadNotificationsCount}
+                  </Box>
+                )}
+              </Button>
+
+              {/* Notification Popover Drawer */}
+              {showNotificationsMenu && (
+                <Box
+                  position="absolute"
+                  right={0}
+                  top="38px"
+                  w={{ base: "290px", sm: "360px" }}
+                  bg="white"
+                  borderRadius="xl"
+                  boxShadow="0 10px 25px -5px rgba(0, 0, 0, 0.15), 0 8px 10px -6px rgba(0, 0, 0, 0.1)"
+                  border="1px solid"
+                  borderColor="gray.200"
+                  zIndex={50}
+                  overflow="hidden"
+                >
+                  <Flex justify="space-between" align="center" p={3.5} bg="gray.50" borderBottom="1px solid" borderColor="gray.100">
+                    <HStack gap={1.5}>
+                      <Icon as={FiBell} color="blue.600" boxSize={3.5} />
+                      <Text fontSize="12px" fontWeight="700" color="gray.800">
+                        Admin Notifications ({unreadNotificationsCount})
+                      </Text>
+                    </HStack>
+                    {unreadNotificationsCount > 0 && (
+                      <Button
+                        size="xs"
+                        variant="ghost"
+                        color="blue.600"
+                        fontSize="11px"
+                        h="auto"
+                        p={1}
+                        onClick={handleMarkAllNotificationsRead}
+                      >
+                        Mark all read
+                      </Button>
+                    )}
+                  </Flex>
+
+                  <Box maxH="320px" overflowY="auto">
+                    {notifications.length === 0 ? (
+                      <Box p={6} textAlign="center">
+                        <Text fontSize="12px" color="gray.500">No notifications yet</Text>
+                      </Box>
+                    ) : (
+                      notifications.slice(0, 10).map((n) => (
+                        <Box
+                          key={n.id}
+                          p={3}
+                          borderBottom="1px solid"
+                          borderColor="gray.100"
+                          bg={n.is_read ? "white" : "blue.50/40"}
+                          cursor="pointer"
+                          _hover={{ bg: "blue.50/70" }}
+                          transition="background 0.15s"
+                          onClick={() => handleNotificationClick(n)}
+                        >
+                          <Flex justify="space-between" align="flex-start" gap={2}>
+                            <Text fontSize="11px" fontWeight={n.is_read ? "600" : "800"} color="gray.900">
+                              {n.title}
+                            </Text>
+                            {!n.is_read && (
+                              <Box w="6px" h="6px" borderRadius="full" bg="blue.600" mt={1} />
+                            )}
+                          </Flex>
+                          <Text fontSize="11px" color="gray.600" mt={0.5} lineHeight="1.4">
+                            {n.message}
+                          </Text>
+                          <Text fontSize="9px" color="gray.400" mt={1}>
+                            {new Date(n.created_at).toLocaleDateString("en-GB", { hour: "2-digit", minute: "2-digit" })}
+                          </Text>
+                        </Box>
+                      ))
+                    )}
+                  </Box>
+                </Box>
+              )}
+            </Box>
+
             <Flex align="center" gap={1.5} display={{ base: "none", md: "flex" }}>
               <Icon as={FiClock} color="gray.400" boxSize={3.5} />
               <Text fontSize="11px" color="gray.500" fontWeight="500">
@@ -1476,6 +1655,16 @@ const AdminDashboard = () => {
               {tab === "courses" && <CoursesTab students={students} />}
               {tab === "content" && <ContentTab resources={resources} />}
               {tab === "users" && <UserManagementTab students={students} parents={parents} onRefresh={fetchAll} />}
+              {tab === "student_management" && (
+                <StudentManagementTab
+                  students={students}
+                  requests={classChangeRequests}
+                  onRefresh={fetchAll}
+                  currentAdmin={admin}
+                  selectedRequestId={selectedRequestId}
+                  onClearSelectedRequest={() => setSelectedRequestId(null)}
+                />
+              )}
               {tab === "admins" && admin?.role === "super_admin" && <AdminManagementTab currentAdminId={admin.id} />}
             </>
           )}

@@ -1,6 +1,7 @@
 
 import { createContext, useContext, useEffect, useState, useCallback, useRef } from "react";
 import { supabase } from "@/lib/supabaseClient";
+import { recordActivity, clearAllLocalSessionData, isSessionExpired } from "@/lib/authSessionManager";
 
 type Parent = {
   id: string;
@@ -66,6 +67,12 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
       }
       
       if (!authUser) {
+        if (isSessionExpired()) {
+          clearAllLocalSessionData();
+          setUser(null);
+          setParent([]);
+          return [];
+        }
         // Retain cached parent from localStorage if available so refreshing does not log the user out
         const cached = localStorage.getItem("authdParent");
         if (cached && !isLoggingOutRef.current) {
@@ -73,6 +80,7 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
             const parsed = JSON.parse(cached);
             if (Array.isArray(parsed) && parsed.length > 0) {
               setParent(parsed);
+              recordActivity();
               return parsed;
             }
           } catch {
@@ -84,6 +92,7 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
         return [];
       }
 
+      recordActivity();
       setUser(authUser);
 
       // Get parent data
@@ -161,7 +170,7 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
     isLoggingOutRef.current = true;
     setUser(null);
     setParent([]);
-    localStorage.removeItem("authdParent");
+    clearAllLocalSessionData();
     try {
       await supabase.auth.signOut();
     } catch (e) {

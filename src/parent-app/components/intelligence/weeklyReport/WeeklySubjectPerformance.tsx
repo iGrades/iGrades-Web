@@ -1,10 +1,11 @@
 import { Box, Flex, Heading, Text, VStack, HStack, Badge, Icon, Grid } from "@chakra-ui/react";
 import {
-  FiAward,
-  FiTrendingUp,
-  FiAlertCircle,
-  FiBook,
-} from "react-icons/fi";
+  PiBookOpenTextFill,
+  PiTrophyFill,
+  PiChartLineUpFill,
+  PiWarningCircleFill,
+} from "react-icons/pi";
+import { useTranslation } from "react-i18next";
 import type { WeeklySubjectMetric } from "@/parent-app/hooks/useWeeklyLearningReport";
 
 type Props = {
@@ -20,18 +21,20 @@ export const WeeklySubjectPerformance = ({
   mostImprovedSubject,
   needsAttentionSubject,
 }: Props) => {
+  const { t } = useTranslation();
+
   const getSubjectStatusBadge = (status: WeeklySubjectMetric["status"]) => {
     switch (status) {
       case "strong":
-        return <Badge colorPalette="green" variant="solid" size="xs" borderRadius="full">Strong</Badge>;
+        return <Badge colorPalette="green" variant="solid" size="xs" borderRadius="full">{t("Strong")}</Badge>;
       case "good":
-        return <Badge colorPalette="blue" variant="subtle" size="xs" borderRadius="full">On Track</Badge>;
+        return <Badge colorPalette="blue" variant="subtle" size="xs" borderRadius="full">{t("On Track")}</Badge>;
       case "fair":
-        return <Badge colorPalette="yellow" variant="subtle" size="xs" borderRadius="full">Fair</Badge>;
+        return <Badge colorPalette="yellow" variant="subtle" size="xs" borderRadius="full">{t("Fair")}</Badge>;
       case "needs_attention":
-        return <Badge colorPalette="orange" variant="subtle" size="xs" borderRadius="full">Needs Practice</Badge>;
+        return <Badge colorPalette="orange" variant="subtle" size="xs" borderRadius="full">{t("Needs Practice")}</Badge>;
       default:
-        return <Badge colorPalette="gray" variant="surface" size="xs" borderRadius="full">Not Started</Badge>;
+        return <Badge colorPalette="gray" variant="surface" size="xs" borderRadius="full">{t("Not Started")}</Badge>;
     }
   };
 
@@ -45,16 +48,21 @@ export const WeeklySubjectPerformance = ({
   return (
     <Box mb={6}>
       <Flex justify="space-between" align="center" mb={3.5} wrap="wrap" gap={2}>
-        <Box>
-          <Heading size="sm" color="gray.900" fontWeight="800">
-            Subject Performance Breakdown
-          </Heading>
-          <Text fontSize="xs" color="gray.500" mt={0.5}>
-            Weekly mastery, score adjustments, and key subject highlights.
-          </Text>
-        </Box>
+        <HStack gap={2.5}>
+          <Box bg="blue.50" p={2} borderRadius="xl" border="1px solid" borderColor="blue.200" boxShadow="0 2px 6px rgba(32, 108, 225, 0.12)">
+            <Icon as={PiBookOpenTextFill} color="#206CE1" boxSize="18px" />
+          </Box>
+          <Box>
+            <Heading size="sm" color="gray.900" fontWeight="800">
+              {t("Subject Performance Breakdown")}
+            </Heading>
+            <Text fontSize="xs" color="gray.500" mt={0.5}>
+              {t("Weekly mastery, score adjustments, and key subject highlights.")}
+            </Text>
+          </Box>
+        </HStack>
         <Badge colorPalette="gray" variant="surface" size="sm" borderRadius="full">
-          {subjects.length} Active Subject{subjects.length === 1 ? "" : "s"}
+          {subjects.length} {t("Active Subject")}{subjects.length === 1 ? "" : "s"}
         </Badge>
       </Flex>
 
@@ -74,18 +82,18 @@ export const WeeklySubjectPerformance = ({
           gap={3.5}
         >
           <Box bg="white" p={2.5} borderRadius="xl" boxShadow="0 2px 6px rgba(16, 185, 129, 0.15)">
-            <Icon as={FiAward} color="green.600" boxSize="18px" />
+            <Icon as={PiTrophyFill} color="green.600" boxSize="18px" />
           </Box>
           <Box>
             <Text fontSize="11px" fontWeight="800" color="green.800" textTransform="uppercase" letterSpacing="0.04em">
-              Strongest Subject
+              {t("Strongest Subject")}
             </Text>
             <Text fontSize="sm" fontWeight="800" color="green.900">
-              {strongestSubject ? strongestSubject.subjectName : "Pending Activity"}
+              {strongestSubject ? strongestSubject.subjectName : t("Pending Activity")}
             </Text>
             {strongestSubject && (
               <Text fontSize="11px" color="green.700">
-                {strongestSubject.accuracy}% accuracy ({strongestSubject.questionsAttempted} questions)
+                {strongestSubject.accuracy}% {t("accuracy")} ({strongestSubject.questionsAttempted} {t("questions")})
               </Text>
             )}
           </Box>
@@ -105,22 +113,22 @@ export const WeeklySubjectPerformance = ({
           gap={3.5}
         >
           <Box bg="white" p={2.5} borderRadius="xl" boxShadow="0 2px 6px rgba(32, 108, 225, 0.15)">
-            <Icon as={FiTrendingUp} color="#206CE1" boxSize="18px" />
+            <Icon as={PiChartLineUpFill} color="#206CE1" boxSize="18px" />
           </Box>
           <Box>
             <Text fontSize="11px" fontWeight="800" color="#1E56B3" textTransform="uppercase" letterSpacing="0.04em">
-              Most Improved
+              {t("Most Improved")}
             </Text>
             <Text fontSize="sm" fontWeight="800" color="blue.900">
-              {mostImprovedSubject ? mostImprovedSubject.subjectName : "Consistent Progress"}
+              {mostImprovedSubject ? mostImprovedSubject.subjectName : t("Consistent Progress")}
             </Text>
             {mostImprovedSubject ? (
               <Text fontSize="11px" color="#1E56B3">
-                +{mostImprovedSubject.trendDiff}% gain vs prior week
+                +{mostImprovedSubject.trendDiff}% {t("gain vs prior week")}
               </Text>
             ) : (
               <Text fontSize="11px" color="gray.500">
-                Steady baseline maintained
+                {t("Steady baseline maintained")}
               </Text>
             )}
           </Box>
@@ -149,22 +157,22 @@ export const WeeklySubjectPerformance = ({
           gap={3.5}
         >
           <Box bg="white" p={2.5} borderRadius="xl" boxShadow="0 2px 6px rgba(0, 0, 0, 0.08)">
-            <Icon as={FiAlertCircle} color={needsAttentionSubject ? "orange.600" : "gray.500"} boxSize="18px" />
+            <Icon as={PiWarningCircleFill} color={needsAttentionSubject ? "orange.600" : "gray.500"} boxSize="18px" />
           </Box>
           <Box>
             <Text fontSize="11px" fontWeight="800" color={needsAttentionSubject ? "orange.800" : "gray.600"} textTransform="uppercase" letterSpacing="0.04em">
-              Needs Attention
+              {t("Needs Attention")}
             </Text>
             <Text fontSize="sm" fontWeight="800" color={needsAttentionSubject ? "orange.900" : "gray.700"}>
-              {needsAttentionSubject ? needsAttentionSubject.subjectName : "None Flagged"}
+              {needsAttentionSubject ? needsAttentionSubject.subjectName : t("None Flagged")}
             </Text>
             {needsAttentionSubject ? (
               <Text fontSize="11px" color="orange.700">
-                {needsAttentionSubject.accuracy}% accuracy • Practice recommended
+                {needsAttentionSubject.accuracy}% {t("accuracy • Practice recommended")}
               </Text>
             ) : (
               <Text fontSize="11px" color="gray.500">
-                All active subjects performing well
+                {t("All active subjects performing well")}
               </Text>
             )}
           </Box>
@@ -175,7 +183,7 @@ export const WeeklySubjectPerformance = ({
       {subjects.length === 0 ? (
         <Box p={6} textAlign="center" bg="gray.50" borderRadius="2xl" boxShadow="0 2px 10px rgba(0, 0, 0, 0.04)">
           <Text fontSize="xs" color="gray.500">
-            No subject practice recorded for this weekly period.
+            {t("No subject practice recorded for this weekly period.")}
           </Text>
         </Box>
       ) : (
@@ -199,14 +207,14 @@ export const WeeklySubjectPerformance = ({
                 <Flex justify="space-between" align="center" mb={2} wrap="wrap" gap={2}>
                   <HStack gap={2.5}>
                     <Box bg="blue.50" p={2} borderRadius="lg" boxShadow="0 2px 6px rgba(32, 108, 225, 0.08)">
-                      <Icon as={FiBook} color="#206CE1" boxSize="15px" />
+                      <Icon as={PiBookOpenTextFill} color="#206CE1" boxSize="15px" />
                     </Box>
                     <Box>
                       <Text fontSize="sm" fontWeight="800" color="gray.900">
                         {sub.subjectName}
                       </Text>
                       <Text fontSize="11px" color="gray.500">
-                        {sub.questionsAttempted} questions attempted • {sub.sessionsCount} session{sub.sessionsCount === 1 ? "" : "s"}
+                        {sub.questionsAttempted} {t("questions attempted")} • {sub.sessionsCount} {t("session")}{sub.sessionsCount === 1 ? "" : "s"}
                       </Text>
                     </Box>
                   </HStack>
@@ -228,7 +236,7 @@ export const WeeklySubjectPerformance = ({
                         {sub.accuracy}%
                       </Text>
                       <Text fontSize="10px" color="gray.500">
-                        (Grade {sub.grade})
+                        ({t("Grade")} {sub.grade})
                       </Text>
                     </Flex>
                   </HStack>

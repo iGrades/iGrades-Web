@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useAuthdStudentData } from "@/student-app/context/studentDataContext";
 import { useNavigate, useLocation } from "react-router-dom";
 import { supabase } from "@/lib/supabaseClient";
+import { checkAndEnforceSessionExpiry, recordActivity } from "@/lib/authSessionManager";
 import Dashboard from "./layouts/dashboard";
 import Navbar from "./components/navbar";
 import Sidebar from "./components/sidebar";
@@ -33,14 +34,26 @@ const Home = () => {
   const location = useLocation();
 
   useEffect(() => {
-    const cached = localStorage.getItem("authdStudent");
-    if (!authdStudent && !cached) {
-      supabase.auth.getSession().then(({ data: { session } }) => {
+    const verifyStudentSession = async () => {
+      // 1. Enforce 14-day inactivity policy
+      const isValid = await checkAndEnforceSessionExpiry(supabase);
+      if (!isValid) {
+        return;
+      }
+
+      // 2. Verify active session or cached student record
+      const cached = localStorage.getItem("authdStudent");
+      if (!authdStudent && !cached) {
+        const { data: { session } } = await supabase.auth.getSession();
         if (!session) {
           navigate("/login", { replace: true });
         }
-      });
-    }
+      } else {
+        recordActivity();
+      }
+    };
+
+    verifyStudentSession();
   }, [authdStudent, navigate]);
 
   // Function to create URL-friendly names

@@ -2,6 +2,7 @@ import { createContext, useContext, useState, useEffect } from "react";
 import type { ReactNode } from "react";
 import type { Dispatch, SetStateAction } from "react";
 import { supabase } from "@/lib/supabaseClient";
+import { recordActivity, clearAllLocalSessionData } from "@/lib/authSessionManager";
 
 interface Student {
   id: string;
@@ -63,6 +64,7 @@ export const AuthdStudentDataProvider = ({
   useEffect(() => {
     if (authdStudent) {
       localStorage.setItem("authdStudent", JSON.stringify(authdStudent));
+      recordActivity();
     }
   }, [authdStudent]);
 
@@ -112,8 +114,7 @@ export const AuthdStudentDataProvider = ({
 
   const logoutFunc = () => {
     setAuthdStudent(null);
-    localStorage.removeItem("authdStudent");
-    localStorage.removeItem("authdParent");
+    clearAllLocalSessionData();
     setIsPopOver(false);
     setAlert({ type: "success", message: "Logged out successfully." });
     supabase.auth.signOut().catch(() => {});

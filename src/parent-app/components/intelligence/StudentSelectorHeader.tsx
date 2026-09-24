@@ -1,6 +1,14 @@
 import { Box, Flex, HStack, Text, Heading, Badge, Button, Icon } from "@chakra-ui/react";
 import AvatarComp from "@/components/avatar";
-import { FiTrendingUp, FiTrendingDown, FiMinus, FiTarget, FiPlus, FiCheckCircle } from "react-icons/fi";
+import { FiMinus } from "react-icons/fi";
+import {
+  PiChartLineUpFill,
+  PiTrendDownBold,
+  PiTargetFill,
+  PiPlusBold,
+} from "react-icons/pi";
+import { MdAssignmentTurnedIn } from "react-icons/md";
+import { useTranslation } from "react-i18next";
 import type { StudentIntelligence } from "@/parent-app/hooks/useParentIntelligence";
 
 type Props = {
@@ -18,6 +26,8 @@ export const StudentSelectorHeader = ({
   intelligence,
   onAddChildClick,
 }: Props) => {
+  const { t } = useTranslation();
+
   const statusColorMap: Record<string, { color: string; bg: string; icon: string }> = {
     "Active Learner": { color: "green.700", bg: "green.50", icon: "🚀" },
     "Consistent Pacing": { color: "blue.700", bg: "blue.50", icon: "🌟" },
@@ -48,10 +58,10 @@ export const StudentSelectorHeader = ({
           <Flex justify="space-between" align="center" wrap="wrap" gap={2} mb={3}>
             <HStack gap={2}>
               <Text fontSize="xs" fontWeight="800" color="#1E56B3" textTransform="uppercase" letterSpacing="0.06em">
-                Student Profile:
+                {t("Student Profile")}:
               </Text>
               <Text fontSize="xs" color="gray.500">
-                {students.length > 1 ? "Click to switch between your children" : "Your registered child"}
+                {students.length > 1 ? t("Click to switch between your children") : t("Your registered child")}
               </Text>
             </HStack>
 
@@ -66,7 +76,7 @@ export const StudentSelectorHeader = ({
               px={3}
               _hover={{ bg: "blue.100" }}
             >
-              <Icon as={FiPlus} mr={1} /> Add Another Child
+              <Icon as={PiPlusBold} mr={1} /> {t("Add Another Child")}
             </Button>
           </Flex>
 
@@ -184,7 +194,7 @@ export const StudentSelectorHeader = ({
                   <>
                     <Text color="gray.300">•</Text>
                     <HStack gap={1} color="#1E56B3" fontWeight="700">
-                      <Icon as={FiTarget} />
+                      <Icon as={PiTargetFill} />
                       <Text>{intelligence.examTarget}</Text>
                     </HStack>
                   </>
@@ -209,7 +219,7 @@ export const StudentSelectorHeader = ({
               {/* Average Score */}
               <Box px={2}>
                 <Text fontSize="10px" fontWeight="700" color="gray.500" textTransform="uppercase" letterSpacing="0.04em">
-                  Average Score
+                  {t("Average Score")}
                 </Text>
                 <HStack gap={1.5} align="baseline" mt={0.5}>
                   <Text fontSize="xl" fontWeight="800" color="#1E56B3">
@@ -222,7 +232,7 @@ export const StudentSelectorHeader = ({
                     size="xs"
                     variant="solid"
                   >
-                    Grade {intelligence.overallGrade}
+                    {t("Grade")} {intelligence.overallGrade}
                   </Badge>
                 </HStack>
               </Box>
@@ -230,7 +240,7 @@ export const StudentSelectorHeader = ({
               {/* Trajectory */}
               <Box borderLeft="1px solid" borderColor="gray.200" pl={3} pr={2}>
                 <Text fontSize="10px" fontWeight="700" color="gray.500" textTransform="uppercase" letterSpacing="0.04em">
-                  Score Trend
+                  {t("Score Trend")}
                 </Text>
                 <HStack
                   gap={1}
@@ -248,18 +258,18 @@ export const StudentSelectorHeader = ({
                   <Icon
                     as={
                       intelligence.overallTrend === "up"
-                        ? FiTrendingUp
+                        ? PiChartLineUpFill
                         : intelligence.overallTrend === "down"
-                        ? FiTrendingDown
+                        ? PiTrendDownBold
                         : FiMinus
                     }
                   />
                   <Text>
                     {intelligence.overallTrend === "up"
-                      ? `+${intelligence.overallTrendDiff}% Improving`
+                      ? `+${intelligence.overallTrendDiff}% ${t("Improving")}`
                       : intelligence.overallTrend === "down"
-                      ? `${intelligence.overallTrendDiff}% Needs Review`
-                      : "Steady"}
+                      ? `${intelligence.overallTrendDiff}% ${t("Needs Review")}`
+                      : t("Steady")}
                   </Text>
                 </HStack>
               </Box>
@@ -267,11 +277,11 @@ export const StudentSelectorHeader = ({
               {/* Quizzes Taken */}
               <Box borderLeft="1px solid" borderColor="gray.200" pl={3} pr={1}>
                 <Text fontSize="10px" fontWeight="700" color="gray.500" textTransform="uppercase" letterSpacing="0.04em">
-                  Quizzes
+                  {t("Quizzes")}
                 </Text>
                 <HStack gap={1} color="gray.800" fontSize="xs" fontWeight="700" mt={0.5}>
-                  <Icon as={FiCheckCircle} color="teal.500" />
-                  <Text>{intelligence.totalPracticeSessions} tests</Text>
+                  <Icon as={MdAssignmentTurnedIn} color="teal.500" />
+                  <Text>{intelligence.totalPracticeSessions} {t("tests")}</Text>
                 </HStack>
               </Box>
             </Flex>

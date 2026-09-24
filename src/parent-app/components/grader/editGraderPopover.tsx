@@ -1,14 +1,18 @@
-import { useState, useMemo } from "react"
+import { useState, useMemo, useEffect } from "react"
 import { supabase } from "../../../lib/supabaseClient"
-import { Box, Button, Flex, Heading, Text, VStack, HStack, Icon } from "@chakra-ui/react"
+import { Box, Button, Flex, Heading, Text, VStack, HStack, Icon, Badge } from "@chakra-ui/react"
 import { LuArrowLeft } from "react-icons/lu"
 import { MdOutlineModeEditOutline, MdDelete, MdOutlineKeyboardArrowRight } from "react-icons/md"
 import { GiNotebook } from "react-icons/gi"
+import { FiSend, FiClock } from "react-icons/fi"
 import { usePassKey } from "@/parent-app/context/passkeyContext"
 import EditGrader from "./editGrader"
 import DeleteGraderPopover from "./deleteGraderPopover"
 import AvatarComp from "@/components/avatar"
 import QuizHistoryList from "./quizHistoryList"
+import { ParentClassChangeModal } from "./ParentClassChangeModal"
+import { classChangeService, type ClassChangeRequest } from "@/services/classChangeService"
+import { useStudentsData } from "../../context/studentsDataContext"
 
 type Props = {
   student: any
@@ -16,17 +20,28 @@ type Props = {
   onClose: () => void
   showEditBtn?: boolean
   showDeleteBtn?: boolean
-  modal?: "" | "edit" | "delete"
-  setModal?: React.Dispatch<React.SetStateAction<"" | "edit" | "delete">>
+  modal?: "" | "edit" | "delete" | "class_change"
+  setModal?: React.Dispatch<React.SetStateAction<"" | "edit" | "delete" | "class_change">>
 }
 
 const EditGraderPopup = ({ student, setStudent, onClose, showEditBtn, showDeleteBtn, modal, setModal }: Props) => {
   const [showEditBox, setShowEditBox] = useState(false)
+  const [showClassChangeModal, setShowClassChangeModal] = useState(false)
+  const [pendingRequest, setPendingRequest] = useState<ClassChangeRequest | null>(null)
   const [view, setView] = useState<"info" | "history">("info")
   const { handleGeneratePassKey, decrypt } = usePassKey()
+  const { studentsData, fetchStudents } = useStudentsData()
   const encKey = (import.meta.env.ENC_KEY as string) || ""
 
   const isHistory = view === "history";
+
+  useEffect(() => {
+    if (!student?.id) return;
+    classChangeService.getStudentRequests(student.id).then((reqs) => {
+      const pending = reqs.find((r) => r.status === "pending");
+      setPendingRequest(pending || null);
+    }).catch(() => {});
+  }, [student?.id, showClassChangeModal]);
 
   const handleGenBtnClick = async () => {
     try {
@@ -101,18 +116,57 @@ const EditGraderPopup = ({ student, setStudent, onClose, showEditBtn, showDelete
                   </VStack>
 
                   <VStack gap={3} align="stretch" w="full">
+                    {/* Pending Class Change Notice if exists */}
+                    {pendingRequest && (
+                      <Box bg="amber.50" p={3.5} rounded="xl" border="1px solid" borderColor="amber.300">
+                        <Flex justify="space-between" align="center" mb={1}>
+                          <HStack gap={1.5}>
+                            <Icon as={FiClock} color="amber.700" boxSize={3.5} />
+                            <Text fontSize="xs" fontWeight="bold" color="amber.900">
+                              Class Change Request Pending
+                            </Text>
+                          </HStack>
+                          <Badge colorPalette="amber" size="sm">
+                            Under Review
+                          </Badge>
+                        </Flex>
+                        <Text fontSize="11px" color="amber.800" lineHeight="1.4">
+                          Targeting <strong>{pendingRequest.requested_class_name}</strong> (submitted {new Date(pendingRequest.submitted_at).toLocaleDateString()}). Awaiting administrator approval.
+                        </Text>
+                      </Box>
+                    )}
+
                     {[
                       { label: "School", value: student.school },
-                      { label: "Class", value: student.class },
+                      { label: "Class", value: student.class, isClass: true },
                       { label: "Email", value: student.email },
                       { label: "Passcode", value: PassPlaceholder },
                     ].map((item) => (
                       <Box key={item.label} bg="gray.50" p={4} rounded="xl" border="1px solid" borderColor="gray.100">
                         <Text fontSize="10px" fontWeight="black" color="gray.400" textTransform="uppercase">{item.label}</Text>
-                        <Flex justify="space-between" align="center">
-                          <Text fontSize="sm" fontWeight="600" color="gray.700">{item.value || "Not Set"}</Text>
+                        <Flex justify="space-between" align="center" mt={0.5}>
+                          <HStack gap={2}>
+                            <Text fontSize="sm" fontWeight="600" color="gray.700">{item.value || "Not Set"}</Text>
+                            {item.isClass && (
+                              <Badge colorPalette="blue" size="xs">Official Class</Badge>
+                            )}
+                          </HStack>
                           {item.label === "Passcode" && !student.passcode && (
                             <Button size="xs" h="24px" colorScheme="blue" onClick={handleGenBtnClick}>Generate</Button>
+                          )}
+                          {item.isClass && (
+                            <Button
+                              size="xs"
+                              h="24px"
+                              variant="outline"
+                              colorPalette="blue"
+                              fontSize="11px"
+                              fontWeight="600"
+                              onClick={() => setShowClassChangeModal(true)}
+                            >
+                              <Icon as={FiSend} mr={1} boxSize={3} />
+                              Request Change
+                            </Button>
                           )}
                         </Flex>
                       </Box>
@@ -197,6 +251,19 @@ const EditGraderPopup = ({ student, setStudent, onClose, showEditBtn, showDelete
           modal={modal} 
           setModal={setModal} 
           onClose={() => setModal("")} 
+        />
+      )}
+
+      {showClassChangeModal && student && (
+        <ParentClassChangeModal
+          isOpen={true}
+          onClose={() => setShowClassChangeModal(false)}
+          childrenList={studentsData?.length ? studentsData : [student]}
+          selectedStudentId={student.id}
+          onSuccess={() => {
+            fetchStudents?.();
+            setShowClassChangeModal(false);
+          }}
         />
       )}
     </>

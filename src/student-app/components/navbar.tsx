@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Flex,
   Image,
@@ -30,6 +30,7 @@ import {
 import { LuGraduationCap } from "react-icons/lu";
 import logo from "../../assets/logo.png";
 import AvatarComp from "../../components/avatar";
+import { setGlobalLanguage } from "@/services/autoTranslation";
 
 interface NotificationItem {
   id: string;
@@ -44,7 +45,17 @@ const Navbar = () => {
   const { setCurrentStudentPage, setStudentSettingsTab } = useNavigationStore();
   const { t, i18n } = useTranslation();
 
-  const [value, setValue] = useState<string[]>([i18n.language || "en"]);
+  const [value, setValue] = useState<string[]>([localStorage.getItem("appLanguage") || i18n.language || "en"]);
+
+  useEffect(() => {
+    const handleLang = (e: any) => {
+      if (e.detail?.lang) {
+        setValue([e.detail.lang]);
+      }
+    };
+    window.addEventListener("appLanguageChanged", handleLang);
+    return () => window.removeEventListener("appLanguageChanged", handleLang);
+  }, []);
 
   // Notifications state for interactive UX
   const [notifications, setNotifications] = useState<NotificationItem[]>([
@@ -165,7 +176,7 @@ const Navbar = () => {
               setValue(e.value);
               if (e.value[0]) {
                 i18n.changeLanguage(e.value[0]);
-                localStorage.setItem("appLanguage", e.value[0]);
+                setGlobalLanguage(e.value[0]);
               }
             }}
           >

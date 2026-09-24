@@ -14,7 +14,7 @@ import {
   Stack,
   HStack,
 } from "@chakra-ui/react";
-import { useState, type SetStateAction, type Dispatch } from "react";
+import { useState, useEffect, type SetStateAction, type Dispatch } from "react";
 import { useUser } from "../context/parentDataContext";
 import { useNavigationStore } from "../../store/usenavigationStore";
 import { useTranslation } from "react-i18next";
@@ -29,6 +29,7 @@ import {
 } from "react-icons/fi";
 import logo from "../../assets/logo.png";
 import AvatarComp from "../../components/avatar";
+import { setGlobalLanguage } from "@/services/autoTranslation";
 
 type Props = {
   setShowLogoutModal: Dispatch<SetStateAction<boolean>>;
@@ -47,7 +48,17 @@ const Navbar = ({ setShowLogoutModal }: Props) => {
   const { setCurrentParentPage, setParentSettingsTab } = useNavigationStore();
   const { t, i18n } = useTranslation();
 
-  const [value, setValue] = useState<string[]>([i18n.language || "en"]);
+  const [value, setValue] = useState<string[]>([localStorage.getItem("appLanguage") || i18n.language || "en"]);
+
+  useEffect(() => {
+    const handleLang = (e: any) => {
+      if (e.detail?.lang) {
+        setValue([e.detail.lang]);
+      }
+    };
+    window.addEventListener("appLanguageChanged", handleLang);
+    return () => window.removeEventListener("appLanguageChanged", handleLang);
+  }, []);
 
   const [notifications, setNotifications] = useState<NotificationItem[]>([
     {
@@ -148,7 +159,7 @@ const Navbar = ({ setShowLogoutModal }: Props) => {
               setValue(e.value);
               if (e.value[0]) {
                 i18n.changeLanguage(e.value[0]);
-                localStorage.setItem("appLanguage", e.value[0]);
+                setGlobalLanguage(e.value[0]);
               }
             }}
           >

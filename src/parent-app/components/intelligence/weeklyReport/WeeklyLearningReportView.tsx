@@ -10,10 +10,12 @@ import {
   Badge,
 } from "@chakra-ui/react";
 import {
-  FiCalendar,
-  FiPrinter,
-  FiRefreshCw,
-} from "react-icons/fi";
+  PiFileTextFill,
+  PiPrinterFill,
+  PiArrowsClockwiseBold,
+  PiCalendarBlankFill,
+} from "react-icons/pi";
+import { useTranslation } from "react-i18next";
 import { DancingLogoLoader } from "@/components/DancingLogoLoader";
 import AvatarComp from "@/components/avatar";
 import { useWeeklyLearningReport } from "@/parent-app/hooks/useWeeklyLearningReport";
@@ -29,6 +31,7 @@ type Props = {
 };
 
 export const WeeklyLearningReportView = ({ student, onClose }: Props) => {
+  const { t } = useTranslation();
   const [weekOffset, setWeekOffset] = useState(0); // 0 = This Week, 1 = Last Week, etc.
   const { report, loading, refreshReport } = useWeeklyLearningReport(student, weekOffset);
 
@@ -68,15 +71,18 @@ export const WeeklyLearningReportView = ({ student, onClose }: Props) => {
           />
           <Box>
             <Flex align="center" gap={2}>
+              <Box bg="blue.50" p={1.5} borderRadius="lg" boxShadow="0 1px 4px rgba(32, 108, 225, 0.15)">
+                <Icon as={PiFileTextFill} color="#206CE1" boxSize="18px" />
+              </Box>
               <Heading size="md" color="gray.900" fontWeight="800">
-                Weekly Learning Report
+                {t("Weekly Learning Report")}
               </Heading>
               <Badge colorPalette="blue" variant="solid" size="sm" borderRadius="full">
-                iGrades Intelligence
+                {t("iGrades Intelligence")}
               </Badge>
             </Flex>
             <Text fontSize="xs" color="gray.500" mt={0.5}>
-              Prepared for <strong>{studentFullName}</strong> ({studentClass})
+              {t("Prepared for")} <strong>{studentFullName}</strong> ({studentClass})
             </Text>
           </Box>
         </Flex>
@@ -101,7 +107,7 @@ export const WeeklyLearningReportView = ({ student, onClose }: Props) => {
               px={2.5}
               onClick={() => setWeekOffset(0)}
             >
-              This Week
+              {t("This Week")}
             </Button>
 
             <Button
@@ -115,7 +121,7 @@ export const WeeklyLearningReportView = ({ student, onClose }: Props) => {
               px={2.5}
               onClick={() => setWeekOffset(1)}
             >
-              Last Week
+              {t("Last Week")}
             </Button>
 
             <Button
@@ -129,7 +135,7 @@ export const WeeklyLearningReportView = ({ student, onClose }: Props) => {
               px={2.5}
               onClick={() => setWeekOffset(2)}
             >
-              2 Weeks Ago
+              {t("2 Weeks Ago")}
             </Button>
           </HStack>
 
@@ -139,9 +145,9 @@ export const WeeklyLearningReportView = ({ student, onClose }: Props) => {
             colorPalette="gray"
             borderRadius="full"
             onClick={refreshReport}
-            title="Refresh Report"
+            title={t("Refresh Data")}
           >
-            <Icon as={FiRefreshCw} />
+            <Icon as={PiArrowsClockwiseBold} />
           </Button>
 
           <Button
@@ -153,7 +159,7 @@ export const WeeklyLearningReportView = ({ student, onClose }: Props) => {
             fontSize="11px"
             fontWeight="600"
           >
-            <Icon as={FiPrinter} mr={1} /> Print
+            <Icon as={PiPrinterFill} mr={1} boxSize="13px" /> {t("Print Report")}
           </Button>
 
           {onClose && (
@@ -165,7 +171,7 @@ export const WeeklyLearningReportView = ({ student, onClose }: Props) => {
               onClick={onClose}
               fontSize="11px"
             >
-              Close
+              {t("Close")}
             </Button>
           )}
         </HStack>
@@ -186,9 +192,9 @@ export const WeeklyLearningReportView = ({ student, onClose }: Props) => {
           gap={2}
         >
           <HStack gap={2}>
-            <Icon as={FiCalendar} color="#206CE1" boxSize="15px" />
+            <Icon as={PiCalendarBlankFill} color="#206CE1" boxSize="16px" />
             <Text fontSize="xs" fontWeight="700" color="#1E56B3">
-              Reporting Period: {report.weekLabel}
+              {t("Reporting Period")}: {report.weekLabel}
             </Text>
           </HStack>
           <Text fontSize="11px" color="blue.800" fontWeight="500">
@@ -200,12 +206,12 @@ export const WeeklyLearningReportView = ({ student, onClose }: Props) => {
       {/* Main Content Body */}
       {loading ? (
         <Flex justify="center" align="center" minH="240px">
-          <DancingLogoLoader size="md" text="Compiling weekly parent learning report..." />
+          <DancingLogoLoader size="md" text={t("Compiling weekly parent learning report...")} />
         </Flex>
       ) : !report ? (
         <Box p={8} textAlign="center" bg="gray.50" borderRadius="xl">
           <Text fontSize="sm" color="gray.500">
-            Unable to generate weekly report at this time.
+            {t("Unable to generate weekly report at this time.")}
           </Text>
         </Box>
       ) : (

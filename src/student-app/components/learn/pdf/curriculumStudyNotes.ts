@@ -15,7 +15,7 @@ export interface StudyTopicNote {
 export const CURRICULUM_STUDY_NOTES: Record<string, StudyTopicNote> = {
   "Number Bases": {
     category: "Number & Numeration",
-    level: "SSS 1 • Senior Secondary",
+    level: "Curriculum Study Note",
     summary: "Number bases describe numeral systems where place value corresponds to powers of a base b. The common system is base 10 (denary), while computers use base 2 (binary), base 8 (octal), and base 16 (hexadecimal).",
     objectives: [
       "Convert numbers from base 10 to any target base by repeated division.",
@@ -55,7 +55,7 @@ export const CURRICULUM_STUDY_NOTES: Record<string, StudyTopicNote> = {
   },
   "Modular Arithmetic": {
     category: "Number & Numeration",
-    level: "SSS 1 • Senior Secondary",
+    level: "Curriculum Study Note",
     summary: "Modular arithmetic is arithmetic on integers where numbers 'wrap around' upon reaching a given value called the modulus. It governs cyclic systems like clocks, calendars, and cryptography.",
     objectives: [
       "Understand congruent residues modulo n.",
@@ -84,7 +84,7 @@ export const CURRICULUM_STUDY_NOTES: Record<string, StudyTopicNote> = {
   },
   "Quadratic Equations": {
     category: "Algebraic Processes",
-    level: "SSS 1 • Senior Secondary",
+    level: "Curriculum Study Note",
     summary: "Quadratic equations are second-degree polynomial equations of the form ax² + bx + c = 0. They have up to two real roots determined by the discriminant.",
     objectives: [
       "Solve quadratic equations using factorisation.",
@@ -115,7 +115,7 @@ export const CURRICULUM_STUDY_NOTES: Record<string, StudyTopicNote> = {
   },
   "Pythagoras' Theorem": {
     category: "Geometry & Trigonometry",
-    level: "SSS 1 • Senior Secondary",
+    level: "Curriculum Study Note",
     summary: "In a right-angled triangle, the area of the square whose side is the hypotenuse is equal to the sum of the areas of the squares on the other two sides.",
     objectives: [
       "State and prove Pythagoras' theorem geometrically.",
@@ -151,8 +151,8 @@ export function getCurriculumNote(title: string, description?: string): StudyTop
 
   // Fallback dynamic note
   return {
-    category: "Secondary Mathematics Curriculum",
-    level: "SSS 1 • WAEC & JAMB Syllabus",
+    category: "Secondary Curriculum",
+    level: "Curriculum Syllabus",
     summary: description || `Comprehensive academic study notes and curriculum review guide for ${title}.`,
     objectives: [
       `Understand fundamental definitions, principles, and conventions for ${title}.`,
@@ -161,7 +161,7 @@ export function getCurriculumNote(title: string, description?: string): StudyTop
     ],
     keyFormulas: [
       `Governing formulas and properties applicable to ${title}`,
-      `Standard mathematical relationships for Senior Secondary Mathematics`
+      `Standard curriculum formulas and relationships for this topic`
     ],
     workedExamples: [
       {

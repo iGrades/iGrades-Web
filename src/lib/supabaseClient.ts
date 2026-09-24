@@ -1,5 +1,6 @@
 // src/lib/supabaseClient.ts
 import { createClient } from "@supabase/supabase-js";
+import { authSessionStorage, recordActivity } from "./authSessionManager";
 
 const supabaseUrl = (import.meta.env.SUPABASE_URL as string) || "https://jmjballgaxelqhsvhlvl.supabase.co";
 const supabaseAnonKey = (import.meta.env.SUPABASE_ANON_KEY as string) || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.dummy_anon_key";
@@ -13,6 +14,9 @@ const shouldUseProxy = () => {
 };
 
 const customFetch: typeof fetch = async (input, init) => {
+  // Any network activity from the authenticated user refreshes the 14-day inactivity timer
+  recordActivity();
+
   const rawUrl = typeof input === "string" ? input : input instanceof URL ? input.toString() : input.url;
 
   // In the browser, route through same-origin proxy ONLY in dev sandbox environments
@@ -46,6 +50,7 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
   auth: {
     persistSession: true,
     autoRefreshToken: true,
+    storage: authSessionStorage,
   },
   global: {
     fetch: customFetch,

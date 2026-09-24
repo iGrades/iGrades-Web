@@ -1,10 +1,6 @@
 import { Box, Flex, Heading, Text, HStack, Button, Badge, Icon } from "@chakra-ui/react";
-import {
-  FiFileText,
-  FiTrendingUp,
-  FiArrowRight,
-  FiCalendar,
-} from "react-icons/fi";
+import { PiCalendarDotsFill, PiChartLineUpFill, PiFileTextFill, PiArrowRightBold } from "react-icons/pi";
+import { useTranslation } from "react-i18next";
 import { useWeeklyLearningReport } from "@/parent-app/hooks/useWeeklyLearningReport";
 
 type Props = {
@@ -13,13 +9,14 @@ type Props = {
 };
 
 export const WeeklyReportBannerCard = ({ student, onOpenFullReport }: Props) => {
+  const { t } = useTranslation();
   const { report, loading } = useWeeklyLearningReport(student, 0);
 
   if (loading || !report) {
     return null;
   }
 
-  const studentFirstName = student?.firstname || "Your child";
+  const studentFirstName = student?.firstname || t("Your child");
 
   return (
     <Box
@@ -68,7 +65,7 @@ export const WeeklyReportBannerCard = ({ student, onOpenFullReport }: Props) => 
               fontSize="10px"
               fontWeight="700"
             >
-              <Icon as={FiCalendar} mr={1} boxSize="11px" />
+              <Icon as={PiCalendarDotsFill} mr={1} boxSize="11px" />
               {report.weekLabel}
             </Badge>
 
@@ -83,20 +80,20 @@ export const WeeklyReportBannerCard = ({ student, onOpenFullReport }: Props) => 
                 fontSize="10px"
                 fontWeight="700"
               >
-                <Icon as={FiTrendingUp} mr={1} boxSize="11px" />
-                +{report.accuracyDelta}% Improved
+                <Icon as={PiChartLineUpFill} mr={1} boxSize="11px" />
+                +{report.accuracyDelta}% {t("Improved")}
               </Badge>
             )}
           </HStack>
 
           <Heading size={{ base: "sm", md: "md" }} fontWeight="800" letterSpacing="-0.01em">
-            Weekly Learning Report for {studentFirstName}
+            {t("Weekly Learning Report")} {t("for")} {studentFirstName}
           </Heading>
 
           <Text fontSize="xs" opacity={0.9} mt={1} lineHeight="tall">
             {report.hasStudied
-              ? `${report.totalQuestionsAttempted} questions attempted (${report.overallAccuracy}% accuracy) across ${report.totalSessions} study session${report.totalSessions === 1 ? "" : "s"} this week.`
-              : `Review ${studentFirstName}'s recent study rhythm, top subject strengths, and recommended practice steps.`}
+              ? `${report.totalQuestionsAttempted} ${t("questions attempted")} (${report.overallAccuracy}% ${t("accuracy")}) ${t("across")} ${report.totalSessions} ${t("study session")}${report.totalSessions === 1 ? "" : "s"} ${t("this week")}.`
+              : `${t("Review")} ${studentFirstName}'s ${t("recent study rhythm, top subject strengths, and recommended practice steps.")}`}
           </Text>
         </Box>
 
@@ -114,9 +111,9 @@ export const WeeklyReportBannerCard = ({ student, onOpenFullReport }: Props) => 
           transition="all 0.2s"
           shadow="md"
         >
-          <Icon as={FiFileText} mr={1.5} boxSize="14px" />
-          View Full Weekly Report
-          <Icon as={FiArrowRight} ml={1.5} boxSize="14px" />
+          <Icon as={PiFileTextFill} mr={1.5} boxSize="14px" />
+          {t("View Full Weekly Report")}
+          <Icon as={PiArrowRightBold} ml={1.5} boxSize="14px" />
         </Button>
       </Flex>
     </Box>

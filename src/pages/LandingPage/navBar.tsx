@@ -1,7 +1,9 @@
-import { Box, Flex, Button, Image, Link } from "@chakra-ui/react";
+import { Box, Flex, Button, Image, Link, HStack } from "@chakra-ui/react";
 import { useState, useEffect } from "react";
 import { useNavigate, Link as RouterLink } from "react-router-dom";
 import logo from "../../assets/landing-page/logo.png";
+import { LanguageSwitcher } from "@/components/LanguageSwitcher";
+import { isSessionExpired } from "@/lib/authSessionManager";
 
 const NavBar = () => {
   const navigate = useNavigate();
@@ -9,6 +11,10 @@ const NavBar = () => {
   const [activeSession, setActiveSession] = useState<{ path: string } | null>(null);
 
   useEffect(() => {
+    if (isSessionExpired()) {
+      setActiveSession(null);
+      return;
+    }
     try {
       const student = localStorage.getItem("authdStudent");
       if (student) {
@@ -79,13 +85,16 @@ const NavBar = () => {
         w={{ base: "45%", md: "15%" }} 
         mr={{ base: 4, md: 6, lg: 0 }}
       >
-        {/* 2. Scaled down logo height slightly on desktop so it doesn't stretch the container */}
-        <Image 
-          src={logo} 
-          alt="iGrades_logo" 
-          maxW={{ base: "130px", md: "120px", lg: "140px" }} 
-          objectFit="contain" 
-        />
+        <RouterLink to="/" style={{ display: "inline-flex", alignItems: "center" }} aria-label="iGrades Home">
+          {/* 2. Scaled down logo height slightly on desktop so it doesn't stretch the container */}
+          <Image 
+            src={logo} 
+            alt="iGrades_logo" 
+            maxW={{ base: "130px", md: "120px", lg: "140px" }} 
+            objectFit="contain" 
+            cursor="pointer"
+          />
+        </RouterLink>
       </Box>
 
       {/* Desktop nav */}
@@ -109,34 +118,34 @@ const NavBar = () => {
 
       {/* Desktop buttons */}
       <Box display={{ base: "none", md: "block" }}>
-        <Button
-          variant="outline"
-          border="1px solid"
-          borderColor="primaryColor"
-          rounded={{ base: "xl", lg: "3xl" }}
-          color="primaryColor"
-          fontWeight="bold"
-          fontSize={{ base: "xs", lg: "sm" }}
-          w={{ base: 20, md: 16, lg: 28 }}
-          // 3. Trimmed inner button padding significantly for vertical compactness
-          h={{ md: "36px", lg: "42px" }}
-          mr={4}
-          onClick={handleLogin}
-        >
-          Login
-        </Button>
-        <Button
-          bg="primaryColor"
-          rounded={{ base: "xl", lg: "3xl" }}
-          w={{ base: 28, md: 24, lg: 36 }}
-          // 3. Trimmed inner button padding significantly for vertical compactness
-          h={{ md: "36px", lg: "42px" }}
-          fontWeight="bold"
-          fontSize={{ base: "xs", lg: "sm" }}
-          onClick={handleRegister}
-        >
-          Register
-        </Button>
+        <HStack gap={3}>
+          <LanguageSwitcher size="sm" />
+          <Button
+            variant="outline"
+            border="1px solid"
+            borderColor="primaryColor"
+            rounded={{ base: "xl", lg: "3xl" }}
+            color="primaryColor"
+            fontWeight="bold"
+            fontSize={{ base: "xs", lg: "sm" }}
+            w={{ base: 20, md: 16, lg: 28 }}
+            h={{ md: "36px", lg: "42px" }}
+            onClick={handleLogin}
+          >
+            Login
+          </Button>
+          <Button
+            bg="primaryColor"
+            rounded={{ base: "xl", lg: "3xl" }}
+            w={{ base: 28, md: 24, lg: 36 }}
+            h={{ md: "36px", lg: "42px" }}
+            fontWeight="bold"
+            fontSize={{ base: "xs", lg: "sm" }}
+            onClick={handleRegister}
+          >
+            Register
+          </Button>
+        </HStack>
       </Box>
 
       {/* Mobile hamburger */}
@@ -193,6 +202,9 @@ const NavBar = () => {
         ))}
 
         <Flex direction="column" mt={8} gap={4}>
+          <Box display="flex" justifyContent="center">
+            <LanguageSwitcher size="md" />
+          </Box>
           <Button variant="outline" border="1px solid" borderColor="primaryColor"
             rounded="xl" color="primaryColor" fontWeight="bold" fontSize="md"
             py={6} onClick={handleLogin}>

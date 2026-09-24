@@ -313,8 +313,8 @@ const PdfList = ({ topic, pdf, onBack }: Props) => {
             >
               {/* Header with Navigation & Actions */}
               <Dialog.Header
-                px={{ base: 4, md: 6 }}
-                py={3}
+                px={{ base: 3, md: 6 }}
+                py={{ base: 2, md: 3 }}
                 borderBottom="1px solid"
                 borderColor="gray.200"
                 bg="white"
@@ -324,15 +324,15 @@ const PdfList = ({ topic, pdf, onBack }: Props) => {
                   justify="space-between"
                   align="center"
                   w="100%"
-                  gap={3}
+                  gap={{ base: 1.5, md: 3 }}
                   wrap={{ base: "wrap", md: "nowrap" }}
                 >
                   {/* Title & Badge */}
-                  <Flex align="center" gap={3} minW={0}>
-                    <Badge colorScheme="blue" fontSize="11px" px={2.5} py={1} borderRadius="md">
+                  <Flex align="center" gap={2} minW={0} maxW={{ base: "100%", md: "40%" }}>
+                    <Badge colorPalette="blue" fontSize="10px" px={2} py={0.5} borderRadius="md" flexShrink={0}>
                       STUDY GUIDE
                     </Badge>
-                    <Dialog.Title fontSize={{ base: "sm", md: "md" }} fontWeight="bold" truncate>
+                    <Dialog.Title fontSize={{ base: "xs", sm: "sm", md: "md" }} fontWeight="bold" truncate>
                       {selectedPDF?.title}
                     </Dialog.Title>
                   </Flex>
@@ -340,10 +340,10 @@ const PdfList = ({ topic, pdf, onBack }: Props) => {
                   {/* Mode Switch Tabs */}
                   <Flex
                     bg="gray.100"
-                    p={1}
+                    p={0.5}
                     borderRadius="xl"
                     gap={1}
-                    mx="auto"
+                    mx={{ base: "0", md: "auto" }}
                   >
                     <Button
                       size="xs"
@@ -353,10 +353,12 @@ const PdfList = ({ topic, pdf, onBack }: Props) => {
                       boxShadow={activeTab === "notes" ? "sm" : "none"}
                       fontWeight="bold"
                       borderRadius="lg"
+                      h="28px"
+                      px={2.5}
                       onClick={() => setActiveTab("notes")}
                     >
                       <LuBookOpen size={13} style={{ marginRight: "4px" }} />
-                      Curriculum Notes
+                      Notes
                     </Button>
 
                     <Button
@@ -367,6 +369,8 @@ const PdfList = ({ topic, pdf, onBack }: Props) => {
                       boxShadow={activeTab === "pdf" ? "sm" : "none"}
                       fontWeight="bold"
                       borderRadius="lg"
+                      h="28px"
+                      px={2.5}
                       onClick={() => setActiveTab("pdf")}
                     >
                       <LuFileText size={13} style={{ marginRight: "4px" }} />
@@ -375,7 +379,7 @@ const PdfList = ({ topic, pdf, onBack }: Props) => {
                   </Flex>
 
                   {/* Top Action Tools & Close */}
-                  <Flex align="center" gap={2}>
+                  <Flex align="center" gap={1.5} flexShrink={0}>
                     {selectedPDF && (
                       <>
                         <Button
@@ -385,6 +389,9 @@ const PdfList = ({ topic, pdf, onBack }: Props) => {
                           color="gray.700"
                           _hover={{ bg: "gray.50" }}
                           rounded="lg"
+                          h="28px"
+                          px={2}
+                          display={{ base: "none", sm: "inline-flex" }}
                           onClick={() => window.open(getPdfUrl(selectedPDF), "_blank")}
                           title="Open original document in new browser tab"
                         >
@@ -398,11 +405,14 @@ const PdfList = ({ topic, pdf, onBack }: Props) => {
                           color="white"
                           _hover={{ bg: "blue.700" }}
                           rounded="lg"
+                          h="28px"
+                          px={2.5}
+                          display={{ base: "none", xs: "inline-flex" }}
                           onClick={() => handleDownloadPdf(selectedPDF)}
                           loading={isDownloading}
                         >
                           <LuDownload size={13} style={{ marginRight: "4px" }} />
-                          Download PDF
+                          Save
                         </Button>
                       </>
                     )}
@@ -411,14 +421,14 @@ const PdfList = ({ topic, pdf, onBack }: Props) => {
                       size="sm"
                       onClick={handleCloseDialog}
                       cursor="pointer"
-                      ml={2}
+                      ml={1}
                     />
                   </Flex>
                 </Flex>
               </Dialog.Header>
 
               {/* Body */}
-              <Dialog.Body p={0} flex={1} position="relative" bg={activeTab === "pdf" ? "gray.900" : "gray.50"} overflowY="auto">
+              <Dialog.Body p={0} flex={1} position="relative" bg={activeTab === "pdf" ? "#0b1120" : "gray.50"} overflowY={activeTab === "pdf" ? "hidden" : "auto"}>
                 {selectedPDF && activeTab === "notes" && currentNote && (
                   <Box maxW="850px" mx="auto" p={{ base: 4, md: 8 }}>
                     {/* Header Card */}

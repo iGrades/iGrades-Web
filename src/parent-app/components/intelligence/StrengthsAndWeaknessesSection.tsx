@@ -1,5 +1,11 @@
 import { Box, Grid, GridItem, Flex, Heading, Text, VStack, HStack, Icon, Badge, Progress } from "@chakra-ui/react";
-import { FiAward, FiTarget, FiCheckCircle, FiAlertTriangle } from "react-icons/fi";
+import {
+  PiTrophyFill,
+  PiNotebookFill,
+  PiCheckCircleFill,
+  PiWarningCircleFill,
+} from "react-icons/pi";
+import { useTranslation } from "react-i18next";
 import type { StudentIntelligence } from "@/parent-app/hooks/useParentIntelligence";
 
 type Props = {
@@ -7,6 +13,7 @@ type Props = {
 };
 
 export const StrengthsAndWeaknessesSection = ({ intelligence }: Props) => {
+  const { t } = useTranslation();
   const { strengths, areasForAttention } = intelligence;
 
   return (
@@ -31,19 +38,19 @@ export const StrengthsAndWeaknessesSection = ({ intelligence }: Props) => {
           <Flex justify="space-between" align="center" mb={3.5}>
             <HStack gap={2.5}>
               <Box bg="green.50" p={2.5} borderRadius="xl" border="none" boxShadow="0 2px 8px rgba(16, 185, 129, 0.18)">
-                <Icon as={FiAward} color="green.600" boxSize="18px" />
+                <Icon as={PiTrophyFill} color="green.600" boxSize="18px" />
               </Box>
               <Box>
                 <Heading size={{ base: "sm", md: "md" }} color="gray.900" fontWeight="800">
-                  Student Strengths
+                  {t("Student Strengths")}
                 </Heading>
                 <Text fontSize="xs" color="gray.500" mt={0.5}>
-                  Topics and subjects where your child is doing exceptionally well.
+                  {t("Topics and subjects where your child is doing exceptionally well.")}
                 </Text>
               </Box>
             </HStack>
             <Badge colorPalette="green" variant="subtle" size="sm" borderRadius="full" px={2.5} py={0.5}>
-              Doing Great
+              {t("Doing Great")}
             </Badge>
           </Flex>
 
@@ -60,7 +67,7 @@ export const StrengthsAndWeaknessesSection = ({ intelligence }: Props) => {
           {/* Detailed Topic & Subject Strengths */}
           <VStack align="stretch" gap={3} flex="1">
             <Text fontSize="xs" fontWeight="800" color="gray.500" textTransform="uppercase" letterSpacing="0.05em">
-              Top Mastered Topics & Subjects
+              {t("Top Mastered Topics & Subjects")}
             </Text>
 
             {strengths.topTopics.length > 0 ? (
@@ -77,7 +84,7 @@ export const StrengthsAndWeaknessesSection = ({ intelligence }: Props) => {
                 >
                   <Flex justify="space-between" align="center" mb={1.5}>
                     <HStack gap={2}>
-                      <Icon as={FiCheckCircle} color="green.600" boxSize="14px" />
+                      <Icon as={PiCheckCircleFill} color="green.600" boxSize="15px" />
                       <Text fontSize="xs" fontWeight="700" color="gray.900">
                         {topic.topicName}
                       </Text>
@@ -110,7 +117,7 @@ export const StrengthsAndWeaknessesSection = ({ intelligence }: Props) => {
                 >
                   <Flex justify="space-between" align="center" mb={1.5}>
                     <HStack gap={2}>
-                      <Icon as={FiCheckCircle} color="green.600" boxSize="14px" />
+                      <Icon as={PiCheckCircleFill} color="green.600" boxSize="15px" />
                       <Text fontSize="xs" fontWeight="700" color="gray.900">
                         {sub.subjectName}
                       </Text>
@@ -129,7 +136,7 @@ export const StrengthsAndWeaknessesSection = ({ intelligence }: Props) => {
             ) : (
               <Box p={4} textAlign="center" bg="gray.50" borderRadius="xl">
                 <Text fontSize="xs" color="gray.500" fontStyle="italic">
-                  Taking more practice quizzes will highlight your child's top topics here.
+                  {t("Taking more practice quizzes will highlight your child's top topics here.")}
                 </Text>
               </Box>
             )}
@@ -157,19 +164,19 @@ export const StrengthsAndWeaknessesSection = ({ intelligence }: Props) => {
           <Flex justify="space-between" align="center" mb={3.5}>
             <HStack gap={2.5}>
               <Box bg="orange.50" p={2.5} borderRadius="xl" border="none" boxShadow="0 2px 8px rgba(245, 158, 11, 0.2)">
-                <Icon as={FiTarget} color="orange.600" boxSize="18px" />
+                <Icon as={PiNotebookFill} color="orange.600" boxSize="18px" />
               </Box>
               <Box>
                 <Heading size={{ base: "sm", md: "md" }} color="gray.900" fontWeight="800">
-                  Areas to Practice
+                  {t("Areas to Practice")}
                 </Heading>
                 <Text fontSize="xs" color="gray.500" mt={0.5}>
-                  Specific topics where a little more practice can boost your child's grades.
+                  {t("Specific topics where a little more practice can boost your child's grades.")}
                 </Text>
               </Box>
             </HStack>
             <Badge colorPalette="orange" variant="subtle" size="sm" borderRadius="full" px={2.5} py={0.5}>
-              Extra Focus
+              {t("Extra Focus")}
             </Badge>
           </Flex>
 
@@ -186,7 +193,7 @@ export const StrengthsAndWeaknessesSection = ({ intelligence }: Props) => {
           {/* Detailed Struggling Topics & Subjects */}
           <VStack align="stretch" gap={3} flex="1">
             <Text fontSize="xs" fontWeight="800" color="gray.500" textTransform="uppercase" letterSpacing="0.05em">
-              Topics to Practice Next
+              {t("Topics to Practice Next")}
             </Text>
 
             {areasForAttention.strugglingTopics.length > 0 ? (
@@ -203,7 +210,7 @@ export const StrengthsAndWeaknessesSection = ({ intelligence }: Props) => {
                 >
                   <Flex justify="space-between" align="center" mb={1.5}>
                     <HStack gap={2}>
-                      <Icon as={FiAlertTriangle} color="orange.500" boxSize="14px" />
+                      <Icon as={PiWarningCircleFill} color="orange.500" boxSize="15px" />
                       <Text fontSize="xs" fontWeight="700" color="gray.900">
                         {topic.topicName}
                       </Text>
@@ -212,7 +219,7 @@ export const StrengthsAndWeaknessesSection = ({ intelligence }: Props) => {
                       </Text>
                     </HStack>
                     <Badge colorPalette="orange" variant="surface" size="xs" borderRadius="md">
-                      {topic.accuracy}% score
+                      {topic.accuracy}% {t("score")}
                     </Badge>
                   </Flex>
                   <Progress.Root value={topic.accuracy} size="xs" colorPalette="orange">
@@ -236,13 +243,13 @@ export const StrengthsAndWeaknessesSection = ({ intelligence }: Props) => {
                 >
                   <Flex justify="space-between" align="center" mb={1.5}>
                     <HStack gap={2}>
-                      <Icon as={FiAlertTriangle} color="orange.500" boxSize="14px" />
+                      <Icon as={PiWarningCircleFill} color="orange.500" boxSize="15px" />
                       <Text fontSize="xs" fontWeight="700" color="gray.900">
                         {sub.subjectName}
                       </Text>
                     </HStack>
                     <Badge colorPalette="orange" variant="surface" size="xs" borderRadius="md">
-                      {sub.accuracy}% score
+                      {sub.accuracy}% {t("score")}
                     </Badge>
                   </Flex>
                   <Progress.Root value={sub.accuracy} size="xs" colorPalette="orange">
@@ -255,7 +262,7 @@ export const StrengthsAndWeaknessesSection = ({ intelligence }: Props) => {
             ) : (
               <Box p={4} textAlign="center" bg="gray.50" borderRadius="xl">
                 <Text fontSize="xs" color="gray.500" fontStyle="italic">
-                  No major weak spots found. Your child is performing well across all topics practiced so far!
+                  {t("No major weak spots found. Your child is performing well across all topics practiced so far!")}
                 </Text>
               </Box>
             )}

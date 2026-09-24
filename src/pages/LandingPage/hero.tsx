@@ -1,13 +1,23 @@
 import { Box, Flex, Heading, Text, Button, Image } from "@chakra-ui/react";
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { FaPlay } from "react-icons/fa6";
 import headerPic from "@/assets/landing-page/header-pic.png";
 import orangeBlob from "@/assets/landing-page/orange_line.png";
+import { HowItWorksModal } from "./HowItWorksModal";
 
 const Hero = () => {
+  const navigate = useNavigate();
   const words = ["Excellence", "Education", "Tutoring"];
   const [currentWordIdx, setCurrentWordIdx] = useState(0);
   const [isFading, setIsFading] = useState(false);
+  const [isHowItWorksOpen, setIsHowItWorksOpen] = useState(false);
+
+  useEffect(() => {
+    const handleOpen = () => setIsHowItWorksOpen(true);
+    window.addEventListener("open-how-it-works-video", handleOpen);
+    return () => window.removeEventListener("open-how-it-works-video", handleOpen);
+  }, []);
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -122,6 +132,8 @@ const Hero = () => {
               w="45%"
               p={{ base: 7, md: 4, lg: 8 }}
               fontWeight="bold"
+              cursor="pointer"
+              onClick={() => navigate("/signup")}
             >
               Join for free
             </Button>
@@ -131,11 +143,13 @@ const Hero = () => {
               w="45%"
               p={{ base: 7, md: 4, lg: 8 }}
               mr={4}
-              _hover={{ border: "1px solid", borderColor: "gray.300" }}
+              cursor="pointer"
+              _hover={{ border: "1px solid", borderColor: "gray.300", bg: "gray.50" }}
               display="flex"
               alignItems="center"
               justifyContent="center"
               gap={2}
+              onClick={() => setIsHowItWorksOpen(true)}
             >
               <FaPlay /> How it works
             </Button>
@@ -152,6 +166,12 @@ const Hero = () => {
           />
         </Box>
       </Flex>
+
+      {/* How it Works Video Modal */}
+      <HowItWorksModal
+        isOpen={isHowItWorksOpen}
+        onClose={() => setIsHowItWorksOpen(false)}
+      />
 
       {/* Mobile Banner Panel (Restored Sizes) */}
       <Box

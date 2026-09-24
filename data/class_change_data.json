@@ -1,0 +1,99 @@
+{
+  "requests": [
+    {
+      "id": "ccr_mudy7qwa_xx65pl",
+      "student_id": "17d1d1a2-32f6-4b82-9103-1805ce82239b",
+      "student_name": "Favour Ola",
+      "student_email": "favour@gmail.com",
+      "current_class_id": "",
+      "current_class_name": "SSS 2",
+      "requested_class_id": "",
+      "requested_class_name": "SSS 3",
+      "reason": "Want to try final year questions.",
+      "status": "rejected",
+      "submitted_at": "2026-09-23T10:16:48.874Z",
+      "reviewed_at": "2026-09-23T10:16:48.896Z",
+      "reviewed_by": "Academic Dean (dean@igrades.org)",
+      "admin_note": "Prerequisite SSS 2 termly examinations must be completed first.",
+      "old_class": "SSS 2",
+      "new_class": null
+    },
+    {
+      "id": "ccr_mudy7nbx_op06td",
+      "student_id": "e9f5b30a-5634-453f-92a8-996d0246f63e",
+      "student_name": "Peter Peter",
+      "student_email": "peter@gmail.com",
+      "current_class_id": "",
+      "current_class_name": "JSS 3",
+      "requested_class_id": "",
+      "requested_class_name": "SSS 1",
+      "reason": "Completed BECE junior WAEC exams with distinction, promoted to Senior Secondary 1.",
+      "status": "approved",
+      "submitted_at": "2026-09-23T10:16:44.253Z",
+      "reviewed_at": "2026-09-23T10:16:44.269Z",
+      "reviewed_by": "Academic Dean (dean@igrades.org)",
+      "admin_note": "BECE results verified. Congratulations on promotion!",
+      "old_class": "JSS 3",
+      "new_class": "SSS 1"
+    },
+    {
+      "id": "ccr_mudy7crm_dth2d2",
+      "student_id": "test-std-1",
+      "student_name": "Ade Test",
+      "student_email": "ade.test@example.com",
+      "current_class_id": "",
+      "current_class_name": "SSS 1",
+      "requested_class_id": "",
+      "requested_class_name": "SSS 2",
+      "reason": "I have passed the advancement exam and changed schools.",
+      "status": "pending",
+      "submitted_at": "2026-09-23T10:16:30.562Z",
+      "reviewed_at": null,
+      "reviewed_by": null,
+      "admin_note": null,
+      "old_class": "SSS 1",
+      "new_class": null
+    }
+  ],
+  "notifications": [
+    {
+      "id": "notif_mudy7qwa_is0s65",
+      "type": "class_change_request",
+      "title": "Student Class Change Request",
+      "message": "Favour Ola has requested to change from SSS 2 to SSS 3.",
+      "related_request_id": "ccr_mudy7qwa_xx65pl",
+      "student_id": "17d1d1a2-32f6-4b82-9103-1805ce82239b",
+      "student_name": "Favour Ola",
+      "current_class": "SSS 2",
+      "requested_class": "SSS 3",
+      "is_read": false,
+      "created_at": "2026-09-23T10:16:48.874Z"
+    },
+    {
+      "id": "notif_mudy7nbx_zgjteu",
+      "type": "class_change_request",
+      "title": "Student Class Change Request",
+      "message": "Peter Peter has requested to change from JSS 3 to SSS 1.",
+      "related_request_id": "ccr_mudy7nbx_op06td",
+      "student_id": "e9f5b30a-5634-453f-92a8-996d0246f63e",
+      "student_name": "Peter Peter",
+      "current_class": "JSS 3",
+      "requested_class": "SSS 1",
+      "is_read": false,
+      "created_at": "2026-09-23T10:16:44.253Z"
+    },
+    {
+      "id": "notif_mudy7crm_eamkiz",
+      "type": "class_change_request",
+      "title": "Student Class Change Request",
+      "message": "Ade Test has requested to change from SSS 1 to SSS 2.",
+      "related_request_id": "ccr_mudy7crm_dth2d2",
+      "student_id": "test-std-1",
+      "student_name": "Ade Test",
+      "current_class": "SSS 1",
+      "requested_class": "SSS 2",
+      "is_read": false,
+      "created_at": "2026-09-23T10:16:30.562Z"
+    }
+  ]
+}

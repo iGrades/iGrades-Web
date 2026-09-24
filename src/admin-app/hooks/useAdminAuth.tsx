@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { supabase } from "@/lib/supabaseClient";
+import { recordActivity, clearAllLocalSessionData } from "@/lib/authSessionManager";
 
 interface Admin {
   id: string;
@@ -47,6 +48,7 @@ export const useAdminAuth = () => {
 
       // 3. Persist admin info to sessionStorage
       sessionStorage.setItem("admin", JSON.stringify(adminData));
+      recordActivity(true);
       return { success: true, admin: adminData };
 
     } catch {
@@ -59,6 +61,7 @@ export const useAdminAuth = () => {
 
   const logoutAdmin = async () => {
     await supabase.auth.signOut();
+    clearAllLocalSessionData();
     sessionStorage.removeItem("admin");
     window.location.assign("/admin/login");
   };

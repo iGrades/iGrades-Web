@@ -1,9 +1,14 @@
-import { Text, Heading, Flex, Box, Grid } from "@chakra-ui/react";
+import { useState } from "react";
+import { Text, Heading, Flex, Box, Grid, Button, Badge, Icon } from "@chakra-ui/react";
+import { FiSend } from "react-icons/fi";
 import { useStudentsData } from "../../context/studentsDataContext";
 import AvatarComp from "@/components/avatar";
+import { ParentClassChangeModal } from "../grader/ParentClassChangeModal";
 
 const Children = () => {
-  const { studentsData } = useStudentsData();
+  const { studentsData, fetchStudents } = useStudentsData();
+  const [selectedStudent, setSelectedStudent] = useState<any | null>(null);
+  const [showModal, setShowModal] = useState(false);
   
   return (
     <>
@@ -17,14 +22,15 @@ const Children = () => {
         {studentsData && studentsData.length > 0 ? (
           studentsData.map((student, index) => (
             <Flex
-              key={index}
+              key={student.id || index}
               justify="space-between"
               align="center"
+              flexWrap="wrap"
+              gap={3}
               w="full"
               bg="textFieldColor"
               borderRadius="lg"
               p={{ base: "4", md: "4", lg: "5" }}
-              cursor="pointer"
               transition="all 0.2s"
               _hover={{ shadow: "sm", transform: "translateY(-2px)" }}
             >
@@ -52,10 +58,25 @@ const Children = () => {
                     textTransform="capitalize"
                     truncate 
                   >
-                    {student.school} • {student.class}
+                    {student.school} • <Badge colorPalette="blue" size="xs">{student.class}</Badge>
                   </Text>
                 </Box>
               </Box>
+
+              <Button
+                size="xs"
+                variant="outline"
+                colorPalette="blue"
+                borderRadius="md"
+                fontWeight="700"
+                onClick={() => {
+                  setSelectedStudent(student);
+                  setShowModal(true);
+                }}
+              >
+                <Icon as={FiSend} mr={1} boxSize={3} />
+                Change Class
+              </Button>
             </Flex>
           ))
         ) : (
@@ -67,6 +88,23 @@ const Children = () => {
           </Box>
         )}
       </Grid>
+
+      {showModal && selectedStudent && (
+        <ParentClassChangeModal
+          isOpen={true}
+          onClose={() => {
+            setShowModal(false);
+            setSelectedStudent(null);
+          }}
+          childrenList={studentsData}
+          selectedStudentId={selectedStudent.id}
+          onSuccess={() => {
+            fetchStudents?.();
+            setShowModal(false);
+            setSelectedStudent(null);
+          }}
+        />
+      )}
     </>
   );
 };

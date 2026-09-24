@@ -9,20 +9,21 @@ import translationFF from "./locales/ff/translation.json";
 import translationWO from "./locales/wo/translation.json";
 import translationFR from "./locales/fr/translation.json";
 import translationPT from "./locales/pt/translation.json";
+import { translationsData } from "./locales/translationsData";
 
 const savedLang = localStorage.getItem("appLanguage") || "en";
 
 i18n.use(initReactI18next).init({
   resources: {
-    en: { translation: translationEN },
-    ha: { translation: translationHA },
-    yo: { translation: translationYO },
-    ig: { translation: translationIG },
-    ak: { translation: translationAK },
-    ff: { translation: translationFF },
-    wo: { translation: translationWO },
-    fr: { translation: translationFR },
-    pt: { translation: translationPT }
+    en: { translation: { ...translationEN, ...translationsData.en } },
+    ha: { translation: { ...translationHA, ...translationsData.ha } },
+    yo: { translation: { ...translationYO, ...translationsData.yo } },
+    ig: { translation: { ...translationIG, ...translationsData.ig } },
+    ak: { translation: { ...translationAK, ...translationsData.ak } },
+    ff: { translation: { ...translationFF, ...translationsData.ff } },
+    wo: { translation: { ...translationWO, ...translationsData.wo } },
+    fr: { translation: { ...translationFR, ...translationsData.fr } },
+    pt: { translation: { ...translationPT, ...translationsData.pt } }
   },
   lng: savedLang,
   fallbackLng: "en",

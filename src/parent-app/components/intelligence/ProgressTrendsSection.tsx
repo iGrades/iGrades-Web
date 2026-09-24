@@ -1,5 +1,3 @@
-"use client";
-
 import { useState, useMemo } from "react";
 import {
   Box,
@@ -11,15 +9,16 @@ import {
   Badge,
   Icon,
 } from "@chakra-ui/react";
+import { FiMinus } from "react-icons/fi";
 import {
-  FiTrendingUp,
-  FiTrendingDown,
-  FiMinus,
-  FiActivity,
-  FiTarget,
-  FiAward,
-  FiCheckCircle,
-} from "react-icons/fi";
+  PiChartLineUpFill,
+  PiTrendDownBold,
+  PiTrophyFill,
+  PiCheckCircleFill,
+  PiPulseFill,
+  PiTargetBold,
+} from "react-icons/pi";
+import { useTranslation } from "react-i18next";
 import {
   Area,
   AreaChart,
@@ -44,6 +43,7 @@ const getSubjectColor = (name?: string): string => {
 };
 
 export const ProgressTrendsSection = ({ intelligence }: Props) => {
+  const { t } = useTranslation();
   const { trendHistory = [], subjects = [], overallTrend, overallTrendDiff } = intelligence;
 
   // Selected subject filter ("all" or subject name / id)
@@ -203,14 +203,14 @@ export const ProgressTrendsSection = ({ intelligence }: Props) => {
           {pt.fullDate || pt.dateLabel}
         </Text>
         <Flex align="center" justify="space-between" mb={1.5}>
-          <Text fontSize="12px" color="#CBD5E1">Score:</Text>
+          <Text fontSize="12px" color="#CBD5E1">{t("Score")}:</Text>
           <Text fontSize="13px" fontWeight="800" color={activeHexColor}>
             {pt.score}%
           </Text>
         </Flex>
         {pt.subjectName && (
           <Flex align="center" justify="space-between" mb={1.5}>
-            <Text fontSize="11px" color="#94A3B8">Subject:</Text>
+            <Text fontSize="11px" color="#94A3B8">{t("Subject")}:</Text>
             <Text fontSize="11px" fontWeight="600" color="#E2E8F0">
               {pt.subjectName}
             </Text>
@@ -218,13 +218,13 @@ export const ProgressTrendsSection = ({ intelligence }: Props) => {
         )}
         {pt.grade && (
           <Flex align="center" justify="space-between" pt={1.5} borderTop="1px solid rgba(255,255,255,0.1)">
-            <Text fontSize="11px" color="#94A3B8">Performance:</Text>
+            <Text fontSize="11px" color="#94A3B8">{t("Performance")}:</Text>
             <Text
               fontSize="11px"
               fontWeight="700"
               color={pt.score >= 70 ? "#34D399" : pt.score >= 50 ? "#FBBF24" : "#F87171"}
             >
-              Grade {pt.grade} ({pt.gradeLabel})
+              {t("Grade")} {pt.grade} ({pt.gradeLabel})
             </Text>
           </Flex>
         )}
@@ -255,15 +255,15 @@ export const ProgressTrendsSection = ({ intelligence }: Props) => {
       {/* Header with Title and Global Trajectory */}
       <Flex justify="space-between" align={{ base: "flex-start", sm: "center" }} mb={4} wrap="wrap" gap={3}>
         <HStack gap={2.5}>
-          <Box bg="teal.50" p={2} borderRadius="xl" border="1px solid" borderColor="teal.200">
-            <Icon as={FiActivity} color="#0D9488" boxSize="18px" />
+          <Box bg="teal.50" p={2} borderRadius="xl" border="1px solid" borderColor="teal.200" boxShadow="0 2px 6px rgba(13, 148, 136, 0.15)">
+            <Icon as={PiChartLineUpFill} color="#0D9488" boxSize="18px" />
           </Box>
           <Box>
             <Heading size={{ base: "sm", md: "md" }} color="gray.900" fontWeight="800">
-              Score Progress Over Time
+              {t("Score Progress Over Time")}
             </Heading>
             <Text fontSize="xs" color="gray.500" mt={0.5}>
-              Chronological score progression across practice tests and exams.
+              {t("Chronological score progression across practice tests and exams.")}
             </Text>
           </Box>
         </HStack>
@@ -279,13 +279,13 @@ export const ProgressTrendsSection = ({ intelligence }: Props) => {
               py={1}
             >
               <HStack gap={1}>
-                <Icon as={stats.trendDirection === "up" ? FiTrendingUp : stats.trendDirection === "down" ? FiTrendingDown : FiMinus} />
+                <Icon as={stats.trendDirection === "up" ? PiChartLineUpFill : stats.trendDirection === "down" ? PiTrendDownBold : FiMinus} />
                 <Text>
                   {stats.trendDirection === "up"
-                    ? `+${stats.overallChange}% Overall Improvement`
+                    ? `+${stats.overallChange}% ${t("Overall Improvement")}`
                     : stats.trendDirection === "down"
-                    ? `${stats.overallChange}% Change`
-                    : "Steady Progress"}
+                    ? `${stats.overallChange}% ${t("Change")}`
+                    : t("Steady Progress")}
                 </Text>
               </HStack>
             </Badge>
@@ -300,10 +300,10 @@ export const ProgressTrendsSection = ({ intelligence }: Props) => {
             py={1}
           >
             {overallTrend === "up"
-              ? `Overall Trend: +${overallTrendDiff}%`
+              ? `${t("Overall Trend")}: +${overallTrendDiff}%`
               : overallTrend === "down"
-              ? `Overall Trend: ${overallTrendDiff}%`
-              : "Overall Trend: Steady"}
+              ? `${t("Overall Trend")}: ${overallTrendDiff}%`
+              : `${t("Overall Trend")}: ${t("Steady")}`}
           </Badge>
         </HStack>
       </Flex>
@@ -322,7 +322,7 @@ export const ProgressTrendsSection = ({ intelligence }: Props) => {
         >
           <Box px={2}>
             <Text fontSize="10px" fontWeight="700" color="gray.500" textTransform="uppercase" letterSpacing="0.05em">
-              Latest Score
+              {t("Latest Score")}
             </Text>
             <HStack align="baseline" gap={1.5} mt={0.5}>
               <Text fontSize="lg" fontWeight="900" color="gray.900">
@@ -342,7 +342,7 @@ export const ProgressTrendsSection = ({ intelligence }: Props) => {
 
           <Box px={2}>
             <Text fontSize="10px" fontWeight="700" color="gray.500" textTransform="uppercase" letterSpacing="0.05em">
-              Average Score
+              {t("Average Score")}
             </Text>
             <Text fontSize="lg" fontWeight="900" color="gray.900" mt={0.5}>
               {stats.averageScore}%
@@ -351,22 +351,22 @@ export const ProgressTrendsSection = ({ intelligence }: Props) => {
 
           <Box px={2}>
             <Text fontSize="10px" fontWeight="700" color="gray.500" textTransform="uppercase" letterSpacing="0.05em">
-              Highest Score
+              {t("Highest Score")}
             </Text>
             <HStack align="baseline" gap={1} mt={0.5}>
               <Text fontSize="lg" fontWeight="900" color="green.700">
                 {stats.highestScore}%
               </Text>
-              <Icon as={FiAward} color="green.600" boxSize="13px" />
+              <Icon as={PiTrophyFill} color="green.600" boxSize="13px" />
             </HStack>
           </Box>
 
           <Box px={2}>
             <Text fontSize="10px" fontWeight="700" color="gray.500" textTransform="uppercase" letterSpacing="0.05em">
-              Quizzes Plotted
+              {t("Quizzes Plotted")}
             </Text>
             <Text fontSize="lg" fontWeight="900" color="gray.900" mt={0.5}>
-              {stats.totalAttempts} {stats.totalAttempts === 1 ? "Quiz" : "Quizzes"}
+              {stats.totalAttempts} {stats.totalAttempts === 1 ? t("Quiz") : t("Quizzes")}
             </Text>
           </Box>
         </Grid>
@@ -399,7 +399,7 @@ export const ProgressTrendsSection = ({ intelligence }: Props) => {
             color={selectedSubject === "all" ? "white" : "gray.700"}
             _hover={{ bg: selectedSubject === "all" ? "#1956B8" : "gray.200" }}
           >
-            All Subjects ({trendHistory.length})
+            {t("All Subjects")} ({trendHistory.length})
           </Box>
 
           {activeSubjects.map((sub) => {
@@ -457,7 +457,7 @@ export const ProgressTrendsSection = ({ intelligence }: Props) => {
               boxShadow={viewMode === "attempt" ? "0 1px 3px rgba(0,0,0,0.08)" : "none"}
               onClick={() => setViewMode("attempt")}
             >
-              Every Quiz
+              {t("Every Quiz")}
             </Box>
             <Box
               as="button"
@@ -470,7 +470,7 @@ export const ProgressTrendsSection = ({ intelligence }: Props) => {
               boxShadow={viewMode === "daily" ? "0 1px 3px rgba(0,0,0,0.08)" : "none"}
               onClick={() => setViewMode("daily")}
             >
-              Daily Average
+              {t("Daily Average")}
             </Box>
           </HStack>
 
@@ -490,8 +490,8 @@ export const ProgressTrendsSection = ({ intelligence }: Props) => {
             _hover={{ bg: showBenchmarks ? "green.100" : "gray.50" }}
           >
             <HStack gap={1}>
-              <Icon as={FiTarget} boxSize="11px" />
-              <Text display={{ base: "none", sm: "inline" }}>Benchmarks</Text>
+              <Icon as={PiTargetBold} boxSize="12px" />
+              <Text display={{ base: "none", sm: "inline" }}>{t("Benchmarks")}</Text>
             </HStack>
           </Box>
         </HStack>
@@ -597,7 +597,7 @@ export const ProgressTrendsSection = ({ intelligence }: Props) => {
               gap={2}
               mb={3}
             >
-              <Icon as={FiCheckCircle} color="#206CE1" boxSize="16px" flexShrink={0} />
+              <Icon as={PiCheckCircleFill} color="#206CE1" boxSize="16px" flexShrink={0} />
               <Text fontSize="xs" color="blue.900" fontWeight="600">
                 First quiz attempt recorded ({chartData[0].score}% in {chartData[0].subjectName}). As more practice tests are taken, the score progression curve will connect here in real-time!
               </Text>
@@ -610,7 +610,7 @@ export const ProgressTrendsSection = ({ intelligence }: Props) => {
               <HStack gap={1.5}>
                 <Box w="12px" h="3px" bg={activeColor} borderRadius="full" />
                 <Text fontWeight="600" color="gray.700">
-                  {selectedSubject === "all" ? "Quiz Score Progress" : `${selectedSubject} Trend`}
+                  {selectedSubject === "all" ? t("Quiz Score Progress") : `${selectedSubject} ${t("Trend")}`}
                 </Text>
               </HStack>
 
@@ -618,31 +618,31 @@ export const ProgressTrendsSection = ({ intelligence }: Props) => {
                 <>
                   <HStack gap={1.5}>
                     <Box w="12px" h="1px" borderTop="2px dashed #10B981" />
-                    <Text color="emerald.700">Mastery Target (70%)</Text>
+                    <Text color="emerald.700">{t("Mastery Target")} (70%)</Text>
                   </HStack>
                   <HStack gap={1.5}>
                     <Box w="12px" h="1px" borderTop="2px dashed #F59E0B" />
-                    <Text color="amber.700">Passing Mark (50%)</Text>
+                    <Text color="amber.700">{t("Passing Mark")} (50%)</Text>
                   </HStack>
                 </>
               )}
             </HStack>
 
             <Text fontSize="10px" color="gray.400">
-              Hover over points to inspect details
+              {t("Hover over points to inspect details")}
             </Text>
           </Flex>
         </Box>
       ) : (
         <Box p={8} textAlign="center" bg="gray.50" borderRadius="xl" mb={5}>
-          <Icon as={FiActivity} color="gray.400" boxSize="28px" mb={2} />
+          <Icon as={PiPulseFill} color="gray.400" boxSize="28px" mb={2} />
           <Heading size="xs" color="gray.700" fontWeight="700" mb={1}>
-            No Quiz Data for {selectedSubject === "all" ? "this student" : selectedSubject}
+            {t("No Quiz Data for")} {selectedSubject === "all" ? t("this student") : selectedSubject}
           </Heading>
           <Text fontSize="xs" color="gray.500" maxW="420px" mx="auto">
             {selectedSubject === "all"
-              ? "When your child takes quizzes, their score progression line will appear here."
-              : `No completed quizzes recorded in ${selectedSubject} yet. Select "All Subjects" or take a practice quiz.`}
+              ? t("When your child takes quizzes, their score progression line will appear here.")
+              : `${t("No completed quizzes recorded in")} ${selectedSubject} ${t("yet. Select All Subjects or take a practice quiz.")}`}
           </Text>
           {selectedSubject !== "all" && (
             <Box
@@ -659,7 +659,7 @@ export const ProgressTrendsSection = ({ intelligence }: Props) => {
               cursor="pointer"
               _hover={{ bg: "#1956B8" }}
             >
-              Back to All Subjects
+              {t("Back to All Subjects")}
             </Box>
           )}
         </Box>
@@ -670,16 +670,16 @@ export const ProgressTrendsSection = ({ intelligence }: Props) => {
         <Box pt={4} borderTop="1px solid" borderColor="gray.100">
           <Flex justify="space-between" align="center" mb={3}>
             <Text fontSize="xs" fontWeight="800" color="gray.500" textTransform="uppercase" letterSpacing="0.05em">
-              Subject Trajectory Breakdown
+              {t("Subject Trajectory Breakdown")}
             </Text>
             <Text fontSize="10px" color="gray.400">
-              Click a card to filter trend graph
+              {t("Click a card to filter trend graph")}
             </Text>
           </Flex>
 
           <Grid templateColumns={{ base: "repeat(1, 1fr)", sm: "repeat(2, 1fr)", md: "repeat(3, 1fr)" }} gap={3}>
             {activeSubjects.map((sub) => {
-              const trendIcon = sub.trend === "up" ? FiTrendingUp : sub.trend === "down" ? FiTrendingDown : FiMinus;
+              const trendIcon = sub.trend === "up" ? PiChartLineUpFill : sub.trend === "down" ? PiTrendDownBold : FiMinus;
               const trendCol = sub.trend === "up" ? "green.600" : sub.trend === "down" ? "red.600" : "gray.600";
               const subColor = getSubjectColor(sub.subjectName);
               const isSelected =
@@ -716,24 +716,24 @@ export const ProgressTrendsSection = ({ intelligence }: Props) => {
                           ? `+${sub.trendDiff}%`
                           : sub.trend === "down"
                           ? `${sub.trendDiff}%`
-                          : "Steady"}
+                          : t("Steady")}
                       </Text>
                     </HStack>
                   </Flex>
 
                   <HStack justify="space-between" mt={2.5} fontSize="11px" color="gray.600">
                     <Text>
-                      {sub.previousAccuracy !== null ? `Earlier: ${sub.previousAccuracy}%` : "1st attempt"}
+                      {sub.previousAccuracy !== null ? `${t("Earlier")}: ${sub.previousAccuracy}%` : t("1st attempt")}
                     </Text>
                     <Text fontWeight="800" color="gray.900">
-                      Latest: {sub.accuracy}%
+                      {t("Latest")}: {sub.accuracy}%
                     </Text>
                   </HStack>
 
                   <Flex justify="space-between" align="center" mt={2} pt={2} borderTop="1px solid" borderColor="gray.100" fontSize="10px" color="gray.500">
-                    <Text>{sub.sessionsCount} {sub.sessionsCount === 1 ? "Quiz" : "Quizzes"}</Text>
+                    <Text>{sub.sessionsCount} {sub.sessionsCount === 1 ? t("Quiz") : t("Quizzes")}</Text>
                     <Badge colorPalette={sub.accuracy >= 70 ? "green" : sub.accuracy >= 50 ? "yellow" : "red"} variant="subtle" size="sm" borderRadius="full">
-                      Grade {sub.grade}
+                      {t("Grade")} {sub.grade}
                     </Badge>
                   </Flex>
                 </Box>

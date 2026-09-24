@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/lib/supabaseClient";
 import { usePassKey } from "@/parent-app/context/passkeyContext";
 import { useAuthdStudentData } from "../context/studentDataContext";
+import { recordActivity } from "@/lib/authSessionManager";
 import {
   Box,
   Field,
@@ -112,6 +113,7 @@ const ChildrenLogin = ({ setAlert }: Props) => {
 
       localStorage.removeItem("authdParent");
       setAuthdStudent(student);
+      recordActivity(true);
       setIsLoading(false);
 
       setAlert({

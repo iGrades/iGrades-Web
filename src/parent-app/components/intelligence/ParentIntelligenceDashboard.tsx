@@ -1,7 +1,13 @@
 import { useState, useEffect } from "react";
 import { Box, Flex, Heading, Text, VStack, HStack, Button, Icon } from "@chakra-ui/react";
 import { DancingLogoLoader } from "@/components/DancingLogoLoader";
-import { FiUserPlus, FiRefreshCw, FiFileText, FiBarChart2 } from "react-icons/fi";
+import {
+  PiUserPlusFill,
+  PiArrowsClockwiseBold,
+  PiFileTextFill,
+  PiChartBarFill,
+} from "react-icons/pi";
+import { useTranslation } from "react-i18next";
 import { useStudentsData } from "@/parent-app/context/studentsDataContext";
 import { useParentIntelligence } from "@/parent-app/hooks/useParentIntelligence";
 import { StudentSelectorHeader } from "./StudentSelectorHeader";
@@ -17,6 +23,7 @@ import { WeeklyReportBannerCard } from "./weeklyReport/WeeklyReportBannerCard";
 import AddGraderPopup from "@/parent-app/components/grader/addGraderPopover";
 
 export const ParentIntelligenceDashboard = () => {
+  const { t } = useTranslation();
   const { studentsData, loading: studentsLoading, getGraderDetails } = useStudentsData();
   const [selectedStudentId, setSelectedStudentId] = useState<string | null>(null);
   const [showAddChildPopup, setShowAddChildPopup] = useState(false);
@@ -48,7 +55,7 @@ export const ParentIntelligenceDashboard = () => {
       <Flex justify="space-between" align="center" mb={5} wrap="wrap" gap={3}>
         <Box>
           <Heading size={{ base: "md", md: "lg" }} color="gray.900" fontWeight="800">
-            Parent Dashboard
+            {t("Parent Dashboard")}
           </Heading>
           <Text fontSize="xs" color="gray.500" mt={0.5}>
             See how your child is doing in school, their top subjects, and easy ways to help them succeed.
@@ -69,8 +76,8 @@ export const ParentIntelligenceDashboard = () => {
               px={3}
               onClick={() => setActiveTab("overview")}
             >
-              <Icon as={FiBarChart2} mr={1} />
-              Overview
+              <Icon as={PiChartBarFill} mr={1} />
+              {t("Overview")}
             </Button>
             <Button
               size="xs"
@@ -83,8 +90,8 @@ export const ParentIntelligenceDashboard = () => {
               px={3}
               onClick={() => setActiveTab("weekly_report")}
             >
-              <Icon as={FiFileText} mr={1} />
-              Weekly Report
+              <Icon as={PiFileTextFill} mr={1} />
+              {t("Weekly Report")}
             </Button>
           </HStack>
 
@@ -97,8 +104,8 @@ export const ParentIntelligenceDashboard = () => {
             fontSize="xs"
             fontWeight="600"
           >
-            <Icon as={FiRefreshCw} mr={1} />
-            Refresh
+            <Icon as={PiArrowsClockwiseBold} mr={1} />
+            {t("Refresh")}
           </Button>
 
           <Button
@@ -111,8 +118,8 @@ export const ParentIntelligenceDashboard = () => {
             fontWeight="600"
             _hover={{ bg: "blue.700" }}
           >
-            <Icon as={FiUserPlus} mr={1} />
-            Add Child
+            <Icon as={PiUserPlusFill} mr={1} />
+            {t("Add Child")}
           </Button>
         </HStack>
       </Flex>
@@ -130,10 +137,10 @@ export const ParentIntelligenceDashboard = () => {
         >
           <VStack gap={4} maxW="md" mx="auto">
             <Box bg="blue.50" p={4} borderRadius="full">
-              <Icon as={FiUserPlus} color="blue.600" boxSize="32px" />
+              <Icon as={PiUserPlusFill} color="blue.600" boxSize="32px" />
             </Box>
             <Heading size="md" color="gray.900">
-              Welcome to your Parent Dashboard!
+              {t("Welcome to your Parent Dashboard!")}
             </Heading>
             <Text fontSize="sm" color="gray.600" lineHeight="tall">
               Link your child's student account to view their quiz scores, subject performance, progress over time, and helpful tips to guide their studies.
@@ -149,7 +156,7 @@ export const ParentIntelligenceDashboard = () => {
               onClick={() => setShowAddChildPopup(true)}
               _hover={{ bg: "blue.700" }}
             >
-              <Icon as={FiUserPlus} mr={2} /> Add Your Child
+              <Icon as={PiUserPlusFill} mr={2} /> {t("Add Your Child")}
             </Button>
           </VStack>
         </Box>

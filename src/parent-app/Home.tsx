@@ -4,6 +4,8 @@ import { Box } from "@chakra-ui/react";
 import { useNavigationStore } from "@/store/usenavigationStore";
 import { useUser } from "@/parent-app/context/parentDataContext";
 import { useNavigate, useLocation } from "react-router-dom";
+import { supabase } from "@/lib/supabaseClient";
+import { checkAndEnforceSessionExpiry, recordActivity } from "@/lib/authSessionManager";
 import Sidebar from "@/parent-app/components/sidebar";
 import Homepage from "./pages/HomePage";
 import Student from "./pages/StudentPage";
@@ -25,14 +27,27 @@ const Home = () => {
   const location = useLocation();
 
   useEffect(() => {
-    const cached = localStorage.getItem("authdParent");
-    if (!cached) {
-      navigate("/login", { replace: true });
-      return;
-    }
-    if (!parent || parent.length === 0) {
-      getParentData();
-    }
+    const verifyParentSession = async () => {
+      // 1. Enforce 14-day inactivity policy
+      const isValid = await checkAndEnforceSessionExpiry(supabase);
+      if (!isValid) {
+        return;
+      }
+
+      const cached = localStorage.getItem("authdParent");
+      if (!cached) {
+        navigate("/login", { replace: true });
+        return;
+      }
+
+      recordActivity();
+
+      if (!parent || parent.length === 0) {
+        getParentData();
+      }
+    };
+
+    verifyParentSession();
   }, [parent, getParentData, navigate]);
   
    // Function to create URL-friendly names

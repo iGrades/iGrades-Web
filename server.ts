@@ -3,6 +3,9 @@ import path from "path";
 import { createServer as createViteServer } from "vite";
 import { GoogleGenAI } from "@google/genai";
 import { pointsEngine } from "./server/pointsEngine";
+import { registerTranslationRoutes } from "./server/translationEngine";
+import { classChangeEngine } from "./server/classChangeEngine";
+import { emailService } from "./server/emailNotificationService";
 
 interface QuestionContext {
   questionNumber?: number;
@@ -359,10 +362,146 @@ async function startServer() {
     }
   });
 
+  // Translation route for comprehensive app-wide localization
+  registerTranslationRoutes(app);
+
+  // Class Change Requests & Approval API
+  app.get("/api/class-change-requests", (req, res) => {
+    const { student_id, parent_id, status } = req.query as {
+      student_id?: string;
+      parent_id?: string;
+      status?: string;
+    };
+    const requests = classChangeEngine.getRequests({ student_id, parent_id, status });
+    res.json(requests);
+  });
+
+  app.post("/api/class-change-requests", async (req, res) => {
+    try {
+      const {
+        student_id,
+        student_name,
+        student_email,
+        current_class_name,
+        current_class_id,
+        requested_class_name,
+        requested_class_id,
+        reason,
+        initiated_by_type,
+        initiated_by_user_id,
+        parent_id,
+        parent_name,
+        parent_email,
+      } = req.body || {};
+
+      const created = await classChangeEngine.createRequest({
+        student_id,
+        student_name,
+        student_email,
+        current_class_name,
+        current_class_id,
+        requested_class_name,
+        requested_class_id,
+        reason,
+        initiated_by_type,
+        initiated_by_user_id,
+        parent_id,
+        parent_name,
+        parent_email,
+      });
+
+      res.status(201).json(created);
+    } catch (err: any) {
+      const msg = err?.message || "Failed to create class change request";
+      const isAuthError = msg.toLowerCase().includes("not authorized") || msg.toLowerCase().includes("authorization");
+      res.status(isAuthError ? 403 : 400).json({ error: msg });
+    }
+  });
+
+  app.post("/api/class-change-requests/:id/review", async (req, res) => {
+    try {
+      const { id } = req.params;
+      const { admin_id, admin_name, admin_email, action, review_reason } = req.body || {};
+
+      if (!action || !["approve", "reject"].includes(action)) {
+        return res.status(400).json({ error: "Action must be 'approve' or 'reject'" });
+      }
+
+      const updated = await classChangeEngine.reviewRequest({
+        requestId: id,
+        admin_id: admin_id || "admin",
+        admin_name: admin_name || "Administrator",
+        admin_email,
+        action,
+        review_reason,
+      });
+
+      res.json(updated);
+    } catch (err: any) {
+      res.status(400).json({ error: err?.message || "Failed to review request" });
+    }
+  });
+
+  // Admin Notifications API
+  app.get("/api/admin-notifications", (_req, res) => {
+    const notifs = classChangeEngine.getAdminNotifications();
+    res.json(notifs);
+  });
+
+  app.post("/api/admin-notifications/:id/read", (req, res) => {
+    const { id } = req.params;
+    const ok = classChangeEngine.markNotificationAsRead(id);
+    res.json({ success: ok });
+  });
+
+  app.post("/api/admin-notifications/read-all", (_req, res) => {
+    classChangeEngine.markAllNotificationsAsRead();
+    res.json({ success: true });
+  });
+
+  // Email Audit Log API (for admin inspection)
+  app.get("/api/email-audit-logs", (_req, res) => {
+    res.json(emailService.getLogs());
+  });
+
   // Supabase proxy route to handle iframe cross-origin requests securely
   app.use("/api/supabase-proxy", async (req, res) => {
     try {
       const urlPath = req.url || "";
+
+      // Security check: Protect student class from direct RPC update tampering
+      if (urlPath.includes("/rpc/update_student_profile")) {
+        const payload = req.body || {};
+        const studentId = payload.p_id;
+        if (studentId) {
+          const supabaseBase = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL || "https://jmjballgaxelqhsvhlvl.supabase.co";
+          const sbAnonKey = process.env.SUPABASE_ANON_KEY || process.env.VITE_SUPABASE_ANON_KEY;
+          try {
+            const checkRes = await fetch(`${supabaseBase}/rest/v1/students?id=eq.${studentId}&select=class`, {
+              headers: { apikey: sbAnonKey || "", Authorization: `Bearer ${sbAnonKey}` },
+            });
+            const stData = await checkRes.json();
+            if (Array.isArray(stData) && stData.length > 0 && stData[0].class) {
+              // Lock p_class to existing database class to prevent student self-promotion
+              payload.p_class = stData[0].class;
+              req.body = payload;
+            }
+          } catch (e) {
+            console.warn("Could not enforce p_class in proxy:", e);
+          }
+        }
+      }
+
+      // Security check: Protect students table from unauthorized class patch
+      if (req.method === "PATCH" && urlPath.includes("/rest/v1/students")) {
+        if (req.body && typeof req.body === "object" && "class" in req.body) {
+          const authHeader = (req.headers["authorization"] as string) || "";
+          const isAdmin = authHeader.includes("admin_token") || authHeader.includes("super_admin");
+          if (!isAdmin) {
+            delete req.body.class;
+          }
+        }
+      }
 
       // Authoritative interception for iGG points tables & RPCs
       if (urlPath.includes("/functions/v1/award-points") || urlPath.includes("/award-points")) {
