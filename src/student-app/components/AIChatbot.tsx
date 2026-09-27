@@ -5,6 +5,8 @@ import remarkGfm from "remark-gfm";
 import remarkMath from "remark-math";
 import rehypeKatex from "rehype-katex";
 import "katex/dist/katex.min.css";
+import { UpgradePromptModal } from "@/components/subscription/UpgradePromptModal";
+import { PiShootingStarDuotone } from "react-icons/pi";
 import { useChatbot } from "../../hooks/useChatbot";
 
 interface SparkMessageContentProps {
@@ -65,7 +67,12 @@ export const AIChatbot = () => {
     messages, input, isLoading, isOpen, hasUnread, isExcluded,
     messagesEndRef, inputRef,
     activeContext,
-    setInput, sendMessage, sendCustomMessage, clearMessages, clearContext, toggleOpen, handleKeyDown,
+    sparkUsageCount,
+    sparkDailyLimit,
+    isDailyLimitReached,
+    limitModalOpen,
+    effectivePlan,
+    setInput, sendMessage, sendCustomMessage, clearMessages, clearContext, toggleOpen, setLimitModalOpen, handleKeyDown,
   } = useChatbot();
 
   if (isExcluded) return null;
@@ -187,6 +194,51 @@ export const AIChatbot = () => {
                 }}
               >×</button>
             </div>
+          </div>
+
+          {/* Spark Plan & Daily Usage Bar */}
+          <div style={{
+            background: "#eff6ff",
+            borderBottom: "1px solid #bfdbfe",
+            padding: "6px 14px",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            fontSize: "11px",
+            color: "#1d4ed8",
+            flexShrink: 0,
+          }}>
+            <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+              <span style={{ fontSize: "12px" }}>⚡</span>
+              <span style={{ fontWeight: 650 }}>
+                {effectivePlan === "premium"
+                  ? "Premium · Generous Fair-Use"
+                  : effectivePlan === "standard"
+                  ? `${sparkUsageCount}/30 Spark Daily · Standard`
+                  : `${sparkUsageCount}/5 Spark Daily · Basic Plan`}
+              </span>
+            </div>
+            {effectivePlan !== "premium" && (
+              <button
+                onClick={() => setLimitModalOpen(true)}
+                style={{
+                  background: "#206CE1",
+                  color: "white",
+                  border: "none",
+                  borderRadius: "6px",
+                  padding: "3px 8px",
+                  fontSize: "10px",
+                  fontWeight: 700,
+                  cursor: "pointer",
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: "3px",
+                }}
+              >
+                <PiShootingStarDuotone size={13} />
+                Unlock {effectivePlan === "basic" ? "Standard" : "Premium"} Plan
+              </button>
+            )}
           </div>
 
           {/* Active Context Banner */}
@@ -354,6 +406,51 @@ export const AIChatbot = () => {
             ))}
           </div>
 
+          {/* Daily Limit Reached Banner */}
+          {isDailyLimitReached && (
+            <div style={{
+              background: "#fff1f2",
+              borderTop: "1px solid #fecdd3",
+              padding: "9px 14px",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              gap: "10px",
+              flexShrink: 0,
+            }}>
+              <div>
+                <div style={{ fontWeight: 700, fontSize: "11.5px", color: "#be123c" }}>
+                  Daily Spark Question Limit Reached
+                </div>
+                <div style={{ fontSize: "10.5px", color: "#4c0519", lineHeight: 1.3 }}>
+                  {effectivePlan === "basic"
+                    ? "You've used all 5 daily starter questions. Upgrade for 30 daily questions!"
+                    : "You've completed your 30 daily questions. Upgrade to Premium for generous fair-use access!"}
+                </div>
+              </div>
+              <button
+                onClick={() => setLimitModalOpen(true)}
+                style={{
+                  background: "#206CE1",
+                  color: "white",
+                  border: "none",
+                  borderRadius: "7px",
+                  padding: "5px 12px",
+                  fontSize: "11px",
+                  fontWeight: 700,
+                  cursor: "pointer",
+                  whiteSpace: "nowrap",
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: "4px",
+                }}
+              >
+                <PiShootingStarDuotone size={14} />
+                Unlock {effectivePlan === "basic" ? "Standard" : "Premium"} Plan
+              </button>
+            </div>
+          )}
+
           {/* Input */}
           <div style={{
             padding: "12px 14px", borderTop: "1px solid #f0f0f0",
@@ -366,30 +463,35 @@ export const AIChatbot = () => {
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={handleKeyDown}
-              placeholder="Ask iGrades AI anything academic…"
+              placeholder={
+                isDailyLimitReached
+                  ? `Daily limit of ${sparkDailyLimit} questions reached. Upgrade for more!`
+                  : "Ask Spark anything academic…"
+              }
               rows={1}
-              disabled={isLoading}
+              disabled={isLoading || isDailyLimitReached}
               style={{
                 flex: 1, resize: "none", border: "1px solid #e2e8f0",
                 borderRadius: "12px", padding: "9px 12px",
                 fontSize: "13px", lineHeight: "1.5", fontFamily: "inherit",
-                background: "#fafafa", color: "#2d3748",
+                background: isDailyLimitReached ? "#f1f5f9" : "#fafafa", color: "#2d3748",
                 maxHeight: "96px", overflowY: "auto",
                 transition: "border-color 0.15s",
+                cursor: isDailyLimitReached ? "not-allowed" : "text",
               }}
-              onFocus={(e) => { e.target.style.borderColor = "#6366f1"; e.target.style.background = "white"; }}
-              onBlur={(e)  => { e.target.style.borderColor = "#e2e8f0"; e.target.style.background = "#fafafa"; }}
+              onFocus={(e) => { if (!isDailyLimitReached) { e.target.style.borderColor = "#6366f1"; e.target.style.background = "white"; } }}
+              onBlur={(e)  => { if (!isDailyLimitReached) { e.target.style.borderColor = "#e2e8f0"; e.target.style.background = "#fafafa"; } }}
             />
             <button
               onClick={sendMessage}
-              disabled={!input.trim() || isLoading}
+              disabled={!input.trim() || isLoading || isDailyLimitReached}
               style={{
                 width: "38px", height: "38px", borderRadius: "12px", border: "none",
-                background: !input.trim() || isLoading
+                background: !input.trim() || isLoading || isDailyLimitReached
                   ? "#e2e8f0"
                   : "linear-gradient(135deg, #6366f1, #8b5cf6)",
-                color: !input.trim() || isLoading ? "#a0aec0" : "white",
-                cursor: !input.trim() || isLoading ? "not-allowed" : "pointer",
+                color: !input.trim() || isLoading || isDailyLimitReached ? "#a0aec0" : "white",
+                cursor: !input.trim() || isLoading || isDailyLimitReached ? "not-allowed" : "pointer",
                 display: "flex", alignItems: "center", justifyContent: "center",
                 flexShrink: 0, transition: "all 0.15s", fontSize: "16px",
               }}
@@ -428,6 +530,20 @@ export const AIChatbot = () => {
           }} />
         )}
       </button>
+
+      {/* Upgrade Prompt Modal */}
+      <UpgradePromptModal
+        isOpen={limitModalOpen}
+        onClose={() => setLimitModalOpen(false)}
+        featureName="Spark AI Learning Companion"
+        requiredPlan={effectivePlan === "basic" ? "standard" : "premium"}
+        reason={
+          effectivePlan === "basic"
+            ? "You have completed your 5 daily Spark AI interactions on the Basic plan. Upgrade to Standard (₦15,000) for 30 daily interactions, or Premium (₦25,000) for highest/generous daily usage subject to fair-use limits!"
+            : "You have reached your 30 daily Spark AI interactions on the Standard plan. Upgrade to Premium (₦25,000) for highest/generous daily usage subject to fair-use limits!"
+        }
+        currentPlan={effectivePlan}
+      />
     </>
   );
 };

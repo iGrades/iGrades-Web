@@ -9,13 +9,17 @@ import {
   HStack,
   Progress,
   Icon,
+  Badge,
 } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabaseClient";
 import { DancingLogoLoader } from "@/components/DancingLogoLoader";
 import { useAuthdStudentData } from "@/student-app/context/studentDataContext";
+import { useSubscriptionEntitlement } from "@/hooks/useSubscriptionEntitlement";
+import { UpgradePromptModal } from "@/components/subscription/UpgradePromptModal";
 import { LuChevronDown, LuChevronUp } from "react-icons/lu";
 import { RiCompassesLine } from "react-icons/ri";
+import { PiShootingStarDuotone } from "react-icons/pi";
 import { courseConfig } from "@/student-app/utils/courseConstants";
 
 interface CourseProgress {
@@ -31,6 +35,12 @@ const Analytics = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [showAllCourses, setShowAllCourses] = useState(false);
   const { authdStudent } = useAuthdStudentData();
+  const {
+    effectivePlan,
+    modalState,
+    promptUpgrade,
+    closeUpgradeModal,
+  } = useSubscriptionEntitlement();
 
   const INITIAL_COURSES_TO_SHOW = 4;
 
@@ -205,10 +215,66 @@ const Analytics = () => {
       flexDirection="column"
     
     >
-      {/* Fix 4: heading stays fixed, only the list scrolls */}
-      <Heading as="h2" mb={4} fontSize="md" flexShrink={0}>
-        Learning Analytics
-      </Heading>
+      {/* Heading with Plan Status Badge */}
+      <Flex justify="space-between" align="center" mb={3} flexShrink={0}>
+        <Heading as="h2" fontSize="md">
+          Learning Analytics
+        </Heading>
+        {effectivePlan === "basic" && (
+          <Badge colorPalette="gray" size="xs" variant="surface">
+            Basic Progress
+          </Badge>
+        )}
+        {effectivePlan === "standard" && (
+          <Badge bg="#206CE1" color="white" size="xs" variant="solid">
+            Detailed
+          </Badge>
+        )}
+        {effectivePlan === "premium" && (
+          <Badge bg="#206CE1" color="white" size="xs" variant="solid">
+            Deep AI
+          </Badge>
+        )}
+      </Flex>
+
+      {/* Upgrade Banner for Basic */}
+      {effectivePlan === "basic" && (
+        <Flex
+          p={2.5}
+          mb={2}
+          bg="blue.50"
+          borderRadius="md"
+          border="1px solid"
+          borderColor="blue.200"
+          justify="space-between"
+          align="center"
+          gap={2}
+          flexShrink={0}
+        >
+          <Text fontSize="10px" color="blue.900" fontWeight="500">
+            Topic diagnostics & strengths unlocked on Standard.
+          </Text>
+          <Button
+            size="xs"
+            variant="ghost"
+            color="#206CE1"
+            _hover={{ color: "#1852B2", bg: "blue.100" }}
+            fontSize="10px"
+            p={1}
+            h="auto"
+            onClick={() =>
+              promptUpgrade(
+                "Detailed Performance Analytics",
+                "standard",
+                "Detailed performance breakdown and subject/topic strengths & weaknesses require a Standard or Premium subscription. Upgrade to Standard (₦15,000) to see full diagnostic analytics."
+              )
+            }
+          >
+            <PiShootingStarDuotone style={{ marginRight: "3px" }} />
+            Unlock Standard Plan →
+          </Button>
+        </Flex>
+      )}
 
       <Box overflowY="auto" flex={1}
         css={{
@@ -257,6 +323,16 @@ const Analytics = () => {
           </Flex>
         )}
       </Box>
+
+      {/* Upgrade Prompt Modal */}
+      <UpgradePromptModal
+        isOpen={modalState.isOpen}
+        onClose={closeUpgradeModal}
+        featureName={modalState.featureName}
+        requiredPlan={modalState.requiredPlan}
+        reason={modalState.reason}
+        currentPlan={effectivePlan}
+      />
     </Box>
   );
 };

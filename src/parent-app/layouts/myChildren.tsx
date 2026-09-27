@@ -5,6 +5,8 @@ import AvatarComp from "@/components/avatar";
 import AddGraderBtn from "../components/grader/addGraderBtn";
 import AddGraderPopup from "../components/grader/addGraderPopover";
 import EditGraderPopup from "../components/grader/editGraderPopover";
+import { useParentSubscriptionEntitlement } from "@/parent-app/hooks/useParentSubscriptionEntitlement";
+import { UpgradePromptModal } from "@/components/subscription/UpgradePromptModal";
 
 type Props = {
   data: any[];
@@ -22,6 +24,23 @@ const MyChildren = ({ data }: Props) => {
       return dateB - dateA;
     })
     .slice(0, 4);
+
+  const {
+    effectivePlan,
+    verifyAddChild,
+    modalState,
+    promptUpgrade,
+    closeUpgradeModal,
+  } = useParentSubscriptionEntitlement();
+
+  const handleAddClick = () => {
+    const check = verifyAddChild();
+    if (!check.allowed) {
+      promptUpgrade("Additional Child Connection", check.requiredPlan, check.reason);
+      return;
+    }
+    setMyChildrenShowBox(true);
+  };
 
   return (
     <>
@@ -100,6 +119,7 @@ const MyChildren = ({ data }: Props) => {
               basePageWidth={100}
               mdPageWidth={80}
               lgPageWidth={70}
+              onClick={handleAddClick}
             />
           </Flex>
         </Box>
@@ -125,6 +145,17 @@ const MyChildren = ({ data }: Props) => {
           }}
         />
       )}
+
+      {/* Subscription Upgrade Modal */}
+      <UpgradePromptModal
+        isOpen={modalState.isOpen}
+        onClose={closeUpgradeModal}
+        featureName={modalState.featureName}
+        requiredPlan={modalState.requiredPlan}
+        reason={modalState.reason}
+        currentPlan={effectivePlan}
+        portalType="parent"
+      />
     </>
   );
 };

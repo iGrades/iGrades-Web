@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Flex } from "@chakra-ui/react";
 import { Box } from "@chakra-ui/react";
 import { useNavigationStore } from "@/store/usenavigationStore";
@@ -10,6 +10,8 @@ import Sidebar from "@/parent-app/components/sidebar";
 import Homepage from "./pages/HomePage";
 import Student from "./pages/StudentPage";
 import Settings from "./pages/SettingsPage";
+import WeeklyReportPage from "./pages/WeeklyReportPage";
+import { WeeklyReportPopupBanner } from "./components/intelligence/weeklyReport/WeeklyReportPopupBanner";
 import DashboardLayout from "@/parent-app/dashboard";
 import Navbar from "@/parent-app/components/navbar";
 import LogoutPopover from "./components/logoutPopover";
@@ -80,11 +82,14 @@ const Home = () => {
   // Initialize page from URL on component mount
   // Define the ParentPage type if not already imported
   type ParentPage = "home" | "student" | "settings";
+  const isInitializedRef = useRef<boolean>(false);
   
   useEffect(() => {
     const pageMap: Record<string, ParentPage> = {
       "": "home",
       students: "student",
+      "weekly-report": "weekly_report",
+      "weekly_report": "weekly_report",
       settings: "settings",
       help: "settings",
       support: "settings",
@@ -123,10 +128,15 @@ const Home = () => {
         setParentSettingsTab(targetTab === "profile" ? "igrade" : targetTab);
       }
     }
+    isInitializedRef.current = true;
   }, []); 
   
   // Update URL only when page changes (not from URL updates)
   useEffect(() => {
+    if (!isInitializedRef.current) {
+      return;
+    }
+
     if (parent && parent.length > 0) {
       const parentFullName = getParentFullName();
     
@@ -138,6 +148,7 @@ const Home = () => {
         const pageMap: Record<string, string> = {
           home: "",
           student: "students",
+          weekly_report: "weekly-report",
           settings: "settings",
         };
       
@@ -172,6 +183,8 @@ const Home = () => {
         return <Homepage />;
       case "student":
         return <Student />;
+      case "weekly_report":
+        return <WeeklyReportPage />;
       case "settings":
         return <Settings />;
       default:
@@ -221,6 +234,10 @@ const Home = () => {
               </Box>
             </Flex>
           </Box>
+
+          {/* Floating bottom popup banner 5 seconds after parent arrives */}
+          <WeeklyReportPopupBanner />
+
           {showLogoutModal && (
             <LogoutPopover setShowLogoutModal={setShowLogoutModal} />
           )}

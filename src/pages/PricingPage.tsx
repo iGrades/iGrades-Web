@@ -17,6 +17,8 @@ import { useAuthdStudentData } from "@/student-app/context/studentDataContext";
 import type { SubscriptionPlan } from "@/types/flutterwave";
 import NavBar from "./LandingPage/navBar";
 import Footer from "./LandingPage/footer";
+import { normalizePlan } from "@/services/subscriptionEntitlements";
+import { PiShootingStarDuotone } from "react-icons/pi";
 
 const Pricing: React.FC = () => {
   const { initializePayment, isLoading, loadingPlanId } = useFlutterwave();
@@ -30,11 +32,12 @@ const Pricing: React.FC = () => {
       price: "Free",
       amount: 0,
       desc: [
-        "Foundational Access",
-        "Access to selected PDF learning materials",
-        "Access to limited video lessons",
-        "Basic student dashboard access",
-        "Introductory academic resources",
+        "5 Spark AI interactions per day",
+        "Limited Socratic guidance & starter hints",
+        "Basic learning support & curriculum materials",
+        "AI Proctoring & Proctored Mocks: Not available",
+        "Access to selected PDF materials & introductory lessons",
+        "Parent Portal: 1 connected child & basic quiz history",
       ],
     },
     {
@@ -44,12 +47,13 @@ const Pricing: React.FC = () => {
       price: "₦15,000",
       amount: 15000, 
       desc: [
-        "Comprehensive Learning Experience",
-        "Full access to all PDF materials",
-        "Complete video lesson library",
-        "Access to scheduled live group sessions",
-        "Mock quizzes with performance tracking",
-        "Structured academic progression support",
+        "30 Spark AI interactions per day",
+        "Generous Socratic guidance (multi-level hints)",
+        "Personalized guidance & misconception support",
+        "Limited AI Proctoring (up to 3 proctored mock exams)",
+        "Full Examination Mode (60 questions in 60 mins)",
+        "Full PDF materials library & complete video lessons",
+        "Parent Portal: Up to 3 children & weekly digests",
       ],
     },
     {
@@ -59,20 +63,24 @@ const Pricing: React.FC = () => {
       price: "₦25,000",
       amount: 25000,
       desc: [
-        "Advanced & Personalized Learning",
-        "Everything in the Standard Plan",
-        "Priority access to live sessions",
-        "Advanced mock examinations with feedback",
-        "Personalized academic guidance",
-        "Early access to new learning resources",
+        "Highest Spark AI daily usage (fair-use limits)",
+        "Advanced Socratic tutoring & deep diagnostic mastery",
+        "Advanced personalized learning & misconception eradication",
+        "Full AI Proctoring with vision & audio monitoring",
+        "Generous proctored mock exams access (fair-use)",
+        "Priority live sessions & complete past questions archive",
+        "Parent Portal: Up to 5 children & predictive exam readiness",
       ],
     },
   ];
 
-  const currentPlan = authdStudent?.subscription;
+  const { effectivePlan, isExpired } = normalizePlan(
+    authdStudent?.subscription,
+    authdStudent?.subscription_status
+  );
 
   const handlePayment = async (plan: SubscriptionPlan): Promise<void> => {
-    if (currentPlan === plan.id) return;
+    if (effectivePlan === plan.id && !isExpired) return;
 
     // Handle authentication guard fallback safety
     if (!authdStudent) {
@@ -129,7 +137,7 @@ const Pricing: React.FC = () => {
   const getButtonLabel = (plan: SubscriptionPlan): string => {
     if (currentPlan === plan.id) return "Current Plan";
     if (plan.id === "basic") return "Get Started Free";
-    return `Upgrade to ${plan.name}`;
+    return `Unlock ${plan.name} Plan`;
   };
 
   return (
@@ -173,7 +181,7 @@ const Pricing: React.FC = () => {
           gap={{ base: 8, md: 4, lg: 6 }}
         >
           {subscriptionPlans.map((plan) => {
-            const isCurrentPlan = currentPlan === plan.id;
+            const isCurrentPlan = effectivePlan === plan.id && !isExpired;
             const isPlanLoading = isLoading && loadingPlanId === plan.id;
             const isStandard = plan.id === "standard"; // Highlight middle card uniquely
   
@@ -286,6 +294,9 @@ const Pricing: React.FC = () => {
                           }
                     }
                   >
+                    {!isCurrentPlan && plan.id !== "basic" && (
+                      <PiShootingStarDuotone style={{ marginRight: "6px", fontSize: "1.1rem" }} />
+                    )}
                     {getButtonLabel(plan)}
                   </Button>
   

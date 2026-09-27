@@ -20,11 +20,15 @@ import {
   LuCircleCheck,
   LuSparkles,
 } from "react-icons/lu";
+import { PiShootingStarDuotone } from "react-icons/pi";
 import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/lib/supabaseClient";
 import PdfCustomThumbnail from "./PdfCustomThumbnail";
 import { getCurriculumNote } from "./curriculumStudyNotes";
 import NativePdfCanvasViewer from "./NativePdfCanvasViewer";
+import { useSubscriptionEntitlement } from "@/hooks/useSubscriptionEntitlement";
+import { UpgradePromptModal } from "@/components/subscription/UpgradePromptModal";
+import { LockedBadge } from "@/components/subscription/LockedBadge";
 
 interface PDFsResource {
   id: string;
@@ -55,6 +59,14 @@ const PdfList = ({ topic, pdf, onBack }: Props) => {
   const [pdfBlobUrl, setPdfBlobUrl] = useState<string | null>(null);
   const [isDownloading, setIsDownloading] = useState(false);
 
+  const {
+    effectivePlan,
+    verifyPdf,
+    modalState,
+    promptUpgrade,
+    closeUpgradeModal,
+  } = useSubscriptionEntitlement();
+
   const formatFileSize = (bytes?: number) => {
     if (!bytes) return "Curriculum Guide";
     if (bytes < 1024) return `${bytes} B`;
@@ -84,7 +96,16 @@ const PdfList = ({ topic, pdf, onBack }: Props) => {
     };
   }, [pdfBlobUrl]);
 
-  const handlePdfClick = (pdfFile: PDFsResource, initialTab: "notes" | "pdf" = "pdf") => {
+  const handlePdfClick = (pdfFile: PDFsResource, index: number, initialTab: "notes" | "pdf" = "pdf") => {
+    const access = verifyPdf(index, pdfFile.title);
+    if (!access.allowed) {
+      promptUpgrade(
+        `${pdfFile.title} Material`,
+        access.requiredPlan,
+        access.reason || "Basic plan includes starter curriculum summary notes. Upgrade to Standard (₦15,000) for full access to all comprehensive revision packs!"
+      );
+      return;
+    }
     setSelectedPDF(pdfFile);
     setActiveTab(initialTab);
     setIsDialogOpen(true);
@@ -99,8 +120,17 @@ const PdfList = ({ topic, pdf, onBack }: Props) => {
     }
   };
 
-  const handleDownloadPdf = async (pdfFile: PDFsResource, e?: React.MouseEvent) => {
+  const handleDownloadPdf = async (pdfFile: PDFsResource, index: number = 0, e?: React.MouseEvent) => {
     if (e) e.stopPropagation();
+    const access = verifyPdf(index, pdfFile.title);
+    if (!access.allowed) {
+      promptUpgrade(
+        `${pdfFile.title} Download`,
+        access.requiredPlan,
+        access.reason
+      );
+      return;
+    }
     setIsDownloading(true);
 
     try {
@@ -160,134 +190,165 @@ const PdfList = ({ topic, pdf, onBack }: Props) => {
         </Box>
       ) : (
         <Box py={4}>
-          {pdf.map((pdfFile) => (
-            <Flex
-              key={pdfFile.id}
-              direction={{ base: "column", md: "row" }}
-              justify="space-between"
-              align={{ base: "stretch", md: "center" }}
-              mb={4}
-              p={3}
-              borderRadius="2xl"
-              bg="white"
-              boxShadow="0 2px 8px rgba(0,0,0,0.04)"
-              border="1px solid"
-              borderColor="gray.200"
-              _hover={{
-                boxShadow: "0 8px 24px rgba(0,0,0,0.08)",
-                transform: "translateY(-2px)",
-                borderColor: "blue.200",
-              }}
-              transition="all 0.25s ease"
-              cursor="pointer"
-              onClick={() => handlePdfClick(pdfFile, "pdf")}
-            >
-              <Flex gap={4} align="center" flex={1}>
-                {/* Custom Vector Thumbnail */}
-                <Box
-                  flexShrink={0}
-                  w={{ base: "100%", sm: "140px", md: "170px" }}
-                  h={{ base: "90px", sm: "100px", md: "105px" }}
-                >
-                  <PdfCustomThumbnail
-                    title={pdfFile.title}
-                    description={pdfFile.description}
-                  />
-                </Box>
+          {pdf.map((pdfFile, index) => {
+            const access = verifyPdf(index, pdfFile.title);
+            const isLocked = !access.allowed;
 
-                {/* PDF Info */}
-                <Box flex={1} minW={0} pr={2}>
-                  <Flex align="center" gap={2} mb={1}>
-                    <Badge colorScheme="blue" fontSize="10px" px={2} py={0.5} borderRadius="md">
-                      CURRICULUM NOTE
-                    </Badge>
-                    <Text fontSize="xs" color="gray.500" fontWeight="medium">
-                      {formatFileSize(pdfFile.file_size)}
-                    </Text>
-                  </Flex>
-
-                  <Heading
-                    as="h4"
-                    fontWeight="700"
-                    fontSize={{ base: "sm", md: "md" }}
-                    color="gray.800"
-                    lineHeight="1.3"
-                    noOfLines={2}
-                  >
-                    {pdfFile.title}
-                  </Heading>
-
-                  {pdfFile.description && (
-                    <Text fontSize="xs" color="gray.600" mt={1} noOfLines={2}>
-                      {pdfFile.description}
-                    </Text>
-                  )}
-                </Box>
-              </Flex>
-
-              {/* Action Buttons */}
+            return (
               <Flex
-                align="center"
-                gap={2}
-                px={{ base: 2, md: 4 }}
-                py={{ base: 2, md: 0 }}
-                mt={{ base: 2, md: 0 }}
-                justify={{ base: "flex-end", md: "center" }}
+                key={pdfFile.id}
+                direction={{ base: "column", md: "row" }}
+                justify="space-between"
+                align={{ base: "stretch", md: "center" }}
+                mb={4}
+                p={3}
+                borderRadius="2xl"
+                bg={isLocked ? "gray.50" : "white"}
+                boxShadow="0 2px 8px rgba(0,0,0,0.04)"
+                border="1px solid"
+                borderColor={isLocked ? "orange.200" : "gray.200"}
+                _hover={{
+                  boxShadow: "0 8px 24px rgba(0,0,0,0.08)",
+                  transform: "translateY(-2px)",
+                  borderColor: isLocked ? "orange.300" : "blue.200",
+                }}
+                transition="all 0.25s ease"
+                cursor="pointer"
+                onClick={() => handlePdfClick(pdfFile, index, "pdf")}
               >
-                <Button
-                  size="sm"
-                  variant="outline"
-                  borderColor="blue.500"
-                  color="blue.600"
-                  _hover={{ bg: "blue.50" }}
-                  fontSize="xs"
-                  fontWeight="600"
-                  rounded="xl"
-                  px={4}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handlePdfClick(pdfFile, "notes");
-                  }}
-                >
-                  <LuBookOpen size={14} style={{ marginRight: "4px" }} />
-                  Read Notes
-                </Button>
+                <Flex gap={4} align="center" flex={1}>
+                  {/* Custom Vector Thumbnail */}
+                  <Box
+                    flexShrink={0}
+                    w={{ base: "100%", sm: "140px", md: "170px" }}
+                    h={{ base: "90px", sm: "100px", md: "105px" }}
+                    position="relative"
+                  >
+                    <PdfCustomThumbnail
+                      title={pdfFile.title}
+                      description={pdfFile.description}
+                    />
+                    {isLocked && (
+                      <Box
+                        position="absolute"
+                        inset={0}
+                        bg="blackAlpha.600"
+                        borderRadius="xl"
+                        display="flex"
+                        alignItems="center"
+                        justifyContent="center"
+                      >
+                        <LockedBadge requiredPlan="standard" label="Standard" size="xs" variant="solid" />
+                      </Box>
+                    )}
+                  </Box>
 
-                <Button
-                  size="sm"
-                  bg="blue.600"
-                  color="white"
-                  _hover={{ bg: "blue.700" }}
-                  fontSize="xs"
-                  fontWeight="600"
-                  rounded="xl"
-                  px={4}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handlePdfClick(pdfFile, "pdf");
-                  }}
-                >
-                  <LuFileText size={14} style={{ marginRight: "4px" }} />
-                  View PDF
-                </Button>
+                  {/* PDF Info */}
+                  <Box flex={1} minW={0} pr={2}>
+                    <Flex align="center" gap={2} mb={1}>
+                      <Badge colorScheme="blue" fontSize="10px" px={2} py={0.5} borderRadius="md">
+                        CURRICULUM NOTE
+                      </Badge>
+                      {isLocked && (
+                        <LockedBadge requiredPlan="standard" size="xs" variant="subtle" />
+                      )}
+                      <Text fontSize="xs" color="gray.500" fontWeight="medium">
+                        {formatFileSize(pdfFile.file_size)}
+                      </Text>
+                    </Flex>
 
-                <Button
-                  size="sm"
-                  variant="subtle"
-                  colorScheme="gray"
-                  fontSize="xs"
-                  fontWeight="600"
-                  rounded="xl"
-                  px={3}
-                  title="Download verified PDF"
-                  onClick={(e) => handleDownloadPdf(pdfFile, e)}
-                  loading={isDownloading}
+                    <Heading
+                      as="h4"
+                      fontWeight="700"
+                      fontSize={{ base: "sm", md: "md" }}
+                      color={isLocked ? "gray.700" : "gray.800"}
+                      lineHeight="1.3"
+                      noOfLines={2}
+                    >
+                      {pdfFile.title}
+                    </Heading>
+
+                    {pdfFile.description && (
+                      <Text fontSize="xs" color="gray.600" mt={1} noOfLines={2}>
+                        {pdfFile.description}
+                      </Text>
+                    )}
+                  </Box>
+                </Flex>
+
+                {/* Action Buttons */}
+                <Flex
+                  align="center"
+                  gap={2}
+                  px={{ base: 2, md: 4 }}
+                  py={{ base: 2, md: 0 }}
+                  mt={{ base: 2, md: 0 }}
+                  justify={{ base: "flex-end", md: "center" }}
                 >
-                  <LuDownload size={14} />
-                </Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    borderColor="blue.500"
+                    color="blue.600"
+                    _hover={{ bg: "blue.50" }}
+                    fontSize="xs"
+                    fontWeight="600"
+                    rounded="xl"
+                    px={4}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handlePdfClick(pdfFile, index, "notes");
+                    }}
+                  >
+                    <LuBookOpen size={14} style={{ marginRight: "4px" }} />
+                    Read Notes
+                  </Button>
+
+                  <Button
+                    size="sm"
+                    bg="#206CE1"
+                    color="white"
+                    _hover={{ bg: "#1852B2" }}
+                    fontSize="xs"
+                    fontWeight="600"
+                    rounded="xl"
+                    px={4}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handlePdfClick(pdfFile, index, "pdf");
+                    }}
+                  >
+                    {isLocked ? (
+                      <>
+                        <PiShootingStarDuotone style={{ marginRight: "4px" }} />
+                        Unlock Standard Plan
+                      </>
+                    ) : (
+                      <>
+                        <LuFileText size={14} style={{ marginRight: "4px" }} />
+                        View PDF
+                      </>
+                    )}
+                  </Button>
+
+                  <Button
+                    size="sm"
+                    variant="subtle"
+                    colorScheme="gray"
+                    fontSize="xs"
+                    fontWeight="600"
+                    rounded="xl"
+                    px={3}
+                    title="Download verified PDF"
+                    onClick={(e) => handleDownloadPdf(pdfFile, index, e)}
+                    loading={isDownloading}
+                  >
+                    <LuDownload size={14} />
+                  </Button>
+                </Flex>
               </Flex>
-            </Flex>
-          ))}
+            );
+          })}
         </Box>
       )}
 
@@ -616,6 +677,15 @@ const PdfList = ({ topic, pdf, onBack }: Props) => {
           </Dialog.Positioner>
         </Portal>
       </Dialog.Root>
+      {/* Upgrade Prompt Modal */}
+      <UpgradePromptModal
+        isOpen={modalState.isOpen}
+        onClose={closeUpgradeModal}
+        featureName={modalState.featureName}
+        requiredPlan={modalState.requiredPlan}
+        reason={modalState.reason}
+        currentPlan={effectivePlan}
+      />
     </Box>
   );
 };

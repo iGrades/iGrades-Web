@@ -6,6 +6,7 @@ import { pointsEngine } from "./server/pointsEngine";
 import { registerTranslationRoutes } from "./server/translationEngine";
 import { classChangeEngine } from "./server/classChangeEngine";
 import { emailService } from "./server/emailNotificationService";
+import { subscriptionEngine, type PlanTier } from "./server/subscriptionEngine";
 
 interface QuestionContext {
   questionNumber?: number;
@@ -60,7 +61,8 @@ function getGenAI(): GoogleGenAI {
 function buildSystemInstructions(
   studentName?: string,
   gradeLevel?: string,
-  learningContext?: LearningContext
+  learningContext?: LearningContext,
+  effectivePlan: PlanTier = "basic"
 ): string {
   const effectiveGradeLevel = gradeLevel || "SSS 3";
   const defaultExam = effectiveGradeLevel.toUpperCase().includes("JSS") ? "BECE" : "WAEC / JAMB UTME";
@@ -86,6 +88,40 @@ CRITICAL PEDAGOGICAL MANDATE (YOU ARE A SOCRATIC TUTOR, NOT AN ANSWER MACHINE):
    - Bullet points (- ) should be short and clean.
 6. Academic Focus: Only assist with academic learning and study habits. Politely steer unrelated queries back to their studies.
 `.trim();
+
+  // ── FEATURE AREA 2 (SOCRATIC GUIDANCE) & FEATURE AREA 3 (PERSONALIZED SUPPORT) BY TIER ──
+  let TIER_PEDAGOGY_INSTRUCTIONS = "";
+  if (effectivePlan === "basic") {
+    TIER_PEDAGOGY_INSTRUCTIONS = `
+[SUBSCRIPTION TIER MANDATE: BASIC (₦0 FREE PLAN)]
+1. SPARK SOCRATIC GUIDANCE: LIMITED.
+   - You must strictly limit your guidance to Level 1 (Socratic question) and Level 2 (Small hint).
+   - DO NOT provide Level 4 concept explanations, Level 5 worked examples, or Level 6 final solutions.
+   - If the student requests step-by-step worked solutions or asks you to solve the entire problem, give ONE small starter hint and kindly inform them: "To unlock full step-by-step worked breakdowns and complete Socratic resolutions, ask a parent to upgrade to Standard or Premium on iGrades!"
+2. SPARK PERSONALIZED LEARNING SUPPORT: LIMITED / BASIC.
+   - Offer only foundational curriculum pointers and broad exam advice.
+   - Do NOT provide deep cross-topic diagnostic analysis or elaborate customized learning paths.
+`.trim();
+  } else if (effectivePlan === "standard") {
+    TIER_PEDAGOGY_INSTRUCTIONS = `
+[SUBSCRIPTION TIER MANDATE: STANDARD PLAN (₦15,000)]
+1. SPARK SOCRATIC GUIDANCE: INCLUDED / GENEROUS.
+   - Provide generous adaptive Socratic tutoring across all levels (Level 1 through Level 6), including Level 4 concept explanations, Level 5 worked guidance, and Level 6 final mastery celebrations.
+2. SPARK PERSONALIZED LEARNING SUPPORT: PERSONALIZED GUIDANCE & MISCONCEPTION SUPPORT.
+   - Actively identify and categorize misconception types (Sign error, Formula selection, Concept misunderstanding, Arithmetic mistake, Misreading question).
+   - Address the student's known weak concepts directly and provide tailored study recommendations based on their performance telemetry.
+`.trim();
+  } else {
+    // Premium
+    TIER_PEDAGOGY_INSTRUCTIONS = `
+[SUBSCRIPTION TIER MANDATE: PREMIUM PLAN (₦25,000)]
+1. SPARK SOCRATIC GUIDANCE: ADVANCED.
+   - Provide highest-tier cognitive scaffolding, deep step-by-step derivations, analogies, conceptual bridges between related topics, and multi-turn Socratic resolution.
+2. SPARK PERSONALIZED LEARNING SUPPORT: ADVANCED PERSONALIZED TUTORING & MISCONCEPTION SUPPORT.
+   - Fully integrate the student's complete longitudinal diagnostic profile, readiness scores, and repeated error history.
+   - Offer elite personalized tutoring and targeted misconception remediation to guarantee top distinctions (A1 / 300+) in WAEC, JAMB, and NECO exams.
+`.trim();
+  }
 
   const ADAPTIVE_PROGRESSION_INSTRUCTIONS = `
 [STRUCTURED GUIDANCE LEVELS (1 TO 6)]
@@ -153,39 +189,41 @@ Topic: ${currentTopic}
 
   let STUDENT_LEARNING_PROFILE = `[STUDENT LEARNING PROFILE]`;
   const perfData = learningContext?.performance;
-  if (perfData?.topicAccuracyPercent !== undefined) {
-    STUDENT_LEARNING_PROFILE += `\nRecent Accuracy: ${perfData.topicAccuracyPercent}%`;
-  }
-  if (perfData?.recentAttemptsCount !== undefined) {
-    STUDENT_LEARNING_PROFILE += `\nRecent Attempts: ${perfData.recentAttemptsCount}`;
-  }
-  if (perfData?.weakTopics && perfData.weakTopics.length > 0) {
-    STUDENT_LEARNING_PROFILE += `\nKnown Weak Concepts: ${perfData.weakTopics.join(", ")}`;
-  }
-  if (perfData?.recentScoreSummary) {
-    STUDENT_LEARNING_PROFILE += `\nRecent Activity: ${perfData.recentScoreSummary}`;
-  }
+  // If Basic plan, do not inject full personalized learning diagnostics
+  if (effectivePlan !== "basic") {
+    if (perfData?.topicAccuracyPercent !== undefined) {
+      STUDENT_LEARNING_PROFILE += `\nRecent Accuracy: ${perfData.topicAccuracyPercent}%`;
+    }
+    if (perfData?.recentAttemptsCount !== undefined) {
+      STUDENT_LEARNING_PROFILE += `\nRecent Attempts: ${perfData.recentAttemptsCount}`;
+    }
+    if (perfData?.weakTopics && perfData.weakTopics.length > 0) {
+      STUDENT_LEARNING_PROFILE += `\nKnown Weak Concepts: ${perfData.weakTopics.join(", ")}`;
+    }
+    if (perfData?.recentScoreSummary && effectivePlan === "premium") {
+      STUDENT_LEARNING_PROFILE += `\nRecent Activity & Diagnostics: ${perfData.recentScoreSummary}`;
+    }
 
-  const tutorState = learningContext?.tutoringState;
-  if (tutorState) {
-    STUDENT_LEARNING_PROFILE += `\n[ONGOING SESSION TUTORING TELEMETRY]`;
-    if (tutorState.currentGuidanceLevel) {
-      STUDENT_LEARNING_PROFILE += `\nPrevious Guidance Level: Level ${tutorState.currentGuidanceLevel} (${tutorState.guidanceLevelName || ""})`;
+    const tutorState = learningContext?.tutoringState;
+    if (tutorState) {
+      STUDENT_LEARNING_PROFILE += `\n[ONGOING SESSION TUTORING TELEMETRY]`;
+      if (tutorState.currentGuidanceLevel) {
+        STUDENT_LEARNING_PROFILE += `\nPrevious Guidance Level: Level ${tutorState.currentGuidanceLevel} (${tutorState.guidanceLevelName || ""})`;
+      }
+      if (tutorState.hintsGiven !== undefined) {
+        STUDENT_LEARNING_PROFILE += `\nHints Given So Far: ${tutorState.hintsGiven}`;
+      }
+      if (tutorState.lastMisconception) {
+        STUDENT_LEARNING_PROFILE += `\nLast Identified Misconception: ${tutorState.lastMisconception}`;
+      }
+      if (tutorState.studentStatus) {
+        STUDENT_LEARNING_PROFILE += `\nLast Student State: ${tutorState.studentStatus}`;
+      }
     }
-    if (tutorState.hintsGiven !== undefined) {
-      STUDENT_LEARNING_PROFILE += `\nHints Given So Far: ${tutorState.hintsGiven}`;
-    }
-    if (tutorState.lastMisconception) {
-      STUDENT_LEARNING_PROFILE += `\nLast Identified Misconception: ${tutorState.lastMisconception}`;
-    }
-    if (tutorState.studentStatus) {
-      STUDENT_LEARNING_PROFILE += `\nLast Student State: ${tutorState.studentStatus}`;
-    }
-  }
 
-  const recData = learningContext?.recommendation;
-  if (recData) {
-    STUDENT_LEARNING_PROFILE += `\n[CURRENT PERSONALIZED STUDY RECOMMENDATION]
+    const recData = learningContext?.recommendation;
+    if (recData) {
+      STUDENT_LEARNING_PROFILE += `\n[CURRENT PERSONALIZED STUDY RECOMMENDATION]
 - Priority Focus: ${recData.title}
 - Recommended Action: ${recData.description}
 - Target Subject / Topic: ${recData.subjectName || ""} / ${recData.topicName || ""}
@@ -193,6 +231,9 @@ Topic: ${currentTopic}
 - Pedagogical Reason: ${recData.reason || ""}
 - Socratic Guidance Advice: ${recData.sparkPromptHint || ""}
 * TUTORING INSTRUCTION: When the student asks "What should I study next?" or requests study guidance, directly recommend this action. When tutoring on this specific topic, provide extra patient, step-by-step scaffolding.`;
+    }
+  } else {
+    STUDENT_LEARNING_PROFILE += `\nTier: Basic (Foundational Curriculum Overview)`;
   }
 
   let QUESTION_CONTEXT = "";
@@ -220,6 +261,7 @@ Use the correct answer and explanation solely to diagnose why the student's chos
 
   return [
     CORE_TUTOR_INSTRUCTIONS,
+    TIER_PEDAGOGY_INSTRUCTIONS,
     ADAPTIVE_PROGRESSION_INSTRUCTIONS,
     EDUCATIONAL_CONTEXT,
     STUDENT_LEARNING_PROFILE,
@@ -232,7 +274,8 @@ Use the correct answer and explanation solely to diagnose why the student's chos
 function generateResilientTutorReply(
   studentName?: string,
   learningContext?: LearningContext,
-  lastUserMessage?: string
+  lastUserMessage?: string,
+  effectivePlan: PlanTier = "basic"
 ): {
   reply: string;
   guidanceLevel: number;
@@ -247,6 +290,21 @@ function generateResilientTutorReply(
 
   if (q?.questionText) {
     const studentChoice = q.studentAnswer ? `selected option **${q.studentAnswer}**` : "looked at this question";
+    
+    if (effectivePlan === "basic") {
+      return {
+        reply: `Hi **${name}**! Let's examine this **${subject}** question on **${topic}**.
+
+You ${studentChoice}. In Nigerian examinations like WAEC and JAMB, this concept tests the primary definition.
+
+Before calculating, what is the core formula or rule that relates the given quantities? *(Note: Upgrade to Standard or Premium for complete step-by-step worked breakdowns!)*`,
+        guidanceLevel: 2,
+        guidanceLevelName: "Small hint",
+        misconceptionType: null,
+        studentStatus: "attempting",
+      };
+    }
+
     return {
       reply: `Hi **${name}**! Let's carefully analyze this **${subject}** question on **${topic}** together.
 
@@ -261,6 +319,18 @@ Before calculating or guessing, what is the fundamental formula or rule that rel
   }
 
   if (lastUserMessage && (lastUserMessage.toLowerCase().includes("answer") || lastUserMessage.toLowerCase().includes("what is"))) {
+    if (effectivePlan === "basic") {
+      return {
+        reply: `I hear you, **${name}**! On the Basic plan, I'm here to provide guiding hints so you develop the skill yourself.
+
+What information has this problem given you so far? *(Tip: Upgrade to Standard or Premium for complete step-by-step worked breakdowns!)*`,
+        guidanceLevel: 1,
+        guidanceLevelName: "Socratic question",
+        misconceptionType: null,
+        studentStatus: "attempting",
+      };
+    }
+
     return {
       reply: `I hear you, **${name}**! As your Spark AI learning companion, I won't just give you the final answer directly, because mastering the reasoning is what guarantees your distinction in WAEC & JAMB.
 
@@ -367,13 +437,24 @@ async function startServer() {
 
   // Class Change Requests & Approval API
   app.get("/api/class-change-requests", (req, res) => {
-    const { student_id, parent_id, status } = req.query as {
+    const { student_id, student_ids, parent_id, status } = req.query as {
       student_id?: string;
+      student_ids?: string;
       parent_id?: string;
       status?: string;
     };
-    const requests = classChangeEngine.getRequests({ student_id, parent_id, status });
+    const sIdList = student_ids ? student_ids.split(",").map((s) => s.trim()).filter(Boolean) : undefined;
+    const requests = classChangeEngine.getRequests({ student_id, student_ids: sIdList, parent_id, status });
     res.json(requests);
+  });
+
+  app.get("/api/class-change-requests/:id", (req, res) => {
+    const { id } = req.params;
+    const request = classChangeEngine.getRequestById(id);
+    if (!request) {
+      return res.status(404).json({ error: "Class change request not found" });
+    }
+    res.json(request);
   });
 
   app.post("/api/class-change-requests", async (req, res) => {
@@ -462,6 +543,211 @@ async function startServer() {
   // Email Audit Log API (for admin inspection)
   app.get("/api/email-audit-logs", (_req, res) => {
     res.json(emailService.getLogs());
+  });
+
+  // Authoritative Subscription & Entitlement API
+  app.get("/api/subscription/status/:studentId", async (req, res) => {
+    try {
+      const { studentId } = req.params;
+      const supabaseBase = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL || "https://jmjballgaxelqhsvhlvl.supabase.co";
+      const sbAnonKey = process.env.SUPABASE_ANON_KEY || process.env.VITE_SUPABASE_ANON_KEY;
+
+      const stRes = await fetch(`${supabaseBase}/rest/v1/students?id=eq.${studentId}&select=id,subscription,subscription_status`, {
+        headers: { apikey: sbAnonKey || "", Authorization: `Bearer ${sbAnonKey}` },
+      });
+      const stData = await stRes.json();
+      const student = Array.isArray(stData) && stData.length > 0 ? stData[0] : null;
+
+      const normalized = subscriptionEngine.normalizePlan(student?.subscription, student?.subscription_status);
+      res.json({
+        student_id: studentId,
+        raw_plan: normalized.plan,
+        effective_plan: normalized.effectivePlan,
+        is_active: normalized.isActive,
+        is_expired: normalized.isExpired,
+      });
+    } catch (err: any) {
+      res.status(500).json({ error: err?.message || "Failed to fetch subscription status" });
+    }
+  });
+
+  app.post("/api/subscription/verify-access", async (req, res) => {
+    try {
+      const { student_id, feature, plan, status, params } = req.body || {};
+      let effectivePlan = plan;
+      if (!effectivePlan && student_id) {
+        const supabaseBase = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL || "https://jmjballgaxelqhsvhlvl.supabase.co";
+        const sbAnonKey = process.env.SUPABASE_ANON_KEY || process.env.VITE_SUPABASE_ANON_KEY;
+        const stRes = await fetch(`${supabaseBase}/rest/v1/students?id=eq.${student_id}&select=id,subscription,subscription_status`, {
+          headers: { apikey: sbAnonKey || "", Authorization: `Bearer ${sbAnonKey}` },
+        });
+        const stData = await stRes.json();
+        const student = Array.isArray(stData) && stData.length > 0 ? stData[0] : null;
+        const norm = subscriptionEngine.normalizePlan(student?.subscription, student?.subscription_status);
+        effectivePlan = norm.effectivePlan;
+      } else {
+        effectivePlan = subscriptionEngine.normalizePlan(plan, status).effectivePlan;
+      }
+
+      const evaluation = subscriptionEngine.evaluateAccess(effectivePlan || "basic", feature, params);
+      res.json(evaluation);
+    } catch (err: any) {
+      res.status(400).json({ error: err?.message || "Failed to verify access" });
+    }
+  });
+
+  // Track daily timed quizzes on server
+  const serverDailyTimedQuizMap = new Map<string, { count: number; date: string }>();
+
+  function getServerDailyTimedQuizCount(studentId?: string): number {
+    if (!studentId) return 0;
+    const today = new Date().toISOString().split("T")[0];
+    const rec = serverDailyTimedQuizMap.get(studentId);
+    if (!rec || rec.date !== today) return 0;
+    return rec.count;
+  }
+
+  function incrementServerDailyTimedQuizCount(studentId?: string): number {
+    if (!studentId) return 0;
+    const today = new Date().toISOString().split("T")[0];
+    const rec = serverDailyTimedQuizMap.get(studentId);
+    const count = (!rec || rec.date !== today ? 0 : rec.count) + 1;
+    serverDailyTimedQuizMap.set(studentId, { count, date: today });
+    return count;
+  }
+
+  app.get("/api/subscription/timed-quizzes-today/:studentId", (req, res) => {
+    const { studentId } = req.params;
+    const count = getServerDailyTimedQuizCount(studentId);
+    res.json({ student_id: studentId, count, max_allowed: 3 });
+  });
+
+  app.post("/api/subscription/record-timed-quiz", (req, res) => {
+    const { student_id } = req.body || {};
+    const count = incrementServerDailyTimedQuizCount(student_id);
+    res.json({ success: true, count, max_allowed: 3 });
+  });
+
+  // Track daily Spark AI interactions on server
+  const serverDailySparkUsageMap = new Map<string, { count: number; date: string }>();
+
+  function getServerDailySparkCount(studentId?: string): number {
+    if (!studentId) return 0;
+    const today = new Date().toISOString().split("T")[0];
+    const rec = serverDailySparkUsageMap.get(studentId);
+    if (!rec || rec.date !== today) return 0;
+    return rec.count;
+  }
+
+  function incrementServerDailySparkCount(studentId?: string): number {
+    if (!studentId) return 0;
+    const today = new Date().toISOString().split("T")[0];
+    const rec = serverDailySparkUsageMap.get(studentId);
+    const count = (!rec || rec.date !== today ? 0 : rec.count) + 1;
+    serverDailySparkUsageMap.set(studentId, { count, date: today });
+    return count;
+  }
+
+  app.get("/api/subscription/spark-usage-today/:studentId", async (req, res) => {
+    try {
+      const { studentId } = req.params;
+      const count = getServerDailySparkCount(studentId);
+      
+      const supabaseBase = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL || "https://jmjballgaxelqhsvhlvl.supabase.co";
+      const sbAnonKey = process.env.SUPABASE_ANON_KEY || process.env.VITE_SUPABASE_ANON_KEY;
+      let effectivePlan: PlanTier = "basic";
+
+      try {
+        const stRes = await fetch(`${supabaseBase}/rest/v1/students?id=eq.${studentId}&select=subscription,subscription_status`, {
+          headers: { apikey: sbAnonKey || "", Authorization: `Bearer ${sbAnonKey}` },
+        });
+        const stData = await stRes.json();
+        const student = Array.isArray(stData) && stData.length > 0 ? stData[0] : null;
+        effectivePlan = subscriptionEngine.normalizePlan(student?.subscription, student?.subscription_status).effectivePlan;
+      } catch {
+        // Fallback to basic
+      }
+
+      const limit = effectivePlan === "premium" ? 150 : effectivePlan === "standard" ? 30 : 5;
+      res.json({
+        student_id: studentId,
+        count,
+        max_allowed: limit,
+        effective_plan: effectivePlan,
+        remaining: Math.max(0, limit - count),
+      });
+    } catch (err: any) {
+      res.status(500).json({ error: err?.message || "Failed to fetch Spark usage" });
+    }
+  });
+
+  app.post("/api/subscription/record-spark-usage", (req, res) => {
+    const { student_id, plan } = req.body || {};
+    const count = incrementServerDailySparkCount(student_id);
+    const effectivePlan: PlanTier = plan === "premium" ? "premium" : plan === "standard" ? "standard" : "basic";
+    const limit = effectivePlan === "premium" ? 150 : effectivePlan === "standard" ? 30 : 5;
+    res.json({ success: true, count, max_allowed: limit, remaining: Math.max(0, limit - count) });
+  });
+
+  // Track monthly proctored mock exams on server
+  const serverMonthlyProctoredMocksMap = new Map<string, { count: number; month: string }>();
+
+  function getServerMonthlyProctoredMocks(studentId?: string): number {
+    if (!studentId) return 0;
+    const currentMonth = new Date().toISOString().slice(0, 7); // YYYY-MM
+    const rec = serverMonthlyProctoredMocksMap.get(studentId);
+    if (!rec || rec.month !== currentMonth) return 0;
+    return rec.count;
+  }
+
+  function incrementServerMonthlyProctoredMocks(studentId?: string): number {
+    if (!studentId) return 0;
+    const currentMonth = new Date().toISOString().slice(0, 7);
+    const rec = serverMonthlyProctoredMocksMap.get(studentId);
+    const count = (!rec || rec.month !== currentMonth ? 0 : rec.count) + 1;
+    serverMonthlyProctoredMocksMap.set(studentId, { count, month: currentMonth });
+    return count;
+  }
+
+  app.get("/api/subscription/proctored-mocks-count/:studentId", async (req, res) => {
+    try {
+      const { studentId } = req.params;
+      const count = getServerMonthlyProctoredMocks(studentId);
+
+      const supabaseBase = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL || "https://jmjballgaxelqhsvhlvl.supabase.co";
+      const sbAnonKey = process.env.SUPABASE_ANON_KEY || process.env.VITE_SUPABASE_ANON_KEY;
+      let effectivePlan: PlanTier = "basic";
+
+      try {
+        const stRes = await fetch(`${supabaseBase}/rest/v1/students?id=eq.${studentId}&select=subscription,subscription_status`, {
+          headers: { apikey: sbAnonKey || "", Authorization: `Bearer ${sbAnonKey}` },
+        });
+        const stData = await stRes.json();
+        const student = Array.isArray(stData) && stData.length > 0 ? stData[0] : null;
+        effectivePlan = subscriptionEngine.normalizePlan(student?.subscription, student?.subscription_status).effectivePlan;
+      } catch {
+        // Fallback to basic
+      }
+
+      const limit = effectivePlan === "premium" ? 25 : effectivePlan === "standard" ? 3 : 0;
+      res.json({
+        student_id: studentId,
+        count,
+        max_allowed: limit,
+        effective_plan: effectivePlan,
+        remaining: Math.max(0, limit - count),
+      });
+    } catch (err: any) {
+      res.status(500).json({ error: err?.message || "Failed to fetch proctored mock count" });
+    }
+  });
+
+  app.post("/api/subscription/record-proctored-mock", (req, res) => {
+    const { student_id, plan } = req.body || {};
+    const count = incrementServerMonthlyProctoredMocks(student_id);
+    const effectivePlan: PlanTier = plan === "premium" ? "premium" : plan === "standard" ? "standard" : "basic";
+    const limit = effectivePlan === "premium" ? 25 : effectivePlan === "standard" ? 3 : 0;
+    res.json({ success: true, count, max_allowed: limit, remaining: Math.max(0, limit - count) });
   });
 
   // Supabase proxy route to handle iframe cross-origin requests securely
@@ -584,6 +870,107 @@ async function startServer() {
         res.setHeader("Content-Range", "0-1/1");
         return res.json([streak]);
       }
+
+      // Authoritative subscription paywall enforcement
+      const studentPlanHeader = (req.headers["x-student-subscription"] as string) || "";
+      const studentStatusHeader = (req.headers["x-student-status"] as string) || "";
+      const norm = subscriptionEngine.normalizePlan(studentPlanHeader, studentStatusHeader);
+
+      // 1. Authoritative Past Questions gating: Basic tier is only permitted starter years 2023 & 2024
+      if (urlPath.includes("/rest/v1/past_questions") && req.method.toUpperCase() === "GET") {
+        const yearMatch = urlPath.match(/year=eq\.([^&]+)/);
+        if (yearMatch) {
+          const reqYear = decodeURIComponent(yearMatch[1]);
+          if (norm.effectivePlan === "basic" && !["2024", "2023"].includes(reqYear)) {
+            return res.status(403).json({
+              error: `Access Denied: Past questions from ${reqYear} require a Standard or Premium subscription.`,
+              code: "PAYWALL_RESTRICTION",
+              required_plan: "standard",
+            });
+          }
+        }
+      }
+
+      // 2. Authoritative Examination Mode, AI Proctoring, Proctored Mocks, JAMB Simulation, & Daily Timed Quiz gating
+      const isAttemptInsert =
+        (urlPath.includes("/rest/v1/quiz_attempts") || urlPath.includes("/rest/v1/attempts")) &&
+        req.method.toUpperCase() === "POST";
+
+      if (isAttemptInsert) {
+        const bodyObj = typeof req.body === "object" ? req.body : {};
+        const isExamMode = bodyObj.mode === "examination" || bodyObj.quiz_mode === "examination";
+        const isProctored = Boolean(
+          isExamMode || bodyObj.webcam_monitoring || bodyObj.screen_sharing || bodyObj.audio_monitoring
+        );
+        const isMultiSubject =
+          (Array.isArray(bodyObj.subjects) && bodyObj.subjects.length > 1) ||
+          (Array.isArray(bodyObj.subject_ids) && bodyObj.subject_ids.length > 1);
+        const isJambSim = Boolean(
+          bodyObj.is_jamb || bodyObj.is_jamb_simulation || bodyObj.simulation_type === "jamb"
+        );
+        const studentIdHeader =
+          (req.headers["x-student-id"] as string) || (bodyObj && bodyObj.student_id ? bodyObj.student_id : "");
+
+        if (norm.effectivePlan === "basic") {
+          // Block full examination simulation and AI proctoring for Basic
+          if (isExamMode || isProctored) {
+            return res.status(403).json({
+              error: "Access Denied: AI Proctoring and Proctored Mock Exams are not available on the Basic plan. Upgrade to Standard or Premium to take proctored examinations.",
+              code: "PAYWALL_RESTRICTION",
+              required_plan: "standard",
+            });
+          }
+
+          // Block multi-subject / JAMB simulations for Basic
+          if (isMultiSubject || isJambSim) {
+            return res.status(403).json({
+              error: "Access Denied: Multi-subject JAMB simulation requires a Standard or Premium subscription.",
+              code: "PAYWALL_RESTRICTION",
+              required_plan: "standard",
+            });
+          }
+
+          // Check daily timed practice limit (up to 3 per day on Basic)
+          if (studentIdHeader) {
+            const todayCount = getServerDailyTimedQuizCount(studentIdHeader);
+            if (todayCount >= 3) {
+              return res.status(403).json({
+                error: "Access Denied: You have completed all 3 daily timed practice quizzes included in the Basic plan. Upgrade to Standard (₦15,000) for generous timed practice.",
+                code: "PAYWALL_RESTRICTION",
+                required_plan: "standard",
+              });
+            }
+            incrementServerDailyTimedQuizCount(studentIdHeader);
+          }
+        } else if (norm.effectivePlan === "standard") {
+          // Standard plan includes up to 3 proctored mock exams per billing cycle
+          if (isProctored && studentIdHeader) {
+            const monthCount = getServerMonthlyProctoredMocks(studentIdHeader);
+            if (monthCount >= 3) {
+              return res.status(403).json({
+                error: "Access Denied: You have completed all 3 proctored mock exams included in your Standard plan for this billing cycle. Upgrade to Premium (₦25,000) for generous fair-use access.",
+                code: "PAYWALL_RESTRICTION",
+                required_plan: "premium",
+              });
+            }
+            incrementServerMonthlyProctoredMocks(studentIdHeader);
+          }
+        } else if (norm.effectivePlan === "premium") {
+          // Premium plan has generous fair-use limit (25 proctored mock exams)
+          if (isProctored && studentIdHeader) {
+            const monthCount = getServerMonthlyProctoredMocks(studentIdHeader);
+            if (monthCount >= 25) {
+              return res.status(403).json({
+                error: "Access Denied: You have reached this billing cycle's generous fair-use limit of 25 proctored mock exams on Premium.",
+                code: "PAYWALL_RESTRICTION",
+                required_plan: "premium",
+              });
+            }
+            incrementServerMonthlyProctoredMocks(studentIdHeader);
+          }
+        }
+      }
+
       const supabaseBase = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL || "https://jmjballgaxelqhsvhlvl.supabase.co";
       const targetUrl = new URL(req.url, supabaseBase).toString();
 
@@ -654,10 +1041,62 @@ async function startServer() {
 
   app.post("/api/spark-chat", async (req, res) => {
     try {
-      const { messages, studentName, gradeLevel, learningContext } = req.body || {};
+      const { messages, studentName, gradeLevel, learningContext, student_id } = req.body || {};
 
       if (!messages || !Array.isArray(messages) || messages.length === 0) {
         return res.status(400).json({ error: "Invalid request: messages array is required." });
+      }
+
+      // ── 1. Authoritative Plan & Entitlement Lookup ──
+      const studentId = student_id || (req.headers["x-student-id"] as string) || "";
+      let effectivePlan: PlanTier = "basic";
+
+      if (studentId) {
+        const supabaseBase = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL || "https://jmjballgaxelqhsvhlvl.supabase.co";
+        const sbAnonKey = process.env.SUPABASE_ANON_KEY || process.env.VITE_SUPABASE_ANON_KEY;
+        try {
+          const stRes = await fetch(`${supabaseBase}/rest/v1/students?id=eq.${studentId}&select=subscription,subscription_status`, {
+            headers: { apikey: sbAnonKey || "", Authorization: `Bearer ${sbAnonKey}` },
+          });
+          const stData = await stRes.json();
+          const student = Array.isArray(stData) && stData.length > 0 ? stData[0] : null;
+          if (student) {
+            effectivePlan = subscriptionEngine.normalizePlan(student?.subscription, student?.subscription_status).effectivePlan;
+          } else if (req.body?.plan) {
+            effectivePlan = subscriptionEngine.normalizePlan(req.body.plan).effectivePlan;
+          }
+        } catch {
+          if (req.body?.plan) {
+            effectivePlan = subscriptionEngine.normalizePlan(req.body.plan).effectivePlan;
+          }
+        }
+      } else if (req.body?.plan) {
+        effectivePlan = subscriptionEngine.normalizePlan(req.body.plan).effectivePlan;
+      }
+
+      // ── 2. Feature Area 1: Daily Spark Interaction Limit Enforcement ──
+      const dailySparkLimit = effectivePlan === "premium" ? 150 : effectivePlan === "standard" ? 30 : 5;
+      const currentCount = getServerDailySparkCount(studentId);
+
+      if (currentCount >= dailySparkLimit) {
+        const requiredPlan: PlanTier = effectivePlan === "basic" ? "standard" : "premium";
+        const limitReply = effectivePlan === "basic"
+          ? "You have completed all 5 daily Spark AI interactions included in the Basic plan! Upgrade to Standard for 30 daily questions, or Premium for generous fair-use access."
+          : effectivePlan === "standard"
+          ? "You have reached your limit of 30 Spark AI interactions for today on the Standard plan! Upgrade to Premium for highest/generous daily usage subject to fair-use limits."
+          : "You have reached today's generous fair-use threshold (150 interactions) for Spark AI tutoring. Your daily usage resets at midnight!";
+
+        return res.status(403).json({
+          error: "Daily Spark AI limit reached",
+          limitReached: true,
+          allowed: false,
+          currentCount,
+          dailyLimit: dailySparkLimit,
+          effectivePlan,
+          requiredPlan,
+          reply: limitReply,
+          content: [{ type: "text", text: limitReply }],
+        });
       }
 
       const lastUserMsg = [...messages].reverse().find((m: any) => m.role === "user")?.content || "";
@@ -670,7 +1109,8 @@ async function startServer() {
       }
 
       if (ai) {
-        const systemInstruction = buildSystemInstructions(studentName, gradeLevel, learningContext);
+        // Pass effectivePlan to enforce Feature 2 (Socratic) & Feature 3 (Personalized Support)
+        const systemInstruction = buildSystemInstructions(studentName, gradeLevel, learningContext, effectivePlan);
 
         // Map to Gemini contents format
         const contents = messages.map((m: { role: string; content: string }) => ({
@@ -743,6 +1183,9 @@ async function startServer() {
             // Fallback to raw text if model output was not strictly parseable
           }
 
+          // On successful interaction, increment daily count
+          const newCount = incrementServerDailySparkCount(studentId);
+
           return res.json({
             reply: parsedPayload.reply,
             guidanceLevel: parsedPayload.guidanceLevel,
@@ -750,12 +1193,20 @@ async function startServer() {
             misconceptionType: parsedPayload.misconceptionType,
             studentStatus: parsedPayload.studentStatus,
             content: [{ type: "text", text: parsedPayload.reply }],
+            sparkUsage: {
+              count: newCount,
+              dailyLimit: dailySparkLimit,
+              effectivePlan,
+              remaining: Math.max(0, dailySparkLimit - newCount),
+            },
           });
         }
       }
 
       // Resilient educational fallback (used if API models encounter demand spikes or network outage)
-      const fallback = generateResilientTutorReply(studentName, learningContext, lastUserMsg);
+      const fallback = generateResilientTutorReply(studentName, learningContext, lastUserMsg, effectivePlan);
+      const newCount = incrementServerDailySparkCount(studentId);
+
       return res.json({
         reply: fallback.reply,
         guidanceLevel: fallback.guidanceLevel,
@@ -763,10 +1214,16 @@ async function startServer() {
         misconceptionType: fallback.misconceptionType,
         studentStatus: fallback.studentStatus,
         content: [{ type: "text", text: fallback.reply }],
+        sparkUsage: {
+          count: newCount,
+          dailyLimit: dailySparkLimit,
+          effectivePlan,
+          remaining: Math.max(0, dailySparkLimit - newCount),
+        },
       });
     } catch (err: any) {
       console.error("Error in /api/spark-chat:", err);
-      const fallback = generateResilientTutorReply(req.body?.studentName, req.body?.learningContext);
+      const fallback = generateResilientTutorReply(req.body?.studentName, req.body?.learningContext, undefined, "basic");
       return res.json({
         reply: fallback.reply,
         guidanceLevel: fallback.guidanceLevel,

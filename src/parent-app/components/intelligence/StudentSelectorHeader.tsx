@@ -188,6 +188,21 @@ export const StudentSelectorHeader = ({
                 <Badge colorPalette="gray" variant="surface" size="sm" px={2} borderRadius="md">
                   {selectedStudent?.class || "Class Student"}
                 </Badge>
+                <Badge
+                  colorPalette={
+                    selectedStudent?.subscription?.toLowerCase().includes("premium")
+                      ? "purple"
+                      : selectedStudent?.subscription?.toLowerCase().includes("standard")
+                      ? "blue"
+                      : "gray"
+                  }
+                  variant="subtle"
+                  size="sm"
+                  px={2}
+                  borderRadius="md"
+                >
+                  {selectedStudent?.subscription || "Basic"} Plan
+                </Badge>
                 <Text color="gray.300">•</Text>
                 <Text fontWeight="600" color="gray.700">{selectedStudent?.school || "Academic School"}</Text>
                 {intelligence && (

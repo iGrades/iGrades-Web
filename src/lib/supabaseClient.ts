@@ -19,22 +19,43 @@ const customFetch: typeof fetch = async (input, init) => {
 
   const rawUrl = typeof input === "string" ? input : input instanceof URL ? input.toString() : input.url;
 
+  // Prepare headers with student subscription context if available
+  const newHeaders = new Headers(init?.headers);
+  if (typeof window !== "undefined" && window.localStorage) {
+    try {
+      const cached = localStorage.getItem("authdStudent");
+      if (cached) {
+        const student = JSON.parse(cached);
+        if (student?.id) newHeaders.set("x-student-id", student.id);
+        if (student?.subscription) newHeaders.set("x-student-subscription", student.subscription);
+        if (student?.subscription_status) newHeaders.set("x-student-status", student.subscription_status);
+      }
+    } catch {
+      // ignore
+    }
+  }
+
+  const modifiedInit = {
+    ...init,
+    headers: newHeaders,
+  };
+
   // In the browser, route through same-origin proxy ONLY in dev sandbox environments
   // Supabase Storage endpoints (/storage/v1/) support CORS natively (wildcard origin)
   // and must connect directly so binary streams, file uploads, and downloads are never truncated
   if (shouldUseProxy() && rawUrl.includes(".supabase.co") && !rawUrl.includes("/storage/v1/")) {
     const proxyUrl = rawUrl.replace(/^https?:\/\/[^/]+/, "/api/supabase-proxy");
     try {
-      const response = await fetch(proxyUrl, init);
+      const response = await fetch(proxyUrl, modifiedInit);
       // If the proxy responds with 404 or 405 (proxy not deployed on this server), fallback to direct Supabase call
       if (response.status === 404 || response.status === 405) {
-        return await fetch(input, init);
+        return await fetch(input, modifiedInit);
       }
       return response;
     } catch (proxyError: any) {
       console.warn("Supabase proxy fetch failed, falling back to direct:", proxyError?.message || proxyError);
       try {
-        return await fetch(input, init);
+        return await fetch(input, modifiedInit);
       } catch (directError: any) {
         console.warn("Direct Supabase fetch also failed:", directError?.message || directError);
         throw directError;
@@ -43,7 +64,7 @@ const customFetch: typeof fetch = async (input, init) => {
   }
 
   // Direct fetch for production (e.g. www.igrades.org) and standard calls
-  return await fetch(input, init);
+  return await fetch(input, modifiedInit);
 };
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey, {

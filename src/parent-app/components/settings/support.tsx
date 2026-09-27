@@ -31,8 +31,8 @@ const parentFaqs = [
     a: "The dashboard automatically gathers your children's quiz scores, subject strengths, and study progress to provide clear guidance and helpful practice tips.",
   },
   {
-    q: "How do subscriptions and payment work?",
-    a: "iGrades offers flexible monthly and termly plans. You can upgrade any of your children's accounts directly from their dashboard settings or the subscription portal.",
+    q: "How do subscriptions and payment work for parents?",
+    a: "iGrades provides a generous free Basic tier allowing 1 connected child with basic score tracking and quiz history. Standard (₦15,000) unlocks up to 3 connected children, weekly learning digests, subject performance tracking, and progress trends. Premium (₦25,000) allows up to 5 children, advanced predictive exam readiness diagnostics, and printable executive reports. You can upgrade anytime in your Subscription settings.",
   },
   {
     q: "Is my child's learning data secure and private?",

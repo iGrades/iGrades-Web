@@ -1,4 +1,4 @@
-import { Grid, Box, Text, Center, useDisclosure } from "@chakra-ui/react";
+import { Grid, Box, Text, Center, useDisclosure, Icon } from "@chakra-ui/react";
 import { useAuthdStudentData } from "@/student-app/context/studentDataContext";
 import { useState } from "react";
 import TopicsList from "./topicsList";
@@ -10,6 +10,10 @@ import {
   useResources,
 } from "@/student-app/context/dataContext";
 import { courseConfig } from "@/student-app/utils/courseConstants";
+import { useSubscriptionEntitlement } from "@/hooks/useSubscriptionEntitlement";
+import { UpgradePromptModal } from "@/components/subscription/UpgradePromptModal";
+import { LockedBadge } from "@/components/subscription/LockedBadge";
+import { LuLock } from "react-icons/lu";
 
 interface Topic {
   id: string;
@@ -30,12 +34,20 @@ interface PDFsResource {
 
 const Pdfs = () => {
   const { authdStudent } = useAuthdStudentData();
-  // const [ setLoading] = useState(false);
   const [topicList, setTopicList] = useState(false);
   const [selectedCourse, setSelectedCourse] = useState<string>("");
   const [topics, setTopics] = useState<Topic[]>([]);
   const [pdfs, setPdfs] = useState<PDFsResource[]>([]);
   const { onOpen } = useDisclosure();
+
+  // Entitlement hook
+  const {
+    effectivePlan,
+    verifySubject,
+    modalState,
+    promptUpgrade,
+    closeUpgradeModal,
+  } = useSubscriptionEntitlement();
 
   const { subjectImages } = useStudentData();
   const { subjects, getSubjectByName } = useSubjects();
@@ -52,11 +64,26 @@ const Pdfs = () => {
       const parsed = JSON.parse(registered);
       return Array.isArray(parsed) ? parsed : [registered];
     } catch {
-      return String(registered).split(",").map(c => c.trim());
+      return String(registered).split(",").map((c) => c.trim());
     }
   };
 
-  const handleCourseClick = async (courseName: string, dbCourseId: string) => {
+  const handleCourseClick = async (
+    courseName: string,
+    dbCourseId: string,
+    index: number
+  ) => {
+    // Entitlement check
+    const access = verifySubject(index, courseName);
+    if (!access.allowed) {
+      promptUpgrade(
+        `${courseName} Learning Materials`,
+        access.requiredPlan,
+        access.reason || "Basic plan includes your first 4 starter subjects. Upgrade to Standard (₦15,000) to access PDF learning materials for all registered subjects!"
+      );
+      return;
+    }
+
     setSelectedCourse(courseName);
 
     try {
@@ -86,7 +113,7 @@ const Pdfs = () => {
       }
 
       setTopics(classTopics || []);
-      
+
       const topicIds = classTopics.map((t: any) => t.id) || [];
       if (topicIds.length > 0) {
         const allPDFs = getResourcesByType("pdf");
@@ -109,9 +136,8 @@ const Pdfs = () => {
     : ["mathematics", "english", "physics", "chemistry", "biology"];
 
   const studentCourses = rawCoursesToDisplay.map((id) => {
-    // Look up the ID (e.g., "mathematics") in our central config
     const config = courseConfig[id.toLowerCase()] || {
-      displayName: id.charAt(0).toUpperCase() + id.slice(1), 
+      displayName: id.charAt(0).toUpperCase() + id.slice(1),
       color: "#2563eb",
     };
 
@@ -128,43 +154,70 @@ const Pdfs = () => {
       {!topicList ? (
         <Grid
           templateColumns={{
-          base: "repeat(auto-fill, minmax(150px, 1fr))",
-          md: "repeat(auto-fill, minmax(200px, 1fr))",
-          lg: "repeat(auto-fill, minmax(225px, 1fr))",
-        }}
-        gap={{ base: 4, md: 6 }}
-        py={{ base: 4, md: 6 }}
+            base: "repeat(auto-fill, minmax(150px, 1fr))",
+            md: "repeat(auto-fill, minmax(200px, 1fr))",
+            lg: "repeat(auto-fill, minmax(225px, 1fr))",
+          }}
+          gap={{ base: 4, md: 6 }}
+          py={{ base: 4, md: 6 }}
         >
-          {studentCourses.map((course, index) => (
-            <Box
-              key={index}
-              borderRadius="xl"
-              p={6}
-              textAlign="center"
-              minH="100px"
-              display="flex"
-              flexDirection="column"
-              justifyContent="center"
-              alignItems="center"
-              transition="all 0.3s ease"
-              _hover={{ transform: "translateY(-8px)" }}
-              background={course.image ? `url(${course.image})` : course.color}
-              backgroundSize="contain"
-              backgroundRepeat="no-repeat"
-              cursor="pointer"
-              position="relative"
-              overflow="hidden"
-              onClick={() => handleCourseClick(course.displayName, course.dbName)}
-            >
-              <Center flexDirection="column">
-                {!course.image && (
-                  <Text fontWeight="bold" color="white" textShadow="1px 1px 2px black">
-                    {course.displayName}
-                  </Text>
+          {studentCourses.map((course, index) => {
+            const access = verifySubject(index, course.displayName);
+            const isLocked = !access.allowed;
+
+            return (
+              <Box
+                key={index}
+                borderRadius="xl"
+                p={6}
+                textAlign="center"
+                minH="100px"
+                display="flex"
+                flexDirection="column"
+                justifyContent="center"
+                alignItems="center"
+                transition="all 0.3s ease"
+                _hover={{ transform: "translateY(-6px)" }}
+                background={course.image ? `url(${course.image})` : course.color}
+                backgroundSize="contain"
+                backgroundRepeat="no-repeat"
+                cursor="pointer"
+                position="relative"
+                overflow="hidden"
+                onClick={() => handleCourseClick(course.displayName, course.dbName, index)}
+              >
+                {/* Locked overlay for Basic plan subjects past limit */}
+                {isLocked && (
+                  <Box
+                    position="absolute"
+                    inset={0}
+                    bg="blackAlpha.700"
+                    zIndex={3}
+                    display="flex"
+                    flexDirection="column"
+                    alignItems="center"
+                    justifyContent="center"
+                    p={3}
+                    backdropFilter="blur(2px)"
+                  >
+                    <Icon as={LuLock} color="orange.300" boxSize={6} mb={1.5} />
+                    <Text fontSize="xs" fontWeight="bold" color="white" textAlign="center" mb={1.5}>
+                      {course.displayName}
+                    </Text>
+                    <LockedBadge requiredPlan="standard" label="Standard Plan" size="xs" variant="solid" />
+                  </Box>
                 )}
-              </Center>
-            </Box>
-          ))}
+
+                <Center flexDirection="column">
+                  {!course.image && (
+                    <Text fontWeight="bold" color="white" textShadow="1px 1px 2px black">
+                      {course.displayName}
+                    </Text>
+                  )}
+                </Center>
+              </Box>
+            );
+          })}
         </Grid>
       ) : (
         <TopicsList
@@ -175,6 +228,16 @@ const Pdfs = () => {
           courseName={selectedCourse}
         />
       )}
+
+      {/* Upgrade Prompt Modal */}
+      <UpgradePromptModal
+        isOpen={modalState.isOpen}
+        onClose={closeUpgradeModal}
+        featureName={modalState.featureName}
+        requiredPlan={modalState.requiredPlan}
+        reason={modalState.reason}
+        currentPlan={effectivePlan}
+      />
     </Box>
   );
 };

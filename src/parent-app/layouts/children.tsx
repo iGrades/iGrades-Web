@@ -91,11 +91,10 @@ const Children = ({ data }: Prop) => {
                 color="#333951"
               >
                 {
-                  data.filter(
-                    (student) =>
-                      student.subscription === "Standard" ||
-                      student.subscription === "Premium"
-                  ).length
+                  data.filter((student) => {
+                    const sub = (student.subscription || "").toLowerCase();
+                    return sub.includes("standard") || sub.includes("premium");
+                  }).length
                 }
               </Heading>
             </Box>

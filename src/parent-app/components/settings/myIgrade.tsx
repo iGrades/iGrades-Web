@@ -17,16 +17,20 @@ import Children from "./children";
 import DeleteUserPopover from "../parent/deleteUserPopover";
 import { ParentQuizReportView } from "./ParentQuizReportView";
 import { ReferAFriendView } from "./ReferAFriendView";
+import { ParentSubscriptionView } from "./ParentSubscriptionView";
+import { FiCreditCard } from "react-icons/fi";
 
 type ProfileState =
   | "igrade"
   | "Profile"
+  | "Subscription"
   | "Children"
   | "Quiz Report"
   | "Refer a Friend";
 
 const SETTINGS_ITEMS = [
   { head: "Profile", icon: MdPerson, iconColor: "#206CE1" },
+  { head: "Subscription", icon: FiCreditCard, iconColor: "#10B981" },
   { head: "Quiz Report", icon: GiNotebook, iconColor: "#00A8E6" },
   { head: "Children", icon: HiUserGroup, iconColor: "#2DD4A5" },
   { head: "Refer a Friend", icon: FaLink, iconColor: "#AE3DD6" },
@@ -47,6 +51,8 @@ const MyIgrade = () => {
     switch (profileState) {
       case "Profile":
         return <EditParent />;
+      case "Subscription":
+        return <ParentSubscriptionView />;
       case "Children":
         return <Children />;
       case "Quiz Report":

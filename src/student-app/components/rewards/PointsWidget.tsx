@@ -12,7 +12,6 @@ import {
   Input,
 } from "@chakra-ui/react";
 import { usePointsSystem } from "@/student-app/hooks/usePointsSystem";
-import { celebratePointsGained } from "@/student-app/components/rewards/pointsCelebrationStore";
 import {
   FiAward,
   FiZap,
@@ -39,6 +38,7 @@ export const PointsWidget: React.FC = () => {
   } = usePointsSystem();
 
   const [convertInput, setConvertInput] = useState<number>(100);
+  const [activeLedgerTab, setActiveLedgerTab] = useState<"points" | "credit">("points");
 
   const currentStreak = streakInfo?.current_streak_days || 1;
   const graceUsed = streakInfo?.grace_used_in_window;
@@ -53,37 +53,45 @@ export const PointsWidget: React.FC = () => {
     <Box
       bg="white"
       borderRadius="2xl"
-      p={{ base: 4, md: 6 }}
-      shadow="md"
+      p={{ base: 4, md: 7 }}
+      shadow="sm"
       border="1px solid"
       borderColor="gray.100"
       mb={6}
     >
-      {/* Header */}
+      {/* ── HEADER ── */}
       <Flex
         direction={{ base: "column", sm: "row" }}
         justify="space-between"
         align={{ base: "flex-start", sm: "center" }}
         gap={3}
-        pb={4}
+        pb={5}
         borderBottom="1px solid"
         borderColor="gray.100"
       >
         <HStack gap={3}>
-          <Box p={2.5} bg="#206CE11A" borderRadius="xl" color="primaryColor">
+          <Box
+            p={2.5}
+            borderRadius="xl"
+            bg="blue.50"
+            color="primaryColor"
+            display="flex"
+            alignItems="center"
+            justifyContent="center"
+          >
             <FiAward size={24} />
           </Box>
           <Box>
-            <HStack gap={2}>
-              <Heading size="md" color="primaryColor" fontWeight="extrabold">
-                iGrades Rewards & Subscription Credit
+            <HStack gap={2} mb={0.5}>
+              <Heading size="md" color="gray.900" fontWeight="800">
+                iGG Rewards & Store Credit
               </Heading>
-              <Badge bg="primaryColor" color="white" borderRadius="full" px={2.5} py={0.5} fontSize="10px">
-                iGG Points
+              <Badge bg="#206CE1" color="white" borderRadius="full" px={2.5} py={0.5} fontSize="10px" fontWeight="bold">
+                100% Free Perks
               </Badge>
             </HStack>
-            <Text fontSize="xs" color="gray.600">
-              Earn points for daily logins & quizzes, maintain streaks, and convert points to Naira (₦) subscription credit!
+            <Text fontSize="xs" color="gray.500">
+              Study, maintain your daily streak, and convert your points into real subscription discounts.
             </Text>
           </Box>
         </HStack>
@@ -91,273 +99,194 @@ export const PointsWidget: React.FC = () => {
         <HStack gap={2}>
           <Button
             size="xs"
-            variant="outline"
-            borderColor="amber.300"
-            color="amber.800"
-            bg="amber.50"
-            _hover={{ bg: "amber.100" }}
-            onClick={() => {
-              celebratePointsGained({
-                points: 25,
-                title: "🎉 Points Celebration!",
-                description: "This is the points gained celebration popup with confetti and sound animation!",
-                eventType: "bonus",
-                streakDays: streakData.currentStreak || 3,
-                milestonePoints: 10,
-                newBalance: pointsBalance + 25,
-              });
-            }}
-          >
-            🎉 Preview Popup
-          </Button>
-
-          <Button
-            size="xs"
             variant="ghost"
             color="primaryColor"
-            _hover={{ bg: "#206CE11A" }}
+            _hover={{ bg: "blue.50" }}
             onClick={() => fetchPointsData()}
             loading={loading}
+            borderRadius="lg"
+            fontWeight="bold"
           >
-            <FiRefreshCw size={14} /> Refresh
+            <FiRefreshCw size={13} style={{ marginRight: "4px" }} /> Refresh
           </Button>
         </HStack>
       </Flex>
 
-      {/* Primary Metrics Grid */}
+      {/* ── THREE MAIN OVERVIEW CARDS ── */}
       <Flex
         direction={{ base: "column", md: "row" }}
         gap={4}
         mt={5}
         align="stretch"
       >
-        {/* Card 1: Active Points Balance */}
+        {/* Card 1: Points Balance */}
         <Box
           flex="1"
-          p={4}
+          p={5}
           borderRadius="2xl"
-          bg="primaryColor"
-          bgGradient="linear(to-br, #206CE1, #134DB3)"
-          color="white"
-          shadow="md"
-          position="relative"
-          overflow="hidden"
-        >
-          <Box position="absolute" right="-10px" bottom="-10px" opacity={0.15}>
-            <FiAward size={110} />
-          </Box>
-          <Text fontSize="xs" fontWeight="semibold" color="blue.100" textTransform="uppercase" letterSpacing="wider">
-            Active Points Balance
-          </Text>
-          <Heading size="2xl" my={1} fontWeight="black" color="white">
-            {pointsBalance.toLocaleString()}{" "}
-            <Text as="span" fontSize="md" fontWeight="normal" color="blue.200">
-              IGG Pts
-            </Text>
-          </Heading>
-          <Text fontSize="11px" color="blue.100" mt={1}>
-            Value: ₦{(pointsBalance * 10).toLocaleString()} Subscription Credit
-          </Text>
-        </Box>
-
-        {/* Card 2: Active Subscription Credit */}
-        <Box
-          flex="1"
-          p={4}
-          borderRadius="2xl"
-          bgGradient="linear(to-br, emerald.600, teal.700)"
+          bg="linear-gradient(135deg, #206CE1 0%, #154EB8 100%)"
           color="white"
           shadow="sm"
           position="relative"
           overflow="hidden"
         >
-          <Box position="absolute" right="-10px" bottom="-10px" opacity={0.15}>
-            <FiCreditCard size={110} />
+          <Box position="absolute" right="-8px" bottom="-8px" opacity={0.12} color="white">
+            <FiAward size={100} />
           </Box>
-          <Text fontSize="xs" fontWeight="semibold" color="emerald.100" textTransform="uppercase" letterSpacing="wider">
-            Subscription Store Credit
+          <Text fontSize="xs" fontWeight="700" color="blue.100" textTransform="uppercase" letterSpacing="wider">
+            iGG Points Balance
           </Text>
-          <Heading size="2xl" my={1} fontWeight="black" color="white">
-            ₦{creditBalance.toLocaleString()}
+          <Heading size="2xl" my={1.5} fontWeight="900" color="white">
+            {pointsBalance.toLocaleString()}{" "}
+            <Text as="span" fontSize="sm" fontWeight="normal" color="blue.200">
+              Pts
+            </Text>
           </Heading>
-          <Text fontSize="11px" color="emerald.100" mt={1}>
-            Ready to apply at checkout for subscription renewals!
+          <Text fontSize="xs" color="blue.100">
+            Worth <strong>₦{(pointsBalance * 10).toLocaleString()}</strong> store discount
           </Text>
         </Box>
 
-        {/* Card 3: Learning Streak */}
+        {/* Card 2: Store Credit */}
         <Box
           flex="1"
-          p={4}
+          p={5}
           borderRadius="2xl"
-          bg="amber.50"
+          bg="emerald.50/50"
+          border="1px solid"
+          borderColor="emerald.200"
+          position="relative"
+          overflow="hidden"
+        >
+          <Box position="absolute" right="-8px" bottom="-8px" opacity={0.1} color="emerald.700">
+            <FiCreditCard size={100} />
+          </Box>
+          <Text fontSize="xs" fontWeight="700" color="emerald.800" textTransform="uppercase" letterSpacing="wider">
+            Available Store Credit
+          </Text>
+          <Heading size="2xl" my={1.5} fontWeight="900" color="emerald.900">
+            ₦{creditBalance.toLocaleString()}
+          </Heading>
+          <Text fontSize="xs" color="emerald.700">
+            Automatically deducted when upgrading or renewing
+          </Text>
+        </Box>
+
+        {/* Card 3: Daily Streak */}
+        <Box
+          flex="1"
+          p={5}
+          borderRadius="2xl"
+          bg="amber.50/60"
           border="1px solid"
           borderColor="amber.200"
-          shadow="xs"
         >
           <Flex justify="space-between" align="center">
-            <Text fontSize="xs" fontWeight="bold" color="amber.900" textTransform="uppercase" letterSpacing="wider">
-              Learning Streak
+            <Text fontSize="xs" fontWeight="700" color="amber.900" textTransform="uppercase" letterSpacing="wider">
+              Study Streak
             </Text>
             <IoFlame color="#D97706" size={22} />
           </Flex>
-          <Heading size="2xl" my={1} fontWeight="black" color="amber.900">
+          <Heading size="2xl" my={1.5} fontWeight="900" color="amber.900">
             {currentStreak}{" "}
-            <Text as="span" fontSize="md" fontWeight="normal" color="amber.700">
+            <Text as="span" fontSize="sm" fontWeight="normal" color="amber.700">
               Days
             </Text>
           </Heading>
-          <HStack gap={1} mt={1}>
-            <FiShield color="#B45309" size={14} />
-            <Text fontSize="11px" color="amber.800" fontWeight="medium">
-              {graceUsed
-                ? "Grace Used (1 missed day covered in window)"
-                : "Grace Available (1 missed day protected in 7-day window)"}
+          <HStack gap={1}>
+            <FiShield color="#B45309" size={13} />
+            <Text fontSize="xs" color="amber.800">
+              {graceUsed ? "1 grace day protected" : "Streak protection active"}
             </Text>
           </HStack>
         </Box>
       </Flex>
 
-      {/* Earning Rules & Conversion Bar */}
+      {/* ── TWO-COLUMN INTERACTIVE SECTION: CONVERSION & RULES ── */}
       <Flex
         direction={{ base: "column", lg: "row" }}
         gap={5}
         mt={6}
         align="stretch"
       >
-        {/* Left: Earning Rules & Daily Cap */}
-        <Box flex="1.2" p={4} bg="gray.50" borderRadius="2xl" border="1px solid" borderColor="gray.100">
-          <Flex justify="space-between" align="center" mb={3}>
-            <Heading size="xs" color="primaryColor" fontWeight="bold">
-              📊 Daily Earning Tracker (WAT UTC+1)
-            </Heading>
-            <Text fontSize="xs" fontWeight="bold" color={dailyEarned >= 100 ? "emerald.600" : "primaryColor"}>
-              {dailyEarned} / 100 Pts Earned Today
-            </Text>
-          </Flex>
-
-          <Progress.Root value={Math.min(100, dailyEarned)} size="sm" colorPalette="blue" mb={3}>
-            <Progress.Track borderRadius="full" bg="gray.200">
-              <Progress.Range borderRadius="full" bg="primaryColor" />
-            </Progress.Track>
-          </Progress.Root>
-
-          <Stack gap={2.5}>
-            <HStack justify="space-between" p={2} bg="white" borderRadius="lg" border="1px solid" borderColor="gray.100">
-              <HStack gap={2}>
-                <FiCheckCircle color="#206CE1" size={16} />
-                <Text fontSize="xs" fontWeight="medium" color="gray.800">
-                  Daily Login Bonus
-                </Text>
-              </HStack>
-              <Badge bg="#206CE11A" color="primaryColor" variant="subtle">
-                +5 Pts / day
-              </Badge>
-            </HStack>
-
-            <HStack justify="space-between" p={2} bg="white" borderRadius="lg" border="1px solid" borderColor="gray.100">
-              <HStack gap={2}>
-                <FiCheckCircle color="#206CE1" size={16} />
-                <Box>
-                  <Text fontSize="xs" fontWeight="medium" color="gray.800">
-                    Quiz First Attempt (Score Bands)
-                  </Text>
-                  <Text fontSize="10px" color="gray.500">
-                    ≥80%: +30 Pts | 50-79%: +20 Pts | &lt;50%: +10 Pts
-                  </Text>
-                </Box>
-              </HStack>
-              <Badge colorPalette="blue" variant="subtle">
-                First Attempt Only
-              </Badge>
-            </HStack>
-
-            <HStack justify="space-between" p={2} bg="amber.50" borderRadius="lg" border="1px solid" borderColor="amber.200">
-              <HStack gap={2}>
-                <FiGift color="#D97706" size={16} />
-                <Box>
-                  <Text fontSize="xs" fontWeight="bold" color="amber.900">
-                    Streak Bonus Milestones (Exempt from daily cap!)
-                  </Text>
-                  <Text fontSize="10px" color="amber.700">
-                    7-Day Streak = +50 Pts | 30-Day Streak = +250 Pts
-                  </Text>
-                </Box>
-              </HStack>
-              <Badge colorPalette="amber" variant="solid">
-                Exempt
-              </Badge>
-            </HStack>
-          </Stack>
-        </Box>
-
-        {/* Right: Convert Points to Naira Credit Calculator */}
+        {/* Left: Simple Conversion Panel */}
         <Box
           flex="1"
-          p={4}
-          bg="#206CE108"
+          p={5}
+          bg="blue.50/30"
           borderRadius="2xl"
-          border="1px solid"
-          borderColor="blue.200"
+          border="1.5px solid"
+          borderColor="blue.100"
           display="flex"
           flexDirection="column"
           justifyContent="space-between"
         >
           <Box>
-            <HStack gap={2} mb={1}>
-              <FiZap color="#206CE1" size={18} />
-              <Heading size="xs" color="primaryColor" fontWeight="extrabold">
-                Convert Points to Naira Credit
-              </Heading>
-            </HStack>
-            <Text fontSize="xs" color="gray.600" mb={3}>
-              Conversion Rate: <Text as="span" fontWeight="bold" color="primaryColor">100 Points = ₦1,000 Store Credit</Text> (Minimum threshold: 100 pts)
+            <Flex justify="space-between" align="center" mb={2}>
+              <HStack gap={2}>
+                <Box p={1.5} bg="blue.100" borderRadius="lg" color="primaryColor">
+                  <FiZap size={16} />
+                </Box>
+                <Heading size="xs" color="gray.900" fontWeight="800">
+                  Convert Points to Naira Credit
+                </Heading>
+              </HStack>
+              <Badge colorPalette="blue" size="xs" variant="subtle" fontWeight="bold">
+                100 Pts = ₦1,000
+              </Badge>
+            </Flex>
+            <Text fontSize="xs" color="gray.600" mb={4}>
+              Pick an amount or type in points (multiples of 100) to instantly redeem store credit.
             </Text>
 
-            {/* Presets */}
-            <HStack gap={2} mb={3}>
+            {/* Quick Preset Buttons */}
+            <HStack gap={2} mb={3.5} flexWrap="wrap">
               {[100, 200, 500, 1000].map((preset) => (
                 <Button
                   key={preset}
                   size="xs"
                   variant={convertInput === preset ? "solid" : "outline"}
-                  colorPalette="blue"
-                  bg={convertInput === preset ? "primaryColor" : undefined}
-                  borderRadius="lg"
+                  bg={convertInput === preset ? "#206CE1" : "white"}
+                  color={convertInput === preset ? "white" : "gray.700"}
+                  borderColor={convertInput === preset ? "#206CE1" : "gray.200"}
+                  _hover={{ bg: convertInput === preset ? "#1852B2" : "gray.50" }}
+                  borderRadius="xl"
+                  fontWeight="bold"
+                  px={3}
                   onClick={() => setConvertInput(preset)}
                 >
-                  {preset} Pts
+                  {preset} Pts (₦{(preset * 10).toLocaleString()})
                 </Button>
               ))}
             </HStack>
 
             <form onSubmit={handleConversionSubmit}>
               <Box mb={3}>
-                <Text fontSize="11px" fontWeight="semibold" color="gray.700" mb={1}>
-                  Select or Enter Points to Convert:
+                <Text fontSize="11px" fontWeight="700" color="gray.700" mb={1}>
+                  Points to Convert:
                 </Text>
                 <Input
                   type="number"
                   step={100}
                   min={100}
                   value={convertInput}
-                  onChange={(e) => setConvertInput(Number(e.target.value))}
+                  onChange={(e) => setConvertInput(Math.max(100, Number(e.target.value)))}
                   bg="white"
-                  borderColor="blue.200"
-                  _focus={{ borderColor: "primaryColor" }}
+                  borderColor="gray.200"
+                  _focus={{ borderColor: "primaryColor", boxShadow: "0 0 0 1px #206CE1" }}
                   borderRadius="xl"
                   size="sm"
                   fontWeight="bold"
                 />
               </Box>
 
-              <Box p={2.5} bg="white" borderRadius="xl" border="1px solid" borderColor="blue.100" mb={3}>
+              <Box p={3} bg="white" borderRadius="xl" border="1px solid" borderColor="blue.100" mb={4}>
                 <Flex justify="space-between" align="center">
                   <Text fontSize="xs" color="gray.600">
                     You will receive:
                   </Text>
-                  <Text fontSize="md" fontWeight="black" color="emerald.600">
-                    ₦{(convertInput * 10).toLocaleString()} Store Credit
+                  <Text fontSize="md" fontWeight="900" color="emerald.600">
+                    +₦{(convertInput * 10).toLocaleString()} Store Credit
                   </Text>
                 </Flex>
               </Box>
@@ -365,10 +294,12 @@ export const PointsWidget: React.FC = () => {
               <Button
                 type="submit"
                 w="full"
-                bg="primaryColor"
+                bg="#206CE1"
                 color="white"
                 _hover={{ bg: "#1852B2" }}
                 borderRadius="xl"
+                size="sm"
+                fontWeight="bold"
                 loading={actionLoading}
                 disabled={pointsBalance < convertInput || actionLoading}
               >
@@ -377,27 +308,122 @@ export const PointsWidget: React.FC = () => {
             </form>
           </Box>
 
-          <Text fontSize="10px" color="gray.500" textAlign="center" mt={3}>
-            🔒 Conversion is atomic and irreversible. Credit applies directly to future subscription billing.
+          <Text fontSize="10px" color="gray.400" textAlign="center" mt={3}>
+            Instant redemption. Converted credit never expires and applies to your next checkout.
           </Text>
+        </Box>
+
+        {/* Right: How to Earn Points Clean Card */}
+        <Box flex="1" p={5} bg="gray.50" borderRadius="2xl" border="1px solid" borderColor="gray.100">
+          <Flex justify="space-between" align="center" mb={3}>
+            <Heading size="xs" color="gray.900" fontWeight="800">
+              🎯 How You Earn Points
+            </Heading>
+            <Badge colorPalette={dailyEarned >= 100 ? "green" : "blue"} size="xs" variant="solid" borderRadius="full">
+              {dailyEarned}/100 Pts Today
+            </Badge>
+          </Flex>
+
+          <Progress.Root value={Math.min(100, dailyEarned)} size="xs" colorPalette="blue" mb={4}>
+            <Progress.Track borderRadius="full" bg="gray.200">
+              <Progress.Range borderRadius="full" bg="#206CE1" />
+            </Progress.Track>
+          </Progress.Root>
+
+          <Stack gap={2.5}>
+            <HStack justify="space-between" p={3} bg="white" borderRadius="xl" border="1px solid" borderColor="gray.100">
+              <HStack gap={2.5}>
+                <FiCheckCircle color="#206CE1" size={17} />
+                <Box>
+                  <Text fontSize="xs" fontWeight="700" color="gray.800">
+                    Daily Login
+                  </Text>
+                  <Text fontSize="10px" color="gray.500">
+                    Log in once every 24 hours
+                  </Text>
+                </Box>
+              </HStack>
+              <Badge bg="blue.50" color="primaryColor" fontWeight="bold" size="sm" borderRadius="md">
+                +5 Pts
+              </Badge>
+            </HStack>
+
+            <HStack justify="space-between" p={3} bg="white" borderRadius="xl" border="1px solid" borderColor="gray.100">
+              <HStack gap={2.5}>
+                <FiCheckCircle color="#206CE1" size={17} />
+                <Box>
+                  <Text fontSize="xs" fontWeight="700" color="gray.800">
+                    Quiz Completion
+                  </Text>
+                  <Text fontSize="10px" color="gray.500">
+                    Score ≥80%: +30 Pts | 50–79%: +20 Pts
+                  </Text>
+                </Box>
+              </HStack>
+              <Badge bg="blue.50" color="primaryColor" fontWeight="bold" size="sm" borderRadius="md">
+                Up to +30 Pts
+              </Badge>
+            </HStack>
+
+            <HStack justify="space-between" p={3} bg="white" borderRadius="xl" border="1px solid" borderColor="gray.100">
+              <HStack gap={2.5}>
+                <FiGift color="#D97706" size={17} />
+                <Box>
+                  <Text fontSize="xs" fontWeight="700" color="gray.800">
+                    Streak Milestones
+                  </Text>
+                  <Text fontSize="10px" color="gray.500">
+                    7 Days: +50 Pts | 30 Days: +250 Pts
+                  </Text>
+                </Box>
+              </HStack>
+              <Badge bg="amber.100" color="amber.900" fontWeight="bold" size="sm" borderRadius="md">
+                Bonus Perks
+              </Badge>
+            </HStack>
+          </Stack>
         </Box>
       </Flex>
 
-      {/* Ledger History Tables */}
-      <Box mt={6} pt={4} borderTop="1px solid" borderColor="gray.100">
-        <Heading size="xs" color="primaryColor" fontWeight="bold" mb={3}>
-          📋 Recent Points & Credit Ledger History
-        </Heading>
+      {/* ── CLEAN TABBED LEDGER HISTORY ── */}
+      <Box mt={6} pt={5} borderTop="1px solid" borderColor="gray.100">
+        <Flex justify="space-between" align="center" mb={3.5} flexWrap="wrap" gap={2}>
+          <Heading size="xs" color="gray.900" fontWeight="800">
+            Recent Activity Ledger
+          </Heading>
+          <HStack gap={1.5} bg="gray.100" p={1} borderRadius="xl">
+            <Button
+              size="xs"
+              variant={activeLedgerTab === "points" ? "solid" : "ghost"}
+              bg={activeLedgerTab === "points" ? "white" : "transparent"}
+              color={activeLedgerTab === "points" ? "gray.900" : "gray.500"}
+              shadow={activeLedgerTab === "points" ? "xs" : "none"}
+              borderRadius="lg"
+              fontWeight="bold"
+              onClick={() => setActiveLedgerTab("points")}
+            >
+              Points History ({pointsHistory.length})
+            </Button>
+            <Button
+              size="xs"
+              variant={activeLedgerTab === "credit" ? "solid" : "ghost"}
+              bg={activeLedgerTab === "credit" ? "white" : "transparent"}
+              color={activeLedgerTab === "credit" ? "gray.900" : "gray.500"}
+              shadow={activeLedgerTab === "credit" ? "xs" : "none"}
+              borderRadius="lg"
+              fontWeight="bold"
+              onClick={() => setActiveLedgerTab("credit")}
+            >
+              Credit History ({creditHistory.length})
+            </Button>
+          </HStack>
+        </Flex>
 
-        <Flex direction={{ base: "column", lg: "row" }} gap={4}>
-          {/* Points Transactions */}
-          <Box flex="1" bg="gray.50" p={3} borderRadius="xl" border="1px solid" borderColor="gray.100">
-            <Text fontSize="xs" fontWeight="bold" color="primaryColor" mb={2}>
-              Points Earned / Expired Ledger
-            </Text>
+        {activeLedgerTab === "points" ? (
+          <Box bg="gray.50" p={3} borderRadius="2xl" border="1px solid" borderColor="gray.100">
             {pointsHistory.length === 0 ? (
-              <Text fontSize="xs" color="gray.500" py={4} textAlign="center">
-                No points history recorded yet. Complete quizzes & log in daily to earn!
+              <Text fontSize="xs" color="gray.400" py={6} textAlign="center">
+                No points history recorded yet. Complete quizzes & log in daily to earn points!
               </Text>
             ) : (
               <Stack gap={1.5} maxH="220px" overflowY="auto">
@@ -406,15 +432,15 @@ export const PointsWidget: React.FC = () => {
                     key={pt.id}
                     justify="space-between"
                     align="center"
-                    p={2}
+                    p={2.5}
                     bg="white"
-                    borderRadius="lg"
+                    borderRadius="xl"
                     fontSize="xs"
                     border="1px solid"
                     borderColor="gray.100"
                   >
                     <Box>
-                      <Text fontWeight="semibold" color="gray.800" textTransform="capitalize">
+                      <Text fontWeight="700" color="gray.800" textTransform="capitalize">
                         {pt.type.replace(/_/g, " ")}
                       </Text>
                       <Text fontSize="10px" color="gray.400">
@@ -426,6 +452,7 @@ export const PointsWidget: React.FC = () => {
                       colorPalette={pt.points > 0 ? "emerald" : "red"}
                       variant="solid"
                       borderRadius="md"
+                      fontWeight="bold"
                     >
                       {pt.points > 0 ? `+${pt.points}` : pt.points} Pts
                     </Badge>
@@ -434,14 +461,10 @@ export const PointsWidget: React.FC = () => {
               </Stack>
             )}
           </Box>
-
-          {/* Credit Transactions */}
-          <Box flex="1" bg="gray.50" p={3} borderRadius="xl" border="1px solid" borderColor="gray.100">
-            <Text fontSize="xs" fontWeight="bold" color="emerald.900" mb={2}>
-              Naira (₦) Store Credit Ledger
-            </Text>
+        ) : (
+          <Box bg="gray.50" p={3} borderRadius="2xl" border="1px solid" borderColor="gray.100">
             {creditHistory.length === 0 ? (
-              <Text fontSize="xs" color="gray.500" py={4} textAlign="center">
+              <Text fontSize="xs" color="gray.400" py={6} textAlign="center">
                 No credit history recorded yet. Convert points to see store credit here!
               </Text>
             ) : (
@@ -451,15 +474,15 @@ export const PointsWidget: React.FC = () => {
                     key={cr.id}
                     justify="space-between"
                     align="center"
-                    p={2}
+                    p={2.5}
                     bg="white"
-                    borderRadius="lg"
+                    borderRadius="xl"
                     fontSize="xs"
                     border="1px solid"
                     borderColor="gray.100"
                   >
                     <Box>
-                      <Text fontWeight="semibold" color="gray.800" textTransform="capitalize">
+                      <Text fontWeight="700" color="gray.800" textTransform="capitalize">
                         {cr.type.replace(/_/g, " ")}
                       </Text>
                       <Text fontSize="10px" color="gray.400">
@@ -470,6 +493,7 @@ export const PointsWidget: React.FC = () => {
                       colorPalette={cr.amount_naira > 0 ? "emerald" : "orange"}
                       variant="solid"
                       borderRadius="md"
+                      fontWeight="bold"
                     >
                       {cr.amount_naira > 0 ? `+₦${cr.amount_naira.toLocaleString()}` : `-₦${Math.abs(cr.amount_naira).toLocaleString()}`}
                     </Badge>
@@ -478,7 +502,7 @@ export const PointsWidget: React.FC = () => {
               </Stack>
             )}
           </Box>
-        </Flex>
+        )}
       </Box>
     </Box>
   );

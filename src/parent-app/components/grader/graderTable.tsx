@@ -1,19 +1,19 @@
 import { useState } from "react";
-import { Table, Flex, Box, Text, Image } from "@chakra-ui/react";
-import { GoDotFill } from "react-icons/go";
+import { Table, Box, Text, Badge, Button, Icon } from "@chakra-ui/react";
 import AvatarComp from "@/components/avatar";
 import MenuModal from "../menuModal";
 import EditGraderPopup from "./editGraderPopover";
 import DeleteGraderPopover from "./deleteGraderPopover";
 import { ParentClassChangeModal } from "./ParentClassChangeModal";
-import addFiles_img from "@/assets/addFiles_img.svg";
 import { useStudentsData } from "../../context/studentsDataContext";
+import { PiGraduationCapFill, PiUserPlusBold } from "react-icons/pi";
 
 type Props = {
   studentsData: any[];
+  onOpenAdd?: () => void;
 };
 
-const GraderTable = ({ studentsData }: Props) => {
+const GraderTable = ({ studentsData, onOpenAdd }: Props) => {
   const [modal, setModal] = useState<"" | "edit" | "delete" | "class_change">("");
   const [selectedStudent, setSelectedStudent] = useState<any | null>(null);
   const { fetchStudents } = useStudentsData();
@@ -21,118 +21,155 @@ const GraderTable = ({ studentsData }: Props) => {
   return (
     <>
       <Box
-        borderRadius="lg"
-        boxShadow="md"
+        borderRadius="2xl"
+        boxShadow="sm"
+        border="1px solid"
+        borderColor="gray.100"
         overflow="hidden"
-        p={{ base: 3, md: 6 }}
         bg="white"
         mb={{ base: "100px", lg: "10" }}
-        mt={5}
       >
         {studentsData.length > 0 ? (
-          <Table.ScrollArea border="1px solid" borderColor="gray.100" borderRadius="md">
-            <Table.Root size={{ base: "sm", md: "lg" }} stickyHeader>
+          <Table.ScrollArea>
+            <Table.Root size={{ base: "sm", md: "md" }} stickyHeader>
               <Table.Header>
-                <Table.Row bg="gray.50">
-                  <Table.ColumnHeader w="50px"></Table.ColumnHeader>
+                <Table.Row bg="gray.50/80">
+                  <Table.ColumnHeader w="60px" py={3.5} px={4}></Table.ColumnHeader>
                   <Table.ColumnHeader
-                    color="on_backgroundColor"
+                    color="gray.700"
                     fontSize="xs"
-                    fontWeight={700}
-                    whiteSpace="nowrap"
+                    fontWeight={800}
+                    textTransform="uppercase"
+                    letterSpacing="wider"
+                    py={3.5}
                   >
-                    Name
+                    Student Details
                   </Table.ColumnHeader>
                   <Table.ColumnHeader
-                    color="on_backgroundColor"
+                    color="gray.700"
                     fontSize="xs"
-                    fontWeight={700}
-                    whiteSpace="nowrap"
+                    fontWeight={800}
+                    textTransform="uppercase"
+                    letterSpacing="wider"
+                    py={3.5}
                   >
-                    School
+                    Academic Institution
                   </Table.ColumnHeader>
                   <Table.ColumnHeader
-                    color="on_backgroundColor"
+                    color="gray.700"
                     fontSize="xs"
-                    fontWeight={700}
-                    whiteSpace="nowrap"
+                    fontWeight={800}
+                    textTransform="uppercase"
+                    letterSpacing="wider"
+                    py={3.5}
                   >
-                    Class
+                    Class & Level
                   </Table.ColumnHeader>
                   <Table.ColumnHeader
-                    color="on_backgroundColor"
+                    color="gray.700"
                     fontSize="xs"
-                    fontWeight={700}
-                    whiteSpace="nowrap"
+                    fontWeight={800}
+                    textTransform="uppercase"
+                    letterSpacing="wider"
+                    py={3.5}
                   >
-                    Subscription
+                    Curriculum Tier
                   </Table.ColumnHeader>
-                  <Table.ColumnHeader w="50px"></Table.ColumnHeader>
+                  <Table.ColumnHeader w="60px" py={3.5} textAlign="right" px={4}>
+                    Actions
+                  </Table.ColumnHeader>
                 </Table.Row>
               </Table.Header>
               <Table.Body>
-                {studentsData.map((item) => (
-                  <Table.Row key={item.id} _hover={{ bg: "gray.50" }}>
-                    <Table.Cell>
-                      <AvatarComp
-                        username={`${item.firstname ?? ""} ${item.lastname ?? ""}`}
-                        profileImage={item.profile_image}
-                      />
-                    </Table.Cell>
+                {studentsData.map((item) => {
+                  const subLower = (item.subscription || "basic").toLowerCase();
+                  const isPremium = subLower.includes("premium");
+                  const isStandard = subLower.includes("standard");
 
-                    <Table.Cell
-                      color="backgrondColor2"
-                      fontSize="xs"
-                      fontWeight={500}
-                      whiteSpace="nowrap"
+                  return (
+                    <Table.Row
+                      key={item.id}
+                      _hover={{ bg: "blue.50/30" }}
+                      transition="background-color 0.15s ease"
+                      borderBottom="1px solid"
+                      borderColor="gray.100"
                     >
-                      {item.firstname} {item.lastname}
-                    </Table.Cell>
-                    <Table.Cell
-                      color="on_containerColor"
-                      fontWeight={400}
-                      fontSize="xs"
-                      maxW="200px"
-                      truncate 
-                    >
-                      {item.school}
-                    </Table.Cell>
-                    <Table.Cell
-                      color="on_containerColor"
-                      fontWeight={400}
-                      fontSize="xs"
-                      textTransform="capitalize"
-                    >
-                      {item.class}
-                    </Table.Cell>
-                    <Table.Cell
-                      color="on_containerColor"
-                      fontWeight={400}
-                      fontSize="xs"
-                    >
-                      <Flex align="center" gap="2">
-                        <GoDotFill 
-                          color={
-                            item.subscription === "Premium" ? "green" : 
-                            item.subscription === "Standard" ? "blue" : "yellow"
-                          } 
+                      <Table.Cell px={4} py={3}>
+                        <AvatarComp
+                          username={`${item.firstname ?? ""} ${item.lastname ?? ""}`}
+                          profileImage={item.profile_image}
                         />
-                        {item.subscription || "Basic"}
-                      </Flex>
-                    </Table.Cell>
-                    <Table.Cell>
-                      <MenuModal
-                        editText="Edit"
-                        deleteText="Delete"
-                        setModal={setModal}
-                        onSelect={(type) => {
-                          setSelectedStudent(item);
-                          setModal(type);
-                        }}
-                      />
-                    </Table.Cell>
-                  </Table.Row>
-                ))}
+                      </Table.Cell>
+
+                      <Table.Cell py={3}>
+                        <Box>
+                          <Text
+                            color="gray.900"
+                            fontSize="sm"
+                            fontWeight={700}
+                            whiteSpace="nowrap"
+                          >
+                            {item.firstname} {item.lastname}
+                          </Text>
+                          <Text fontSize="11px" color="gray.400" truncate maxW="180px">
+                            {item.email || "Student account"}
+                          </Text>
+                        </Box>
+                      </Table.Cell>
+
+                      <Table.Cell py={3}>
+                        <Text
+                          color="gray.700"
+                          fontWeight={500}
+                          fontSize="xs"
+                          maxW="220px"
+                          truncate 
+                        >
+                          {item.school || "Not specified"}
+                        </Text>
+                      </Table.Cell>
+
+                      <Table.Cell py={3}>
+                        <Badge
+                          variant="subtle"
+                          colorPalette="blue"
+                          size="sm"
+                          borderRadius="lg"
+                          fontWeight="bold"
+                          textTransform="capitalize"
+                        >
+                          {item.class || "General"}
+                        </Badge>
+                      </Table.Cell>
+
+                      <Table.Cell py={3}>
+                        <Badge
+                          bg={isPremium || isStandard ? "#206CE1" : "gray.100"}
+                          color={isPremium || isStandard ? "white" : "gray.700"}
+                          size="sm"
+                          borderRadius="full"
+                          px={2.5}
+                          py={0.5}
+                          fontWeight="bold"
+                        >
+                          {item.subscription || "Basic Tier"}
+                        </Badge>
+                      </Table.Cell>
+
+                      <Table.Cell py={3} px={4} textAlign="right">
+                        <MenuModal
+                          editText="Edit Details"
+                          deleteText="Remove Child"
+                          setModal={setModal}
+                          onSelect={(type) => {
+                            setSelectedStudent(item);
+                            setModal(type);
+                          }}
+                        />
+                      </Table.Cell>
+                    </Table.Row>
+                  );
+                })}
               </Table.Body>
             </Table.Root>
           </Table.ScrollArea>
@@ -143,17 +180,38 @@ const GraderTable = ({ studentsData }: Props) => {
             flexDirection="column"
             alignItems="center"
             textAlign="center"
+            py={14}
             px={4}
           >
-            <Text my={10} fontSize="sm" color="fieldTextColor">
-              You have not added any child yet. Click the button above to add a child.
+            <Box
+              p={4}
+              borderRadius="2xl"
+              bg="blue.50"
+              color="#206CE1"
+              mb={3}
+            >
+              <PiGraduationCapFill size={40} />
+            </Box>
+            <Heading size="sm" color="gray.900" fontWeight="800" mb={1}>
+              No Connected Children Yet
+            </Heading>
+            <Text fontSize="xs" color="gray.500" maxW="360px" mb={5}>
+              Connect your child to track quiz progress, monitor curriculum pacing, and view learning intelligence reports.
             </Text>
-            <Image 
-              src={addFiles_img} 
-              w={{ base: "80%", md: "35%", lg: "20%" }} 
-              opacity={0.8} 
-              mb={10}
-            />
+            {onOpenAdd && (
+              <Button
+                bg="#206CE1"
+                color="white"
+                _hover={{ bg: "#1852B2" }}
+                borderRadius="xl"
+                size="sm"
+                fontWeight="bold"
+                onClick={onOpenAdd}
+              >
+                <Icon as={PiUserPlusBold} mr={1.5} />
+                Add Your Child Now
+              </Button>
+            )}
           </Box>
         )}
       </Box>

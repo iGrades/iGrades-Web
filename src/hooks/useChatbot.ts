@@ -5,6 +5,13 @@ import { useAuthdStudentData } from "@/student-app/context/studentDataContext";
 import { useLocation } from "react-router-dom";
 import { useSparkStore, type TutoringState } from "@/store/useSparkStore";
 import { useLearningIntelligence } from "@/services/learningIntelligence";
+import {
+  normalizePlan,
+  getTodaySparkCount,
+  setTodaySparkCount,
+  getSparkDailyLimit,
+  checkSparkDailyUsageAccess,
+} from "@/services/subscriptionEntitlements";
 
 export interface Message {
   role: "user" | "assistant";
@@ -22,6 +29,28 @@ export const useChatbot = () => {
   const studentId = authdStudent?.id || "guest";
   const storageKey = `igrades_spark_chat_${studentId}`;
   const tutorStorageKey = `igrades_spark_tutor_state_${studentId}`;
+
+  const { effectivePlan } = normalizePlan(authdStudent?.subscription, authdStudent?.subscription_status);
+  const sparkDailyLimit = getSparkDailyLimit(effectivePlan);
+  const [sparkUsageCount, setSparkUsageCount] = useState<number>(() => getTodaySparkCount(authdStudent?.id));
+  const [limitModalOpen, setLimitModalOpen] = useState(false);
+
+  // Sync Spark usage count from server on mount
+  useEffect(() => {
+    if (authdStudent?.id) {
+      fetch(`/api/subscription/spark-usage-today/${authdStudent.id}`)
+        .then((res) => res.json())
+        .then((data) => {
+          if (typeof data.count === "number") {
+            setSparkUsageCount(data.count);
+            setTodaySparkCount(data.count, authdStudent.id);
+          }
+        })
+        .catch(() => {});
+    }
+  }, [authdStudent?.id]);
+
+  const isDailyLimitReached = sparkUsageCount >= sparkDailyLimit;
 
   const [messages, setMessages] = useState<Message[]>(() => {
     try {
@@ -161,6 +190,20 @@ export const useChatbot = () => {
     const trimmed = promptText.trim();
     if (!trimmed || isLoading) return;
 
+    // Check if daily limit reached prior to sending
+    if (sparkUsageCount >= sparkDailyLimit) {
+      const limitAccess = checkSparkDailyUsageAccess(effectivePlan, sparkUsageCount);
+      setMessages((prev) => [
+        ...prev,
+        {
+          role: "assistant",
+          content: limitAccess.reason || "You have reached your daily limit of Spark AI questions.",
+        },
+      ]);
+      setLimitModalOpen(true);
+      return;
+    }
+
     const userMessage: Message = { role: "user", content: trimmed };
     const updatedMessages = [...messages, userMessage];
     setMessages(updatedMessages);
@@ -214,7 +257,7 @@ export const useChatbot = () => {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(payload),
         });
-        if (localRes.ok) {
+        if (localRes.ok || localRes.status === 403) {
           response = localRes;
         }
       } catch {
@@ -241,6 +284,31 @@ export const useChatbot = () => {
       }
 
       const data = await response.json();
+
+      // Check if server indicated daily limit reached (HTTP 403)
+      if (response.status === 403 || data.limitReached) {
+        if (typeof data.currentCount === "number") {
+          setSparkUsageCount(data.currentCount);
+          setTodaySparkCount(data.currentCount, authdStudent?.id);
+        }
+        setMessages((prev) => [
+          ...prev,
+          {
+            role: "assistant",
+            content: data.reply || data.error || "You have reached your daily limit of Spark questions.",
+          },
+        ]);
+        setLimitModalOpen(true);
+        if (!isOpen) setHasUnread(true);
+        return;
+      }
+
+      // Sync updated count from successful response
+      if (data.sparkUsage?.count !== undefined) {
+        setSparkUsageCount(data.sparkUsage.count);
+        setTodaySparkCount(data.sparkUsage.count, authdStudent?.id);
+      }
+
       let reply =
         data.reply ||
         data.content?.find((b: any) => b.type === "text")?.text ||
@@ -296,7 +364,7 @@ export const useChatbot = () => {
     } finally {
       setIsLoading(false);
     }
-  }, [isLoading, messages, authdStudent?.id, studentName, studentGradeLevel, activeContext, tutoringState, isOpen, intelligence]);
+  }, [isLoading, messages, authdStudent?.id, studentName, studentGradeLevel, activeContext, tutoringState, isOpen, intelligence, sparkUsageCount, sparkDailyLimit, effectivePlan]);
 
   const sendMessage = useCallback(() => {
     executeSend(input);
@@ -351,6 +419,11 @@ export const useChatbot = () => {
     studentName,
     activeContext,
     tutoringState,
+    sparkUsageCount,
+    sparkDailyLimit,
+    isDailyLimitReached,
+    limitModalOpen,
+    effectivePlan,
     // Refs
     messagesEndRef,
     inputRef,
@@ -362,6 +435,7 @@ export const useChatbot = () => {
     clearContext,
     toggleOpen,
     setIsOpen,
+    setLimitModalOpen,
     handleKeyDown,
   };
 };

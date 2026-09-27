@@ -11,6 +11,8 @@ type Parent = {
   phone: string;
   profile_image?: string;
   user_id: string;
+  subscription?: string;
+  subscription_status?: string;
 };
 
 type UserContextType = {

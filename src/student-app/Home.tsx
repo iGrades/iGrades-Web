@@ -1,6 +1,6 @@
 import { Box, Flex } from "@chakra-ui/react";
 import { useNavigationStore } from "@/store/usenavigationStore";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useAuthdStudentData } from "@/student-app/context/studentDataContext";
 import { useNavigate, useLocation } from "react-router-dom";
 import { supabase } from "@/lib/supabaseClient";
@@ -84,6 +84,7 @@ const Home = () => {
   // Initialize page from URL on component mount
   // Define the StudentPage type if not already imported
   type StudentPage = "home" | "quiz" | "learn" | "rewards" | "settings";
+  const isInitializedRef = useRef<boolean>(false);
 
   useEffect(() => {
     const pageMap: Record<string, StudentPage> = {
@@ -128,10 +129,15 @@ const Home = () => {
         setStudentSettingsTab(targetTab);
       }
     }
+    isInitializedRef.current = true;
   }, []); // only run on mount
 
   // Update URL only when page changes (not from URL updates)
   useEffect(() => {
+    if (!isInitializedRef.current) {
+      return;
+    }
+
     if (authdStudent) {
       const studentFullName = getStudentFullName();
 

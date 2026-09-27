@@ -14,6 +14,7 @@ interface MonitoringViewProps {
   cheatingScore?: number;
   reportInfraction?: (type: any, message?: string) => void;
   proctorStatus?: AIProctoringStatus;
+  effectivePlan?: string;
 }
 
 export const MonitoringView = memo(({
@@ -24,6 +25,7 @@ export const MonitoringView = memo(({
   setWebcamNode,
   setScreenNode,
   proctorStatus,
+  effectivePlan,
 }: MonitoringViewProps) => {
   const getProctorBadge = () => {
     if (!proctorStatus || !proctorStatus.isModelReady) {
@@ -233,7 +235,7 @@ export const MonitoringView = memo(({
 
             {/* AI Vision & Head Pose Status */}
             <Box pt={1} borderTop="1px solid" borderColor="gray.100">
-              <HStack justify="space-between" align="center">
+              <HStack justify="space-between" align="center" mb={1}>
                 <Text fontSize="9px" fontWeight="bold" color="gray.600">
                   AI Proctor:
                 </Text>
@@ -251,6 +253,19 @@ export const MonitoringView = memo(({
                   }
                 >
                   {proctorBadge.label}
+                </Badge>
+              </HStack>
+              <HStack justify="space-between" align="center">
+                <Text fontSize="8px" color="gray.500">Tier:</Text>
+                <Badge
+                  size="xs"
+                  fontSize="7.5px"
+                  px={1}
+                  py={0}
+                  colorPalette={effectivePlan === "premium" ? "purple" : "blue"}
+                  variant="subtle"
+                >
+                  {effectivePlan === "premium" ? "Full Access (Premium)" : "Limited (Standard)"}
                 </Badge>
               </HStack>
             </Box>

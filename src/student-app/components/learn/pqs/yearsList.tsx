@@ -10,6 +10,9 @@ import {
 import { LuArrowLeft, LuDownload, LuEye } from "react-icons/lu";
 import { supabase } from "@/lib/supabaseClient";
 import { useState } from "react";
+import { useSubscriptionEntitlement } from "@/hooks/useSubscriptionEntitlement";
+import { UpgradePromptModal } from "@/components/subscription/UpgradePromptModal";
+import { LockedBadge } from "@/components/subscription/LockedBadge";
 
 type Props = {
   onBack: () => void;
@@ -26,7 +29,6 @@ interface PastQuestion {
   file_url: string;
   file_size?: number;
   created_at: string;
-  // We'll join with subjects table to get the subject name
   subjects?: {
     name: string;
   };
@@ -42,6 +44,14 @@ const YearsList = ({
   const [selectedYear, setSelectedYear] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
+  const {
+    effectivePlan,
+    verifyPQYear,
+    modalState,
+    promptUpgrade,
+    closeUpgradeModal,
+  } = useSubscriptionEntitlement();
+
   const pqYears = [
     "2024",
     "2023",
@@ -56,11 +66,21 @@ const YearsList = ({
   ];
 
   const handleYearClick = async (year: string) => {
+    // Entitlement check
+    const access = verifyPQYear(year);
+    if (!access.allowed) {
+      promptUpgrade(
+        `${selectedExam || "Examination"} Past Questions (${year})`,
+        access.requiredPlan,
+        access.reason || `Past questions for ${year} require a Standard or Premium plan. Upgrade to Standard (₦15,000) for full 10-year archives!`
+      );
+      return;
+    }
+
     setLoading(true);
     setSelectedYear(year);
 
     try {
-      // Now fetch past questions with the subject_id
       const { data: pqData, error: pqError } = await supabase
         .from("past_questions")
         .select("*")
@@ -76,7 +96,6 @@ const YearsList = ({
       if (pqData && pqData.length > 0) {
         setFetchedPQs(pqData);
       } else {
-        // Fallback for database alias naming (e.g. BECE, NABTEB, WAEC GCE)
         const aliases: string[] = [];
         if (selectedExam?.includes("BECE")) {
           aliases.push("BECE", "National BECE", "Junior WAEC", "State BECE");
@@ -134,15 +153,15 @@ const YearsList = ({
   };
 
   const formatFileSize = (bytes?: number) => {
-    if (!bytes) return "Unknown size";
-    if (bytes < 1024) return `${bytes} B`;
-    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
-    return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+    if (!bytes) return "Standard Size";
+    const sizes = ["Bytes", "KB", "MB", "GB"];
+    const i = Math.floor(Math.log(bytes) / Math.log(1024));
+    return `${(bytes / Math.pow(1024, i)).toFixed(2)} ${sizes[i]}`;
   };
 
   return (
-    <Box bg="white" rounded="lg" shadow="lg" p={4} mb={20} h="auto">
-      {/* Header with back button */}
+    <Box>
+      {/* Header */}
       <Heading
         as="h3"
         display="flex"
@@ -152,61 +171,76 @@ const YearsList = ({
         mt={3}
         mb={5}
         mx={2}
+        fontSize={{ base: "lg", md: "xl" }}
       >
         <LuArrowLeft
-          onClick={fetchedPQs.length > 0 ? handleBackToYears : onBack}
+          onClick={selectedYear ? handleBackToYears : onBack}
           style={{ cursor: "pointer" }}
         />
-        {fetchedPQs.length > 0
-          ? `${selectedYear} Past Questions`
-          : "Select Year"}
+        {selectedYear
+          ? `${selectedExam} ${selectedCourse} (${selectedYear})`
+          : `${selectedExam} ${selectedCourse} Past Questions`}
       </Heading>
 
-      {/* Display fetched Past Questions */}
-      {fetchedPQs.length > 0 ? (
+      {/* Content Area */}
+      {selectedYear ? (
+        /* Questions List for Selected Year */
         <Box>
           <VStack gap={4} align="stretch">
+            {fetchedPQs.length === 0 && !loading && (
+              <Box textAlign="center" py={10}>
+                <Text color="gray.500">
+                  No past questions found for {selectedExam} {selectedCourse} in {selectedYear}.
+                </Text>
+              </Box>
+            )}
+
             {fetchedPQs.map((pq) => (
               <Flex
                 key={pq.id}
-                direction={{ base: "column", md: "row" }}
-                p={4}
-                borderRadius="lg"
+                p={{ base: 4, md: 6 }}
                 bg="textFieldColor"
+                borderRadius="lg"
                 justify="space-between"
-                align={{ base: "flex-start", md: "center" }}
-                _hover={{ bg: "gray.100" }}
-                gap={4}
+                align="center"
+                _hover={{ boxShadow: "sm" }}
+                transition="all 0.2s"
+                direction={{ base: "column", sm: "row" }}
+                gap={{ base: 3, sm: 0 }}
               >
-                <Box flex={1}>
-                  <Text fontWeight="500" fontSize="md" mb={1} color="on_backgroundColor">
-                    {pq.subjects?.name || selectedCourse} - {pq.year}
+                <Box>
+                  <Text fontWeight="semibold" fontSize={{ base: "sm", md: "md" }}>
+                    {pq.exam_type} {pq.year} Past Questions
                   </Text>
-                  <Text fontSize="sm" color="gray.600">
-                    {pq.exam_type} • {pq.year}
-                    {pq.file_size && ` • ${formatFileSize(pq.file_size)}`}
+                  <Text fontSize="xs" color="gray.500" mt={1}>
+                    File size: {formatFileSize(pq.file_size)} • Uploaded:{" "}
+                    {new Date(pq.created_at).toLocaleDateString()}
                   </Text>
                 </Box>
 
-                <Flex gap={3}>
+                <Flex gap={2} mt={{ base: 2, sm: 0 }}>
                   <Link
                     href={getFileUrl(pq.file_url)}
                     target="_blank"
                     rel="noopener noreferrer"
-                    bg="white"
-                    border="1px solid"
-                    borderColor="primaryColor"
-                    color="primaryColor"
+                    bg="secondaryColor"
+                    color="white"
                     display="flex"
                     justifyContent={"center"}
+                    alignItems="center"
+                    gap={1.5}
                     textDecoration="none"
                     fontSize={{ base: "xs", md: "xs" }}
                     w={{ base: "28", md: "32" }}
                     p={{ base: 2, md: 3 }}
                     rounded={{ base: "lg", md: "3xl" }}
-                    onClick={() =>
-                      window.open(getFileUrl(pq.file_url), "_blank")
-                    }
+                    onClick={(e) => {
+                      const access = verifyPQYear(pq.year);
+                      if (!access.allowed) {
+                        e.preventDefault();
+                        promptUpgrade("Past Questions Viewer", access.requiredPlan, access.reason);
+                      }
+                    }}
                   >
                     View <LuEye size={16} />
                   </Link>
@@ -219,12 +253,21 @@ const YearsList = ({
                     color="white"
                     display="flex"
                     justifyContent={"center"}
+                    alignItems="center"
+                    gap={1.5}
                     textDecoration="none"
                     fontSize={{ base: "xs", md: "xs" }}
                     w={{ base: "28", md: "32" }}
                     p={{ base: 2, md: 3 }}
                     rounded={{ base: "lg", md: "3xl" }}
-                    onClick={(e) => e.stopPropagation()}
+                    onClick={(e) => {
+                      const access = verifyPQYear(pq.year);
+                      if (!access.allowed) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        promptUpgrade("Past Questions Download", access.requiredPlan, access.reason);
+                      }
+                    }}
                   >
                     Download <LuDownload size={16} />
                   </Link>
@@ -251,32 +294,55 @@ const YearsList = ({
             gap={{ base: 4, md: 6 }}
             py={{ base: 4, md: 6 }}
           >
-            {pqYears.map((year) => (
-              <Box
-                key={year}
-                bg="textFieldColor"
-                p={6}
-                borderRadius="lg"
-                cursor="pointer"
-                _hover={{
-                  boxShadow: "sm",
-                  bg: "blue.50",
-                  transform: "translateY(-2px)",
-                }}
-                textAlign="center"
-                onClick={() => handleYearClick(year)}
-                transition="all 0.2s"
-                opacity={loading ? 0.6 : 1}
-                pointerEvents={loading ? "none" : "auto"}
-              >
-                <Text fontWeight="medium" fontSize="lg">
-                  {year}
-                </Text>
-              </Box>
-            ))}
+            {pqYears.map((year) => {
+              const access = verifyPQYear(year);
+              const isLocked = !access.allowed;
+
+              return (
+                <Box
+                  key={year}
+                  bg={isLocked ? "gray.50" : "textFieldColor"}
+                  p={6}
+                  borderRadius="lg"
+                  cursor="pointer"
+                  border={isLocked ? "1px dashed" : "1px solid transparent"}
+                  borderColor={isLocked ? "orange.200" : "transparent"}
+                  _hover={{
+                    boxShadow: "sm",
+                    bg: isLocked ? "orange.50/50" : "blue.50",
+                    transform: "translateY(-2px)",
+                  }}
+                  textAlign="center"
+                  onClick={() => handleYearClick(year)}
+                  transition="all 0.2s"
+                  opacity={loading ? 0.6 : 1}
+                  pointerEvents={loading ? "none" : "auto"}
+                  position="relative"
+                >
+                  <Text fontWeight="semibold" fontSize="lg" color={isLocked ? "gray.700" : "gray.900"}>
+                    {year}
+                  </Text>
+                  {isLocked && (
+                    <Box mt={2} display="flex" justifyContent="center">
+                      <LockedBadge requiredPlan="standard" label="Standard" size="xs" variant="solid" />
+                    </Box>
+                  )}
+                </Box>
+              );
+            })}
           </Grid>
         </Box>
       )}
+
+      {/* Upgrade Prompt Modal */}
+      <UpgradePromptModal
+        isOpen={modalState.isOpen}
+        onClose={closeUpgradeModal}
+        featureName={modalState.featureName}
+        requiredPlan={modalState.requiredPlan}
+        reason={modalState.reason}
+        currentPlan={effectivePlan}
+      />
     </Box>
   );
 };

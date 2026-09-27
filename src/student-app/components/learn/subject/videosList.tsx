@@ -14,9 +14,12 @@ import {
   HStack,
 } from "@chakra-ui/react";
 import { useAuthdStudentData } from "@/student-app/context/studentDataContext";
-import { LuArrowLeft, LuPlay } from "react-icons/lu";
+import { LuArrowLeft, LuPlay, LuLock } from "react-icons/lu";
 import { useState, useRef } from "react";
 import { supabase } from "@/lib/supabaseClient";
+import { useSubscriptionEntitlement } from "@/hooks/useSubscriptionEntitlement";
+import { UpgradePromptModal } from "@/components/subscription/UpgradePromptModal";
+import { LockedBadge } from "@/components/subscription/LockedBadge";
 
 interface VideoResource {
   id: string;
@@ -47,6 +50,14 @@ const VideosList = ({ topic, videos, onBack }: Props) => {
   );
   const videoRef = useRef<HTMLVideoElement>(null);
 
+  const {
+    effectivePlan,
+    verifyVideo,
+    modalState,
+    promptUpgrade,
+    closeUpgradeModal,
+  } = useSubscriptionEntitlement();
+
   const formatDuration = (seconds?: number) => {
     if (!seconds) return "00:00";
     const minutes = Math.floor(seconds / 60);
@@ -54,7 +65,16 @@ const VideosList = ({ topic, videos, onBack }: Props) => {
     return `${minutes}:${remainingSeconds.toString().padStart(2, "0")}`;
   };
 
-  const handleVideoClick = (video: VideoResource) => {
+  const handleVideoClick = (video: VideoResource, index: number) => {
+    const access = verifyVideo(index, video.title);
+    if (!access.allowed) {
+      promptUpgrade(
+        `${video.title} Lesson`,
+        access.requiredPlan,
+        access.reason || "Basic plan includes 2 starter videos per topic. Upgrade to Standard (₦15,000) for full unlimited video lessons!"
+      );
+      return;
+    }
     setSelectedVideo(video);
     setIsDialogOpen(true);
   };
@@ -164,57 +184,82 @@ const VideosList = ({ topic, videos, onBack }: Props) => {
           gap={6}
           py={6}
         >
-          {videos.map((video) => (
-            <Box
-              key={video.id}
-              borderRadius="lg"
-              overflow="hidden"
-              bg="white"
-              boxShadow="sm"
-              border="1px solid"
-              borderColor="gray.200"
-              _hover={{
-                boxShadow: "md",
-                transform: "translateY(-2px)",
-              }}
-              transition="all 0.2s"
-              cursor="pointer"
-              onClick={() => handleVideoClick(video)}
-            >
-              <Box>
-                {/* Video Thumbnail */}
-                <Box position="relative">
-                  <AspectRatio ratio={16 / 9} width="100%">
-                    <Image
-                      src={getThumbnailUrl(video)}
-                      alt={video.title}
-                      objectFit="cover"
-                    />
-                  </AspectRatio>
+          {videos.map((video, index) => {
+            const access = verifyVideo(index, video.title);
+            const isLocked = !access.allowed;
 
-                  {/* Play button overlay */}
-                  <Box
-                    position="absolute"
-                    top="50%"
-                    left="50%"
-                    transform="translate(-50%, -50%)"
-                    bg="blackAlpha.600"
-                    borderRadius="full"
-                    p={2}
-                  >
-                    <LuPlay size={24} color="white" />
+            return (
+              <Box
+                key={video.id}
+                borderRadius="lg"
+                overflow="hidden"
+                bg="white"
+                boxShadow="sm"
+                border="1px solid"
+                borderColor={isLocked ? "orange.200" : "gray.200"}
+                _hover={{
+                  boxShadow: "md",
+                  transform: "translateY(-2px)",
+                }}
+                transition="all 0.2s"
+                cursor="pointer"
+                onClick={() => handleVideoClick(video, index)}
+                position="relative"
+              >
+                <Box>
+                  {/* Video Thumbnail */}
+                  <Box position="relative">
+                    <AspectRatio ratio={16 / 9} width="100%">
+                      <Image
+                        src={getThumbnailUrl(video)}
+                        alt={video.title}
+                        objectFit="cover"
+                        filter={isLocked ? "brightness(0.7)" : "none"}
+                      />
+                    </AspectRatio>
+
+                    {/* Play or Lock button overlay */}
+                    <Box
+                      position="absolute"
+                      top="50%"
+                      left="50%"
+                      transform="translate(-50%, -50%)"
+                      bg={isLocked ? "blackAlpha.800" : "blackAlpha.600"}
+                      borderRadius="full"
+                      p={isLocked ? 3 : 2}
+                      display="flex"
+                      alignItems="center"
+                      justifyContent="center"
+                    >
+                      {isLocked ? (
+                        <LuLock size={20} color="#fbbf24" />
+                      ) : (
+                        <LuPlay size={24} color="white" />
+                      )}
+                    </Box>
+
+                    {isLocked && (
+                      <Box position="absolute" top={2} right={2}>
+                        <LockedBadge requiredPlan="standard" label="Standard" size="xs" variant="solid" />
+                      </Box>
+                    )}
+                  </Box>
+
+                  {/* Video Info */}
+                  <Box flex={1} p={4}>
+                    <Text fontWeight="medium" fontSize="sm" mb={1} color={isLocked ? "gray.700" : "gray.900"}>
+                      {video.title}
+                    </Text>
+                    {isLocked && (
+                      <Text fontSize="xs" color="orange.600" fontWeight="medium">
+                        Standard Plan Feature
+                      </Text>
+                    )}
                   </Box>
                 </Box>
-
-                {/* Video Info */}
-                <Box flex={1} p={4}>
-                  <Text fontWeight="300" fontSize="sm" mb={2}>
-                    {video.title}
-                  </Text>
-                </Box>
               </Box>
-            </Box>
-          ))}
+            );
+          })}
         </Grid>
       )}
 
@@ -338,6 +383,15 @@ const VideosList = ({ topic, videos, onBack }: Props) => {
           </Dialog.Positioner>
         </Portal>
       </Dialog.Root>
+      {/* Upgrade Prompt Modal */}
+      <UpgradePromptModal
+        isOpen={modalState.isOpen}
+        onClose={closeUpgradeModal}
+        featureName={modalState.featureName}
+        requiredPlan={modalState.requiredPlan}
+        reason={modalState.reason}
+        currentPlan={effectivePlan}
+      />
     </Box>
   );
 };

@@ -22,9 +22,13 @@ import {
   FiHelpCircle,
   FiCheckCircle,
 } from "react-icons/fi";
+import { PiShootingStarDuotone } from "react-icons/pi";
 import type { StudyRecommendation, RecommendationType } from "@/services/learningIntelligence/types";
 import { useNavigationStore } from "@/store/usenavigationStore";
 import { useSparkStore } from "@/store/useSparkStore";
+import { useSubscriptionEntitlement } from "@/hooks/useSubscriptionEntitlement";
+import { UpgradePromptModal } from "@/components/subscription/UpgradePromptModal";
+import { LockedBadge } from "@/components/subscription/LockedBadge";
 
 interface NextStudyRecommendationCardProps {
   recommendation?: StudyRecommendation;
@@ -85,6 +89,14 @@ export const NextStudyRecommendationCard: React.FC<NextStudyRecommendationCardPr
   const { openWithContext } = useSparkStore();
   const [showSecondary, setShowSecondary] = useState(false);
 
+  const {
+    effectivePlan,
+    verifyRecommendations,
+    modalState,
+    promptUpgrade,
+    closeUpgradeModal,
+  } = useSubscriptionEntitlement();
+
   if (loading) {
     return (
       <Box
@@ -112,6 +124,16 @@ export const NextStudyRecommendationCard: React.FC<NextStudyRecommendationCardPr
 
   const handleAction = (rec: StudyRecommendation) => {
     if (rec.actionType === "diagnose_weakness" || rec.actionTarget?.page === "spark") {
+      const sparkAccess = verifyRecommendations("advanced_intelligence");
+      if (!sparkAccess.allowed) {
+        promptUpgrade(
+          "Spark AI Tutoring Companion",
+          "premium",
+          "Personalized Spark AI tutoring companion assistance is available on the Premium (₦25,000) plan."
+        );
+        return;
+      }
+
       openWithContext(
         {
           contextType: "topic_study",
@@ -293,10 +315,18 @@ export const NextStudyRecommendationCard: React.FC<NextStudyRecommendationCardPr
             <Button
               w={{ base: "full", sm: "auto" }}
               variant="outline"
-              colorPalette="gray"
+              colorPalette="blue"
               size="sm"
               borderRadius="lg"
               onClick={() => {
+                if (effectivePlan !== "premium") {
+                  promptUpgrade(
+                    "Spark AI Tutoring Companion",
+                    "premium",
+                    "Advanced personalized learning intelligence with Spark AI tutoring companion requires a Premium (₦25,000) subscription."
+                  );
+                  return;
+                }
                 openWithContext(
                   {
                     contextType: "topic_study",
@@ -309,7 +339,10 @@ export const NextStudyRecommendationCard: React.FC<NextStudyRecommendationCardPr
                 );
               }}
             >
-              Ask Spark about this topic
+              {effectivePlan !== "premium" && (
+                <PiShootingStarDuotone style={{ marginRight: "4px" }} />
+              )}
+              Ask Spark about this topic {effectivePlan !== "premium" && "(Unlock Premium Plan)"}
             </Button>
           )}
         </Flex>
@@ -318,84 +351,133 @@ export const NextStudyRecommendationCard: React.FC<NextStudyRecommendationCardPr
       {/* Secondary recommendations toggle */}
       {secondaryRecommendations.length > 0 && (
         <Box pt={2}>
-          <Button
-            variant="ghost"
-            size="xs"
-            color="gray.600"
-            _hover={{ color: "gray.900", bg: "transparent" }}
-            onClick={() => setShowSecondary(!showSecondary)}
-            p={0}
-          >
-            <HStack gap={1}>
-              <Text fontWeight="600">
-                {showSecondary
-                  ? "Hide additional recommendations"
-                  : `View ${secondaryRecommendations.length} more personalized recommendations`}
-              </Text>
-              {showSecondary ? <FiChevronUp /> : <FiChevronDown />}
-            </HStack>
-          </Button>
+          {effectivePlan === "basic" ? (
+            <Flex
+              p={3}
+              borderRadius="xl"
+              bg="white"
+              border="1px dashed"
+              borderColor="orange.300"
+              justify="space-between"
+              align="center"
+              wrap="wrap"
+              gap={2}
+            >
+              <HStack gap={2}>
+                <LockedBadge requiredPlan="standard" label="Standard" size="xs" />
+                <Text fontSize="xs" fontWeight="600" color="gray.700">
+                  {secondaryRecommendations.length} more personalized study paths available
+                </Text>
+              </HStack>
+              <Button
+                size="xs"
+                bg="#206CE1"
+                color="white"
+                _hover={{ bg: "#1852B2" }}
+                borderRadius="md"
+                onClick={() =>
+                  promptUpgrade(
+                    "Personalized Study Paths",
+                    "standard",
+                    "Personalized study recommendations and tailored revision paths require a Standard (₦15,000) or Premium subscription."
+                  )
+                }
+              >
+                <PiShootingStarDuotone style={{ marginRight: "4px" }} /> Unlock Standard Plan
+              </Button>
+            </Flex>
+          ) : (
+            <>
+              <Button
+                variant="ghost"
+                size="xs"
+                color="gray.600"
+                _hover={{ color: "gray.900", bg: "transparent" }}
+                onClick={() => setShowSecondary(!showSecondary)}
+                p={0}
+              >
+                <HStack gap={1}>
+                  <Text fontWeight="600">
+                    {showSecondary
+                      ? "Hide additional recommendations"
+                      : `View ${secondaryRecommendations.length} more personalized recommendations`}
+                  </Text>
+                  {showSecondary ? <FiChevronUp /> : <FiChevronDown />}
+                </HStack>
+              </Button>
 
-          {showSecondary && (
-            <VStack gap={2} mt={3} align="stretch">
-              {secondaryRecommendations.map((secRec) => {
-                const secConfig = TYPE_CONFIG[secRec.type || "topic"] || TYPE_CONFIG.topic;
-                const SecIcon = secConfig.icon;
+              {showSecondary && (
+                <VStack gap={2} mt={3} align="stretch">
+                  {secondaryRecommendations.map((secRec) => {
+                    const secConfig = TYPE_CONFIG[secRec.type || "topic"] || TYPE_CONFIG.topic;
+                    const SecIcon = secConfig.icon;
 
-                return (
-                  <Flex
-                    key={secRec.id}
-                    p={3}
-                    borderRadius="lg"
-                    bg="white"
-                    border="1px solid"
-                    borderColor="gray.200"
-                    alignItems="center"
-                    justifyContent="space-between"
-                    gap={3}
-                  >
-                    <HStack gap={3} flex={1}>
-                      <Box
-                        w={7}
-                        h={7}
-                        borderRadius="md"
-                        bg={secConfig.bg}
-                        color={secConfig.color}
-                        display="flex"
+                    return (
+                      <Flex
+                        key={secRec.id}
+                        p={3}
+                        borderRadius="lg"
+                        bg="white"
+                        border="1px solid"
+                        borderColor="gray.200"
                         alignItems="center"
-                        justifyContent="center"
-                        fontSize="14px"
-                        flexShrink={0}
+                        justifyContent="space-between"
+                        gap={3}
                       >
-                        <SecIcon />
-                      </Box>
-                      <Box>
-                        <Text fontSize="xs" fontWeight="600" color="gray.800">
-                          {secRec.title}
-                        </Text>
-                        <Text fontSize="11px" color="gray.500" noOfLines={1}>
-                          {secRec.description}
-                        </Text>
-                      </Box>
-                    </HStack>
+                        <HStack gap={3} flex={1}>
+                          <Box
+                            w={7}
+                            h={7}
+                            borderRadius="md"
+                            bg={secConfig.bg}
+                            color={secConfig.color}
+                            display="flex"
+                            alignItems="center"
+                            justifyContent="center"
+                            fontSize="14px"
+                            flexShrink={0}
+                          >
+                            <SecIcon />
+                          </Box>
+                          <Box>
+                            <Text fontSize="xs" fontWeight="600" color="gray.800">
+                              {secRec.title}
+                            </Text>
+                            <Text fontSize="11px" color="gray.500" noOfLines={1}>
+                              {secRec.description}
+                            </Text>
+                          </Box>
+                        </HStack>
 
-                    <Button
-                      size="xs"
-                      variant="outline"
-                      colorPalette="blue"
-                      borderRadius="md"
-                      onClick={() => handleAction(secRec)}
-                      flexShrink={0}
-                    >
-                      {secRec.actionText || "Start"}
-                    </Button>
-                  </Flex>
-                );
-              })}
-            </VStack>
+                        <Button
+                          size="xs"
+                          variant="outline"
+                          colorPalette="blue"
+                          borderRadius="md"
+                          onClick={() => handleAction(secRec)}
+                          flexShrink={0}
+                        >
+                          {secRec.actionText || "Start"}
+                        </Button>
+                      </Flex>
+                    );
+                  })}
+                </VStack>
+              )}
+            </>
           )}
         </Box>
       )}
+
+      {/* Upgrade Prompt Modal */}
+      <UpgradePromptModal
+        isOpen={modalState.isOpen}
+        onClose={closeUpgradeModal}
+        featureName={modalState.featureName}
+        requiredPlan={modalState.requiredPlan}
+        reason={modalState.reason}
+        currentPlan={effectivePlan}
+      />
     </Box>
   );
 };

@@ -4,6 +4,7 @@ import MyIgrade from "../components/settings/myIgrade";
 import Security from "../components/settings/security";
 import Notification from "../components/settings/notification";
 import Support from "../components/settings/support";
+import { ParentSubscriptionView } from "../components/settings/ParentSubscriptionView";
 import { useNavigationStore } from "@/store/usenavigationStore";
 
 const SettingsPage = () => {
@@ -37,7 +38,9 @@ const SettingsPage = () => {
         to separate it from the navigation tabs/buttons 
       */}
       <Box mt={{ base: 6, md: 8 }}>
-        {currentTab === "support" || currentTab === "help" || currentTab === "faqs" ? (
+        {currentTab === "subscription" ? (
+          <ParentSubscriptionView />
+        ) : currentTab === "support" || currentTab === "help" || currentTab === "faqs" ? (
           <Support />
         ) : currentTab === "notification" ? (
           <Notification />

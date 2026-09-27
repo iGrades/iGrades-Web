@@ -1,4 +1,4 @@
-import { Grid, Box, Text, Center, useDisclosure } from "@chakra-ui/react";
+import { Grid, Box, Text, Center, useDisclosure, Icon } from "@chakra-ui/react";
 import { useAuthdStudentData } from "@/student-app/context/studentDataContext";
 import { useState } from "react";
 import { IoIosCheckmarkCircle } from "react-icons/io";
@@ -10,6 +10,10 @@ import {
   useClasses,
 } from "@/student-app/context/dataContext";
 import { courseConfig } from "@/student-app/utils/courseConstants";
+import { useSubscriptionEntitlement } from "@/hooks/useSubscriptionEntitlement";
+import { UpgradePromptModal } from "@/components/subscription/UpgradePromptModal";
+import { LockedBadge } from "@/components/subscription/LockedBadge";
+import { LuLock } from "react-icons/lu";
 
 type Props = {
   selectedCourses: string[];
@@ -33,7 +37,6 @@ interface Topic {
   course: string;
 }
 
-
 const QuizSubjectsList = ({
   selectedCourses,
   onCourseSelect,
@@ -43,6 +46,15 @@ const QuizSubjectsList = ({
   const { authdStudent } = useAuthdStudentData();
   const [loading, setLoading] = useState(false);
   const { onOpen } = useDisclosure();
+
+  // Centralized entitlement hook
+  const {
+    effectivePlan,
+    verifySubject,
+    modalState,
+    promptUpgrade,
+    closeUpgradeModal,
+  } = useSubscriptionEntitlement();
 
   // Use context hooks
   const { subjectImages } = useStudentData();
@@ -58,18 +70,41 @@ const QuizSubjectsList = ({
       const parsed = JSON.parse(registered);
       return Array.isArray(parsed) ? parsed : [registered];
     } catch {
-      return String(registered).split(",").map(c => c.trim());
+      return String(registered).split(",").map((c) => c.trim());
     }
   };
-  
+
   const isCourseSelected = (courseName: string) => {
     return selectedCourses.includes(courseName);
   };
 
   const handleCourseClick = async (
     courseName: string,
-    dbCourseId: string
+    dbCourseId: string,
+    index: number
   ) => {
+    // 1. Check subject entitlement
+    const access = verifySubject(index, courseName);
+    if (!access.allowed) {
+      promptUpgrade(
+        `${courseName} Quiz Practice`,
+        access.requiredPlan,
+        access.reason || "Basic plan includes your first 4 starter subjects. Upgrade to Standard (₦15,000) to practice quizzes on all registered subjects!"
+      );
+      return;
+    }
+
+    // 2. Check multi-subject practice entitlement for Basic tier
+    const isCurrentlySelected = isCourseSelected(courseName);
+    if (!isCurrentlySelected && selectedCourses.length >= 1 && effectivePlan === "basic") {
+      promptUpgrade(
+        "Multi-Subject Practice",
+        "standard",
+        "On the Basic plan, you can practice 1 subject at a time. Upgrade to Standard or Premium to combine multiple subjects in mock quizzes and tests!"
+      );
+      return;
+    }
+
     setLoading(true);
     setSelectedCourse(courseName);
 
@@ -103,7 +138,7 @@ const QuizSubjectsList = ({
         ...topic,
         course: courseName,
       }));
-      
+
       onCourseSelect(courseName, mappedTopics, dbCourseId);
       onOpen();
     } catch (error) {
@@ -148,56 +183,94 @@ const QuizSubjectsList = ({
             </Text>
           </Box>
         ) : (
-          studentCourses.map((course, index) => (
-            <Box
-              key={index}
-              borderRadius="xl"
-              p={6}
-              textAlign="center"
-              minH="100px"
-              display="flex"
-              flexDirection="column"
-              justifyContent="center"
-              alignItems="center"
-              transition="all 0.3s ease"
-              _hover={{ transform: "translateY(-8px)" }}
-              background={course.image ? `url(${course.image})` : course.color}
-              backgroundSize="contain"
-              backgroundRepeat="no-repeat"
-              cursor="pointer"
-              position="relative"
-              overflow="hidden"
-              onClick={() => handleCourseClick(course.displayName, course.dbName)}
-              opacity={loading ? 0.7 : 1}
-              pointerEvents={loading ? "none" : "auto"}
-            >
-              <Center flexDirection="column" zIndex={2} position="relative">
-                {!course.image && (
-                  <Text
-                    fontSize="lg"
-                    fontWeight="bold"
-                    color="white"
-                    textShadow="2px 2px 4px rgba(0,0,0,0.7)"
-                    mb={2}
+          studentCourses.map((course, index) => {
+            const access = verifySubject(index, course.displayName);
+            const isLocked = !access.allowed;
+            const isSelected = isCourseSelected(course.displayName);
+
+            return (
+              <Box
+                key={index}
+                borderRadius="xl"
+                p={6}
+                textAlign="center"
+                minH="100px"
+                display="flex"
+                flexDirection="column"
+                justifyContent="center"
+                alignItems="center"
+                transition="all 0.3s ease"
+                _hover={{ transform: "translateY(-6px)" }}
+                background={course.image ? `url(${course.image})` : course.color}
+                backgroundSize="contain"
+                backgroundRepeat="no-repeat"
+                cursor="pointer"
+                position="relative"
+                overflow="hidden"
+                onClick={() => handleCourseClick(course.displayName, course.dbName, index)}
+                opacity={loading ? 0.7 : 1}
+                pointerEvents={loading ? "none" : "auto"}
+              >
+                {/* Locked overlay for Basic plan subjects past limit */}
+                {isLocked && (
+                  <Box
+                    position="absolute"
+                    inset={0}
+                    bg="blackAlpha.700"
+                    zIndex={3}
+                    display="flex"
+                    flexDirection="column"
+                    alignItems="center"
+                    justifyContent="center"
+                    p={3}
+                    backdropFilter="blur(2px)"
                   >
-                    {course.displayName}
-                  </Text>
+                    <Icon as={LuLock} color="orange.300" boxSize={6} mb={1.5} />
+                    <Text fontSize="xs" fontWeight="bold" color="white" textAlign="center" mb={1.5}>
+                      {course.displayName}
+                    </Text>
+                    <LockedBadge requiredPlan="standard" label="Standard Plan" size="xs" variant="solid" />
+                  </Box>
                 )}
-                {loading && (
-                  <Text fontSize="sm" color="whiteAlpha.800">
-                    Loading...
-                  </Text>
+
+                <Center flexDirection="column" zIndex={2} position="relative">
+                  {!course.image && (
+                    <Text
+                      fontSize="lg"
+                      fontWeight="bold"
+                      color="white"
+                      textShadow="2px 2px 4px rgba(0,0,0,0.7)"
+                      mb={2}
+                    >
+                      {course.displayName}
+                    </Text>
+                  )}
+                  {loading && (
+                    <Text fontSize="sm" color="whiteAlpha.800">
+                      Loading...
+                    </Text>
+                  )}
+                </Center>
+                {isSelected && (
+                  <Box position="absolute" top={2} right={2} zIndex={4}>
+                    <IoIosCheckmarkCircle color="green" size="24px" />
+                  </Box>
                 )}
-              </Center>
-              {isCourseSelected(course.displayName) && (
-                <Box position="absolute" top={2} right={2} zIndex={3}>
-                  <IoIosCheckmarkCircle color="green" size="24px" />
-                </Box>
-              )}
-            </Box>
-          ))
+              </Box>
+            );
+          })
         )}
       </Grid>
+
+      {/* Upgrade Prompt Modal */}
+      <UpgradePromptModal
+        isOpen={modalState.isOpen}
+        onClose={closeUpgradeModal}
+        featureName={modalState.featureName}
+        requiredPlan={modalState.requiredPlan}
+        reason={modalState.reason}
+        currentPlan={effectivePlan}
+      />
     </>
   );
 };

@@ -25,6 +25,10 @@ import { WeeklySubjectPerformance } from "./WeeklySubjectPerformance";
 import { WeeklyTopicInsights } from "./WeeklyTopicInsights";
 import { WeeklyRecommendations } from "./WeeklyRecommendations";
 
+import { useParentSubscriptionEntitlement } from "@/parent-app/hooks/useParentSubscriptionEntitlement";
+import { ParentPaywallCard } from "@/parent-app/components/subscription/ParentPaywallCard";
+import { UpgradePromptModal } from "@/components/subscription/UpgradePromptModal";
+
 type Props = {
   student: any;
   onClose?: () => void;
@@ -34,12 +38,28 @@ export const WeeklyLearningReportView = ({ student, onClose }: Props) => {
   const { t } = useTranslation();
   const [weekOffset, setWeekOffset] = useState(0); // 0 = This Week, 1 = Last Week, etc.
   const { report, loading, refreshReport } = useWeeklyLearningReport(student, weekOffset);
+  const {
+    effectivePlan,
+    modalState,
+    promptUpgrade,
+    closeUpgradeModal,
+  } = useParentSubscriptionEntitlement();
+
+  const isPremium = effectivePlan === "premium";
 
   const studentFirstName = student?.firstname || "Your child";
   const studentFullName = `${student?.firstname || ""} ${student?.lastname || ""}`.trim() || "Student";
   const studentClass = student?.class || "Student";
 
   const handlePrint = () => {
+    if (!isPremium) {
+      promptUpgrade(
+        "Printable Executive Report & Export",
+        "premium",
+        "Exporting and printing official executive learning digests is a Premium feature."
+      );
+      return;
+    }
     window.print();
   };
 
@@ -233,12 +253,27 @@ export const WeeklyLearningReportView = ({ student, onClose }: Props) => {
             needsAttentionSubject={report.needsAttentionSubject}
           />
 
-          {/* 4. Granular Topic Insights */}
-          <WeeklyTopicInsights
-            improvedTopics={report.improvedTopics}
-            topicsRequiringPractice={report.topicsRequiringPractice}
-            topicsWithRepeatedMistakes={report.topicsWithRepeatedMistakes}
-          />
+          {/* 4. Granular Topic Insights (Premium: Advanced topic diagnostics & repeated mistake analysis) */}
+          {isPremium ? (
+            <WeeklyTopicInsights
+              improvedTopics={report.improvedTopics}
+              topicsRequiringPractice={report.topicsRequiringPractice}
+              topicsWithRepeatedMistakes={report.topicsWithRepeatedMistakes}
+            />
+          ) : (
+            <ParentPaywallCard
+              title="Granular Topic Insights & Mistake Analysis"
+              description="Deep diagnostic insight pinpointing repeated question mistakes, specific sub-concept vulnerabilities, and topic-level mastery rates requires Premium."
+              requiredPlan="premium"
+              onUpgradeClick={() =>
+                promptUpgrade(
+                  "Granular Topic Insights",
+                  "premium",
+                  "Detailed sub-concept diagnostics and repeated mistake analysis are included with the Premium plan."
+                )
+              }
+            />
+          )}
 
           {/* 5. Recommended Actions for Parents */}
           <WeeklyRecommendations
@@ -247,6 +282,17 @@ export const WeeklyLearningReportView = ({ student, onClose }: Props) => {
           />
         </Box>
       )}
+
+      {/* Subscription Upgrade Modal */}
+      <UpgradePromptModal
+        isOpen={modalState.isOpen}
+        onClose={closeUpgradeModal}
+        featureName={modalState.featureName}
+        requiredPlan={modalState.requiredPlan}
+        reason={modalState.reason}
+        currentPlan={effectivePlan}
+        portalType="parent"
+      />
     </Box>
   );
 };

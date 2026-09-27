@@ -8,9 +8,10 @@ type Props = {
   basePageWidth: number;
   mdPageWidth: number;
   lgPageWidth: number;
+  onClick?: () => void;
 };
 
-const AddGraderBtn = ({ showBox, setShowBox, basePageWidth, mdPageWidth, lgPageWidth}: Props) => {
+const AddGraderBtn = ({ showBox, setShowBox, basePageWidth, mdPageWidth, lgPageWidth, onClick }: Props) => {
   return (
     <>
       {!showBox && (
@@ -36,7 +37,13 @@ const AddGraderBtn = ({ showBox, setShowBox, basePageWidth, mdPageWidth, lgPageW
           justifyContent="center"
           gap={2} 
           _active={{ transform: "scale(0.96)" }} 
-          onClick={() => setShowBox(!showBox)}
+          onClick={() => {
+            if (onClick) {
+              onClick();
+            } else {
+              setShowBox(!showBox);
+            }
+          }}
         >
           <Icon as={AiOutlineUserAdd} boxSize={{ base: "18px", md: "14px" }} />
           Add New Child

@@ -57,6 +57,29 @@ export const classChangeService = {
     }
   },
 
+  async getRequestsByStudentIds(studentIds: string[]): Promise<ClassChangeRequest[]> {
+    if (!studentIds || studentIds.length === 0) return [];
+    try {
+      const res = await fetch(`/api/class-change-requests?student_ids=${encodeURIComponent(studentIds.join(","))}`);
+      if (!res.ok) throw new Error("Failed to load requests for students");
+      return await res.json();
+    } catch (e) {
+      console.warn("Error fetching student requests by ids:", e);
+      return [];
+    }
+  },
+
+  async getRequestById(id: string): Promise<ClassChangeRequest | null> {
+    if (!id) return null;
+    try {
+      const res = await fetch(`/api/class-change-requests/${encodeURIComponent(id)}`);
+      if (!res.ok) return null;
+      return await res.json();
+    } catch {
+      return null;
+    }
+  },
+
   async getParentRequests(parentId: string): Promise<ClassChangeRequest[]> {
     if (!parentId) return [];
     try {

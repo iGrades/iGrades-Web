@@ -15,7 +15,8 @@ import {
 import { DancingLogoLoader } from "@/components/DancingLogoLoader";
 import SeniorCourses from "../components/seniorCourses";
 import JuniorCourses from "../components/juniorCourses";
-import sideImage from '../../assets/select_ico-removebg-preview.png'
+import sideImage from '../../assets/select_ico-removebg-preview.png';
+import { normalizePlan, getMaxAllowedSubjects } from "@/services/subscriptionEntitlements";
 
 const CourseSelectionPage = () => {
   const { authdStudent, setAuthdStudent } = useAuthdStudentData();
@@ -46,6 +47,16 @@ const CourseSelectionPage = () => {
       setAlert({
         status: "error",
         message: "Please select at least one course",
+      });
+      return;
+    }
+
+    const { effectivePlan } = normalizePlan(authdStudent?.subscription, authdStudent?.subscription_status);
+    const maxAllowed = getMaxAllowedSubjects(effectivePlan);
+    if (selectedCourses.length > maxAllowed) {
+      setAlert({
+        status: "error",
+        message: `Your ${effectivePlan.toUpperCase()} plan allows up to ${maxAllowed} subjects. Please select up to ${maxAllowed} subjects or upgrade to Standard (₦15,000).`,
       });
       return;
     }

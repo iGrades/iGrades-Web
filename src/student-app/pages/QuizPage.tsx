@@ -1,10 +1,13 @@
 import { useState } from "react";
-import { Flex, Box, Button, Grid, Badge, Text} from "@chakra-ui/react";
+import { Flex, Box, Button, Grid, Badge, Text, HStack } from "@chakra-ui/react";
 import { GoArrowRight, GoX } from "react-icons/go";
 import QuizSubjectsList from "../components/quiz/quizSubjectsList";
 import QuizTopicsList from "../components/quiz/quizTopicsList";
 import SearchBar from "../components/quiz/searchBar";
 import { toaster } from "@/components/ui/toaster";
+import { PiShootingStarDuotone } from "react-icons/pi";
+import { useSubscriptionEntitlement } from "@/hooks/useSubscriptionEntitlement";
+import { UpgradePromptModal } from "@/components/subscription/UpgradePromptModal";
 
 type Props = {
   showSideBar: boolean;
@@ -87,6 +90,18 @@ const QuizPage = ({ setShowSideBar, setShowNavBar }: Props) => {
     );
   };
 
+  const {
+    effectivePlan,
+    verifyQuizMode,
+    verifyTimedQuiz,
+    verifyJambSimulation,
+    todayTimedQuizCount,
+    maxDailyTimedQuizzes,
+    modalState,
+    promptUpgrade,
+    closeUpgradeModal,
+  } = useSubscriptionEntitlement();
+
   const handleStartQuiz = () => {
     if (selectedForQuiz.length < 1) {
       toaster.create({
@@ -96,10 +111,60 @@ const QuizPage = ({ setShowSideBar, setShowNavBar }: Props) => {
       });
       return;
     }
-    // Start quiz logic here
-    console.log("Starting quiz with courses:", selectedForQuiz);
-    console.log("Available topics:", topicList);
+
+    // 1. Verify timed quiz daily limit entitlement for Basic users
+    const timedAccess = verifyTimedQuiz();
+    if (!timedAccess.allowed) {
+      promptUpgrade(
+        "Daily Timed Quiz Limit",
+        timedAccess.requiredPlan,
+        timedAccess.reason || `You have completed your daily limit of ${maxDailyTimedQuizzes} timed practice quizzes on the Basic plan. Upgrade to Standard (₦15,000) for generous timed practice!`
+      );
+      return;
+    }
+
+    // 2. Verify multi-subject & JAMB 4-subject entitlement
+    if (selectedForQuiz.length === 4) {
+      const jambAccess = verifyJambSimulation(4);
+      if (!jambAccess.allowed) {
+        promptUpgrade(
+          "JAMB 4-Subject Simulation",
+          jambAccess.requiredPlan,
+          jambAccess.reason || "JAMB UTME 4-Subject Mock Simulation requires a Standard or Premium subscription. Basic plan supports 1 subject at a time."
+        );
+        return;
+      }
+    } else if (selectedForQuiz.length > 1) {
+      const access = verifyQuizMode("quick test", selectedForQuiz.length);
+      if (!access.allowed) {
+        promptUpgrade(
+          "Multi-Subject Quiz Practice",
+          access.requiredPlan,
+          access.reason || "Multi-subject combined quiz testing requires a Standard or Premium subscription. Basic plan supports 1 subject at a time."
+        );
+        return;
+      }
+    }
+
     setShowTopicList(true);
+  };
+
+  const handleLaunchJambSimulation = () => {
+    const jambAccess = verifyJambSimulation(4);
+    if (!jambAccess.allowed) {
+      promptUpgrade(
+        "JAMB UTME 4-Subject Simulation",
+        jambAccess.requiredPlan,
+        jambAccess.reason || "JAMB UTME 4-Subject Mock Simulation is an examination-grade simulation available on Standard and Premium plans. Upgrade to Standard (₦15,000) to simulate real JAMB exams."
+      );
+      return;
+    }
+
+    toaster.create({
+      title: "JAMB Simulation Mode Ready",
+      description: "Select your 4 JAMB subject combination below to generate your official timed exam simulation.",
+      type: "info",
+    });
   };
 
   return (
@@ -116,46 +181,116 @@ const QuizPage = ({ setShowSideBar, setShowNavBar }: Props) => {
         />
       ) : (
         <>
+          {/* JAMB 4-Subject Simulation & Timed Practice Banner */}
+          <Box
+            mb={4}
+            p={{ base: 4, md: 5 }}
+            borderRadius="xl"
+            bg="white"
+            border="1px solid"
+            borderColor="orange.200"
+            boxShadow="sm"
+          >
+            <Flex
+              direction={{ base: "column", sm: "row" }}
+              justify="space-between"
+              align={{ base: "flex-start", sm: "center" }}
+              gap={3}
+            >
+              <Box>
+                <HStack gap={2} mb={1}>
+                  <Badge colorPalette="orange" variant="solid" size="xs" px={2} py={0.5} borderRadius="md">
+                    JAMB UTME Mock
+                  </Badge>
+                  {effectivePlan === "basic" && (
+                    <Badge colorPalette="gray" variant="surface" size="xs" px={2} py={0.5} borderRadius="md">
+                      Standard / Premium Feature
+                    </Badge>
+                  )}
+                </HStack>
+                <Text fontSize="sm" fontWeight="bold" color="gray.800">
+                  JAMB 4-Subject Timed Simulation
+                </Text>
+                <Text fontSize="xs" color="gray.600">
+                  Simulate official JAMB UTME with 4 combined subjects under timed conditions.
+                </Text>
+              </Box>
+
+              <Button
+                size="sm"
+                bg="#206CE1"
+                color="white"
+                _hover={{ bg: "#1852B2" }}
+                borderRadius="lg"
+                onClick={handleLaunchJambSimulation}
+                fontSize="xs"
+                fontWeight="bold"
+                px={4}
+              >
+                {effectivePlan === "basic" ? (
+                  <>
+                    <PiShootingStarDuotone style={{ marginRight: "6px" }} />
+                    Unlock Standard Plan
+                  </>
+                ) : (
+                  "Start JAMB Simulation"
+                )}
+              </Button>
+            </Flex>
+
+            {/* Daily Timed Practice Status for Basic */}
+            {effectivePlan === "basic" && (
+              <Flex
+                mt={3}
+                pt={2.5}
+                borderTop="1px dashed"
+                borderColor="gray.200"
+                justify="space-between"
+                align="center"
+                wrap="wrap"
+                gap={2}
+              >
+                <Text fontSize="xs" color="gray.600">
+                  <strong>Timed Practice Limit:</strong> {todayTimedQuizCount}/{maxDailyTimedQuizzes} used today.
+                </Text>
+                <Button
+                  variant="ghost"
+                  size="xs"
+                  color="#206CE1"
+                  _hover={{ color: "#1852B2", bg: "blue.50" }}
+                  onClick={() =>
+                    promptUpgrade(
+                      "Unlimited Timed Practice",
+                      "standard",
+                      "Upgrade to Standard (₦15,000) for generous timed practice and unlimited exam simulations without daily caps!"
+                    )
+                  }
+                >
+                  <PiShootingStarDuotone style={{ marginRight: "4px" }} />
+                  Unlock Standard Plan for Generous Timed Practice →
+                </Button>
+              </Flex>
+            )}
+          </Box>
+
           <Flex
-            // direction={{ base: "column", md: "row" }}
             justify="space-between"
             align="center"
             mb={4}
-            mt={4}
-            // bg='red.100'
+            mt={2}
           >
-            <Box w={{base: '55%', md: '50%', lg: '80%'}}>
+            <Box w={{ base: "55%", md: "50%", lg: "80%" }}>
               <SearchBar placeholder="Search subject ..." searchResult={searchResult} setSearchResult={setSearchResult} />
-               {/*<Alert.Root
-                status="warning"
-                variant="subtle"
-                color="#474256"
-                w={{ base: "full", md: "70%" }}
-              >
-                <Alert.Indicator color="orange.400">
-                  <IoIosAlert />
-                </Alert.Indicator>
-                <Alert.Content>
-                  <Alert.Title fontSize="11px" fontWeight={700}>
-                    Kindly note
-                  </Alert.Title>
-                  <Alert.Description fontSize="11px" fontWeight={400}>
-                    You are allowed to pick at least four courses to take a quiz
-                    on.
-                  </Alert.Description>
-                </Alert.Content>
-              </Alert.Root> */}
             </Box>
 
             <Button
               bg="primaryColor"
-              w={{base: 36, md: 60}}
+              w={{ base: 36, md: 60 }}
               p={6}
-              rounded={{base: 'lg', md: '3xl'}}
+              rounded={{ base: "lg", md: "3xl" }}
               fontWeight="500"
               onClick={handleStartQuiz}
               disabled={selectedForQuiz.length < 1}
-              // display={{ base: "none", md: "flex" }}
             >
               Next <GoArrowRight />
             </Button>
@@ -228,6 +363,16 @@ const QuizPage = ({ setShowSideBar, setShowNavBar }: Props) => {
           <Text display="none">{selectedCourse}</Text>
         </>
       )}
+
+      {/* Upgrade Prompt Modal */}
+      <UpgradePromptModal
+        isOpen={modalState.isOpen}
+        onClose={closeUpgradeModal}
+        featureName={modalState.featureName}
+        requiredPlan={modalState.requiredPlan}
+        reason={modalState.reason}
+        currentPlan={effectivePlan}
+      />
     </>
   );
 };

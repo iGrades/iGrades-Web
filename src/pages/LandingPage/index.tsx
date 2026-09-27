@@ -1,4 +1,8 @@
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Box } from "@chakra-ui/react";
+import { getAuthenticatedRedirectPath, recordActivity } from "@/lib/authSessionManager";
+import DancingLogoLoader from "@/components/DancingLogoLoader";
 import NavBar from "./navBar";
 import Hero from "./hero";
 import Services from "./services";
@@ -10,6 +14,23 @@ import Footer from "./footer";
 import ScrollReveal from "./scrollReveal";
 
 const LandingPage = () => {
+  const navigate = useNavigate();
+  const [isRedirecting, setIsRedirecting] = useState(() => !!getAuthenticatedRedirectPath());
+
+  useEffect(() => {
+    const dest = getAuthenticatedRedirectPath();
+    if (dest) {
+      recordActivity();
+      navigate(dest, { replace: true });
+    } else {
+      setIsRedirecting(false);
+    }
+  }, [navigate]);
+
+  if (isRedirecting) {
+    return <DancingLogoLoader fullScreen text="Loading your dashboard..." />;
+  }
+
   return (
     <Box>
       <NavBar />

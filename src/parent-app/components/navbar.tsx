@@ -26,10 +26,14 @@ import {
   FiUser,
   FiHelpCircle,
   FiShield,
+  FiCreditCard,
 } from "react-icons/fi";
 import logo from "../../assets/logo.png";
 import AvatarComp from "../../components/avatar";
 import { setGlobalLanguage } from "@/services/autoTranslation";
+import { useStudentsData } from "../context/studentsDataContext";
+import { classChangeService, type ClassChangeRequest } from "@/services/classChangeService";
+import { ClassChangeNotificationModal } from "./grader/ClassChangeNotificationModal";
 
 type Props = {
   setShowLogoutModal: Dispatch<SetStateAction<boolean>>;
@@ -41,12 +45,17 @@ interface NotificationItem {
   desc: string;
   time: string;
   read: boolean;
+  request?: ClassChangeRequest;
 }
 
 const Navbar = ({ setShowLogoutModal }: Props) => {
   const { parent } = useUser();
+  const { studentsData } = useStudentsData();
   const { setCurrentParentPage, setParentSettingsTab } = useNavigationStore();
   const { t, i18n } = useTranslation();
+
+  const [selectedDecisionRequest, setSelectedDecisionRequest] = useState<ClassChangeRequest | null>(null);
+  const [isDecisionModalOpen, setIsDecisionModalOpen] = useState(false);
 
   const [value, setValue] = useState<string[]>([localStorage.getItem("appLanguage") || i18n.language || "en"]);
 
@@ -84,10 +93,121 @@ const Navbar = ({ setShowLogoutModal }: Props) => {
     },
   ]);
 
+  // Load official class-change notifications for the parent's children
+  useEffect(() => {
+    let isMounted = true;
+    const studentIds = studentsData?.map((s) => s.id).filter(Boolean) || [];
+    const parentId = parent?.[0]?.id;
+
+    const fetchClassChangeNotifs = async () => {
+      try {
+        let reqs: ClassChangeRequest[] = [];
+        if (studentIds.length > 0) {
+          reqs = await classChangeService.getRequestsByStudentIds(studentIds);
+        } else if (parentId) {
+          reqs = await classChangeService.getParentRequests(parentId);
+        } else {
+          // In preview/dev mode without children attached to parent account, load all requests so decisions are visible
+          reqs = await classChangeService.getAllRequests();
+        }
+
+        if (!isMounted || !Array.isArray(reqs)) return;
+
+        // Retrieve read notification IDs
+        const readIds: string[] = (() => {
+          try {
+            return JSON.parse(localStorage.getItem("igrade_read_notifications") || "[]");
+          } catch {
+            return [];
+          }
+        })();
+
+        const classChangeNotifs: NotificationItem[] = reqs.map((req) => {
+          const isAppr = req.status === "approved";
+          const isRej = req.status === "rejected";
+          const isPend = req.status === "pending";
+
+          let title = `Class Change: ${req.student_name}`;
+          if (isAppr) title = `Class Change Approved: ${req.student_name}`;
+          else if (isRej) title = `Class Change Rejected: ${req.student_name}`;
+          else if (isPend) title = `Class Change Pending: ${req.student_name}`;
+
+          let desc = `From ${req.old_class || req.current_class_name} to ${req.new_class || req.requested_class_name}.`;
+          if (isAppr) {
+            desc = `Official transfer to ${req.new_class || req.requested_class_name} approved. Click to view full decision & history.`;
+          } else if (isRej) {
+            desc = `Request to transfer to ${req.requested_class_name} was not approved.${req.admin_note ? ` Reason: ${req.admin_note}` : ""} Click to view details.`;
+          } else if (isPend) {
+            desc = `Targeting ${req.requested_class_name}. Awaiting review. Click to inspect status & history.`;
+          }
+
+          const rawDate = req.reviewed_at || req.submitted_at;
+          const timeStr = rawDate
+            ? new Date(rawDate).toLocaleDateString("en-GB", {
+                day: "numeric",
+                month: "short",
+              })
+            : "Recent";
+
+          return {
+            id: `cc_${req.id}`,
+            title,
+            desc,
+            time: timeStr,
+            read: readIds.includes(`cc_${req.id}`),
+            request: req,
+          };
+        });
+
+        setNotifications((prev) => {
+          const baseAlerts = prev.filter((p) => !p.id.startsWith("cc_"));
+          return [...classChangeNotifs, ...baseAlerts];
+        });
+      } catch (err) {
+        console.warn("Could not load class change notifications:", err);
+      }
+    };
+
+    fetchClassChangeNotifs();
+
+    const handleRefresh = () => fetchClassChangeNotifs();
+    window.addEventListener("classChangeUpdated", handleRefresh);
+
+    return () => {
+      isMounted = false;
+      window.removeEventListener("classChangeUpdated", handleRefresh);
+    };
+  }, [studentsData, parent]);
+
   const unreadCount = notifications.filter((n) => !n.read).length;
 
   const markAllRead = () => {
     setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
+    try {
+      const allIds = notifications.map((n) => n.id);
+      localStorage.setItem("igrade_read_notifications", JSON.stringify(allIds));
+    } catch {
+      // ignore
+    }
+  };
+
+  const handleNotificationItemClick = (item: NotificationItem) => {
+    setNotifications((prev) =>
+      prev.map((n) => (n.id === item.id ? { ...n, read: true } : n))
+    );
+    try {
+      const readIds = JSON.parse(localStorage.getItem("igrade_read_notifications") || "[]");
+      if (!readIds.includes(item.id)) {
+        localStorage.setItem("igrade_read_notifications", JSON.stringify([...readIds, item.id]));
+      }
+    } catch {
+      // ignore
+    }
+
+    if (item.request) {
+      setSelectedDecisionRequest(item.request);
+      setIsDecisionModalOpen(true);
+    }
   };
 
   const currentParent = parent[0] || {};
@@ -281,21 +401,46 @@ const Navbar = ({ setShowLogoutModal }: Props) => {
                         key={item.id}
                         p={2.5}
                         borderRadius="lg"
-                        bg={item.read ? "transparent" : "purple.50/60"}
-                        _hover={{ bg: "gray.50" }}
+                        bg={item.read ? "transparent" : item.request ? "blue.50/50" : "purple.50/60"}
+                        cursor={item.request ? "pointer" : "default"}
+                        _hover={{ bg: item.request ? "blue.50" : "gray.50" }}
                         transition="background 0.15s ease"
+                        onClick={() => handleNotificationItemClick(item)}
                       >
                         <Flex justify="space-between" align="baseline" mb={0.5}>
-                          <Text fontSize="xs" fontWeight="bold" color="gray.800">
-                            {item.title}
-                          </Text>
-                          <Text fontSize="10px" color="gray.400">
+                          <HStack gap={1.5} maxW="75%">
+                            {item.request && (
+                              <Badge
+                                colorPalette={
+                                  item.request.status === "approved"
+                                    ? "green"
+                                    : item.request.status === "rejected"
+                                    ? "red"
+                                    : "amber"
+                                }
+                                size="2xs"
+                                fontSize="9px"
+                                fontWeight="700"
+                              >
+                                {item.request.status.toUpperCase()}
+                              </Badge>
+                            )}
+                            <Text fontSize="xs" fontWeight="bold" color="gray.800" truncate>
+                              {item.title}
+                            </Text>
+                          </HStack>
+                          <Text fontSize="10px" color="gray.400" flexShrink={0}>
                             {item.time}
                           </Text>
                         </Flex>
                         <Text fontSize="xs" color="gray.600" lineHeight="1.3">
                           {item.desc}
                         </Text>
+                        {item.request && (
+                          <Text fontSize="10px" color="blue.600" fontWeight="600" mt={1}>
+                            Click to view decision details & history →
+                          </Text>
+                        )}
                       </Box>
                     ))}
                   </Stack>
@@ -351,6 +496,24 @@ const Navbar = ({ setShowLogoutModal }: Props) => {
                     <HStack gap={2.5}>
                       <FiUser size={16} />
                       <Text fontSize="sm">My Parent Profile</Text>
+                    </HStack>
+                  </Menu.Item>
+
+                  <Menu.Item
+                    value="parent-subscription"
+                    onClick={() => {
+                      setCurrentParentPage("settings");
+                      setParentSettingsTab("subscription");
+                    }}
+                    borderRadius="lg"
+                    py={2}
+                    px={3}
+                    cursor="pointer"
+                    _hover={{ bg: "purple.50", color: "purple.600" }}
+                  >
+                    <HStack gap={2.5}>
+                      <FiCreditCard size={16} />
+                      <Text fontSize="sm">Subscription & Plan</Text>
                     </HStack>
                   </Menu.Item>
 
@@ -416,6 +579,20 @@ const Navbar = ({ setShowLogoutModal }: Props) => {
           </Menu.Root>
         </HStack>
       </Flex>
+
+      {/* Class Change Decision & History Notification Popup */}
+      {isDecisionModalOpen && selectedDecisionRequest && (
+        <ClassChangeNotificationModal
+          isOpen={isDecisionModalOpen}
+          onClose={() => {
+            setIsDecisionModalOpen(false);
+            setSelectedDecisionRequest(null);
+          }}
+          request={selectedDecisionRequest}
+          studentId={selectedDecisionRequest.student_id}
+          childName={selectedDecisionRequest.student_name}
+        />
+      )}
     </Box>
   );
 };

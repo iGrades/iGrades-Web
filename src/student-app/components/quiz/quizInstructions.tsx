@@ -25,6 +25,8 @@ import "slick-carousel/slick/slick-theme.css";
 import timerImage from "@/assets/timer.png";
 import QuizAttempt from "./quizApp/quizAttempt";
 import type { SubTopic } from "./quizTopicsList";
+import { useSubscriptionEntitlement } from "@/hooks/useSubscriptionEntitlement";
+import { UpgradePromptModal } from "@/components/subscription/UpgradePromptModal";
 
 type Props = {
   examMode: string;
@@ -77,6 +79,17 @@ const QuizInstructions = ({
   const [timePerSubject, setTimePerSubject] = useState(0);
   const [error, setError] = useState<string | null>(null);
 
+  const {
+    effectivePlan,
+    verifyTimedQuiz,
+    verifyExamSimulation,
+    verifyJambSimulation,
+    recordTimedQuizAttempt,
+    modalState,
+    promptUpgrade,
+    closeUpgradeModal,
+  } = useSubscriptionEntitlement();
+
   // Quick Test: 7 minutes per subject; Examination: 60 minutes per subject
   const allocatedTime = examMode === "examination"
     ? selectedCourses.length * 60
@@ -87,6 +100,31 @@ const QuizInstructions = ({
   }, [examMode, allocatedTime, selectedCourses.length]);
 
   const fetchQuizQuestions = async () => {
+    // 1. Timed quiz daily limit check
+    const timedAccess = verifyTimedQuiz();
+    if (!timedAccess.allowed) {
+      promptUpgrade("Daily Timed Practice Limit", timedAccess.requiredPlan, timedAccess.reason);
+      return;
+    }
+
+    // 2. Exam simulation check
+    if (examMode === "examination") {
+      const examAccess = verifyExamSimulation();
+      if (!examAccess.allowed) {
+        promptUpgrade("Full Examination Simulation", examAccess.requiredPlan, examAccess.reason);
+        return;
+      }
+    }
+
+    // 3. JAMB 4-subject simulation check
+    if (selectedCourses.length === 4) {
+      const jambAccess = verifyJambSimulation(4);
+      if (!jambAccess.allowed) {
+        promptUpgrade("JAMB 4-Subject Simulation", jambAccess.requiredPlan, jambAccess.reason);
+        return;
+      }
+    }
+
     setFetchingQuestions(true);
     setError(null);
     setShowNavBar(false);
@@ -228,6 +266,7 @@ const QuizInstructions = ({
       };
 
       setQuizData(quizDataObj);
+      recordTimedQuizAttempt();
       setShowQuizAttempt(true);
     } catch (err) {
       console.error("Error in fetchQuizQuestions:", err);
@@ -644,6 +683,16 @@ const QuizInstructions = ({
           </Box>
         </Box>
       )}
+
+      {/* Upgrade Prompt Modal */}
+      <UpgradePromptModal
+        isOpen={modalState.isOpen}
+        onClose={closeUpgradeModal}
+        featureName={modalState.featureName}
+        requiredPlan={modalState.requiredPlan}
+        reason={modalState.reason}
+        currentPlan={effectivePlan}
+      />
     </>
   );
 };

@@ -17,11 +17,31 @@ import QuizHistoryList from "@/parent-app/components/grader/quizHistoryList";
 import { WeeklyLearningReportView } from "@/parent-app/components/intelligence/weeklyReport/WeeklyLearningReportView";
 import { GiNotebook } from "react-icons/gi";
 import { LuFileText, LuTrendingUp, LuUsers } from "react-icons/lu";
+import { useParentSubscriptionEntitlement } from "@/parent-app/hooks/useParentSubscriptionEntitlement";
+import { UpgradePromptModal } from "@/components/subscription/UpgradePromptModal";
 
 export const ParentQuizReportView = () => {
   const { studentsData, loading } = useStudentsData();
   const [selectedStudentId, setSelectedStudentId] = useState<string | null>(null);
   const [reportType, setReportType] = useState<"history" | "weekly">("history");
+  const {
+    effectivePlan,
+    verifyReport,
+    modalState,
+    promptUpgrade,
+    closeUpgradeModal,
+  } = useParentSubscriptionEntitlement();
+
+  const handleSelectReportType = (type: "history" | "weekly") => {
+    if (type === "weekly") {
+      const check = verifyReport("weekly_report");
+      if (!check.allowed) {
+        promptUpgrade("Weekly Report Digest", check.requiredPlan, check.reason);
+        return;
+      }
+    }
+    setReportType(type);
+  };
 
   if (loading) {
     return (
@@ -125,7 +145,7 @@ export const ParentQuizReportView = () => {
               size="xs"
               variant={reportType === "history" ? "solid" : "ghost"}
               colorPalette={reportType === "history" ? "blue" : undefined}
-              onClick={() => setReportType("history")}
+              onClick={() => handleSelectReportType("history")}
               borderRadius="lg"
               flex={{ base: 1, sm: "initial" }}
               px={3}
@@ -138,7 +158,7 @@ export const ParentQuizReportView = () => {
               size="xs"
               variant={reportType === "weekly" ? "solid" : "ghost"}
               colorPalette={reportType === "weekly" ? "blue" : undefined}
-              onClick={() => setReportType("weekly")}
+              onClick={() => handleSelectReportType("weekly")}
               borderRadius="lg"
               flex={{ base: 1, sm: "initial" }}
               px={3}
@@ -240,6 +260,17 @@ export const ParentQuizReportView = () => {
       ) : (
         <WeeklyLearningReportView student={activeStudent} />
       )}
+
+      {/* Subscription Upgrade Modal */}
+      <UpgradePromptModal
+        isOpen={modalState.isOpen}
+        onClose={closeUpgradeModal}
+        featureName={modalState.featureName}
+        requiredPlan={modalState.requiredPlan}
+        reason={modalState.reason}
+        currentPlan={effectivePlan}
+        portalType="parent"
+      />
     </Box>
   );
 };

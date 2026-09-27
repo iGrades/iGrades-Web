@@ -11,6 +11,7 @@ import DeleteGraderPopover from "./deleteGraderPopover"
 import AvatarComp from "@/components/avatar"
 import QuizHistoryList from "./quizHistoryList"
 import { ParentClassChangeModal } from "./ParentClassChangeModal"
+import { ClassChangeNotificationModal } from "./ClassChangeNotificationModal"
 import { classChangeService, type ClassChangeRequest } from "@/services/classChangeService"
 import { useStudentsData } from "../../context/studentsDataContext"
 
@@ -28,6 +29,9 @@ const EditGraderPopup = ({ student, setStudent, onClose, showEditBtn, showDelete
   const [showEditBox, setShowEditBox] = useState(false)
   const [showClassChangeModal, setShowClassChangeModal] = useState(false)
   const [pendingRequest, setPendingRequest] = useState<ClassChangeRequest | null>(null)
+  const [allRequests, setAllRequests] = useState<ClassChangeRequest[]>([])
+  const [showDecisionModal, setShowDecisionModal] = useState(false)
+  const [selectedDecisionRequest, setSelectedDecisionRequest] = useState<ClassChangeRequest | null>(null)
   const [view, setView] = useState<"info" | "history">("info")
   const { handleGeneratePassKey, decrypt } = usePassKey()
   const { studentsData, fetchStudents } = useStudentsData()
@@ -38,10 +42,13 @@ const EditGraderPopup = ({ student, setStudent, onClose, showEditBtn, showDelete
   useEffect(() => {
     if (!student?.id) return;
     classChangeService.getStudentRequests(student.id).then((reqs) => {
+      setAllRequests(reqs);
       const pending = reqs.find((r) => r.status === "pending");
       setPendingRequest(pending || null);
-    }).catch(() => {});
-  }, [student?.id, showClassChangeModal]);
+    }).catch(() => {
+      setAllRequests([]);
+    });
+  }, [student?.id, showClassChangeModal, showDecisionModal]);
 
   const handleGenBtnClick = async () => {
     try {
@@ -118,7 +125,20 @@ const EditGraderPopup = ({ student, setStudent, onClose, showEditBtn, showDelete
                   <VStack gap={3} align="stretch" w="full">
                     {/* Pending Class Change Notice if exists */}
                     {pendingRequest && (
-                      <Box bg="amber.50" p={3.5} rounded="xl" border="1px solid" borderColor="amber.300">
+                      <Box
+                        bg="amber.50"
+                        p={3.5}
+                        rounded="xl"
+                        border="1px solid"
+                        borderColor="amber.300"
+                        cursor="pointer"
+                        _hover={{ bg: "amber.100/70" }}
+                        transition="all 0.15s ease"
+                        onClick={() => {
+                          setSelectedDecisionRequest(pendingRequest);
+                          setShowDecisionModal(true);
+                        }}
+                      >
                         <Flex justify="space-between" align="center" mb={1}>
                           <HStack gap={1.5}>
                             <Icon as={FiClock} color="amber.700" boxSize={3.5} />
@@ -132,6 +152,42 @@ const EditGraderPopup = ({ student, setStudent, onClose, showEditBtn, showDelete
                         </Flex>
                         <Text fontSize="11px" color="amber.800" lineHeight="1.4">
                           Targeting <strong>{pendingRequest.requested_class_name}</strong> (submitted {new Date(pendingRequest.submitted_at).toLocaleDateString()}). Awaiting administrator approval.
+                        </Text>
+                        <Text fontSize="10px" color="amber.900" fontWeight="bold" mt={1}>
+                          Click to view details & history →
+                        </Text>
+                      </Box>
+                    )}
+
+                    {/* Class Change History Quick Action if history exists and not pending */}
+                    {!pendingRequest && allRequests.length > 0 && (
+                      <Box
+                        bg="purple.50/60"
+                        p={3}
+                        rounded="xl"
+                        border="1px solid"
+                        borderColor="purple.200"
+                        cursor="pointer"
+                        _hover={{ bg: "purple.100/70" }}
+                        transition="all 0.15s ease"
+                        onClick={() => {
+                          setSelectedDecisionRequest(allRequests[0]);
+                          setShowDecisionModal(true);
+                        }}
+                      >
+                        <Flex justify="space-between" align="center">
+                          <HStack gap={1.5}>
+                            <Icon as={FiClock} color="purple.700" boxSize={3.5} />
+                            <Text fontSize="xs" fontWeight="bold" color="purple.900">
+                              Class Change History ({allRequests.length})
+                            </Text>
+                          </HStack>
+                          <Text fontSize="10px" color="purple.700" fontWeight="700">
+                            View Records →
+                          </Text>
+                        </Flex>
+                        <Text fontSize="11px" color="purple.800" mt={0.5}>
+                          Latest record: <strong style={{ textTransform: "capitalize" }}>{allRequests[0].status}</strong> ({allRequests[0].requested_class_name})
                         </Text>
                       </Box>
                     )}
@@ -264,6 +320,20 @@ const EditGraderPopup = ({ student, setStudent, onClose, showEditBtn, showDelete
             fetchStudents?.();
             setShowClassChangeModal(false);
           }}
+        />
+      )}
+
+      {showDecisionModal && student && (
+        <ClassChangeNotificationModal
+          isOpen={showDecisionModal}
+          onClose={() => {
+            setShowDecisionModal(false);
+            setSelectedDecisionRequest(null);
+          }}
+          request={selectedDecisionRequest || allRequests[0]}
+          studentId={student.id}
+          childName={`${student.firstname || ""} ${student.lastname || ""}`.trim()}
+          onRequestNewClassChange={() => setShowClassChangeModal(true)}
         />
       )}
     </>

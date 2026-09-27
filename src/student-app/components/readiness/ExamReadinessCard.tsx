@@ -8,11 +8,13 @@ import {
   FiMinus,
   FiAlertCircle,
   FiArrowRight,
-  FiShield,
   FiAward,
   FiInfo,
 } from "react-icons/fi";
 import type { ExamReadinessData } from "@/hooks/useExamReadiness";
+import { useSubscriptionEntitlement } from "@/hooks/useSubscriptionEntitlement";
+import { UpgradePromptModal } from "@/components/subscription/UpgradePromptModal";
+import { LockedBadge } from "@/components/subscription/LockedBadge";
 
 interface Props {
   readiness: ExamReadinessData | null;
@@ -22,6 +24,13 @@ interface Props {
 
 export const ExamReadinessCard = ({ readiness, loading }: Props) => {
   const { setCurrentStudentPage } = useNavigationStore();
+  const {
+    effectivePlan,
+    verifySubject,
+    modalState,
+    promptUpgrade,
+    closeUpgradeModal,
+  } = useSubscriptionEntitlement();
 
   if (loading) {
     return (
@@ -237,7 +246,8 @@ export const ExamReadinessCard = ({ readiness, loading }: Props) => {
               Subject Readiness Breakdown
             </Text>
             <Grid templateColumns={{ base: "1fr", sm: "repeat(2, 1fr)", lg: "repeat(3, 1fr)" }} gap={3}>
-              {subjectBreakdown.map((sub) => {
+              {subjectBreakdown.map((sub, idx) => {
+                const isSubjectAllowed = verifySubject(idx, sub.subjectName).allowed;
                 const subColor =
                   sub.status === "exam_ready"
                     ? "green"
@@ -264,17 +274,32 @@ export const ExamReadinessCard = ({ readiness, loading }: Props) => {
                     p={3.5}
                     borderRadius="xl"
                     border="1px solid"
-                    borderColor="gray.100"
-                    bg="gray.50/60"
+                    borderColor={!isSubjectAllowed ? "orange.200" : "gray.100"}
+                    bg={!isSubjectAllowed ? "orange.50/30" : "gray.50/60"}
                     cursor="pointer"
-                    _hover={{ bg: "white", borderColor: "blue.200", shadow: "sm" }}
+                    _hover={{ bg: "white", borderColor: !isSubjectAllowed ? "orange.400" : "blue.200", shadow: "sm" }}
                     transition="all 0.2s"
-                    onClick={() => setCurrentStudentPage("quiz")}
+                    onClick={() => {
+                      if (!isSubjectAllowed) {
+                        promptUpgrade(
+                          "Expanded Subject Readiness",
+                          "standard",
+                          "Basic plan includes your first 4 starter subjects. Upgrade to Standard (₦15,000) to track readiness across all registered subjects."
+                        );
+                        return;
+                      }
+                      setCurrentStudentPage("quiz");
+                    }}
                   >
                     <Flex justify="space-between" align="center" mb={1.5}>
-                      <Text fontSize="xs" fontWeight="700" color="gray.900" textTransform="capitalize">
-                        {sub.subjectName}
-                      </Text>
+                      <HStack gap={1.5}>
+                        <Text fontSize="xs" fontWeight="700" color="gray.900" textTransform="capitalize">
+                          {sub.subjectName}
+                        </Text>
+                        {!isSubjectAllowed && (
+                          <LockedBadge requiredPlan="standard" label="Standard" size="xs" />
+                        )}
+                      </HStack>
                       {sub.readinessScore !== null ? (
                         <Badge colorPalette={subColor} size="xs" variant="solid" borderRadius="md">
                           {sub.readinessScore}%
@@ -357,13 +382,15 @@ export const ExamReadinessCard = ({ readiness, loading }: Props) => {
         </>
       )}
 
-      {/* Bottom Disclaimer */}
-      <HStack gap={1.5} color="gray.400" fontSize="10px" mt={4} justify="center">
-        <Icon as={FiShield} boxSize="12px" />
-        <Text>
-          Readiness indicator reflects current iGrades practice activity and test performance. It is an internal preparation diagnostic, not an official exam board prediction.
-        </Text>
-      </HStack>
+      {/* Upgrade Prompt Modal */}
+      <UpgradePromptModal
+        isOpen={modalState.isOpen}
+        onClose={closeUpgradeModal}
+        featureName={modalState.featureName}
+        requiredPlan={modalState.requiredPlan}
+        reason={modalState.reason}
+        currentPlan={effectivePlan}
+      />
     </Box>
   );
 };

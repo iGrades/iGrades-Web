@@ -1,4 +1,4 @@
-import { Grid, Box, Text, Center, useDisclosure } from "@chakra-ui/react";
+import { Grid, Box, Text, Center, useDisclosure, Icon } from "@chakra-ui/react";
 import { useAuthdStudentData } from "@/student-app/context/studentDataContext";
 import { useState } from "react";
 import TopicsList from "./topicsList";
@@ -10,6 +10,10 @@ import {
   useResources,
 } from "@/student-app/context/dataContext";
 import { courseConfig } from "@/student-app/utils/courseConstants";
+import { useSubscriptionEntitlement } from "@/hooks/useSubscriptionEntitlement";
+import { UpgradePromptModal } from "@/components/subscription/UpgradePromptModal";
+import { LockedBadge } from "@/components/subscription/LockedBadge";
+import { LuLock } from "react-icons/lu";
 
 interface Topic {
   id: string;
@@ -35,6 +39,15 @@ const Subjects = () => {
   const [videos, setVideos] = useState<VideoResource[]>([]);
   const { onOpen } = useDisclosure();
 
+  // Entitlement hook
+  const {
+    effectivePlan,
+    verifySubject,
+    modalState,
+    promptUpgrade,
+    closeUpgradeModal,
+  } = useSubscriptionEntitlement();
+
   // Use context hooks
   const { subjectImages } = useStudentData();
   const { getSubjectByName } = useSubjects();
@@ -51,14 +64,26 @@ const Subjects = () => {
       const parsed = JSON.parse(registered);
       return Array.isArray(parsed) ? parsed : [registered];
     } catch {
-      return String(registered).split(",").map(c => c.trim());
+      return String(registered).split(",").map((c) => c.trim());
     }
   };
-  
+
   const handleCourseClick = async (
     courseName: string,
-    dbCourseId: string
+    dbCourseId: string,
+    index: number
   ) => {
+    // Entitlement check
+    const access = verifySubject(index, courseName);
+    if (!access.allowed) {
+      promptUpgrade(
+        `${courseName} Curriculum`,
+        access.requiredPlan,
+        access.reason || "Basic tier includes your first 4 starter subjects. Upgrade to Standard (₦15,000) to access all your registered subjects!"
+      );
+      return;
+    }
+
     setLoading(true);
     setSelectedCourse(courseName);
 
@@ -113,8 +138,8 @@ const Subjects = () => {
   const studentCourses = registeredCoursesArray.map((id) => {
     // Normalize ID to lowercase to match the config keys
     const config = courseConfig[id.toLowerCase()] || {
-      displayName: id, 
-      color: "#718096", 
+      displayName: id,
+      color: "#718096",
     };
 
     return {
@@ -124,6 +149,7 @@ const Subjects = () => {
       color: config.color,
     };
   });
+
   return (
     <Box bg="white" rounded="lg" shadow="sm" p={4} mb={20} h="auto">
       {!topicList ? (
@@ -143,60 +169,97 @@ const Subjects = () => {
               </Text>
             </Box>
           ) : (
-            studentCourses.map((course, index) => (
-              <Box
-                key={index}
-                borderRadius="xl"
-                p={6}
-                textAlign="center"
-                minH="100px"
-                display="flex"
-                flexDirection="column"
-                justifyContent="center"
-                alignItems="center"
-                transition="all 0.3s ease"
-                _hover={{ transform: "translateY(-8px)" }}
-                background={course.image ? `url(${course.image})` : course.color}
-                backgroundSize="contain"
-                backgroundRepeat="no-repeat"
-                cursor="pointer"
-                position="relative"
-                overflow="hidden"
-                onClick={() => handleCourseClick(course.displayName, course.dbName)}
-                opacity={loading ? 0.7 : 1}
-                pointerEvents={loading ? "none" : "auto"}
-              >
-                <Center flexDirection="column" zIndex={2} position="relative">
-                  {!course.image && (
-                    <Text
-                      fontSize="lg"
-                      fontWeight="bold"
-                      color="white"
-                      textShadow="2px 2px 4px rgba(0,0,0,0.7)"
-                      mb={2}
+            studentCourses.map((course, index) => {
+              const access = verifySubject(index, course.displayName);
+              const isLocked = !access.allowed;
+
+              return (
+                <Box
+                  key={index}
+                  borderRadius="xl"
+                  p={6}
+                  textAlign="center"
+                  minH="100px"
+                  display="flex"
+                  flexDirection="column"
+                  justifyContent="center"
+                  alignItems="center"
+                  transition="all 0.3s ease"
+                  _hover={{ transform: "translateY(-6px)" }}
+                  background={course.image ? `url(${course.image})` : course.color}
+                  backgroundSize="contain"
+                  backgroundRepeat="no-repeat"
+                  cursor="pointer"
+                  position="relative"
+                  overflow="hidden"
+                  onClick={() => handleCourseClick(course.displayName, course.dbName, index)}
+                  opacity={loading ? 0.7 : 1}
+                  pointerEvents={loading ? "none" : "auto"}
+                >
+                  {/* Locked Overlay for Basic plan over 4 subjects */}
+                  {isLocked && (
+                    <Box
+                      position="absolute"
+                      inset={0}
+                      bg="blackAlpha.700"
+                      zIndex={3}
+                      display="flex"
+                      flexDirection="column"
+                      alignItems="center"
+                      justifyContent="center"
+                      p={3}
+                      backdropFilter="blur(2px)"
                     >
-                      {course.displayName}
-                    </Text>
+                      <Icon as={LuLock} color="orange.300" boxSize={6} mb={1.5} />
+                      <Text fontSize="xs" fontWeight="bold" color="white" textAlign="center" mb={1.5}>
+                        {course.displayName}
+                      </Text>
+                      <LockedBadge requiredPlan="standard" label="Standard Plan" size="xs" variant="solid" />
+                    </Box>
                   )}
-                  {loading && (
-                    <Text fontSize="sm" color="whiteAlpha.800">
-                      Loading...
-                    </Text>
-                  )}
-                </Center>
-              </Box>
-            ))
+
+                  <Center flexDirection="column" zIndex={2} position="relative">
+                    {!course.image && (
+                      <Text
+                        fontSize="lg"
+                        fontWeight="bold"
+                        color="white"
+                        textShadow="2px 2px 4px rgba(0,0,0,0.7)"
+                        mb={2}
+                      >
+                        {course.displayName}
+                      </Text>
+                    )}
+                    {loading && (
+                      <Text fontSize="sm" color="whiteAlpha.800">
+                        Loading...
+                      </Text>
+                    )}
+                  </Center>
+                </Box>
+              );
+            })
           )}
         </Grid>
       ) : (
         <TopicsList
           selectedCourse={selectedCourse}
           topics={topics}
-          videos={videos} // Ensure TopicsList accepts videos prop
+          videos={videos}
           setTopicList={setTopicList}
           courseName={selectedCourse}
         />
       )}
+
+      {/* Upgrade Prompt Modal */}
+      <UpgradePromptModal
+        isOpen={modalState.isOpen}
+        onClose={closeUpgradeModal}
+        featureName={modalState.featureName}
+        requiredPlan={modalState.requiredPlan}
+        reason={modalState.reason}
+        currentPlan={effectivePlan}
+      />
     </Box>
   );
 };

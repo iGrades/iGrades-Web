@@ -23,11 +23,16 @@ import {
   FaCheckCircle,
   FaExclamationTriangle,
   FaChartLine,
+  FaLock,
 } from "react-icons/fa";
+import { PiShootingStarDuotone } from "react-icons/pi";
 import logo from "../../../../assets/logo.png"; 
 import { LuBookOpen } from "react-icons/lu";
 import type { QuizResults, QuizAttemptProps } from "./types";
 import { useAuthdStudentData } from "@/student-app/context/studentDataContext";
+import { useSubscriptionEntitlement } from "@/hooks/useSubscriptionEntitlement";
+import { UpgradePromptModal } from "@/components/subscription/UpgradePromptModal";
+import { LockedBadge } from "@/components/subscription/LockedBadge";
 
 interface QuizReportPageProps {
   quizResults: QuizResults;
@@ -45,6 +50,18 @@ export const QuizReportPage = ({
   isDownloading,
 }: QuizReportPageProps) => {
   const { authdStudent } = useAuthdStudentData();
+  const {
+    effectivePlan,
+    verifyAnalytics,
+    verifyRecommendations,
+    modalState,
+    promptUpgrade,
+    closeUpgradeModal,
+  } = useSubscriptionEntitlement();
+
+  const isDetailedAllowed = verifyAnalytics("detailed_breakdown").allowed;
+  const isRecsAllowed = verifyRecommendations("personalized_paths").allowed;
+
   // Logic to identify strengths and weaknesses
   const subjectBreakdown = Object.entries(quizResults.subjectResults).map(
     ([id, result]) => {
@@ -58,6 +75,22 @@ export const QuizReportPage = ({
 
   const weakSubjects = subjectBreakdown.filter((s) => s.percentage < 50);
   const strongSubjects = subjectBreakdown.filter((s) => s.percentage >= 75);
+
+  const handleDetailedUpgradeClick = () => {
+    promptUpgrade(
+      "Detailed Performance Breakdown",
+      "standard",
+      "Detailed performance breakdown and subject/topic strengths & weaknesses require a Standard or Premium subscription. Upgrade to Standard (₦15,000) to unlock full diagnostic analysis."
+    );
+  };
+
+  const handleRecsUpgradeClick = () => {
+    promptUpgrade(
+      "Personalized Study Recommendations",
+      "standard",
+      "Personalized study recommendations and tailored revision paths require a Standard (₦15,000) or Premium subscription."
+    );
+  };
 
   return (
     <Box
@@ -189,117 +222,150 @@ export const QuizReportPage = ({
           </Box>
 
           {/* Diagnostic Breakdown */}
-          <Grid templateColumns={{ base: "1fr", lg: "2fr 1.2fr" }} gap={8}>
-            {/* Detailed Subject Mastery */}
-            <GridItem bg="white" p={8} borderRadius="2xl" shadow="sm">
-              <Heading size="md" mb={6}>
-                Subject Mastery
-              </Heading>
-              <VStack gap={6} align="stretch">
-                {subjectBreakdown.map((subject, idx) => (
-                  <Box key={idx}>
-                    <Flex justify="space-between" mb={2}>
-                      <Text fontWeight="bold" fontSize="sm">
-                        {subject.name}
-                      </Text>
-                      <Text
-                        fontWeight="bold"
-                        fontSize="sm"
-                        color={
-                          subject.percentage > 50 ? "green.500" : "red.500"
+          {isDetailedAllowed ? (
+            <Grid templateColumns={{ base: "1fr", lg: "2fr 1.2fr" }} gap={8}>
+              {/* Detailed Subject Mastery */}
+              <GridItem bg="white" p={8} borderRadius="2xl" shadow="sm">
+                <Heading size="md" mb={6}>
+                  Subject Mastery
+                </Heading>
+                <VStack gap={6} align="stretch">
+                  {subjectBreakdown.map((subject, idx) => (
+                    <Box key={idx}>
+                      <Flex justify="space-between" mb={2}>
+                        <Text fontWeight="bold" fontSize="sm">
+                          {subject.name}
+                        </Text>
+                        <Text
+                          fontWeight="bold"
+                          fontSize="sm"
+                          color={
+                            subject.percentage > 50 ? "green.500" : "red.500"
+                          }
+                        >
+                          {subject.percentage}%
+                        </Text>
+                      </Flex>
+                      <Progress.Root
+                        value={subject.percentage}
+                        colorPalette={
+                          subject.percentage > 70
+                            ? "green"
+                            : subject.percentage > 40
+                              ? "yellow"
+                              : "red"
                         }
+                        size="sm"
+                        rounded="full"
                       >
-                        {subject.percentage}%
-                      </Text>
-                    </Flex>
-                    <Progress.Root
-                      value={subject.percentage}
-                      colorPalette={
-                        subject.percentage > 70
-                          ? "green"
-                          : subject.percentage > 40
-                            ? "yellow"
-                            : "red"
-                      }
-                      size="sm"
-                      rounded="full"
-                    >
-                      {" "}
-                      <Progress.Track>
-                        {" "}
-                        <Progress.Range />
-                      </Progress.Track>
-                    </Progress.Root>
-                  </Box>
-                ))}
-              </VStack>
-            </GridItem>
-
-            {/* Insights & Recommendations */}
-            <GridItem display="flex" flexDirection="column" gap={6}>
-              {/* Strengths */}
-              <Box
-                bg="green.600"
-                color="white"
-                p={6}
-                borderRadius="2xl"
-                shadow="lg"
-              >
-                <HStack mb={4}>
-                  <Icon as={FaCheckCircle} />
-                  <Heading size="sm">Strongest Areas</Heading>
-                </HStack>
-                <List.Root gap={2}>
-                  {strongSubjects.length > 0 ? (
-                    strongSubjects.map((s, i) => (
-                      <Text key={i} fontSize="sm">
-                        Excellent work in **{s.name}**!
-                      </Text>
-                    ))
-                  ) : (
-                    <Text fontSize="sm">
-                      Keep practicing to build core strengths.
-                    </Text>
-                  )}
-                </List.Root>
-              </Box>
-
-              {/* Areas for Improvement */}
-              <Box
-                bg="white"
-                border="1px solid"
-                borderColor="orange.200"
-                p={6}
-                borderRadius="2xl"
-              >
-                <HStack mb={4} color="orange.500">
-                  <Icon as={FaExclamationTriangle} />
-                  <Heading size="sm">Needs Improvement</Heading>
-                </HStack>
-                <VStack align="start" gap={3}>
-                  {weakSubjects.length > 0 ? (
-                    weakSubjects.map((s, i) => (
-                      <Box key={i}>
-                        <Text fontSize="sm" fontWeight="bold">
-                          {s.name}
-                        </Text>
-                        <Text fontSize="xs" color="gray.500">
-                          Scored below 50%. Focus on foundational concepts.
-                        </Text>
-                      </Box>
-                    ))
-                  ) : (
-                    <Text fontSize="sm" color="gray.500">
-                      No critical weaknesses detected.
-                    </Text>
-                  )}
+                        <Progress.Track>
+                          <Progress.Range />
+                        </Progress.Track>
+                      </Progress.Root>
+                    </Box>
+                  ))}
                 </VStack>
-              </Box>
-            </GridItem>
-          </Grid>
-          
+              </GridItem>
+
+              {/* Insights & Recommendations */}
+              <GridItem display="flex" flexDirection="column" gap={6}>
+                {/* Strengths */}
+                <Box
+                  bg="green.600"
+                  color="white"
+                  p={6}
+                  borderRadius="2xl"
+                  shadow="lg"
+                >
+                  <HStack mb={4}>
+                    <Icon as={FaCheckCircle} />
+                    <Heading size="sm">Strongest Areas</Heading>
+                  </HStack>
+                  <List.Root gap={2}>
+                    {strongSubjects.length > 0 ? (
+                      strongSubjects.map((s, i) => (
+                        <Text key={i} fontSize="sm">
+                          Excellent work in **{s.name}**!
+                        </Text>
+                      ))
+                    ) : (
+                      <Text fontSize="sm">
+                        Keep practicing to build core strengths.
+                      </Text>
+                    )}
+                  </List.Root>
+                </Box>
+
+                {/* Areas for Improvement */}
+                <Box
+                  bg="white"
+                  border="1px solid"
+                  borderColor="orange.200"
+                  p={6}
+                  borderRadius="2xl"
+                >
+                  <HStack mb={4} color="orange.500">
+                    <Icon as={FaExclamationTriangle} />
+                    <Heading size="sm">Needs Improvement</Heading>
+                  </HStack>
+                  <VStack align="start" gap={3}>
+                    {weakSubjects.length > 0 ? (
+                      weakSubjects.map((s, i) => (
+                        <Box key={i}>
+                          <Text fontSize="sm" fontWeight="bold">
+                            {s.name}
+                          </Text>
+                          <Text fontSize="xs" color="gray.500">
+                            Scored below 50%. Focus on foundational concepts.
+                          </Text>
+                        </Box>
+                      ))
+                    ) : (
+                      <Text fontSize="sm" color="gray.500">
+                        No critical weaknesses detected.
+                      </Text>
+                    )}
+                  </VStack>
+                </Box>
+              </GridItem>
+            </Grid>
+          ) : (
+            <Box
+              bg="white"
+              p={8}
+              borderRadius="2xl"
+              shadow="sm"
+              border="1.5px dashed"
+              borderColor="orange.300"
+              textAlign="center"
+            >
+              <VStack gap={3} maxW="560px" mx="auto">
+                <HStack gap={2}>
+                  <Icon as={FaLock} color="orange.500" />
+                  <Heading size="md" color="gray.800">
+                    Detailed Performance Breakdown & Diagnostics
+                  </Heading>
+                  <LockedBadge requiredPlan="standard" label="Standard" size="xs" />
+                </HStack>
+                <Text fontSize="xs" color="gray.600">
+                  Subject-by-subject mastery percentages, topic strengths & weaknesses diagnostics, and syllabus coverage analysis require a Standard or Premium subscription.
+                </Text>
+                <Button
+                  size="sm"
+                  bg="#206CE1"
+                  color="white"
+                  _hover={{ bg: "#1852B2" }}
+                  borderRadius="xl"
+                  fontWeight="bold"
+                  onClick={handleDetailedUpgradeClick}
+                >
+                  <PiShootingStarDuotone style={{ marginRight: "6px", fontSize: "1.1rem" }} /> Unlock Standard Plan (₦15,000)
+                </Button>
+              </VStack>
+            </Box>
+          )}
+
           {/* Grading System Key */}
-          
           <Box bg="white" p={8} borderRadius="2xl" shadow="sm">
             <VStack align="start" gap={4}>
               <HStack gap={2}>
@@ -329,7 +395,7 @@ export const QuizReportPage = ({
             </VStack>
           </Box>
 
-          {/* Actionable Next Steps */}
+          {/* Actionable Next Steps / Recommendations */}
           <Box bg="white" p={8} borderRadius="2xl" shadow="sm">
             <HStack mb={6}>
               <Circle size="40px" bg="blue.50" color="blue.500">
@@ -343,45 +409,70 @@ export const QuizReportPage = ({
               </VStack>
             </HStack>
 
-            <Grid
-              templateColumns={{ base: "1fr", md: "repeat(2, 1fr)" }}
-              gap={4}
-            >
-              {weakSubjects.length > 0 ? (
-                weakSubjects.map((s, i) => (
-                  <Box
-                    key={i}
-                    p={4}
-                    border="1px solid"
-                    borderColor="gray.100"
-                    borderRadius="xl"
-                    _hover={{ bg: "gray.50" }}
-                    cursor="pointer"
-                  >
-                    <HStack justify="space-between">
-                      <VStack align="start" gap={0}>
-                        <Text
-                          fontSize="xs"
-                          fontWeight="bold"
-                          color="primaryColor"
-                        >
-                          RECOMMENDED VIDEO
-                        </Text>
-                        <Text fontSize="sm" fontWeight="bold">
-                          {s.name} Fundamentals
-                        </Text>
-                      </VStack>
-                      <Icon as={LuBookOpen} />
-                    </HStack>
-                  </Box>
-                ))
-              ) : (
-                <Text color="gray.500" fontSize="sm">
-                  You're doing great! Why not try a more advanced quiz in{" "}
-                  {strongSubjects[0]?.name || "your core subjects"}?
+            {isRecsAllowed ? (
+              <Grid
+                templateColumns={{ base: "1fr", md: "repeat(2, 1fr)" }}
+                gap={4}
+              >
+                {weakSubjects.length > 0 ? (
+                  weakSubjects.map((s, i) => (
+                    <Box
+                      key={i}
+                      p={4}
+                      border="1px solid"
+                      borderColor="gray.100"
+                      borderRadius="xl"
+                      _hover={{ bg: "gray.50" }}
+                      cursor="pointer"
+                    >
+                      <HStack justify="space-between">
+                        <VStack align="start" gap={0}>
+                          <Text
+                            fontSize="xs"
+                            fontWeight="bold"
+                            color="primaryColor"
+                          >
+                            RECOMMENDED VIDEO
+                          </Text>
+                          <Text fontSize="sm" fontWeight="bold">
+                            {s.name} Fundamentals
+                          </Text>
+                        </VStack>
+                        <Icon as={LuBookOpen} />
+                      </HStack>
+                    </Box>
+                  ))
+                ) : (
+                  <Text color="gray.500" fontSize="sm">
+                    You're doing great! Why not try a more advanced quiz in{" "}
+                    {strongSubjects[0]?.name || "your core subjects"}?
+                  </Text>
+                )}
+              </Grid>
+            ) : (
+              <Box
+                p={4}
+                borderRadius="xl"
+                bg="blue.50"
+                border="1px dashed"
+                borderColor="blue.200"
+                textAlign="center"
+              >
+                <Text fontSize="xs" color="gray.700" mb={3}>
+                  Personalized study recommendations and tailored revision paths are available on Standard (₦15,000) and Premium plans.
                 </Text>
-              )}
-            </Grid>
+                <Button
+                  size="xs"
+                  bg="#206CE1"
+                  color="white"
+                  _hover={{ bg: "#1852B2" }}
+                  borderRadius="lg"
+                  onClick={handleRecsUpgradeClick}
+                >
+                  <PiShootingStarDuotone style={{ marginRight: "4px" }} /> Unlock Standard Plan
+                </Button>
+              </Box>
+            )}
           </Box>
         </VStack>
 
@@ -421,6 +512,16 @@ export const QuizReportPage = ({
           Download PDF Report
         </Button>
       </HStack>
+
+      {/* Upgrade Prompt Modal */}
+      <UpgradePromptModal
+        isOpen={modalState.isOpen}
+        onClose={closeUpgradeModal}
+        featureName={modalState.featureName}
+        requiredPlan={modalState.requiredPlan}
+        reason={modalState.reason}
+        currentPlan={effectivePlan}
+      />
     </Box>
   );
 };

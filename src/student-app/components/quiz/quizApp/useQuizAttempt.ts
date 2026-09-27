@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/lib/supabaseClient";
 import { useAuthdStudentData } from "@/student-app/context/studentDataContext";
 import { celebratePointsGained } from "@/student-app/components/rewards/pointsCelebrationStore";
+import { incrementTodayTimedQuizCount } from "@/services/subscriptionEntitlements";
 import type { QuizAttemptProps, QuizResults, SubjectResult } from "./types";
 
 const getGradeInfo = (percentage: number) => {
@@ -247,6 +248,16 @@ export const useQuizAttempt = (quizData: QuizAttemptProps["quizData"]) => {
       );
   
       await Promise.all(updatePromises);
+
+      // 5b. Record timed practice attempt count
+      if (authdStudent?.id) {
+        incrementTodayTimedQuizCount(authdStudent.id);
+        fetch("/api/subscription/record-timed-quiz", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ student_id: authdStudent.id }),
+        }).catch(() => {});
+      }
 
       // 6. Award iGrades points for quiz first attempt
       if (authdStudent?.id) {

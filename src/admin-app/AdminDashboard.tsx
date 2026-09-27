@@ -1192,8 +1192,16 @@ const AdminDashboard = () => {
     );
     setShowNotificationsMenu(false);
     setTab("student_management");
-    if (notif.related_request_id) {
-      setSelectedRequestId(notif.related_request_id);
+    const targetReqId =
+      notif.related_request_id ||
+      classChangeRequests.find((r) =>
+        (notif.title && notif.title.toLowerCase().includes(r.student_name.toLowerCase())) ||
+        (notif.message && notif.message.toLowerCase().includes(r.student_name.toLowerCase()))
+      )?.id;
+
+    if (targetReqId) {
+      setSelectedRequestId(null);
+      setTimeout(() => setSelectedRequestId(targetReqId), 50);
     }
   };
 
@@ -1535,34 +1543,56 @@ const AdminDashboard = () => {
                         <Text fontSize="12px" color="gray.500">No notifications yet</Text>
                       </Box>
                     ) : (
-                      notifications.slice(0, 10).map((n) => (
-                        <Box
-                          key={n.id}
-                          p={3}
-                          borderBottom="1px solid"
-                          borderColor="gray.100"
-                          bg={n.is_read ? "white" : "blue.50/40"}
-                          cursor="pointer"
-                          _hover={{ bg: "blue.50/70" }}
-                          transition="background 0.15s"
-                          onClick={() => handleNotificationClick(n)}
-                        >
-                          <Flex justify="space-between" align="flex-start" gap={2}>
-                            <Text fontSize="11px" fontWeight={n.is_read ? "600" : "800"} color="gray.900">
-                              {n.title}
+                      notifications.slice(0, 10).map((n) => {
+                        const isClassChange = Boolean(
+                          n.related_request_id ||
+                          n.title.toLowerCase().includes("class") ||
+                          n.message.toLowerCase().includes("class")
+                        );
+
+                        return (
+                          <Box
+                            key={n.id}
+                            p={3}
+                            borderBottom="1px solid"
+                            borderColor="gray.100"
+                            bg={n.is_read ? "white" : "blue.50/40"}
+                            cursor="pointer"
+                            _hover={{ bg: "blue.50/70" }}
+                            transition="background 0.15s"
+                            onClick={() => handleNotificationClick(n)}
+                          >
+                            <Flex justify="space-between" align="flex-start" gap={2}>
+                              <HStack gap={1.5} align="center" flexWrap="wrap">
+                                {isClassChange && (
+                                  <Badge colorPalette="blue" size="2xs" fontSize="9px" fontWeight="700">
+                                    CLASS TRANSFER
+                                  </Badge>
+                                )}
+                                <Text fontSize="11px" fontWeight={n.is_read ? "600" : "800"} color="gray.900">
+                                  {n.title}
+                                </Text>
+                              </HStack>
+                              {!n.is_read && (
+                                <Box w="6px" h="6px" borderRadius="full" bg="blue.600" mt={1} flexShrink={0} />
+                              )}
+                            </Flex>
+                            <Text fontSize="11px" color="gray.600" mt={0.5} lineHeight="1.4">
+                              {n.message}
                             </Text>
-                            {!n.is_read && (
-                              <Box w="6px" h="6px" borderRadius="full" bg="blue.600" mt={1} />
-                            )}
-                          </Flex>
-                          <Text fontSize="11px" color="gray.600" mt={0.5} lineHeight="1.4">
-                            {n.message}
-                          </Text>
-                          <Text fontSize="9px" color="gray.400" mt={1}>
-                            {new Date(n.created_at).toLocaleDateString("en-GB", { hour: "2-digit", minute: "2-digit" })}
-                          </Text>
-                        </Box>
-                      ))
+                            <Flex justify="space-between" align="center" mt={1.5}>
+                              <Text fontSize="9px" color="gray.400">
+                                {new Date(n.created_at).toLocaleDateString("en-GB", { hour: "2-digit", minute: "2-digit" })}
+                              </Text>
+                              {isClassChange && (
+                                <Text fontSize="10px" color="blue.600" fontWeight="700">
+                                  View Request & History →
+                                </Text>
+                              )}
+                            </Flex>
+                          </Box>
+                        );
+                      })
                     )}
                   </Box>
                 </Box>

@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import {
   Box,
   Flex,
@@ -25,9 +25,11 @@ import {
   FiShield,
   FiRefreshCw,
   FiX,
+  FiList,
 } from "react-icons/fi";
 import { classChangeService } from "@/services/classChangeService";
 import type { ClassChangeRequest } from "@/services/classChangeService";
+import { ClassChangeHistorySection } from "@/parent-app/components/grader/ClassChangeHistorySection";
 
 export interface Student {
   id: string;
@@ -91,13 +93,105 @@ const StudentManagementTab = ({
   const [isProcessing, setIsProcessing] = useState(false);
   const [confirmAction, setConfirmAction] = useState<"approve" | "reject" | null>(null);
 
+  const [studentHistoryRequests, setStudentHistoryRequests] = useState<ClassChangeRequest[]>([]);
+  const [loadingHistory, setLoadingHistory] = useState(false);
+
+  // Dedicated student history modal (from student directory table)
+  const [selectedStudentForHistory, setSelectedStudentForHistory] = useState<Student | null>(null);
+  const [directoryStudentHistory, setDirectoryStudentHistory] = useState<ClassChangeRequest[]>([]);
+  const [loadingDirectoryHistory, setLoadingDirectoryHistory] = useState(false);
+
   // Sync if selectedRequestId passed from notification
-  if (selectedRequestId && (!reviewingRequest || reviewingRequest.id !== selectedRequestId)) {
-    const target = requests.find((r) => r.id === selectedRequestId);
-    if (target) {
-      setReviewingRequest(target);
+  useEffect(() => {
+    if (selectedRequestId) {
+      const target = requests.find((r) => r.id === selectedRequestId);
+      if (target) {
+        setReviewingRequest(target);
+      } else {
+        classChangeService
+          .getRequestById(selectedRequestId)
+          .then((req) => {
+            if (req) setReviewingRequest(req);
+          })
+          .catch((err) => console.warn("Could not fetch target request:", err));
+      }
     }
-  }
+  }, [selectedRequestId, requests]);
+
+  // Load history whenever reviewingRequest changes
+  useEffect(() => {
+    if (!reviewingRequest?.student_id && !reviewingRequest?.student_email) {
+      setStudentHistoryRequests([]);
+      return;
+    }
+    let isMounted = true;
+    setLoadingHistory(true);
+
+    const studentId = reviewingRequest.student_id;
+    const fetchHistory = async () => {
+      try {
+        let history: ClassChangeRequest[] = [];
+        if (studentId) {
+          history = await classChangeService.getStudentRequests(studentId);
+        }
+        if (!history || history.length === 0) {
+          history = requests.filter(
+            (r) =>
+              (studentId && r.student_id === studentId) ||
+              (reviewingRequest.student_email &&
+                r.student_email?.toLowerCase() === reviewingRequest.student_email.toLowerCase())
+          );
+        }
+        if (isMounted) setStudentHistoryRequests(history);
+      } catch {
+        if (isMounted) {
+          setStudentHistoryRequests(
+            requests.filter(
+              (r) =>
+                (studentId && r.student_id === studentId) ||
+                (reviewingRequest.student_email &&
+                  r.student_email?.toLowerCase() === reviewingRequest.student_email.toLowerCase())
+            )
+          );
+        }
+      } finally {
+        if (isMounted) setLoadingHistory(false);
+      }
+    };
+
+    fetchHistory();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [reviewingRequest?.id, reviewingRequest?.student_id, reviewingRequest?.student_email, requests]);
+
+  const handleOpenStudentHistory = async (st: Student) => {
+    setSelectedStudentForHistory(st);
+    setLoadingDirectoryHistory(true);
+    try {
+      let list = await classChangeService.getStudentRequests(st.id);
+      if (!list || list.length === 0) {
+        list = requests.filter(
+          (r) =>
+            r.student_id === st.id ||
+            r.student_email?.toLowerCase() === st.email?.toLowerCase() ||
+            r.student_name?.toLowerCase() === `${st.firstname} ${st.lastname}`.toLowerCase()
+        );
+      }
+      setDirectoryStudentHistory(list);
+    } catch {
+      setDirectoryStudentHistory(
+        requests.filter(
+          (r) =>
+            r.student_id === st.id ||
+            r.student_email?.toLowerCase() === st.email?.toLowerCase()
+        )
+      );
+    } finally {
+      setLoadingDirectoryHistory(false);
+    }
+  };
 
   // Filter requests
   const filteredRequests = useMemo(() => {
@@ -504,7 +598,7 @@ const StudentManagementTab = ({
           <Table.Root size="sm">
             <Table.Header>
               <Table.Row bg="gray.50">
-                {["Student Name", "Email", "Assigned Class", "Plan", "Status", "Child Account", "Joined Date"].map((h) => (
+                {["Student Name", "Email", "Assigned Class", "Plan", "Status", "Child Account", "Joined Date", "Class History"].map((h) => (
                   <Table.ColumnHeader key={h} fontSize="11px" fontWeight="700" color="gray.500" py={3.5} textTransform="uppercase" letterSpacing="0.05em">
                     {h}
                   </Table.ColumnHeader>
@@ -540,6 +634,22 @@ const StudentManagementTab = ({
                   </Table.Cell>
                   <Table.Cell fontSize="11px" color="gray.600">{st.is_child ? "Yes" : "No"}</Table.Cell>
                   <Table.Cell fontSize="11px" color="gray.500">{fmt(st.created_at)}</Table.Cell>
+                  <Table.Cell>
+                    <Button
+                      size="xs"
+                      variant="outline"
+                      colorPalette="blue"
+                      borderRadius="md"
+                      fontSize="11px"
+                      fontWeight="600"
+                      h="26px"
+                      px={2.5}
+                      onClick={() => handleOpenStudentHistory(st)}
+                    >
+                      <Icon as={FiList} mr={1} />
+                      View History
+                    </Button>
+                  </Table.Cell>
                 </Table.Row>
               ))}
             </Table.Body>
@@ -707,6 +817,20 @@ const StudentManagementTab = ({
                 </Box>
               </Box>
 
+              {/* Student Academic Class Change History */}
+              <Box mb={4} p={3.5} bg="gray.50" borderRadius="xl" border="1px solid" borderColor="gray.200">
+                <ClassChangeHistorySection
+                  requests={
+                    studentHistoryRequests.length > 0
+                      ? studentHistoryRequests
+                      : requests.filter((r) => r.student_id === reviewingRequest.student_id)
+                  }
+                  childName={reviewingRequest.student_name}
+                  currentRequestId={reviewingRequest.id}
+                  loading={loadingHistory}
+                />
+              </Box>
+
             {/* If Request is already reviewed, show audit trail */}
             {reviewingRequest.status !== "pending" && (
               <Box bg="gray.50" p={3.5} borderRadius="lg" border="1px solid" borderColor="gray.200" mb={4}>
@@ -858,6 +982,104 @@ const StudentManagementTab = ({
                 </Button>
               </Flex>
             )}
+          </Box>
+        </Box>
+      )}
+
+      {/* ─── STUDENT CLASS CHANGE HISTORY MODAL (From Student Directory) ─── */}
+      {selectedStudentForHistory && (
+        <Box
+          position="fixed"
+          top={0}
+          left={0}
+          w="100vw"
+          h="100vh"
+          bg="rgba(15, 23, 42, 0.75)"
+          zIndex={6000}
+          display="flex"
+          justifyContent="center"
+          alignItems="center"
+          p={{ base: 4, md: 6 }}
+        >
+          <Box
+            bg="white"
+            borderRadius="2xl"
+            boxShadow="2xl"
+            p={{ base: 5, md: 7 }}
+            maxW="640px"
+            w="full"
+            maxH="90vh"
+            overflowY="auto"
+            position="relative"
+          >
+            {/* Modal Header */}
+            <Flex justify="space-between" align="center" mb={4} pb={3} borderBottom="1px solid" borderColor="gray.100">
+              <HStack gap={2.5}>
+                <Box p={2} bg="blue.50" color="blue.600" borderRadius="lg">
+                  <Icon as={FiShield} boxSize={5} />
+                </Box>
+                <Box>
+                  <Heading fontSize="md" fontWeight="800" color="gray.900">
+                    Academic Class Change History
+                  </Heading>
+                  <Text fontSize="11px" color="gray.500">
+                    Official progression records for {selectedStudentForHistory.firstname} {selectedStudentForHistory.lastname}
+                  </Text>
+                </Box>
+              </HStack>
+              <Button
+                size="xs"
+                variant="ghost"
+                color="gray.400"
+                _hover={{ color: "gray.700" }}
+                onClick={() => setSelectedStudentForHistory(null)}
+              >
+                <Icon as={FiX} boxSize={4} />
+              </Button>
+            </Flex>
+
+            {/* Student Info Card */}
+            <Box bg="gray.50" p={3.5} borderRadius="xl" border="1px solid" borderColor="gray.200" mb={4}>
+              <Flex justify="space-between" align="center" flexWrap="wrap" gap={2}>
+                <Flex align="center" gap={3}>
+                  <Avatar.Root size="sm">
+                    <Avatar.Fallback bg="blue.600" color="white" fontWeight="700">
+                      {selectedStudentForHistory.firstname?.[0] || "S"}
+                    </Avatar.Fallback>
+                  </Avatar.Root>
+                  <Box>
+                    <Text fontSize="13px" fontWeight="800" color="gray.900">
+                      {selectedStudentForHistory.firstname} {selectedStudentForHistory.lastname}
+                    </Text>
+                    <Text fontSize="11px" color="gray.500">
+                      {selectedStudentForHistory.email}
+                    </Text>
+                  </Box>
+                </Flex>
+                <Badge bg="blue.50" color="blue.700" border="1px solid" borderColor="blue.200" borderRadius="md" px={2.5} py={1} fontSize="12px" fontWeight="700">
+                  Current Class: {selectedStudentForHistory.class || "Unassigned"}
+                </Badge>
+              </Flex>
+            </Box>
+
+            {/* History Section */}
+            <ClassChangeHistorySection
+              requests={directoryStudentHistory}
+              childName={`${selectedStudentForHistory.firstname} ${selectedStudentForHistory.lastname}`}
+              loading={loadingDirectoryHistory}
+            />
+
+            <Flex justify="flex-end" pt={4} mt={4} borderTop="1px solid" borderColor="gray.100">
+              <Button
+                size="sm"
+                variant="outline"
+                borderRadius="lg"
+                onClick={() => setSelectedStudentForHistory(null)}
+                fontSize="12px"
+              >
+                Close Record
+              </Button>
+            </Flex>
           </Box>
         </Box>
       )}

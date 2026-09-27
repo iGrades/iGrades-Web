@@ -25,6 +25,8 @@ import addPix from "@/assets/addPix.png";
 import AddGraderSuccessPopover from "./addGraderSuccessPopover";
 import SeniorCourses from "../courses/seniorCourses";
 import JuniorCourses from "../courses/juniorCourses";
+import { useParentSubscriptionEntitlement } from "@/parent-app/hooks/useParentSubscriptionEntitlement";
+import { UpgradePromptModal } from "@/components/subscription/UpgradePromptModal";
 
 type AddGraderProps = {
   basePageWidth: number;
@@ -175,9 +177,28 @@ function AddGrader({
     setSelectedCourses(courses);
   };
 
+  const {
+    effectivePlan,
+    verifyAddChild,
+    modalState,
+    promptUpgrade,
+    closeUpgradeModal,
+  } = useParentSubscriptionEntitlement();
+
   // Function handles form submission
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    // Check multiple children subscription limits
+    const checkResult = verifyAddChild();
+    if (!checkResult.allowed) {
+      promptUpgrade(
+        "Additional Child Connection",
+        checkResult.requiredPlan,
+        checkResult.reason
+      );
+      return;
+    }
 
     // Validate course selection
     if (selectedCourses.length === 0 && (isSeniorStudent || isJuniorStudent)) {
@@ -587,6 +608,16 @@ function AddGrader({
           setShowModal={setShowModal}
         />
       )}
+
+      <UpgradePromptModal
+        isOpen={modalState.isOpen}
+        onClose={closeUpgradeModal}
+        featureName={modalState.featureName}
+        requiredPlan={modalState.requiredPlan}
+        reason={modalState.reason}
+        currentPlan={effectivePlan}
+        portalType="parent"
+      />
     </>
   );
 }

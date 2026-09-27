@@ -22,6 +22,7 @@ export const STORAGE_KEYS = {
   AUTHD_STUDENT: "authdStudent",
   AUTHD_PARENT: "authdParent",
   ADMIN: "admin",
+  LAST_ACTIVE_PATH: "igrade_last_active_path",
 } as const;
 
 export const SESSION_EXPIRED_MESSAGE = "Your session has expired. Please sign in again.";
@@ -119,6 +120,7 @@ export function clearAllLocalSessionData(): void {
     localStorage.removeItem(STORAGE_KEYS.AUTHD_STUDENT);
     localStorage.removeItem(STORAGE_KEYS.AUTHD_PARENT);
     localStorage.removeItem(STORAGE_KEYS.LAST_ACTIVITY);
+    localStorage.removeItem(STORAGE_KEYS.LAST_ACTIVE_PATH);
     sessionStorage.removeItem(STORAGE_KEYS.ADMIN);
 
     // Remove any Supabase auth keys
@@ -211,6 +213,66 @@ export function consumeSessionExpiredNotice(): string | null {
   }
   return null;
 }
+
+/**
+ * Returns the destination route for an authenticated user if their session is still valid.
+ * Respects last recorded active path or defaults to appropriate role dashboard.
+ */
+export function getAuthenticatedRedirectPath(): string | null {
+  if (typeof window === "undefined" || !window.localStorage) return null;
+  if (isSessionExpired()) return null;
+
+  // 1. Check student session
+  try {
+    const rawStudent = localStorage.getItem(STORAGE_KEYS.AUTHD_STUDENT);
+    if (rawStudent) {
+      const student = JSON.parse(rawStudent);
+      if (student?.id || student?.firstname) {
+        const lastPath = localStorage.getItem(STORAGE_KEYS.LAST_ACTIVE_PATH);
+        if (lastPath && (lastPath.startsWith("/student") || lastPath.startsWith("/course-selection"))) {
+          return lastPath;
+        }
+        const fullName = `${student.firstname || ""} ${student.lastname || ""}`.trim();
+        const urlFriendly = fullName.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, "");
+        return urlFriendly ? `/student-dashboard/${urlFriendly}` : "/student-dashboard";
+      }
+    }
+  } catch {
+    // ignore
+  }
+
+  // 2. Check parent session
+  try {
+    const rawParent = localStorage.getItem(STORAGE_KEYS.AUTHD_PARENT);
+    if (rawParent) {
+      const parentData = JSON.parse(rawParent);
+      const p = Array.isArray(parentData) ? parentData[0] : parentData;
+      if (p?.id || p?.firstname || p?.email) {
+        const lastPath = localStorage.getItem(STORAGE_KEYS.LAST_ACTIVE_PATH);
+        if (lastPath && lastPath.startsWith("/parent")) {
+          return lastPath;
+        }
+        const fullName = `${p.firstname || ""} ${p.lastname || ""}`.trim();
+        const urlFriendly = fullName.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, "");
+        return urlFriendly ? `/parent-dashboard/${urlFriendly}` : "/parent-dashboard";
+      }
+    }
+  } catch {
+    // ignore
+  }
+
+  // 3. Check admin session
+  try {
+    if (sessionStorage.getItem(STORAGE_KEYS.ADMIN)) {
+      return "/admin/dashboard";
+    }
+  } catch {
+    // ignore
+  }
+
+  return null;
+}
+
 
 /**
  * Custom Storage adapter for Supabase Auth to enforce the 14-day inactivity policy

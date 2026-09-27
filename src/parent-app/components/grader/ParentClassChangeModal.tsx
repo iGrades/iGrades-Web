@@ -26,6 +26,7 @@ import { toaster } from "@/components/ui/toaster";
 import { classChangeService } from "@/services/classChangeService";
 import type { ClassChangeRequest } from "@/services/classChangeService";
 import { useUser } from "@/parent-app/context/parentDataContext";
+import { ClassChangeHistorySection } from "./ClassChangeHistorySection";
 
 const AVAILABLE_CLASSES = [
   { value: "JSS 1", label: "Junior Secondary School 1 (JSS 1)" },
@@ -302,6 +303,14 @@ export const ParentClassChangeModal = ({
               </Box>
             </Box>
 
+            {/* Child's Class Change History */}
+            <ClassChangeHistorySection
+              requests={existingRequests}
+              childName={selectedChild?.firstname || "Child"}
+              currentRequestId={pendingRequest.id}
+              loading={loadingRequests}
+            />
+
             <Flex justify="flex-end" mt={4}>
               <Button size="sm" variant="outline" colorPalette="gray" onClick={onClose}>
                 Close
@@ -444,6 +453,17 @@ export const ParentClassChangeModal = ({
                   Submit Request for Admin Review
                 </Button>
               </Flex>
+
+              {/* Child's Previous Class Change History */}
+              {existingRequests.length > 0 && (
+                <Box mt={2} pt={3} borderTop="1px solid" borderColor="gray.100">
+                  <ClassChangeHistorySection
+                    requests={existingRequests}
+                    childName={selectedChild?.firstname || "Child"}
+                    loading={loadingRequests}
+                  />
+                </Box>
+              )}
             </VStack>
           </form>
         )}

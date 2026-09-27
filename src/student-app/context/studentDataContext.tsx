@@ -32,6 +32,8 @@ interface Alert {
 
 interface AuthdStudentDataContextType {
   authdStudent: Student | null;
+  loading: boolean;
+  fetchError: string | null;
   alert: Alert | null;
   setAuthdStudent: Dispatch<SetStateAction<Student | null>>;
   clearAlert: () => void;
@@ -60,6 +62,8 @@ export const AuthdStudentDataProvider = ({
   });
   const [alert, setAlert] = useState<Alert | null>(null);
   const [isPopOver, setIsPopOver] = useState<boolean>(false);
+  const [loading, setLoading] = useState<boolean>(!authdStudent);
+  const [fetchError, setFetchError] = useState<string | null>(null);
 
   useEffect(() => {
     if (authdStudent) {
@@ -72,23 +76,32 @@ export const AuthdStudentDataProvider = ({
     if (!authdStudent) {
       const syncSession = async () => {
         try {
+          setLoading(true);
+          setFetchError(null);
           const { data: { session } } = await supabase.auth.getSession();
           if (session?.user?.email) {
-            const { data } = await supabase
+            const { data, error } = await supabase
               .from("students")
               .select("*")
               .eq("email", session.user.email)
               .maybeSingle();
-            if (data) {
+            if (error) {
+              setFetchError(error.message);
+            } else if (data) {
               setAuthdStudent(data);
               localStorage.setItem("authdStudent", JSON.stringify(data));
             }
           }
-        } catch (err) {
+        } catch (err: any) {
           console.warn("Notice syncing student session:", err);
+          setFetchError(err?.message || "Failed to sync student session");
+        } finally {
+          setLoading(false);
         }
       };
       syncSession();
+    } else {
+      setLoading(false);
     }
   }, [authdStudent]);
 
@@ -96,19 +109,28 @@ export const AuthdStudentDataProvider = ({
     // Guard: can't refresh if we don't know who the student is
     if (!authdStudent?.id) return;
 
-    const { data, error } = await supabase
-      .from("students")
-      .select("*")
-      .eq("id", authdStudent.id)  // use the id already in state
-      .single();
+    try {
+      setLoading(true);
+      setFetchError(null);
+      const { data, error } = await supabase
+        .from("students")
+        .select("*")
+        .eq("id", authdStudent.id)  // use the id already in state
+        .single();
 
-    if (error) {
-      console.warn("Notice refreshing student data:", error?.message || error);
-      return;
-    }
+      if (error) {
+        console.warn("Notice refreshing student data:", error?.message || error);
+        setFetchError(error.message);
+        return;
+      }
 
-    if (data) {
-      setAuthdStudent(data); // updates state + triggers localStorage sync via useEffect
+      if (data) {
+        setAuthdStudent(data); // updates state + triggers localStorage sync via useEffect
+      }
+    } catch (err: any) {
+      setFetchError(err?.message || "Failed to refresh student profile");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -126,6 +148,8 @@ export const AuthdStudentDataProvider = ({
     <AuthdStudentDataContext.Provider
       value={{
         authdStudent,
+        loading,
+        fetchError,
         setAuthdStudent,
         alert,
         clearAlert,

@@ -60,6 +60,10 @@ const studentRoutes: RouteObject[] = [
     element: <StudentRedirect targetPage="settings" />,
   },
   {
+    path: "/student/subscription",
+    element: <StudentRedirect targetPage="settings" targetTab="subscription" />,
+  },
+  {
     path: "/student",
     element: <StudentRedirect targetPage="home" />,
   },

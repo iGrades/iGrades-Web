@@ -27,6 +27,9 @@ import examTestIcon from "@/assets/examText_ico.png";
 import QuizInstructions from "./quizInstructions";
 import { toaster } from "@/components/ui/toaster";
 import { supabase } from "@/lib/supabaseClient";
+import { useSubscriptionEntitlement } from "@/hooks/useSubscriptionEntitlement";
+import { UpgradePromptModal } from "@/components/subscription/UpgradePromptModal";
+import { LockedBadge } from "@/components/subscription/LockedBadge";
 
 type Props = {
   topicList: Topic[];
@@ -79,6 +82,22 @@ const QuizTopicsList = ({
   const [availableTopics, setAvailableTopics] = useState<TopicWithQuizStatus[]>([]);
   const [loadingAvailableTopics, setLoadingAvailableTopics] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const {
+    effectivePlan,
+    verifyQuizMode,
+    verifyTimedQuiz,
+    verifyExamSimulation,
+    verifyJambSimulation,
+    verifyAIProctoring,
+    verifyProctoredMock,
+    proctoredMocksCount,
+    maxProctoredMocks,
+    maxDailyTimedQuizzes,
+    modalState,
+    promptUpgrade,
+    closeUpgradeModal,
+  } = useSubscriptionEntitlement();
 
   const { subjectImages } = useStudentData();
 
@@ -248,6 +267,37 @@ const QuizTopicsList = ({
 
   const handleRadioChange = (value: string | null) => {
     if (value) {
+      if (value === "examination") {
+        const proctorAccess = verifyAIProctoring();
+        if (!proctorAccess.allowed) {
+          promptUpgrade(
+            "AI Proctoring & Proctored Mock Exams",
+            "standard",
+            "AI Proctoring and Proctored Mock Exams are not available on the Basic plan. Upgrade to Standard (₦15,000) for proctored mock examinations, or Premium for generous fair-use access!"
+          );
+          return;
+        }
+
+        const mockAccess = verifyProctoredMock();
+        if (!mockAccess.allowed) {
+          promptUpgrade(
+            "Proctored Mock Exam Limit",
+            mockAccess.requiredPlan,
+            mockAccess.reason || `You have completed all ${maxProctoredMocks} proctored mock exams included in your Standard plan. Upgrade to Premium for generous fair-use access!`
+          );
+          return;
+        }
+
+        const access = verifyQuizMode("examination", selectedCourses.length);
+        if (!access.allowed) {
+          promptUpgrade(
+            "Full-Length Examination Mode",
+            access.requiredPlan,
+            access.reason || "Full Examination Mode (60 questions in 60 mins syllabus simulation) requires a Standard or Premium plan. Upgrade to Standard (₦15,000) to simulate full WAEC, JAMB, and NECO exams!"
+          );
+          return;
+        }
+      }
       setSelectedMode(value);
       // If switching to examination mode, we don't need subtopics
       // If switching to test mode, ensure subtopics are synced
@@ -380,6 +430,73 @@ const QuizTopicsList = ({
         type: "warning",
       });
       return;
+    }
+
+    // 1. Timed Quiz limit verification (Basic allows up to 3 per day)
+    const timedAccess = verifyTimedQuiz();
+    if (!timedAccess.allowed) {
+      promptUpgrade(
+        "Daily Timed Quiz Limit",
+        timedAccess.requiredPlan,
+        timedAccess.reason || `You have completed all ${maxDailyTimedQuizzes} daily timed practice quizzes included in the Basic plan. Upgrade to Standard (₦15,000) for generous timed practice!`
+      );
+      return;
+    }
+
+    // 2. Full Exam Simulation, AI Proctoring & Proctored Mock Exam verification
+    if (selectedMode === "examination") {
+      const proctorAccess = verifyAIProctoring();
+      if (!proctorAccess.allowed) {
+        promptUpgrade(
+          "AI Proctoring & Proctored Mock Exams",
+          "standard",
+          "AI Proctoring and Proctored Mock Exams are not available on the Basic plan. Upgrade to Standard (₦15,000) for proctored mock examinations, or Premium for generous fair-use access!"
+        );
+        return;
+      }
+
+      const mockAccess = verifyProctoredMock();
+      if (!mockAccess.allowed) {
+        promptUpgrade(
+          "Proctored Mock Exam Limit",
+          mockAccess.requiredPlan,
+          mockAccess.reason || `You have completed all ${maxProctoredMocks} proctored mock exams included in your Standard plan. Upgrade to Premium for generous fair-use access!`
+        );
+        return;
+      }
+
+      const examAccess = verifyExamSimulation();
+      if (!examAccess.allowed) {
+        promptUpgrade(
+          "Full-Length Examination Mode",
+          examAccess.requiredPlan,
+          examAccess.reason || "Full Examination Mode (60 questions in 60 mins syllabus simulation) requires a Standard or Premium plan. Upgrade to Standard (₦15,000) to simulate full WAEC, JAMB, and NECO exams!"
+        );
+        return;
+      }
+    }
+
+    // 3. JAMB 4-Subject Simulation & Multi-subject testing verification
+    if (selectedCourses.length === 4) {
+      const jambAccess = verifyJambSimulation(4);
+      if (!jambAccess.allowed) {
+        promptUpgrade(
+          "JAMB 4-Subject Mock Simulation",
+          jambAccess.requiredPlan,
+          jambAccess.reason || "JAMB UTME 4-Subject Mock Simulation is an examination-grade simulation available on Standard and Premium plans. On the Basic plan, you can practice 1 subject at a time."
+        );
+        return;
+      }
+    } else if (selectedCourses.length > 1) {
+      const access = verifyQuizMode(selectedMode, selectedCourses.length);
+      if (!access.allowed) {
+        promptUpgrade(
+          "Multi-Subject Quiz Practice",
+          access.requiredPlan,
+          access.reason || "Combined multi-subject quiz testing is available on Standard and Premium plans. On the Basic plan, you can take Quick Tests on 1 subject at a time."
+        );
+        return;
+      }
     }
 
     setShowInstructPage(true);
@@ -517,6 +634,9 @@ const QuizTopicsList = ({
               >
                 {items.map((item) => {
                   const isSelected = selectedMode === item.value;
+                  const isExamMode = item.value === "examination";
+                  const isLocked = isExamMode && !verifyQuizMode("examination", selectedCourses.length).allowed;
+
                   return (
                     <RadioGroup.Item key={item.value} value={item.value} asChild>
                       <label style={{ flex: 1, display: "flex" }}>
@@ -531,17 +651,30 @@ const QuizTopicsList = ({
                           flex="1"
                           cursor="pointer"
                           border="2px solid"
-                          borderColor={isSelected ? "blue.500" : "transparent"}
-                          _hover={{ borderColor: "blue.300" }}
+                          borderColor={isSelected ? "blue.500" : isLocked ? "orange.200" : "transparent"}
+                          _hover={{ borderColor: isLocked ? "orange.400" : "blue.300" }}
                           transition="all 0.2s"
                         >
                           <Image src={item.icon} height="35px" alt="icon" />
                           <Box flex="1">
-                            <HStack gap={2} mb={0.5}>
+                            <HStack gap={2} mb={0.5} wrap="wrap">
                               <Heading fontSize="sm">{item.title}</Heading>
                               <Badge size="xs" colorPalette={item.value === "quick test" ? "purple" : "blue"} variant="subtle">
                                 {item.badge}
                               </Badge>
+                              {isExamMode && isLocked && (
+                                <LockedBadge requiredPlan="standard" label="Proctored Mocks: Standard Req." size="xs" variant="solid" />
+                              )}
+                              {isExamMode && !isLocked && effectivePlan === "standard" && (
+                                <Badge size="xs" colorPalette="blue" variant="outline">
+                                  Proctored Mocks: {proctoredMocksCount}/3
+                                </Badge>
+                              )}
+                              {isExamMode && !isLocked && effectivePlan === "premium" && (
+                                <Badge size="xs" colorPalette="purple" variant="solid">
+                                  Full AI Proctoring (Fair-Use)
+                                </Badge>
+                              )}
                             </HStack>
                             <Text fontSize="xs" color="gray.600">
                               {item.description}
@@ -845,6 +978,16 @@ const QuizTopicsList = ({
           </Box>
         </>
       )}
+
+      {/* Upgrade Prompt Modal */}
+      <UpgradePromptModal
+        isOpen={modalState.isOpen}
+        onClose={closeUpgradeModal}
+        featureName={modalState.featureName}
+        requiredPlan={modalState.requiredPlan}
+        reason={modalState.reason}
+        currentPlan={effectivePlan}
+      />
     </>
   );
 };

@@ -17,25 +17,35 @@ import { useAuthdStudentData } from "@/student-app/context/studentDataContext";
 import type { SubscriptionPlan } from "@/types/flutterwave";
 import { usePointsSystem } from "@/student-app/hooks/usePointsSystem";
 import { FiAward } from "react-icons/fi";
+import { PiShootingStarDuotone } from "react-icons/pi";
+import { normalizePlan } from "@/services/subscriptionEntitlements";
 
 const Subscription: React.FC = () => {
   const { initializePayment, isLoading, loadingPlanId } = useFlutterwave();
   const { authdStudent, refreshStudentData } = useAuthdStudentData();
   const { pointsBalance, creditBalance, convertPoints, applyCredit, actionLoading } = usePointsSystem();
 
+  const { effectivePlan, isExpired } = normalizePlan(
+    authdStudent?.subscription,
+    authdStudent?.subscription_status
+  );
+
   const subscriptionPlans: SubscriptionPlan[] = [
     {
       id: "basic",
       name: "Basic",
       text: "Ideal for beginners starting their learning journey.",
-      price: "Zero Fee",
+      price: "Free",
       amount: 0,
       desc: [
-        "Foundational Access",
-        "Access to selected PDF learning materials",
-        "Access to limited video lessons",
-        "Basic student dashboard access",
-        "Introductory academic resources",
+        "Up to 4 starter subjects & curriculum topics",
+        "Recent 2 years of Past Questions (2023–2024)",
+        "2 starter video lessons per topic & starter PDFs",
+        "5 Spark AI interactions per day",
+        "Limited Socratic guidance & starter hints",
+        "Limited timed practice (up to 3 timed quizzes/day)",
+        "Basic score history & progress tracking",
+        "iGG Points, streaks & reward conversion (available on all plans)",
       ],
     },
     {
@@ -45,12 +55,15 @@ const Subscription: React.FC = () => {
       price: "₦15,000",
       amount: 15000, 
       desc: [
-        "Comprehensive Learning Experience",
-        "Full access to all PDF materials",
-        "Complete video lesson library",
-        "Access to scheduled live group sessions",
-        "Mock quizzes with performance tracking",
-        "Structured academic progression support",
+        "Expanded access to all secondary subjects",
+        "10-year Past Questions archive (WAEC, JAMB, NECO)",
+        "Full video lesson catalog & complete PDF study guides",
+        "30 Spark AI interactions per day",
+        "Included multi-level Socratic tutoring & worked guidance",
+        "Personalized guidance & misconception diagnosis",
+        "Limited AI Proctoring (up to 3 proctored mock exams)",
+        "Full Examination Mode & 4-subject JAMB simulation",
+        "Detailed performance breakdown & study paths",
       ],
     },
     {
@@ -60,20 +73,21 @@ const Subscription: React.FC = () => {
       price: "₦25,000",
       amount: 25000,
       desc: [
-        "Advanced & Personalized Learning",
         "Everything in the Standard Plan",
-        "Priority access to live sessions",
-        "Advanced mock examinations with feedback",
-        "Personalized academic guidance",
-        "Early access to new learning resources",
+        "Highest Spark AI daily usage (fair-use limits)",
+        "Advanced cognitive Socratic tutoring & derivations",
+        "Advanced personalized tutoring & longitudinal support",
+        "Full unrestricted AI Proctoring with vision & audio",
+        "Generous proctored mock exams access (fair-use)",
+        "Generous timed practice & priority exam simulations",
+        "Deep & advanced learning analytics with AI diagnostics",
+        "Priority access to new study materials & mocks",
       ],
     },
   ];
 
-  const currentPlan = authdStudent?.subscription;
-
   const handlePayment = async (plan: SubscriptionPlan): Promise<void> => {
-    if (currentPlan === plan.id) return;
+    if (effectivePlan === plan.id && !isExpired) return;
 
     const userEmail = authdStudent?.email;
 
@@ -82,13 +96,13 @@ const Subscription: React.FC = () => {
     const creditToApply = plan.amount > 0 ? Math.min(availableCredit, plan.amount) : 0;
     const payableAmount = Math.max(0, plan.amount - creditToApply);
 
-    const effectivePlan: SubscriptionPlan = {
+    const payablePlan: SubscriptionPlan = {
       ...plan,
       amount: payableAmount,
     };
 
     // 1. Trigger Flutterwave UI (or skip for free / 100% store credit covered plan)
-    const result = await initializePayment(effectivePlan, userEmail);
+    const result = await initializePayment(payablePlan, userEmail);
 
     // 2. If payment succeeded (or free plan / credit-paid selected)
     if (result.success) {
@@ -136,28 +150,86 @@ const Subscription: React.FC = () => {
   };
 
   const getButtonLabel = (plan: SubscriptionPlan): string => {
-    if (currentPlan === plan.id) return "Current Plan";
+    if (effectivePlan === plan.id) {
+      if (isExpired) return "Renew Subscription";
+      return "Current Plan";
+    }
     if (plan.id === "basic") return "Get Started Free";
-    return `Get ${plan.name}`;
+    return `Unlock ${plan.name} Plan`;
   };
 
   return (
     <Box
       bg="white"
-      rounded="md"
+      rounded="2xl"
       shadow="sm"
-      p={4}
+      p={{ base: 4, md: 6 }}
       mb={10}
       h="auto"
     >
+      {/* Active Subscription Status Header */}
+      <Flex
+        direction={{ base: "column", sm: "row" }}
+        justify="space-between"
+        align={{ base: "start", sm: "center" }}
+        mb={5}
+        gap={3}
+        pb={4}
+        borderBottom="1px solid"
+        borderColor="gray.100"
+      >
+        <Box>
+          <HStack gap={2.5} mb={1}>
+            <Heading size={{ base: "md", md: "lg" }} color="gray.900" fontWeight="800">
+              Student Subscription
+            </Heading>
+            <Badge
+              colorPalette={effectivePlan === "premium" ? "purple" : effectivePlan === "standard" ? "blue" : "gray"}
+              variant="solid"
+              size="sm"
+              borderRadius="full"
+              px={2.5}
+            >
+              Current: {effectivePlan === "premium" ? "Premium" : effectivePlan === "standard" ? "Standard" : "Basic (Free)"}
+            </Badge>
+          </HStack>
+          <Text fontSize="xs" color="gray.500">
+            {isExpired
+              ? "Your subscription has expired and access has reverted to Basic tier."
+              : effectivePlan === "basic"
+              ? "You are currently enjoying free foundational curriculum access."
+              : `Your account has active ${effectivePlan === "premium" ? "Premium" : "Standard"} access.`}
+          </Text>
+        </Box>
+      </Flex>
+
+      {/* Expired Subscription Notice Banner */}
+      {isExpired && (
+        <Box
+          p={4}
+          borderRadius="2xl"
+          bg="red.50"
+          border="1px solid"
+          borderColor="red.300"
+          mb={6}
+          shadow="xs"
+        >
+          <Flex align="center" gap={3}>
+            <Text fontSize="sm" color="red.800" fontWeight="medium">
+              ⚠️ <strong>Subscription Expired:</strong> Your previous subscription has expired. You are currently on the free Basic tier. Renew below to reactivate full curriculum and examination access.
+            </Text>
+          </Flex>
+        </Box>
+      )}
       {/* iGrades Points & Store Credit Discount Banner */}
       <Box
         p={4}
         borderRadius="2xl"
-        bgGradient="linear(to-r, amber.500, orange.600)"
-        color="white"
+        bg="white"
+        border="1px solid"
+        borderColor="amber.300"
         mb={6}
-        shadow="md"
+        shadow="xs"
       >
         <Flex
           direction={{ base: "column", md: "row" }}
@@ -166,20 +238,23 @@ const Subscription: React.FC = () => {
           gap={3}
         >
           <HStack gap={3}>
-            <Box p={2.5} bg="white/20" borderRadius="xl">
+            <Box p={2.5} bg="amber.50" border="1px solid" borderColor="amber.200" borderRadius="xl" color="amber.700">
               <FiAward size={26} />
             </Box>
             <Box>
-              <HStack gap={2}>
-                <Heading size="sm" color="white" fontWeight="extrabold">
+              <HStack gap={2} flexWrap="wrap">
+                <Heading size="sm" color="gray.900" fontWeight="extrabold">
                   iGrades Rewards Store Credit
                 </Heading>
-                <Badge colorPalette="amber" variant="solid" bg="white" color="amber.800" px={2} fontSize="10px">
+                <Badge colorPalette="amber" variant="subtle" bg="amber.100" color="amber.800" border="1px solid" borderColor="amber.200" px={2} fontSize="10px" fontWeight="bold">
                   {pointsBalance.toLocaleString()} IGG Pts Available
                 </Badge>
               </HStack>
-              <Text fontSize="xs" color="amber.100" mt={0.5}>
-                Available Subscription Store Credit: <Text as="span" fontWeight="bold" fontSize="sm" color="white">₦{creditBalance.toLocaleString()}</Text>
+              <Text fontSize="xs" color="gray.600" mt={0.5}>
+                Available Subscription Store Credit:{" "}
+                <Text as="span" fontWeight="bold" fontSize="sm" color="emerald.700">
+                  ₦{creditBalance.toLocaleString()}
+                </Text>
               </Text>
             </Box>
           </HStack>
@@ -187,11 +262,12 @@ const Subscription: React.FC = () => {
           {pointsBalance >= 100 && (
             <Button
               size="sm"
-              bg="white"
-              color="amber.800"
-              _hover={{ bg: "amber.50" }}
+              bg="amber.600"
+              color="white"
+              _hover={{ bg: "amber.700" }}
               fontWeight="bold"
               borderRadius="xl"
+              shadow="xs"
               loading={actionLoading}
               onClick={() => convertPoints(100)}
             >
@@ -209,7 +285,7 @@ const Subscription: React.FC = () => {
         mt={4}
       >
         {subscriptionPlans.map((plan) => {
-          const isCurrentPlan = currentPlan === plan.id;
+          const isCurrentPlan = effectivePlan === plan.id && !isExpired;
           const isPlanLoading = isLoading && loadingPlanId === plan.id;
 
           return (
@@ -281,6 +357,9 @@ const Subscription: React.FC = () => {
                 }
                 transition="all 0.2s"
               >
+                {!isCurrentPlan && plan.id !== "basic" && (
+                  <PiShootingStarDuotone style={{ marginRight: "6px", fontSize: "1.1rem" }} />
+                )}
                 {getButtonLabel(plan)}
               </Button>
 

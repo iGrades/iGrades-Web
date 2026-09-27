@@ -104,10 +104,14 @@ class ClassChangeEngine {
     }
   }
 
-  public getRequests(filters?: { student_id?: string; parent_id?: string; status?: string }): ClassChangeRequest[] {
+  public getRequests(filters?: { student_id?: string; student_ids?: string[]; parent_id?: string; status?: string }): ClassChangeRequest[] {
+    this.data = this.loadData();
     let list = [...this.data.requests];
     if (filters?.student_id) {
       list = list.filter((r) => r.student_id === filters.student_id);
+    }
+    if (filters?.student_ids && filters.student_ids.length > 0) {
+      list = list.filter((r) => filters.student_ids!.includes(r.student_id));
     }
     if (filters?.parent_id) {
       list = list.filter((r) => r.parent_id === filters.parent_id || r.initiated_by_user_id === filters.parent_id);
@@ -119,6 +123,7 @@ class ClassChangeEngine {
   }
 
   public getRequestById(id: string): ClassChangeRequest | undefined {
+    this.data = this.loadData();
     return this.data.requests.find((r) => r.id === id);
   }
 

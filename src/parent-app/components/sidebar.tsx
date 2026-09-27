@@ -3,6 +3,7 @@ import { Box, Icon, Text, Flex, IconButton, HStack } from "@chakra-ui/react";
 import { AiTwotoneSetting } from "react-icons/ai";
 import { PiStudentDuotone } from "react-icons/pi";
 import { TbHomeFilled } from "react-icons/tb";
+import { BsFileEarmarkBarGraphFill } from "react-icons/bs";
 import { useNavigationStore } from "../../store/usenavigationStore";
 import { useTranslation } from "react-i18next";
 import type { IconType } from "react-icons";
@@ -21,6 +22,7 @@ const Sidebar = () => {
   }[] = [
     { icon: TbHomeFilled, label: t("nav_home"), value: "home" },
     { icon: PiStudentDuotone, label: t("nav_students"), value: "student" },
+    { icon: BsFileEarmarkBarGraphFill, label: "Reports", value: "weekly_report" },
     { icon: AiTwotoneSetting, label: t("nav_settings"), value: "settings" },
   ];
 
