@@ -10,6 +10,7 @@ import {
   useClasses,
 } from "@/student-app/context/dataContext";
 import { courseConfig } from "@/student-app/utils/courseConstants";
+import { getCourseThumbnail } from "@/student-app/utils/courseImages";
 import { useSubscriptionEntitlement } from "@/hooks/useSubscriptionEntitlement";
 import { UpgradePromptModal } from "@/components/subscription/UpgradePromptModal";
 import { LockedBadge } from "@/components/subscription/LockedBadge";
@@ -160,7 +161,7 @@ const QuizSubjectsList = ({
     return {
       dbName: id,
       displayName: config.displayName,
-      image: subjectImages[id] || null,
+      image: getCourseThumbnail(id, subjectImages),
       color: config.color,
     };
   });
@@ -201,8 +202,9 @@ const QuizSubjectsList = ({
                 alignItems="center"
                 transition="all 0.3s ease"
                 _hover={{ transform: "translateY(-6px)" }}
-                background={course.image ? `url(${course.image})` : course.color}
-                backgroundSize="contain"
+                background={course.image ? `url("${course.image.trim()}")` : course.color}
+                backgroundSize="cover"
+                backgroundPosition="center"
                 backgroundRepeat="no-repeat"
                 cursor="pointer"
                 position="relative"

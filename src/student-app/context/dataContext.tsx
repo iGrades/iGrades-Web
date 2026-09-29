@@ -13,6 +13,12 @@ import {
   DEFAULT_TOPICS,
   DEFAULT_RESOURCES,
 } from "./defaultCurriculumData";
+import {
+  DEFAULT_COURSE_IMAGES,
+  normalizeCourseKey,
+  cleanImageUrl,
+  getCourseAliases,
+} from "../utils/courseImages";
 
 // Interfaces
 export interface Subject {
@@ -349,11 +355,26 @@ export const DataProvider: React.FC<DataProviderProps> = ({ children }) => {
     return resources.filter((resource) => resource.type === type);
   };
 
-  // Subject images map (convenience)
-  const subjectImages: SubjectImage = {};
+  // Subject images map with fallback to all bundled course images
+  const subjectImages: SubjectImage = { ...DEFAULT_COURSE_IMAGES };
   subjects.forEach((subject) => {
     if (subject.image) {
-      subjectImages[subject.name] = subject.image;
+      const cleanImg = cleanImageUrl(subject.image);
+      if (cleanImg) {
+        subjectImages[subject.name] = cleanImg;
+        subjectImages[subject.name.toLowerCase().trim()] = cleanImg;
+        const normKey = normalizeCourseKey(subject.name);
+        subjectImages[normKey] = cleanImg;
+        if (subject.id) {
+          subjectImages[subject.id] = cleanImg;
+        }
+
+        // Map all known aliases (e.g. futher -> further mathematics, computer science -> computer studies)
+        const aliases = getCourseAliases(subject.name);
+        aliases.forEach((alias) => {
+          subjectImages[alias] = cleanImg;
+        });
+      }
     }
   });
 

@@ -47,19 +47,65 @@ const AuthdStudentDataContext = createContext<
   AuthdStudentDataContextType | undefined
 >(undefined);
 
+function normalizeStudent(student: any): Student | null {
+  if (!student) return null;
+  let parsedCourses: string[] = [];
+  const raw = student.registered_courses;
+  if (Array.isArray(raw)) {
+    parsedCourses = raw.map((c) => String(c).trim().toLowerCase()).filter(Boolean);
+  } else if (typeof raw === "string") {
+    const trimmed = raw.trim();
+    if (trimmed && trimmed !== "[]" && trimmed !== "{}" && trimmed !== '""') {
+      if (trimmed.startsWith("[") && trimmed.endsWith("]")) {
+        try {
+          const parsed = JSON.parse(trimmed);
+          if (Array.isArray(parsed)) {
+            parsedCourses = parsed.map((c) => String(c).trim().toLowerCase()).filter(Boolean);
+          }
+        } catch {
+          // fall through
+        }
+      } else if (trimmed.startsWith("{") && trimmed.endsWith("}")) {
+        parsedCourses = trimmed
+          .slice(1, -1)
+          .split(",")
+          .map((s) => s.replace(/^["']|["']$/g, "").trim().toLowerCase())
+          .filter(Boolean);
+      } else {
+        parsedCourses = trimmed
+          .split(",")
+          .map((s) => s.replace(/^["'\[\]]|["'\[\]]$/g, "").trim().toLowerCase())
+          .filter(Boolean);
+      }
+    }
+  }
+
+  return {
+    ...student,
+    registered_courses: parsedCourses,
+  };
+}
+
 export const AuthdStudentDataProvider = ({
   children,
 }: {
   children: ReactNode;
 }) => {
-  const [authdStudent, setAuthdStudent] = useState<Student | null>(() => {
+  const [authdStudent, setAuthdStudentState] = useState<Student | null>(() => {
     try {
       const storedStudent = localStorage.getItem("authdStudent");
-      return storedStudent ? JSON.parse(storedStudent) : null;
+      return storedStudent ? normalizeStudent(JSON.parse(storedStudent)) : null;
     } catch {
       return null;
     }
   });
+
+  const setAuthdStudent = (val: SetStateAction<Student | null>) => {
+    setAuthdStudentState((prev) => {
+      const next = typeof val === "function" ? val(prev) : val;
+      return normalizeStudent(next);
+    });
+  };
   const [alert, setAlert] = useState<Alert | null>(null);
   const [isPopOver, setIsPopOver] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(!authdStudent);

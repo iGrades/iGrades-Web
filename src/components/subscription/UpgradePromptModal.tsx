@@ -69,18 +69,20 @@ export const UpgradePromptModal: React.FC<UpgradePromptModalProps> = ({
   return (
     <DialogRoot open={isOpen} onOpenChange={(e) => !e.open && onClose()} placement="center">
       <DialogContent
-        maxW={{ base: "92vw", sm: "480px" }}
+        maxW={{ base: "94vw", sm: "520px" }}
+        w="full"
         maxH="90vh"
         borderRadius="2xl"
-        p={{ base: 4, sm: 5 }}
+        p={{ base: 4, sm: 6 }}
         bg="white"
         shadow="2xl"
         display="flex"
         flexDirection="column"
         overflow="hidden"
+        boxSizing="border-box"
       >
-        <DialogHeader pb={2} pt={1} px={1}>
-          <Flex align="center" gap={3}>
+        <DialogHeader pb={3} pt={1} px={0} position="relative">
+          <Flex align="flex-start" gap={3} pr={8} w="full">
             <Box
               p={2.5}
               borderRadius="xl"
@@ -90,11 +92,12 @@ export const UpgradePromptModal: React.FC<UpgradePromptModalProps> = ({
               alignItems="center"
               justifyContent="center"
               flexShrink={0}
+              mt={0.5}
             >
               <Icon as={LuLock} boxSize={5} />
             </Box>
             <Box minW={0} flex={1}>
-              <HStack gap={2} mb={1} flexWrap="wrap">
+              <HStack gap={2} mb={1.5} flexWrap="wrap">
                 <Badge bg="#206CE1" color="white" size="xs" variant="solid" px={2} py={0.5} borderRadius="md" fontWeight="bold">
                   {targetPlanDetails.name} Tier
                 </Badge>
@@ -102,7 +105,14 @@ export const UpgradePromptModal: React.FC<UpgradePromptModalProps> = ({
                   Current: {currentPlanDetails.name}
                 </Badge>
               </HStack>
-              <DialogTitle fontSize={{ base: "md", sm: "lg" }} fontWeight="800" color="gray.900" truncate>
+              <DialogTitle
+                fontSize={{ base: "md", sm: "lg" }}
+                fontWeight="800"
+                color="gray.900"
+                lineHeight="1.3"
+                wordBreak="break-word"
+                overflowWrap="anywhere"
+              >
                 Unlock {featureName}
               </DialogTitle>
             </Box>
@@ -110,11 +120,17 @@ export const UpgradePromptModal: React.FC<UpgradePromptModalProps> = ({
           <DialogCloseTrigger />
         </DialogHeader>
 
-        <DialogBody py={2} px={1} overflowY="auto" maxH="calc(90vh - 140px)">
-          <VStack align="stretch" gap={3}>
+        <DialogBody py={2} px={0} overflowY="auto" maxH="calc(90vh - 150px)">
+          <VStack align="stretch" gap={3} w="full">
             {reason && (
               <Box p={3} borderRadius="xl" bg="gray.50" border="1px solid" borderColor="gray.200">
-                <Text fontSize="xs" color="gray.700" lineHeight="1.5">
+                <Text
+                  fontSize="xs"
+                  color="gray.700"
+                  lineHeight="1.6"
+                  wordBreak="break-word"
+                  overflowWrap="anywhere"
+                >
                   {reason}
                 </Text>
               </Box>
@@ -126,8 +142,10 @@ export const UpgradePromptModal: React.FC<UpgradePromptModalProps> = ({
               border="1.5px solid"
               borderColor="#93C5FD"
               bg="blue.50/40"
+              w="full"
+              boxSizing="border-box"
             >
-              <Flex justify="space-between" align="center" mb={1.5}>
+              <Flex justify="space-between" align="center" mb={1.5} flexWrap="wrap" gap={1}>
                 <HStack gap={1.5}>
                   <Icon as={PiShootingStarDuotone} color="#206CE1" fontSize="1.15rem" />
                   <Heading as="h4" size="xs" color="gray.900" fontWeight="bold">
@@ -138,7 +156,7 @@ export const UpgradePromptModal: React.FC<UpgradePromptModalProps> = ({
                   {targetPlanDetails.priceFormatted}
                 </Text>
               </Flex>
-              <Text fontSize="11px" color="gray.600" mb={2.5}>
+              <Text fontSize="11px" color="gray.600" mb={2.5} wordBreak="break-word">
                 {targetPlanDetails.description}
               </Text>
 

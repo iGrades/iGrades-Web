@@ -269,9 +269,18 @@ export const ParentSubscriptionView: React.FC = () => {
                   </Text>
                   <VStack align="stretch" gap={2}>
                     {plan.desc.map((feat, idx) => (
-                      <HStack key={idx} align="flex-start" gap={2}>
-                        <Icon as={IoIosCheckmarkCircle} color="#206CE1" boxSize={4} mt={0.5} flexShrink={0} />
-                        <Text fontSize="xs" color="gray.700" lineHeight="1.4">
+                      <HStack key={idx} align="center" justify="flex-start" gap={2} w="full" textAlign="left">
+                        <Icon as={IoIosCheckmarkCircle} color="#206CE1" boxSize={4} flexShrink={0} />
+                        <Text
+                          fontSize="xs"
+                          color="gray.700"
+                          lineHeight="1.3"
+                          textAlign="left"
+                          whiteSpace={{ base: "normal", md: "nowrap" }}
+                          overflow="hidden"
+                          textOverflow="ellipsis"
+                          title={feat}
+                        >
                           {feat}
                         </Text>
                       </HStack>

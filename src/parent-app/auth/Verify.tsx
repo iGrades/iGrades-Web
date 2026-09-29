@@ -1,7 +1,7 @@
-import { useState } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
-import { supabase } from "../../lib/supabaseClient";
-import { Link } from "react-router-dom";
+import { useState, useEffect, useRef } from "react";
+import { useNavigate, useLocation, Link as RouterLink } from "react-router-dom";
+import { supabase } from "@/lib/supabaseClient";
+import { recordActivity } from "@/lib/authSessionManager";
 import {
   Box,
   Flex,
@@ -12,8 +12,13 @@ import {
   Heading,
   PinInput,
   HStack,
+  Icon,
+  Badge,
 } from "@chakra-ui/react";
-import sideImage from "@/assets/verify_svg-removebg-preview.png";
+import { HiOutlineMail, HiShieldCheck } from "react-icons/hi";
+import { PiCheckCircleFill, PiArrowLeftBold } from "react-icons/pi";
+import logo from "@/assets/landing-page/logo.png";
+import verifyIllustration from "@/assets/verify-image.png";
 
 export default function ParentVerify() {
   const [otp, setOtp] = useState<string[]>(Array(6).fill(""));
@@ -25,282 +30,565 @@ export default function ParentVerify() {
     message: string;
   } | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [resendCooldown, setResendCooldown] = useState<number>(30);
+  const [canResend, setCanResend] = useState<boolean>(false);
   const navigate = useNavigate();
   const location = useLocation();
 
   const email =
     location.state?.email ||
-    JSON.parse(localStorage.getItem("formData") || "{}").email;
+    JSON.parse(localStorage.getItem("formData") || "{}").email ||
+    "";
+
+  // Resend cooldown timer
+  useEffect(() => {
+    if (resendCooldown > 0) {
+      const timer = setTimeout(() => setResendCooldown((c) => c - 1), 1000);
+      return () => clearTimeout(timer);
+    } else {
+      setCanResend(true);
+    }
+  }, [resendCooldown]);
+
+  const isVerifyingRef = useRef(false);
 
   // Handle OTP change
   const handleOtpChange = (details: { value: string[] }) => {
     const value = details.value;
     setOtp(value);
 
-    // Auto-submit when OTP is complete
-    if (value.every((v) => v !== "") && value.length === 6) {
-      handleVerify();
+    // Auto-submit when all 6 digits are entered and not already verifying
+    if (value.every((v) => v !== "") && value.length === 6 && !isVerifyingRef.current) {
+      handleVerify(value.join(""));
     }
   };
 
-  // Verify OTP and insert data
-  const handleVerify = async () => {
-    const otpString = otp.join("");
+  // Verify OTP and insert parent record
+  const handleVerify = async (manualToken?: string) => {
+    if (isVerifyingRef.current) return;
 
-    if (!email) {
-      setErrorMessage("Email not found. Please try signing up again.");
+    const rawToken = manualToken || otp.join("");
+    const cleanToken = rawToken.trim().replace(/[^0-9a-zA-Z]/g, "");
+    const cleanEmail = (email || "").trim().toLowerCase();
+
+    if (!cleanEmail) {
+      setErrorMessage("Email address not found. Please try signing up again.");
       setStatus("error");
       return;
     }
 
-    if (otpString.length !== 6) {
-      setErrorMessage("Please enter a 6-digit OTP.");
+    if (cleanToken.length !== 6) {
+      setErrorMessage("Please enter all 6 digits of your verification code.");
       setStatus("error");
       return;
     }
 
+    isVerifyingRef.current = true;
     setStatus("verifying");
     setErrorMessage(null);
     setAlert(null);
 
-    // Verify OTP
-    const { data, error } = await supabase.auth.verifyOtp({
-      email,
-      token: otpString,
-      type: "signup",
+    try {
+      // 1. Verify OTP with primary type "signup"
+      let { data, error } = await supabase.auth.verifyOtp({
+        email: cleanEmail,
+        token: cleanToken,
+        type: "signup",
+      });
+
+      // 2. If 'signup' fails (e.g. user already registered/created previously), retry with 'email'
+      if (error || !data?.user) {
+        console.warn("Primary signup OTP verify notice, trying email OTP fallback:", error?.message);
+        const emailRetry = await supabase.auth.verifyOtp({
+          email: cleanEmail,
+          token: cleanToken,
+          type: "email",
+        });
+
+        if (!emailRetry.error && emailRetry.data?.user) {
+          data = emailRetry.data;
+          error = null;
+        }
+      }
+
+      if (error) {
+        setErrorMessage(error.message || "Invalid or expired verification code. Please check and try again.");
+        setStatus("error");
+        isVerifyingRef.current = false;
+        return;
+      }
+
+      if (!data.user) {
+        setErrorMessage("User record not found after verification.");
+        setStatus("error");
+        isVerifyingRef.current = false;
+        return;
+      }
+
+      // Retrieve user metadata
+      const { firstName, lastName, phone, aboutUs, password } =
+        data.user.user_metadata || {};
+
+      // Fallback to localStorage if metadata is incomplete
+      const stored = localStorage.getItem("formData");
+      const storedData = stored ? JSON.parse(stored) : {};
+      const userData = {
+        firstName: firstName || storedData.firstName || "",
+        lastName: lastName || storedData.lastName || "",
+        phone: phone || storedData.phone || "",
+        aboutUs: aboutUs || storedData.aboutUs || "",
+        email: cleanEmail || storedData.email,
+      };
+
+      // Set password if provided
+      const effectivePassword = password || storedData.password;
+      if (effectivePassword) {
+        try {
+          await supabase.auth.updateUser({
+            password: effectivePassword,
+          });
+        } catch (pwErr) {
+          console.warn("Password update notice:", pwErr);
+        }
+      }
+
+      // Insert data into parents table
+      const { error: insertError } = await supabase.from("parents").upsert({
+        user_id: data.user.id,
+        email: userData.email,
+        firstname: userData.firstName,
+        lastname: userData.lastName,
+        phone: userData.phone,
+        about_us: userData.aboutUs,
+      });
+
+      if (insertError) {
+        console.warn("Notice saving parent row:", insertError.message);
+      }
+
+      // Fetch the created/existing parent profile row
+      let parentRecord: any = null;
+      try {
+        const { data: fetchedParent } = await supabase
+          .from("parents")
+          .select("*")
+          .eq("user_id", data.user.id)
+          .maybeSingle();
+
+        if (fetchedParent) {
+          parentRecord = fetchedParent;
+        }
+      } catch (fErr) {
+        console.warn("Parent fetch notice:", fErr);
+      }
+
+      if (!parentRecord) {
+        parentRecord = {
+          id: data.user.id,
+          user_id: data.user.id,
+          email: userData.email,
+          firstname: userData.firstName,
+          lastname: userData.lastName,
+          phone: userData.phone,
+          about_us: userData.aboutUs,
+        };
+      }
+
+      // CRITICAL: Cache in localStorage immediately so parent dashboard never redirects to /login!
+      try {
+        localStorage.setItem("authdParent", JSON.stringify([parentRecord]));
+        localStorage.removeItem("formData");
+        recordActivity();
+      } catch (storageErr) {
+        console.warn("Session storage warning:", storageErr);
+      }
+
+      setStatus("success");
+      setAlert({
+        type: "success",
+        message: "Account verified successfully! Launching your dashboard...",
+      });
+
+      setTimeout(() => {
+        navigate("/parent-dashboard");
+      }, 1200);
+    } catch (err: any) {
+      setErrorMessage(err?.message || "An unexpected error occurred during verification.");
+      setStatus("error");
+      isVerifyingRef.current = false;
+    }
+  };
+
+  const handleResendOtp = async () => {
+    const cleanEmail = (email || "").trim().toLowerCase();
+    if (!cleanEmail || !canResend) return;
+
+    setCanResend(false);
+    setResendCooldown(30);
+    setErrorMessage(null);
+
+    const { error } = await supabase.auth.signInWithOtp({
+      email: cleanEmail,
+      options: {
+        shouldCreateUser: false,
+        emailRedirectTo: `${window.location.origin}/verify`,
+      },
     });
 
     if (error) {
-      setErrorMessage(error.message || "Invalid or expired OTP.");
-      setStatus("error");
-      return;
-    }
-
-    if (!data.user) {
-      setErrorMessage("User not found after OTP verification.");
-      setStatus("error");
-      return;
-    }
-
-    // Retrieve user metadata
-    const { firstName, lastName, phone, aboutUs, password } =
-      data.user.user_metadata || {};
-
-    // Fallback to localStorage if metadata is incomplete
-    const stored = localStorage.getItem("formData");
-    const storedData = stored ? JSON.parse(stored) : {};
-    const userData = {
-      firstName: firstName || storedData.firstName,
-      lastName: lastName || storedData.lastName,
-      phone: phone || storedData.phone,
-      aboutUs: aboutUs || storedData.aboutUs,
-      email: email || storedData.email,
-    };
-
-    if (!userData.firstName || !userData.lastName || !userData.email) {
-      setErrorMessage("Incomplete user data. Please try signing up again.");
-      setStatus("error");
-      return;
-    }
-
-    // Set password if provided
-    if (password) {
-      const { error: updateError } = await supabase.auth.updateUser({
-        password,
+      setErrorMessage("Failed to resend code: " + error.message);
+      setCanResend(true);
+    } else {
+      setAlert({
+        type: "success",
+        message: `A fresh 6-digit code has been dispatched to ${email}.`,
       });
-      if (updateError) {
-        setErrorMessage("Error setting password: " + updateError.message);
-        setStatus("error");
-        return;
-      }
     }
-
-    // Insert data into parents table
-    const { error: insertError } = await supabase.from("parents").upsert({
-      user_id: data.user.id,
-      email: userData.email,
-      firstname: userData.firstName,
-      lastname: userData.lastName,
-      phone: userData.phone,
-      about_us: userData.aboutUs,
-    });
-
-    if (insertError) {
-      setErrorMessage("Error saving profile: " + insertError.message);
-      setStatus("error");
-      return;
-    }
-
-    // Clean up
-    localStorage.removeItem("formData");
-    setStatus("success");
-    setAlert({
-      type: "success",
-      message: "Verification successful! Redirecting...",
-    });
-    navigate("/parent-dashboard");
   };
 
   return (
     <Flex
-      as="section"
+      minH="100vh"
+      bg="#F8FAFC"
       align="center"
-      justify={{ base: "center", md: "space-between" }}
-      backgroundImage={{ base: "url('/undraw_sign-in_uva0.png')", lg: "none" }}
-      backgroundSize="cover"
-      backgroundRepeat="no-repeat"
-      backgroundPosition="center"
-      bg={{ lg: "textFieldColor" }}
-      h="auto"
+      justify="center"
+      p={{ base: 0, sm: 4, md: 8 }}
     >
-      <Image
-        src={sideImage}
-        alt="login_image"
-        display={{ base: "none", lg: "block" }}
-        w={{ base: "full", lg: "30%" }}
-        mx='auto'
-      />
-      <Box
+      {/* Main Verification Card */}
+      <Flex
+        w="full"
+        maxW="1100px"
+        minH={{ base: "100vh", md: "720px" }}
         bg="white"
-        // boxShadow={{ base: "none", lg: "lg" }}
-        w={{ base: "full", lg: "60%" }}
- 
+        borderRadius={{ base: "none", md: "3xl" }}
+        boxShadow={{
+          base: "none",
+          md: "0 20px 40px -15px rgba(15, 23, 42, 0.07), 0 0 0 1px rgba(226, 232, 240, 0.8)",
+        }}
+        overflow="hidden"
         position="relative"
+        flexDirection={{ base: "column", lg: "row" }}
       >
-        {(errorMessage || alert) && (
+        {/* ── LEFT PANEL: High-Fidelity Illustration Showcase ── */}
+        <Box
+          w={{ base: "100%", lg: "48%" }}
+          bg="linear-gradient(150deg, #F0F6FF 0%, #E2EEFF 50%, #F5F9FF 100%)"
+          p={{ base: 6, md: 10 }}
+          display="flex"
+          flexDirection="column"
+          justifyContent="space-between"
+          position="relative"
+          overflow="hidden"
+        >
+          {/* Subtle curved background overlay */}
           <Box
             position="absolute"
-            top={{ base: "10px", md: "20px" }}
-            right={{ base: "10px", md: "20px" }}
-            width={{ base: "80%", sm: "60%", md: "40%", lg: "30%" }}
-            zIndex="10"
+            top="-10%"
+            right="-15%"
+            w="280px"
+            h="280px"
+            borderRadius="full"
+            bg="rgba(32, 108, 225, 0.08)"
+            filter="blur(40px)"
+            pointerEvents="none"
+          />
+
+          {/* Top Header & Brand */}
+          <Box zIndex={2}>
+            <RouterLink to="/" style={{ textDecoration: "none", display: "inline-block" }}>
+              <Image
+                src={logo}
+                alt="iGrade logo"
+                h="40px"
+                objectFit="contain"
+                cursor="pointer"
+                _hover={{ opacity: 0.85 }}
+                transition="opacity 0.2s"
+              />
+            </RouterLink>
+
+            <Box mt={6}>
+              <Badge
+                bg="#206CE1"
+                color="white"
+                px={3}
+                py={1}
+                borderRadius="full"
+                fontSize="xs"
+                fontWeight="700"
+                letterSpacing="0.08em"
+                textTransform="uppercase"
+                mb={2.5}
+              >
+                Account Verification
+              </Badge>
+              <Heading
+                as="h2"
+                fontSize={{ base: "xl", md: "2xl" }}
+                fontWeight="800"
+                color="#0F172A"
+                lineHeight="1.3"
+              >
+                Protecting your child's academic journey.
+              </Heading>
+              <Text fontSize="xs" color="#475569" mt={1.5} maxW="340px" lineHeight="1.5">
+                Verify your identity to unlock performance reports, student progress tracking, and curriculum insights.
+              </Text>
+            </Box>
+          </Box>
+
+          {/* Center Illustration */}
+          <Flex
+            flex={1}
+            align="center"
+            justify="center"
+            my={{ base: 4, lg: 6 }}
+            zIndex={2}
           >
+            <Image
+              src={verifyIllustration}
+              alt="Email verification illustration"
+              maxH={{ base: "260px", md: "340px", lg: "390px" }}
+              w="auto"
+              objectFit="contain"
+              filter="drop-shadow(0 16px 24px rgba(32, 108, 225, 0.15))"
+              transition="transform 0.3s ease"
+              _hover={{ transform: "scale(1.02)" }}
+            />
+          </Flex>
+
+          {/* Bottom Security Highlights */}
+          <HStack
+            gap={4}
+            wrap="wrap"
+            pt={3}
+            borderTop="1px solid"
+            borderColor="rgba(32, 108, 225, 0.15)"
+            zIndex={2}
+          >
+            <HStack gap={1.5}>
+              <Icon as={PiCheckCircleFill} color="#206CE1" fontSize="14px" />
+              <Text fontSize="11px" fontWeight="600" color="#334155">
+                Encrypted OTP
+              </Text>
+            </HStack>
+            <HStack gap={1.5}>
+              <Icon as={PiCheckCircleFill} color="#206CE1" fontSize="14px" />
+              <Text fontSize="11px" fontWeight="600" color="#334155">
+                10-Minute Expiry
+              </Text>
+            </HStack>
+            <HStack gap={1.5}>
+              <Icon as={PiCheckCircleFill} color="#206CE1" fontSize="14px" />
+              <Text fontSize="11px" fontWeight="600" color="#334155">
+                Instant Activation
+              </Text>
+            </HStack>
+          </HStack>
+        </Box>
+
+        {/* ── RIGHT PANEL: Clean Interactive OTP Entry ── */}
+        <Box
+          w={{ base: "100%", lg: "52%" }}
+          p={{ base: 6, sm: 8, md: 12 }}
+          display="flex"
+          flexDirection="column"
+          justifyContent="center"
+          bg="white"
+        >
+          <Box maxW="420px" mx="auto" w="full">
+            {/* Top Mail Badge */}
+            <Flex
+              w="54px"
+              h="54px"
+              borderRadius="2xl"
+              bg="#EBF3FF"
+              color="#206CE1"
+              align="center"
+              justify="center"
+              mb={5}
+            >
+              <Icon as={HiOutlineMail} fontSize="26px" />
+            </Flex>
+
+            {/* Header Titles */}
+            <Heading
+              as="h1"
+              fontSize={{ base: "2xl", sm: "3xl" }}
+              fontWeight="800"
+              color="#0F172A"
+              mb={2}
+            >
+              Check your email
+            </Heading>
+            <Text fontSize="sm" color="#64748B" mb={1} lineHeight="1.5">
+              We've sent a 6-digit confirmation code to
+            </Text>
+            <HStack
+              bg="#F1F5F9"
+              py={1.5}
+              px={3}
+              borderRadius="lg"
+              display="inline-flex"
+              mb={6}
+            >
+              <Icon as={HiShieldCheck} color="#206CE1" fontSize="16px" />
+              <Text fontSize="xs" fontWeight="700" color="#0F172A">
+                {email || "your registered email"}
+              </Text>
+            </HStack>
+
+            {/* Notification Alerts */}
             {errorMessage && (
-              <Alert.Root status="error" borderRadius="md" variant="surface">
+              <Alert.Root status="error" borderRadius="xl" mb={5} variant="subtle">
                 <Alert.Indicator />
-                <Alert.Description>{errorMessage}</Alert.Description>
+                <Alert.Description fontSize="xs" fontWeight="500">
+                  {errorMessage}
+                </Alert.Description>
               </Alert.Root>
             )}
+
             {alert && (
               <Alert.Root
                 status={alert.type}
-                borderRadius="md"
-                variant="surface"
+                borderRadius="xl"
+                mb={5}
+                variant="subtle"
               >
                 <Alert.Indicator />
-                <Alert.Description>{alert.message}</Alert.Description>
+                <Alert.Description fontSize="xs" fontWeight="500">
+                  {alert.message}
+                </Alert.Description>
               </Alert.Root>
             )}
-          </Box>
-        )}
-        <Box
-          textAlign="center"
-          p={6}
-          maxW="400px"
-          mx="auto"
-          my={32}
-          bg="white"
-          rounded="2xl"
-        >
-          <Heading
-            as="h1"
-            color="on_backgroundColor"
-            fontSize="3xl"
-            fontWeight="bold"
-            mb={5}
-          >
-            Please verify your email address
-          </Heading>
-          <Text mb={10} color="#464646" fontWeight={400}>
-            Enter the six digit code we sent to {email || "your email"} to
-            verify your iGrade account.
-          </Text>
 
-          <HStack justify="center" mb={10}>
-            <PinInput.Root
-              value={otp}
-              onValueChange={handleOtpChange}
-              type="numeric"
-              size="sm"
-              autoFocus
-            >
-              <PinInput.Control>
-                {Array.from({ length: 6 }, (_, index) => (
-                  <PinInput.Input
-                    key={index}
-                    index={index}
-                    fontSize="md"
-                    fontWeight="normal"
-                    width="50px"
-                    height="50px"
-                    borderRadius="md"
-                    bg="gray.50"
-                    color="gray.800"
-                    border="2px solid"
-                    borderColor="gray.200"
-                    _focus={{
-                      borderColor: "blue.500",
-                      color: "gray.800",
-                      bg: "white",
-                      boxShadow: "outline",
-                    }}
-                    _hover={{
-                      borderColor: "gray.300",
-                    }}
-                  />
-                ))}
-              </PinInput.Control>
-              <PinInput.HiddenInput />
-            </PinInput.Root>
-          </HStack>
+            {/* 6-Digit PIN Input */}
+            <Box mb={6}>
+              <Text
+                fontSize="xs"
+                fontWeight="700"
+                color="#475569"
+                textTransform="uppercase"
+                letterSpacing="0.05em"
+                mb={3}
+              >
+                Verification Code
+              </Text>
+              <HStack justify="center" gap={{ base: 2, sm: 3 }}>
+                <PinInput.Root
+                  value={otp}
+                  onValueChange={handleOtpChange}
+                  type="numeric"
+                  size="lg"
+                  autoFocus
+                >
+                  <PinInput.Control gap={{ base: 2, sm: 3 }} justify="center">
+                    {Array.from({ length: 6 }, (_, index) => (
+                      <PinInput.Input
+                        key={index}
+                        index={index}
+                        w={{ base: "44px", sm: "52px" }}
+                        h={{ base: "50px", sm: "58px" }}
+                        fontSize={{ base: "xl", sm: "2xl" }}
+                        fontWeight="700"
+                        textAlign="center"
+                        borderRadius="xl"
+                        border="2px solid"
+                        borderColor="gray.200"
+                        bg="gray.50"
+                        color="#0F172A"
+                        _focus={{
+                          borderColor: "#206CE1",
+                          bg: "white",
+                          boxShadow: "0 0 0 4px rgba(32, 108, 225, 0.15)",
+                        }}
+                        _hover={{
+                          borderColor: "gray.300",
+                        }}
+                      />
+                    ))}
+                  </PinInput.Control>
+                  <PinInput.HiddenInput />
+                </PinInput.Root>
+              </HStack>
+            </Box>
 
-          <Button
-            loading={status === "verifying"}
-            loadingText="Verifying..."
-            onClick={handleVerify}
-            bg="blue.500"
-            color="white"
-            w="full"
-            p={6}
-            shadow="xl"
-            borderRadius="3xl"
-            disabled={otp.join("").length !== 6}
-          >
-            Continue
-          </Button>
-
-          <Heading as="h4" mt={4} fontSize="xs" color="#464646">
-            Didn't receive any code?{" "}
-            <Link
-              to="#!"
-              color="blue.500"
-              onClick={async () => {
-                if (email) {
-                  const { error } = await supabase.auth.signInWithOtp({
-                    email,
-                    options: {
-                      shouldCreateUser: false,
-                      emailRedirectTo: `${window.location.origin}/verify`,
-                    },
-                  });
-                  if (error) {
-                    setErrorMessage("Failed to resend OTP: " + error.message);
-                    setStatus("error");
-                  } else {
-                    setErrorMessage(null);
-                    setAlert({
-                      type: "success",
-                      message: "OTP resent successfully.",
-                    });
-                  }
-                }
+            {/* Verify CTA Button */}
+            <Button
+              loading={status === "verifying"}
+              loadingText="Verifying Code..."
+              onClick={() => handleVerify()}
+              bg="#206CE1"
+              color="white"
+              w="full"
+              h="50px"
+              fontWeight="700"
+              fontSize="sm"
+              borderRadius="xl"
+              shadow="md"
+              disabled={otp.join("").length !== 6 || status === "verifying"}
+              _hover={{
+                bg: "#1852B2",
+                transform: "translateY(-1px)",
+                shadow: "lg",
               }}
+              transition="all 0.2s"
+              mb={5}
             >
-              <span style={{ color: "#206CE1" }}>Resend Code</span>
-            </Link>
-          </Heading>
+              Verify & Continue
+            </Button>
+
+            {/* Resend Code Options */}
+            <Flex
+              align="center"
+              justify="space-between"
+              pt={2}
+              borderTop="1px solid"
+              borderColor="gray.100"
+            >
+              <Text fontSize="xs" color="#64748B">
+                Didn't get the email?
+              </Text>
+              {canResend ? (
+                <Button
+                  variant="plain"
+                  size="xs"
+                  p={0}
+                  color="#206CE1"
+                  fontWeight="700"
+                  _hover={{ textDecoration: "underline" }}
+                  onClick={handleResendOtp}
+                >
+                  Resend Code
+                </Button>
+              ) : (
+                <Text fontSize="xs" color="#94A3B8" fontWeight="500">
+                  Resend in {resendCooldown}s
+                </Text>
+              )}
+            </Flex>
+
+            {/* Back to sign up */}
+            <Box mt={6} textAlign="center">
+              <RouterLink
+                to="/signup"
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: "6px",
+                  fontSize: "12px",
+                  color: "#64748B",
+                  textDecoration: "none",
+                  fontWeight: 600,
+                }}
+              >
+                <Icon as={PiArrowLeftBold} fontSize="12px" />
+                Wrong email address? Return to Sign Up
+              </RouterLink>
+            </Box>
+          </Box>
         </Box>
-      </Box>
+      </Flex>
     </Flex>
   );
 }

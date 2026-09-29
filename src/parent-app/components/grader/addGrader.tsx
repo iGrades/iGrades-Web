@@ -14,12 +14,9 @@ import {
   Grid,
   Field,
   Flex,
-  createListCollection,
-  Select,
-  Portal,
+  NativeSelect,
   Alert,
 } from "@chakra-ui/react";
-import { groupBy } from "es-toolkit";
 import manikin from "@/assets/manikin.png";
 import addPix from "@/assets/addPix.png";
 import AddGraderSuccessPopover from "./addGraderSuccessPopover";
@@ -69,74 +66,7 @@ function AddGrader({
     message: string;
   } | null>(null);
 
-  const selectCollections = {
-    genders: createListCollection({
-      items: [
-        { label: "Male", value: "male" },
-        { label: "Female", value: "female" },
-      ],
-    }),
 
-    languages: createListCollection({
-      items: [
-        { label: "English", value: "en" },
-        { label: "Hausa", value: "ha" },
-        { label: "Yoruba", value: "yo" },
-        { label: "Igbo", value: "ig" },
-        { label: "Akan", value: "ak" },
-        { label: "Fulani/Fula", value: "ff" },
-        { label: "Wolof", value: "wo" },
-        { label: "French", value: "fr" },
-        { label: "Portuguese", value: "pt" },
-      ],
-    }),
-
-    classes: createListCollection({
-      items: [
-        /*
-        {
-          label: "Junior Secondary School 1",
-          value: "JSS 1",
-          category: "Junior School",
-        },
-        {
-          label: "Junior Secondary School 2",
-          value: "JSS 2",
-          category: "Junior School",
-        },
-        {
-          label: "Junior Secondary School 3",
-          value: "JSS 3",
-          category: "Junior School",
-        },
-        */
-        {
-          label: "Senior Secondary School 1",
-          value: "SSS 1",
-          category: "Senior School",
-        },
-        {
-          label: "Senior Secondary School 2",
-          value: "SSS 2",
-          category: "Senior School",
-        },
-        {
-          label: "Senior Secondary School 3",
-          value: "SSS 3",
-          category: "Senior School",
-        },
-      ],
-    }),
-  };
-
-  // group classes list for mapping
-  const classesCategories = Object.entries(
-    groupBy(
-      selectCollections.classes.items,
-      (item: { label: string; value: string; category?: string }) =>
-        item.category ?? "Uncategorized",
-    ),
-  );
 
   // Check if student is a senior (SSS) or junior (JSS)
   const isSeniorStudent = formData.class?.startsWith("SSS");
@@ -409,152 +339,95 @@ function AddGrader({
             )}
 
             {/* Gender Select Wrapper */}
-            <Box>
-              <Select.Root
-                collection={selectCollections.genders}
-                size="md"
-                onValueChange={(e) =>
-                  setFormData({ ...formData, gender: e.value[0] })
-                }
-              >
-                <label htmlFor="gender" style={{ fontSize: "0.75rem" }}>
-                  Gender
-                </label>
-                <Select.HiddenSelect name="gender" />
-                <Select.Control>
-                  <Select.Trigger
-                    border="none"
-                    outline="none"
-                    bg="textFieldColor"
-                    cursor="pointer"
-                  >
-                    <Select.ValueText
-                      placeholder="Select gender"
-                      fontSize="xs"
-                    />
-                  </Select.Trigger>
-                  <Select.IndicatorGroup>
-                    <Select.Indicator />
-                  </Select.IndicatorGroup>
-                </Select.Control>
-                <Portal>
-                  <Select.Positioner>
-                    <Select.Content>
-                      {selectCollections.genders.items.map((item) => (
-                        <Select.Item key={item.value} item={item}>
-                          {item.label}
-                          <Select.ItemIndicator />
-                        </Select.Item>
-                      ))}
-                    </Select.Content>
-                  </Select.Positioner>
-                </Portal>
-              </Select.Root>
-            </Box>
+            <Field.Root>
+              <Field.Label color="on_backgroundColor" fontSize="xs" mb={1}>
+                Gender
+              </Field.Label>
+              <NativeSelect.Root size="md">
+                <NativeSelect.Field
+                  name="gender"
+                  value={formData.gender}
+                  onChange={handleChange}
+                  required
+                  border="none"
+                  bg="textFieldColor"
+                  fontSize="sm"
+                  h="45px"
+                  cursor="pointer"
+                >
+                  <option value="" disabled>Select gender</option>
+                  <option value="male">Male</option>
+                  <option value="female">Female</option>
+                </NativeSelect.Field>
+                <NativeSelect.Indicator />
+              </NativeSelect.Root>
+            </Field.Root>
 
             {/* Language Select Wrapper */}
-            <Box>
-              <Select.Root
-                collection={selectCollections.languages}
-                size="md"
-                onValueChange={(e) =>
-                  setFormData({ ...formData, basic_language: e.value[0] })
-                }
-              >
-                <label htmlFor="language" style={{ fontSize: "0.75rem" }}>
-                  Basic Language
-                </label>
-                <Select.HiddenSelect name="language" />
-                <Select.Control>
-                  <Select.Trigger
-                    border="none"
-                    outline="none"
-                    bg="textFieldColor"
-                    cursor="pointer"
-                  >
-                    <Select.ValueText
-                      placeholder="Select Basic Language"
-                      fontSize="xs"
-                    />
-                  </Select.Trigger>
-                  <Select.IndicatorGroup>
-                    <Select.Indicator />
-                  </Select.IndicatorGroup>
-                </Select.Control>
-                <Portal>
-                  <Select.Positioner>
-                    <Select.Content>
-                      {selectCollections.languages.items.map((item) => (
-                        <Select.Item key={item.value} item={item}>
-                          {item.label}
-                          <Select.ItemIndicator />
-                        </Select.Item>
-                      ))}
-                    </Select.Content>
-                  </Select.Positioner>
-                </Portal>
-              </Select.Root>
-            </Box>
+            <Field.Root>
+              <Field.Label color="on_backgroundColor" fontSize="xs" mb={1}>
+                Basic Language
+              </Field.Label>
+              <NativeSelect.Root size="md">
+                <NativeSelect.Field
+                  name="basic_language"
+                  value={formData.basic_language}
+                  onChange={handleChange}
+                  required
+                  border="none"
+                  bg="textFieldColor"
+                  fontSize="sm"
+                  h="45px"
+                  cursor="pointer"
+                >
+                  <option value="" disabled>Select Basic Language</option>
+                  <option value="en">English</option>
+                  <option value="ha">Hausa</option>
+                  <option value="yo">Yoruba</option>
+                  <option value="ig">Igbo</option>
+                  <option value="ak">Akan</option>
+                  <option value="ff">Fulani/Fula</option>
+                  <option value="wo">Wolof</option>
+                  <option value="fr">French</option>
+                  <option value="pt">Portuguese</option>
+                </NativeSelect.Field>
+                <NativeSelect.Indicator />
+              </NativeSelect.Root>
+            </Field.Root>
 
             {/* Class Select Wrapper */}
             <Box gridColumn={{ md: "span 2" }}>
-              {" "}
-              <Select.Root
-                collection={selectCollections.classes}
-                size="md"
-                onValueChange={(e) =>
-                  setFormData({ ...formData, class: e.value[0] })
-                }
-              >
-                <label
-                  htmlFor="class"
-                  style={{
-                    fontSize: "0.75rem",
-                    fontWeight: "400",
-                    color: "#474256",
-                    marginTop: "8px",
-                  }}
-                >
+              <Field.Root>
+                <Field.Label color="on_backgroundColor" fontSize="xs" mb={1}>
                   Class
-                </label>
-                <Select.HiddenSelect name="class" />
-                <Select.Control>
-                  <Select.Trigger
-                    outline="none"
-                    cursor="pointer"
+                </Field.Label>
+                <NativeSelect.Root size="md">
+                  <NativeSelect.Field
+                    name="class"
+                    value={formData.class}
+                    onChange={handleChange}
+                    required
+                    border="none"
                     bg="textFieldColor"
-                    fontSize="xs"
-                    border="1px solid #ccc"
+                    fontSize="sm"
+                    h="45px"
+                    cursor="pointer"
                   >
-                    <Select.ValueText
-                      placeholder="Select Class"
-                      fontSize="xs"
-                    />
-                  </Select.Trigger>
-                  <Select.IndicatorGroup>
-                    <Select.Indicator />
-                  </Select.IndicatorGroup>
-                </Select.Control>
-                <Portal>
-                  <Select.Positioner>
-                    <Select.Content>
-                      {classesCategories.map(([category, items]) => (
-                        <Select.ItemGroup key={category}>
-                          <Select.ItemGroupLabel fontWeight={600}>
-                            {category}
-                          </Select.ItemGroupLabel>
-                          {items.map((item) => (
-                            <Select.Item item={item} key={item.value}>
-                              {item.label}
-                              <Select.ItemIndicator />
-                            </Select.Item>
-                          ))}
-                        </Select.ItemGroup>
-                      ))}
-                    </Select.Content>
-                  </Select.Positioner>
-                </Portal>
-              </Select.Root>
+                    <option value="" disabled>Select Class</option>
+                    <optgroup label="Junior Secondary School">
+                      <option value="JSS 1">Junior Secondary School 1 (JSS 1)</option>
+                      <option value="JSS 2">Junior Secondary School 2 (JSS 2)</option>
+                      <option value="JSS 3">Junior Secondary School 3 (JSS 3)</option>
+                    </optgroup>
+                    <optgroup label="Senior Secondary School">
+                      <option value="SSS 1">Senior Secondary School 1 (SSS 1)</option>
+                      <option value="SSS 2">Senior Secondary School 2 (SSS 2)</option>
+                      <option value="SSS 3">Senior Secondary School 3 (SSS 3)</option>
+                    </optgroup>
+                  </NativeSelect.Field>
+                  <NativeSelect.Indicator />
+                </NativeSelect.Root>
+              </Field.Root>
             </Box>
           </Grid>
 

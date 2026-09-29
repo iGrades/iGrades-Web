@@ -207,51 +207,70 @@ export default function AuthCallback() {
         }
       }
 
-      // --- BRANCH D: Brand new user with no matching email in either table ---
+      // --- BRANCH D: Brand new user with no matching record in either table ---
       if (storedRole === "children" || storedRole === "student") {
-        const newStudent = {
+        const studentProfile = {
           id: user.id,
           user_id: user.id,
           email: userEmail || user.email || "",
           firstname: firstName,
-          lastname: lastName,
-          profile_image: avatar,
-          grade_level: "",
-          school: "",
-          class: "",
+          lastname: lastName || "",
+          profile_image: avatar || "",
+          grade_level: "General",
+          school: "Online Learner",
+          class: "JSS 1",
           is_child: false,
-          subscription: "free",
-          subscription_status: "inactive",
+          subscription: "Basic",
+          subscription_status: "active",
           last_payment_ref: null,
+          created_at: new Date().toISOString(),
         };
 
-        const { error: insertErr } = await supabase.from("students").upsert(newStudent);
+        const { data: createdStudent, error: insertErr } = await supabase
+          .from("students")
+          .upsert(studentProfile)
+          .select()
+          .single();
+
         if (insertErr) {
           console.error("Error creating student record:", insertErr);
         }
 
+        const activeStudent = createdStudent || studentProfile;
         localStorage.removeItem("oauth_role");
         localStorage.removeItem("authdParent");
-        setAuthdStudent(newStudent);
-        localStorage.setItem("authdStudent", JSON.stringify(newStudent));
+        setAuthdStudent(activeStudent);
+        localStorage.setItem("authdStudent", JSON.stringify(activeStudent));
+        recordActivity(true);
         navigate(`/student-dashboard/${firstName}`, { replace: true });
       } else {
-        const newParent = {
+        const parentProfile = {
           user_id: user.id,
           email: userEmail || user.email,
           firstname: firstName,
-          lastname: lastName,
-          profile_image: avatar,
-          about_us: "Google OAuth",
+          lastname: lastName || "",
+          profile_image: avatar || "",
+          about_us: "Google Sign-In",
+          subscription: "Basic",
+          subscription_status: "active",
+          created_at: new Date().toISOString(),
         };
 
-        const { error: insertErr } = await supabase.from("parents").upsert(newParent);
+        const { data: createdParent, error: insertErr } = await supabase
+          .from("parents")
+          .upsert(parentProfile)
+          .select()
+          .single();
+
         if (insertErr) {
           console.error("Error creating parent record:", insertErr);
         }
 
+        const activeParent = createdParent || parentProfile;
         localStorage.removeItem("oauth_role");
         localStorage.removeItem("authdStudent");
+        localStorage.setItem("authdParent", JSON.stringify([activeParent]));
+        recordActivity(true);
         await getParentData();
         navigate(`/parent-dashboard/${firstName}`, { replace: true });
       }

@@ -46,6 +46,14 @@ export default function ParentSignUp() {
 
   const navigate = useNavigate();
 
+  // Password criteria verification
+  const hasLower = /[a-z]/.test(formData.password);
+  const hasUpper = /[A-Z]/.test(formData.password);
+  const hasNumber = /[0-9]/.test(formData.password);
+  const hasSpecial = /[^A-Za-z0-9]/.test(formData.password);
+  const hasLength = formData.password.length >= 8;
+  const isPasswordValid = hasLower && hasUpper && hasNumber && hasSpecial && hasLength;
+
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
   ) => {
@@ -66,6 +74,15 @@ export default function ParentSignUp() {
       lastName,
       aboutUs,
     } = formData;
+
+    if (!isPasswordValid) {
+      setAlert({
+        type: "error",
+        message: "Password does not meet all the required criteria below.",
+      });
+      setIsLoading(false);
+      return;
+    }
 
     if (password !== confirmPassword) {
       setAlert({ type: "error", message: "Passwords do not match." });
@@ -92,10 +109,10 @@ export default function ParentSignUp() {
       return;
     }
 
-    // Save form data to localStorage
+    // Save form data to localStorage (including password for post-verification set)
     localStorage.setItem(
       "formData",
-      JSON.stringify({ firstName, lastName, phone, aboutUs, email })
+      JSON.stringify({ firstName, lastName, phone, aboutUs, email, password })
     );
 
     setIsLoading(false);
@@ -194,29 +211,35 @@ export default function ParentSignUp() {
           </Grid>
           <Flex mt={4} flexWrap="wrap" gap={2}>
             {[
-              "Lowercase Letter",
-              "Uppercase Letter",
-              "Number",
-              "Special character",
-              "8 characters in length",
-            ].map((tag, idx) => (
+              { label: "Lowercase Letter", met: hasLower },
+              { label: "Uppercase Letter", met: hasUpper },
+              { label: "Number", met: hasNumber },
+              { label: "Special character", met: hasSpecial },
+              { label: "8 characters in length", met: hasLength },
+            ].map((rule, idx) => (
               <Tag.Root
                 key={idx}
                 size="sm"
                 p={1.5}
                 px={3}
                 rounded="full"
-                bg="blue.50"
-                border="none"
+                bg={rule.met ? "emerald.50" : "gray.100"}
+                border="1px solid"
+                borderColor={rule.met ? "emerald.300" : "transparent"}
+                transition="all 0.2s"
               >
                 <Tag.Label
                   fontSize="2xs"
-                  fontWeight="600"
-                  color="primaryColor"
+                  fontWeight="700"
+                  color={rule.met ? "emerald.700" : "gray.500"}
                   textAlign="center"
                   m="auto"
+                  display="flex"
+                  alignItems="center"
+                  gap={1}
                 >
-                  {tag}
+                  <span>{rule.met ? "✓" : "•"}</span>
+                  {rule.label}
                 </Tag.Label>
               </Tag.Root>
             ))}

@@ -9,6 +9,7 @@ import {
   Button,
   Badge,
   HStack,
+  VStack,
 } from "@chakra-ui/react";
 import { toaster } from "@/components/ui/toaster";
 import { IoIosCheckmarkCircle } from "react-icons/io";
@@ -278,11 +279,12 @@ const Subscription: React.FC = () => {
       </Box>
 
       <Flex
-        direction={{ base: "column", md: "row" }}
-        justify="space-around"
-        align="center"
-        gap={5}
-        mt={4}
+        direction={{ base: "column", xl: "row" }}
+        justify="center"
+        align="stretch"
+        gap={6}
+        mt={6}
+        w="full"
       >
         {subscriptionPlans.map((plan) => {
           const isCurrentPlan = effectivePlan === plan.id && !isExpired;
@@ -291,100 +293,138 @@ const Subscription: React.FC = () => {
           return (
             <Box
               key={plan.id}
-              border="1px"
-              borderColor={isCurrentPlan ? "primaryColor" : "gray.200"}
-              p={4}
-              rounded="xl"
-              shadow="sm"
-              textAlign="center"
-              w={{ base: "100%", md: "40%", lg: "30%" }}
+              border="1.5px solid"
+              borderColor={isCurrentPlan ? "#206CE1" : "gray.200"}
+              p={{ base: 5, md: 6 }}
+              rounded="2xl"
+              shadow={isCurrentPlan ? "md" : "xs"}
+              bg={isCurrentPlan ? "blue.50/20" : "white"}
+              textAlign="left"
+              flex={{ base: "none", xl: 1 }}
+              w={{ base: "100%", md: "100%", xl: "32%" }}
+              minW={{ xl: "320px" }}
               position="relative"
+              display="flex"
+              flexDirection="column"
+              justifyContent="space-between"
+              transition="all 0.2s ease"
+              _hover={{ transform: "translateY(-2px)", shadow: "md" }}
             >
-              {isCurrentPlan && (
-                <Badge
-                  position="absolute"
-                  top="-3"
-                  left="50%"
-                  transform="translateX(-50%)"
-                  colorScheme="green"
-                  variant="solid"
-                  rounded="full"
-                  px={3}
-                  fontSize="xs"
-                >
-                  Active Plan
-                </Badge>
-              )}
-
-              <Heading color="on_backgroundColor" my={1}>
-                {plan.name}
-              </Heading>
-              <Text fontSize="xs" color="fieldTextColor">
-                {plan.text}
-              </Text>
-              <Box my={3}>
-                <Heading fontSize="2xl" color="on_backgroundColor">
-                  {plan.price}
-                </Heading>
-                {creditBalance > 0 && plan.amount > 0 && (
-                  <Badge colorPalette="green" variant="subtle" mt={1} px={2} py={0.5} fontSize="11px" borderRadius="md">
-                    {creditBalance >= plan.amount
-                      ? "100% Covered by Store Credit"
-                      : `₦${creditBalance.toLocaleString()} credit applied → Pay ₦${(plan.amount - creditBalance).toLocaleString()}`}
+              <Box>
+                {isCurrentPlan && (
+                  <Badge
+                    position="absolute"
+                    top="-3"
+                    left="6"
+                    bg="#206CE1"
+                    color="white"
+                    variant="solid"
+                    rounded="full"
+                    px={3}
+                    py={0.5}
+                    fontSize="xs"
+                    fontWeight="bold"
+                  >
+                    Active Plan
                   </Badge>
                 )}
-              </Box>
 
-              <Button
-                w="full"
-                my={2}
-                p={4}
-                bg={isCurrentPlan ? "gray.100" : "primaryColor"}
-                color={isCurrentPlan ? "gray.500" : "on_primaryColor"}
-                rounded="xl"
-                onClick={() => handlePayment(plan)}
-                loading={isPlanLoading}
-                loadingText="Processing..."
-                disabled={isLoading || isCurrentPlan}
-                _hover={
-                  isCurrentPlan
-                    ? {}
-                    : {
-                        bg: "primaryColor",
-                        transform: "translateY(-2px)",
-                        shadow: "lg",
-                      }
-                }
-                transition="all 0.2s"
-              >
-                {!isCurrentPlan && plan.id !== "basic" && (
-                  <PiShootingStarDuotone style={{ marginRight: "6px", fontSize: "1.1rem" }} />
-                )}
-                {getButtonLabel(plan)}
-              </Button>
+                <Heading size="md" color="gray.900" fontWeight="800" my={1} textAlign="left">
+                  {plan.name}
+                </Heading>
+                <Text fontSize="xs" color="gray.500" textAlign="left" minH="32px">
+                  {plan.text}
+                </Text>
 
-              <Text
-                textAlign="left"
-                mt={4}
-                fontSize="xs"
-                fontWeight="semibold"
-                color="gray.500"
-              >
-                {plan.name} plan for all users
-              </Text>
+                <Box my={3} textAlign="left">
+                  <Heading fontSize="2xl" color="gray.900" fontWeight="900" textAlign="left">
+                    {plan.price}
+                  </Heading>
+                  {creditBalance > 0 && plan.amount > 0 && (
+                    <Badge colorPalette="green" variant="subtle" mt={1} px={2} py={0.5} fontSize="11px" borderRadius="md">
+                      {creditBalance >= plan.amount
+                        ? "100% Covered by Store Credit"
+                        : `₦${creditBalance.toLocaleString()} credit applied → Pay ₦${(plan.amount - creditBalance).toLocaleString()}`}
+                    </Badge>
+                  )}
+                </Box>
 
-              {plan.desc.map((feature, index) => (
-                <Flex align="center" key={index} gap={2} mt={2}>
-                  <Icon
-                    as={IoIosCheckmarkCircle}
-                    color="green.500"
-                    boxSize={4}
-                  />
-                  <Text fontSize="xs" color="gray.500">
-                    {feature}
+                <Button
+                  w="full"
+                  my={3}
+                  h="42px"
+                  bg={isCurrentPlan ? "gray.100" : "#206CE1"}
+                  color={isCurrentPlan ? "gray.600" : "white"}
+                  rounded="xl"
+                  fontWeight="bold"
+                  fontSize="xs"
+                  onClick={() => handlePayment(plan)}
+                  loading={isPlanLoading}
+                  loadingText="Processing..."
+                  disabled={isLoading || isCurrentPlan}
+                  _hover={
+                    isCurrentPlan
+                      ? {}
+                      : {
+                          bg: "#1852B2",
+                          transform: "translateY(-1px)",
+                          shadow: "md",
+                        }
+                  }
+                  transition="all 0.2s"
+                >
+                  {!isCurrentPlan && plan.id !== "basic" && (
+                    <PiShootingStarDuotone style={{ marginRight: "6px", fontSize: "1.1rem" }} />
+                  )}
+                  {getButtonLabel(plan)}
+                </Button>
+
+                <Box borderTop="1px solid" borderColor="gray.100" pt={4} mt={3}>
+                  <Text
+                    textAlign="left"
+                    fontSize="11px"
+                    fontWeight="800"
+                    color="gray.400"
+                    textTransform="uppercase"
+                    letterSpacing="0.05em"
+                    mb={3}
+                  >
+                    Included Features
                   </Text>
-                </Flex>
-              ))}
+
+                  <VStack align="stretch" gap={2.5}>
+                    {plan.desc.map((feature, index) => (
+                      <HStack
+                        key={index}
+                        align="center"
+                        justify="flex-start"
+                        gap={2}
+                        w="full"
+                        textAlign="left"
+                      >
+                        <Icon
+                          as={IoIosCheckmarkCircle}
+                          color="#206CE1"
+                          boxSize={4}
+                          flexShrink={0}
+                        />
+                        <Text
+                          fontSize="xs"
+                          color="gray.700"
+                          textAlign="left"
+                          lineHeight="1.3"
+                          whiteSpace={{ base: "normal", md: "nowrap" }}
+                          overflow="hidden"
+                          textOverflow="ellipsis"
+                          title={feature}
+                        >
+                          {feature}
+                        </Text>
+                      </HStack>
+                    ))}
+                  </VStack>
+                </Box>
+              </Box>
             </Box>
           );
         })}
