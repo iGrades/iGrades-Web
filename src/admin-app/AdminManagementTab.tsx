@@ -328,8 +328,8 @@ const AdminManagementTab = ({ currentAdminId }: { currentAdminId: string }) => {
           </Text>
         </Flex>
 
-        <Box borderRadius="0.75rem" border="1px solid" borderColor="gray.200" overflow="hidden">
-          <Table.Root size="sm">
+        <Box borderRadius="0.75rem" border="1px solid" borderColor="gray.200" overflowX="auto" maxW="100%">
+          <Table.Root size="sm" minW="620px">
             <Table.Header>
               <Table.Row bg="gray.50">
                 {["Administrator", "Email Address", "Role Level", "Created Date", "Actions"].map((h) => (

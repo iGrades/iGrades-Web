@@ -206,10 +206,11 @@ const Sidebar = () => {
         borderColor="gray.200"
         px={0}
         py={0}
+        pb="env(safe-area-inset-bottom, 6px)"
         width="100%"
         zIndex={1000}
       >
-        <Flex justify="space-between" align="center">
+        <Flex justify="space-around" align="center" px={1}>
           {parentsAsideElem.map(({ icon, label, value }) => {
             const isActive = currentStudentPage === value;
             const isRewards = value === "rewards";

@@ -61,7 +61,7 @@ const QuizSubjectsList = ({
   const { subjectImages } = useStudentData();
   const { getSubjectByName } = useSubjects();
   const { getTopicsBySubjectId } = useTopics();
-  const { getClassByName } = useClasses();
+  const { classes, getClassByName } = useClasses();
 
   const getStudentCoursesArray = (): string[] => {
     const registered = authdStudent?.registered_courses;
@@ -110,29 +110,32 @@ const QuizSubjectsList = ({
     setSelectedCourse(courseName);
 
     try {
-      // Get class ID using context
-      const classData = getClassByName(authdStudent?.class || "");
-      if (!classData) {
-        setLoading(false);
-        return;
-      }
+      // Get class ID using context with fallback
+      const classData = getClassByName(authdStudent?.class || "") || classes[0];
 
-      // Get subject ID (dbCourseId is the generic lowercase name)
-      const subjectData = getSubjectByName(dbCourseId);
-      if (!subjectData) {
-        setLoading(false);
-        return;
-      }
+      // Get subject ID (canonical and alias matching)
+      const subjectData =
+        getSubjectByName(dbCourseId) ||
+        getSubjectByName(courseName);
 
-      // Get topics for this subject/class
-      const allTopics = getTopicsBySubjectId(subjectData.id);
-      const classTopics = allTopics.filter(
-        (topic: any) => topic.class_id === classData.id
-      );
+      const subjectId = subjectData?.id || dbCourseId;
+
+      // Use only real database topics for this subject/class
+      const allTopics = getTopicsBySubjectId(subjectId);
+      const classTopics = classData
+        ? allTopics.filter((topic: any) => {
+            if (topic.class_id === classData.id) return true;
+            const normClass = classData.name.toLowerCase().replace(/[^a-z0-9]/g, "");
+            const normTopicClass = (topic.class_id || "").toLowerCase().replace(/[^a-z0-9]/g, "");
+            return normTopicClass.includes(normClass) || normClass.includes(normTopicClass);
+          })
+        : allTopics;
 
       // Set the first topic ID if available for the quiz setup
-      if (classTopics.length > 0) {
+      if (classTopics && classTopics.length > 0) {
         setSelectedTopicsId(classTopics[0].id);
+      } else {
+        setSelectedTopicsId("");
       }
 
       const mappedTopics = (classTopics || []).map((topic: any) => ({
@@ -140,10 +143,12 @@ const QuizSubjectsList = ({
         course: courseName,
       }));
 
-      onCourseSelect(courseName, mappedTopics, dbCourseId);
+      // Select course with its real database topics
+      onCourseSelect(courseName, mappedTopics, subjectData?.name || dbCourseId);
       onOpen();
     } catch (error) {
       console.error("Error loading quiz topics:", error);
+      onCourseSelect(courseName, [], dbCourseId);
     } finally {
       setLoading(false);
     }

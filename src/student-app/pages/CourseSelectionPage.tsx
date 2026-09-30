@@ -354,8 +354,8 @@ const CourseSelectionPage = () => {
           >
             <Box
               bg="white"
-              borderRadius="3xl"
-              p={{ base: 6, md: 7 }}
+              borderRadius={{ base: "2xl", sm: "3xl" }}
+              p={{ base: 4, sm: 6, md: 7 }}
               border="1px solid"
               borderColor="gray.100"
               boxShadow="0 4px 20px -2px rgba(15, 23, 42, 0.05)"
@@ -409,7 +409,7 @@ const CourseSelectionPage = () => {
                 p={2}
                 my={3}
                 w="full"
-                h={{ base: "230px", sm: "270px", md: "300px" }}
+                h={{ base: "190px", sm: "240px", md: "280px" }}
                 display="flex"
                 alignItems="center"
                 justifyContent="center"
@@ -536,8 +536,8 @@ const CourseSelectionPage = () => {
           <Box w={{ base: "100%", lg: "62%", xl: "65%" }}>
             <Box
               bg="white"
-              borderRadius="3xl"
-              p={{ base: 6, md: 8 }}
+              borderRadius={{ base: "2xl", sm: "3xl" }}
+              p={{ base: 4, sm: 6, md: 8 }}
               border="1px solid"
               borderColor="gray.100"
               boxShadow="0 4px 20px -2px rgba(15, 23, 42, 0.05)"

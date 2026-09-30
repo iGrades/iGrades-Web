@@ -436,8 +436,8 @@ const StudentManagementTab = ({
           </Flex>
 
           {/* Table of Requests */}
-          <Box borderRadius="xl" border="1px solid" borderColor="gray.100" overflow="hidden" bg="white" boxShadow="0 1px 3px rgba(0,0,0,0.03)">
-            <Table.Root size="sm">
+          <Box borderRadius="xl" border="1px solid" borderColor="gray.100" overflowX="auto" maxW="100%" bg="white" boxShadow="0 1px 3px rgba(0,0,0,0.03)">
+            <Table.Root size="sm" minW="880px">
               <Table.Header>
                 <Table.Row bg="gray.50">
                   {["Student", "Email", "Initiated By", "Current Class", "Requested Class", "Reason", "Submitted", "Status", "Actions"].map((h) => (
@@ -594,8 +594,8 @@ const StudentManagementTab = ({
 
       {/* ─── SECTION 2: ALL STUDENTS DIRECTORY ─── */}
       {sectionTab === "students" && (
-        <Box borderRadius="xl" border="1px solid" borderColor="gray.100" overflow="hidden" bg="white" boxShadow="0 1px 3px rgba(0,0,0,0.03)">
-          <Table.Root size="sm">
+        <Box borderRadius="xl" border="1px solid" borderColor="gray.100" overflowX="auto" maxW="100%" bg="white" boxShadow="0 1px 3px rgba(0,0,0,0.03)">
+          <Table.Root size="sm" minW="800px">
             <Table.Header>
               <Table.Row bg="gray.50">
                 {["Student Name", "Email", "Assigned Class", "Plan", "Status", "Child Account", "Joined Date", "Class History"].map((h) => (

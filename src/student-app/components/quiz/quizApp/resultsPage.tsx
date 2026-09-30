@@ -218,8 +218,8 @@ export const ResultsPage = ({
             overflow="hidden"
             shadow="xl"
           >
-            <CardBody p={8} mb={7}>
-              <Stack gap={10}>
+            <CardBody p={{ base: 4, sm: 6, md: 8 }} mb={7}>
+              <Stack gap={{ base: 6, sm: 8, md: 10 }}>
                 {/* Overall Grade Circle */}
                 <Flex
                   direction="column"

@@ -10,8 +10,6 @@ import { supabase } from "@/lib/supabaseClient";
 import {
   DEFAULT_CLASSES,
   DEFAULT_SUBJECTS,
-  DEFAULT_TOPICS,
-  DEFAULT_RESOURCES,
 } from "./defaultCurriculumData";
 import {
   DEFAULT_COURSE_IMAGES,
@@ -19,6 +17,8 @@ import {
   cleanImageUrl,
   getCourseAliases,
 } from "../utils/courseImages";
+import { canonicalizeSubject } from "@/utils/subjectMatching";
+import { courseConfig } from "../utils/courseConstants";
 
 // Interfaces
 export interface Subject {
@@ -196,7 +196,7 @@ export const DataProvider: React.FC<DataProviderProps> = ({ children }) => {
   const [subjectsLoading, setSubjectsLoading] = useState(true);
   const [subjectsError, setSubjectsError] = useState<string | null>(null);
 
-  const [topics, setTopics] = useState<Topic[]>(DEFAULT_TOPICS);
+  const [topics, setTopics] = useState<Topic[]>([]);
   const [topicsLoading, setTopicsLoading] = useState(true);
   const [topicsError, setTopicsError] = useState<string | null>(null);
 
@@ -204,7 +204,7 @@ export const DataProvider: React.FC<DataProviderProps> = ({ children }) => {
   const [classesLoading, setClassesLoading] = useState(true);
   const [classesError, setClassesError] = useState<string | null>(null);
 
-  const [resources, setResources] = useState<Resource[]>(DEFAULT_RESOURCES);
+  const [resources, setResources] = useState<Resource[]>([]);
   const [resourcesLoading, setResourcesLoading] = useState(true);
   const [resourcesError, setResourcesError] = useState<string | null>(null);
 
@@ -226,7 +226,33 @@ export const DataProvider: React.FC<DataProviderProps> = ({ children }) => {
       }
 
       if (data && data.length > 0) {
-        setSubjects(data);
+        const enriched = data.map((sub: Subject) => {
+          let cleanName = (sub.name || "").trim();
+          if (cleanName.toLowerCase() === "futher mathematics") {
+            cleanName = "further mathematics";
+          } else if (cleanName === "agricultural Science") {
+            cleanName = "agricultural science";
+          }
+          const cleanImg = sub.image ? cleanImageUrl(sub.image) : undefined;
+          return {
+            ...sub,
+            name: cleanName,
+            display_name:
+              sub.display_name ||
+              courseConfig[cleanName.toLowerCase()]?.displayName ||
+              courseConfig[canonicalizeSubject(cleanName)]?.displayName ||
+              cleanName,
+            image: cleanImg || sub.image,
+          };
+        });
+
+        // Ensure all DEFAULT_SUBJECTS exist in the subjects array so no curriculum subject is missing
+        const existingCanons = new Set(enriched.map((s) => canonicalizeSubject(s.name)));
+        const missingDefaults = DEFAULT_SUBJECTS.filter(
+          (ds) => !existingCanons.has(canonicalizeSubject(ds.name))
+        );
+
+        setSubjects([...enriched, ...missingDefaults]);
       } else {
         setSubjects(DEFAULT_SUBJECTS);
       }
@@ -249,19 +275,15 @@ export const DataProvider: React.FC<DataProviderProps> = ({ children }) => {
         .order("order_index");
 
       if (error) {
-        console.warn("Using offline topics fallback:", error.message);
-        setTopics(DEFAULT_TOPICS);
+        console.warn("Error fetching topics from database:", error.message);
+        setTopics([]);
         return;
       }
 
-      if (data && data.length > 0) {
-        setTopics(data);
-      } else {
-        setTopics(DEFAULT_TOPICS);
-      }
-    } catch {
-      console.warn("Notice: Using offline topics fallback");
-      setTopics(DEFAULT_TOPICS);
+      setTopics(data || []);
+    } catch (err: any) {
+      console.warn("Notice: Failed fetching topics from database", err?.message);
+      setTopics([]);
     } finally {
       setTopicsLoading(false);
     }
@@ -307,19 +329,15 @@ export const DataProvider: React.FC<DataProviderProps> = ({ children }) => {
         .order("order_index");
 
       if (error) {
-        console.warn("Using offline resources fallback:", error.message);
-        setResources(DEFAULT_RESOURCES);
+        console.warn("Error fetching resources from database:", error.message);
+        setResources([]);
         return;
       }
 
-      if (data && data.length > 0) {
-        setResources(data);
-      } else {
-        setResources(DEFAULT_RESOURCES);
-      }
-    } catch {
-      console.warn("Notice: Using offline resources fallback");
-      setResources(DEFAULT_RESOURCES);
+      setResources(data || []);
+    } catch (err: any) {
+      console.warn("Notice: Failed fetching resources from database", err?.message);
+      setResources([]);
     } finally {
       setResourcesLoading(false);
     }
@@ -327,24 +345,100 @@ export const DataProvider: React.FC<DataProviderProps> = ({ children }) => {
 
   // Helper functions
   const getSubjectById = (id: string): Subject | undefined => {
-    return subjects.find((subject) => subject.id === id);
+    if (!id) return undefined;
+    return (
+      subjects.find((subject) => subject.id === id) ||
+      DEFAULT_SUBJECTS.find((subject) => subject.id === id)
+    );
   };
 
   const getSubjectByName = (name: string): Subject | undefined => {
-    return subjects.find((subject) => subject.name === name);
+    if (!name) return undefined;
+    const trimmed = name.trim();
+    const lower = trimmed.toLowerCase();
+    const canon = canonicalizeSubject(trimmed);
+
+    // 1. Direct case-insensitive match on name or display_name
+    const exact = subjects.find(
+      (s) =>
+        s.name?.toLowerCase() === lower ||
+        s.display_name?.toLowerCase() === lower
+    );
+    if (exact) return exact;
+
+    // 2. Canonical matching (futher mathematics <-> further mathematics, computer science <-> computer studies, etc.)
+    const canonMatch = subjects.find((s) => {
+      const sCanon = canonicalizeSubject(s.name);
+      const sDispCanon = canonicalizeSubject(s.display_name || "");
+      return sCanon === canon || (sDispCanon && sDispCanon === canon);
+    });
+    if (canonMatch) return canonMatch;
+
+    // 3. Fallback search against DEFAULT_SUBJECTS
+    const defaultMatch = DEFAULT_SUBJECTS.find((s) => {
+      return (
+        s.name?.toLowerCase() === lower ||
+        s.display_name?.toLowerCase() === lower ||
+        canonicalizeSubject(s.name) === canon
+      );
+    });
+    if (defaultMatch) return defaultMatch;
+
+    // 4. Fallback search by ID
+    return subjects.find((s) => s.id === trimmed || s.id === lower);
   };
 
   const getTopicsBySubjectId = (subjectId: string): Topic[] => {
-    return topics.filter((topic) => topic.subject_id === subjectId);
+    if (!subjectId) return [];
+    const targetSubject = getSubjectById(subjectId) || subjects.find((s) => s.id === subjectId);
+    const targetCanon = targetSubject
+      ? canonicalizeSubject(targetSubject.name)
+      : canonicalizeSubject(subjectId);
+
+    return topics.filter((topic) => {
+      if (topic.subject_id === subjectId) return true;
+      // Also match if topic's parent subject resolves to same canonical name
+      const topicSubject =
+        subjects.find((s) => s.id === topic.subject_id) ||
+        DEFAULT_SUBJECTS.find((s) => s.id === topic.subject_id);
+      if (topicSubject && canonicalizeSubject(topicSubject.name) === targetCanon) {
+        return true;
+      }
+      return false;
+    });
   };
 
   const getTopicsBySubjectName = (subjectName: string): Topic[] => {
     const subject = getSubjectByName(subjectName);
-    return subject ? getTopicsBySubjectId(subject.id) : [];
+    return subject ? getTopicsBySubjectId(subject.id) : getTopicsBySubjectId(subjectName);
   };
 
   const getClassByName = (name: string): Class | undefined => {
-    return classes.find((cls) => cls.name === name);
+    if (!name) return classes[0];
+    const trimmed = name.trim();
+    const clean = trimmed.toLowerCase().replace(/[^a-z0-9]/g, "");
+
+    // 1. Exact match
+    const exact = classes.find((cls) => cls.name === trimmed);
+    if (exact) return exact;
+
+    // 2. Normalized match (e.g., "SSS1" == "SSS 1")
+    const norm = classes.find(
+      (cls) => cls.name.toLowerCase().replace(/[^a-z0-9]/g, "") === clean
+    );
+    if (norm) return norm;
+
+    // 3. Match by ID or fallback to default
+    const byId = classes.find(
+      (cls) => cls.id === trimmed || cls.id.toLowerCase() === clean
+    );
+    return (
+      byId ||
+      DEFAULT_CLASSES.find(
+        (cls) => cls.name.toLowerCase().replace(/[^a-z0-9]/g, "") === clean
+      ) ||
+      classes[0]
+    );
   };
 
   const getResourcesByTopicId = (topicId: string): Resource[] => {

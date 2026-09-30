@@ -273,7 +273,7 @@ export default function ParentVerify() {
         <Box
           w={{ base: "100%", lg: "48%" }}
           bg="linear-gradient(150deg, #F0F6FF 0%, #E2EEFF 50%, #F5F9FF 100%)"
-          p={{ base: 6, md: 10 }}
+          p={{ base: 4, sm: 6, md: 10 }}
           display="flex"
           flexDirection="column"
           justifyContent="space-between"
@@ -348,8 +348,9 @@ export default function ParentVerify() {
             <Image
               src={verifyIllustration}
               alt="Email verification illustration"
-              maxH={{ base: "260px", md: "340px", lg: "390px" }}
+              maxH={{ base: "190px", sm: "260px", md: "340px", lg: "390px" }}
               w="auto"
+              maxW="100%"
               objectFit="contain"
               filter="drop-shadow(0 16px 24px rgba(32, 108, 225, 0.15))"
               transition="transform 0.3s ease"
@@ -390,7 +391,7 @@ export default function ParentVerify() {
         {/* ── RIGHT PANEL: Clean Interactive OTP Entry ── */}
         <Box
           w={{ base: "100%", lg: "52%" }}
-          p={{ base: 6, sm: 8, md: 12 }}
+          p={{ base: 4, sm: 8, md: 12 }}
           display="flex"
           flexDirection="column"
           justifyContent="center"
@@ -474,7 +475,7 @@ export default function ParentVerify() {
               >
                 Verification Code
               </Text>
-              <HStack justify="center" gap={{ base: 2, sm: 3 }}>
+              <HStack justify="center" gap={{ base: 1.5, sm: 3 }}>
                 <PinInput.Root
                   value={otp}
                   onValueChange={handleOtpChange}
@@ -482,14 +483,14 @@ export default function ParentVerify() {
                   size="lg"
                   autoFocus
                 >
-                  <PinInput.Control gap={{ base: 2, sm: 3 }} justify="center">
+                  <PinInput.Control gap={{ base: 1.5, sm: 3 }} justify="center">
                     {Array.from({ length: 6 }, (_, index) => (
                       <PinInput.Input
                         key={index}
                         index={index}
-                        w={{ base: "44px", sm: "52px" }}
-                        h={{ base: "50px", sm: "58px" }}
-                        fontSize={{ base: "xl", sm: "2xl" }}
+                        w={{ base: "38px", sm: "50px" }}
+                        h={{ base: "46px", sm: "56px" }}
+                        fontSize={{ base: "lg", sm: "2xl" }}
                         fontWeight="700"
                         textAlign="center"
                         borderRadius="xl"

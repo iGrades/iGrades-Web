@@ -160,6 +160,7 @@ const Sidebar = () => {
         borderColor="gray.200"
         px={0}
         py={0}
+        pb="env(safe-area-inset-bottom, 6px)"
         width="100%"
         zIndex={1000}
       >

@@ -102,16 +102,19 @@ const Pdfs = () => {
           (s: any) =>
             s.name?.toLowerCase() === dbCourseId.toLowerCase() ||
             s.display_name?.toLowerCase() === courseName.toLowerCase()
-        ) ||
-        subjects[0];
+        );
 
-      if (!subjectData) return;
+      const resolvedSubjectId = subjectData?.id || dbCourseId;
 
-      const allTopics = getTopicsBySubjectId(subjectData.id);
-      let classTopics = classData ? allTopics.filter((t: any) => t.class_id === classData.id) : [];
-      if (!classTopics || classTopics.length === 0) {
-        classTopics = allTopics;
-      }
+      const allTopics = getTopicsBySubjectId(resolvedSubjectId);
+      const classTopics = classData
+        ? allTopics.filter((t: any) => {
+            if (t.class_id === classData.id) return true;
+            const normClass = classData.name.toLowerCase().replace(/[^a-z0-9]/g, "");
+            const normTopicClass = (t.class_id || "").toLowerCase().replace(/[^a-z0-9]/g, "");
+            return normTopicClass.includes(normClass) || normClass.includes(normTopicClass);
+          })
+        : allTopics;
 
       setTopics(classTopics || []);
 

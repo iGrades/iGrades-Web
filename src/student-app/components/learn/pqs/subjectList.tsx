@@ -68,18 +68,18 @@ const SubjectsList = ({ onBack, selectedExam }: Props) => {
     setSelectedCourse(courseName);
 
     try {
-      // Get subject ID using context
-      const subjectData = getSubjectByName(dbCourseName);
-      if (!subjectData) {
-        setLoading(false);
-        return;
-      }
+      // Get subject ID using context with fallback
+      const subjectData =
+        getSubjectByName(dbCourseName) ||
+        getSubjectByName(courseName);
 
-      const subjectId = subjectData.id;
+      const subjectId = subjectData?.id || dbCourseName;
       setSubjectId(subjectId);
       setShowYearsList(true);
     } catch (error) {
       console.error("Error:", error);
+      setSubjectId(dbCourseName);
+      setShowYearsList(true);
     } finally {
       setLoading(false);
     }

@@ -259,8 +259,8 @@ export default function Login({ initialType }: LoginProps) {
             bg="white"
             align="center"
             justify="center"
-            py={{ base: 10, md: 12 }}
-            px={{ base: 6, md: 16, lg: 20 }}
+            py={{ base: 8, md: 12 }}
+            px={{ base: 4, sm: 8, md: 16, lg: 20 }}
             flexDirection="column"
             position="relative"
             overflow="hidden"

@@ -89,30 +89,31 @@ const Subjects = () => {
     setSelectedCourse(courseName);
 
     try {
-      // 1. Get class ID
-      const classData = getClassByName(authdStudent?.class || "");
-      if (!classData) {
-        setLoading(false);
-        return;
-      }
+      // 1. Get class ID with fallback
+      const classData = getClassByName(authdStudent?.class || "") || classes[0];
 
-      // 2. Get subject ID (dbCourseId is now the lowercase name e.g., "physics")
-      const subjectData = getSubjectByName(dbCourseId);
-      if (!subjectData) {
-        setLoading(false);
-        return;
-      }
+      // 2. Get subject ID with robust canonical lookup
+      const subjectData =
+        getSubjectByName(dbCourseId) ||
+        getSubjectByName(courseName);
+
+      const subjectId = subjectData?.id || dbCourseId;
 
       // 3. Get topics for this subject and class
-      const allTopics = getTopicsBySubjectId(subjectData.id);
-      const classTopics = allTopics.filter(
-        (topic: any) => topic.class_id === classData.id
-      );
+      const allTopics = getTopicsBySubjectId(subjectId);
+      const classTopics = classData
+        ? allTopics.filter((topic: any) => {
+            if (topic.class_id === classData.id) return true;
+            const normClass = classData.name.toLowerCase().replace(/[^a-z0-9]/g, "");
+            const normTopicClass = (topic.class_id || "").toLowerCase().replace(/[^a-z0-9]/g, "");
+            return normTopicClass.includes(normClass) || normClass.includes(normTopicClass);
+          })
+        : allTopics;
 
       setTopics(classTopics || []);
 
       // 4. Get videos for these topics
-      const topicIds = classTopics.map((topic: any) => topic.id) || [];
+      const topicIds = (classTopics || []).map((topic: any) => topic.id);
 
       if (topicIds.length > 0) {
         const allVideos = getResourcesByType("video");
@@ -128,6 +129,7 @@ const Subjects = () => {
       setTopicList(true);
     } catch (error) {
       console.error("Error fetching course data:", error);
+      setTopicList(true);
     } finally {
       setLoading(false);
     }

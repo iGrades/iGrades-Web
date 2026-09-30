@@ -621,8 +621,8 @@ const SubscriptionsTab = ({ students }: { students: Student[] }) => {
           </Select.Root>
         }
       >
-        <Box borderRadius="0.75rem" border="1px solid" borderColor="gray.100" overflow="hidden">
-          <Table.Root size="sm">
+        <Box borderRadius="0.75rem" border="1px solid" borderColor="gray.100" overflowX="auto" maxW="100%">
+          <Table.Root size="sm" minW="620px">
             <Table.Header>
               <Table.Row bg="gray.50">
                 {["Student", "Email", "Plan", "Status", "Payment Ref", "Joined"].map((h) => (
@@ -828,8 +828,8 @@ const ContentTab = ({ resources }: { resources: Resource[] }) => {
             </Select.Root>
           </Flex>
 
-          <Box borderRadius="0.75rem" border="1px solid" borderColor="gray.100" overflow="hidden">
-            <Table.Root size="sm">
+          <Box borderRadius="0.75rem" border="1px solid" borderColor="gray.100" overflowX="auto" maxW="100%">
+            <Table.Root size="sm" minW="580px">
               <Table.Header>
                 <Table.Row bg="gray.50">
                   {["Resource Title", "Type", "Duration", "Class ID", "Uploaded"].map((h) => (
@@ -980,8 +980,8 @@ const UserManagementTab = ({ students, parents, onRefresh }: { students: Student
       </Flex>
 
       {userType === "students" && (
-        <Box borderRadius="0.75rem" border="1px solid" borderColor="gray.100" overflow="hidden" bg="white" boxShadow="0 1px 3px rgba(0,0,0,0.03)">
-          <Table.Root size="sm">
+        <Box borderRadius="0.75rem" border="1px solid" borderColor="gray.100" overflowX="auto" maxW="100%" bg="white" boxShadow="0 1px 3px rgba(0,0,0,0.03)">
+          <Table.Root size="sm" minW="720px">
             <Table.Header>
               <Table.Row bg="gray.50">
                 {["Student Name", "Email", "Class", "Plan", "Status", "Child?", "Joined", "Actions"].map((h) => (
@@ -1082,8 +1082,8 @@ const UserManagementTab = ({ students, parents, onRefresh }: { students: Student
       )}
 
       {userType === "parents" && (
-        <Box borderRadius="0.75rem" border="1px solid" borderColor="gray.100" overflow="hidden" bg="white" boxShadow="0 1px 3px rgba(0,0,0,0.03)">
-          <Table.Root size="sm">
+        <Box borderRadius="0.75rem" border="1px solid" borderColor="gray.100" overflowX="auto" maxW="100%" bg="white" boxShadow="0 1px 3px rgba(0,0,0,0.03)">
+          <Table.Root size="sm" minW="620px">
             <Table.Header>
               <Table.Row bg="gray.50">
                 {["Parent Name", "Email", "Phone", "Registered", "Actions"].map((h) => (

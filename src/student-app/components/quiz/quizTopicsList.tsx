@@ -18,7 +18,8 @@ import {
 import { useState, useEffect } from "react";
 import { GoArrowRight } from "react-icons/go";
 import { LuArrowLeft, LuChevronDown, LuChevronUp, LuLayers, LuBookOpen } from "react-icons/lu";
-import { useStudentData } from "@/student-app/context/dataContext";
+import { useStudentData, useSubjects } from "@/student-app/context/dataContext";
+import { canonicalizeSubject } from "@/utils/subjectMatching";
 import Slider from "react-slick";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
@@ -100,6 +101,7 @@ const QuizTopicsList = ({
   } = useSubscriptionEntitlement();
 
   const { subjectImages } = useStudentData();
+  const { subjects, getSubjectByName } = useSubjects();
 
   const items = [
     {
@@ -135,27 +137,22 @@ const QuizTopicsList = ({
       setError(null);
 
       try {
-        const dbNames = selectedCourses.map((course) => course.dbName);
-        const { data: subjectsData, error: subjectsError } = await supabase
-          .from("subjects")
-          .select("id, name")
-          .in("name", dbNames);
-
-        if (subjectsError) throw subjectsError;
-
-        if (!subjectsData || subjectsData.length === 0) {
-          setAvailableTopics([]);
-          return;
-        }
-
-        const coursesWithIds = selectedCourses
-          .map((course) => {
-            const dbSubject = subjectsData.find(
-              (subject) => subject.name === course.dbName
+        // Resolve subject IDs with canonical matching
+        const coursesWithIds = selectedCourses.map((course) => {
+          const matchedSubject =
+            getSubjectByName(course.dbName) ||
+            getSubjectByName(course.displayName) ||
+            subjects.find(
+              (s) =>
+                canonicalizeSubject(s.name) === canonicalizeSubject(course.dbName) ||
+                canonicalizeSubject(s.name) === canonicalizeSubject(course.displayName)
             );
-            return { ...course, id: dbSubject?.id || null };
-          })
-          .filter((course) => course.id);
+
+          return {
+            ...course,
+            id: matchedSubject?.id || course.id || course.dbName,
+          };
+        });
 
         const uniqueTopics = Array.from(
           new Map(topicList.map((t) => [t.id, t])).values()
@@ -164,20 +161,31 @@ const QuizTopicsList = ({
         const allTopicIds = uniqueTopics.map((t) => t.id);
 
         // 1. Fetch quizzes to verify which topics have quizzes
-        const { data: existingQuizzes, error: quizzesError } = await supabase
-          .from("quizzes")
-          .select("id, subject_id, topic_id")
-          .in("subject_id", coursesWithIds.map((c) => c.id))
-          .in("topic_id", allTopicIds);
+        let topicsWithQuizzes = new Set<string>();
+        try {
+          const { data: existingQuizzes, error: quizzesError } = await supabase
+            .from("quizzes")
+            .select("id, subject_id, topic_id")
+            .in("subject_id", coursesWithIds.map((c) => c.id))
+            .in("topic_id", allTopicIds);
 
-        if (quizzesError) throw quizzesError;
+          if (!quizzesError && existingQuizzes && existingQuizzes.length > 0) {
+            topicsWithQuizzes = new Set(
+              existingQuizzes.map((quiz) => quiz.topic_id)
+            );
+          }
+        } catch (qErr) {
+          console.warn("Quiz availability check warning:", qErr);
+        }
 
-        const topicsWithQuizzes = new Set(
-          existingQuizzes?.map((quiz) => quiz.topic_id) || []
-        );
-
+        // If quizzes table has records, prioritize topics that have quizzes.
+        // If table has no quizzes yet, allow all syllabus topics so practice mode is fully available!
+        const hasQuizRecords = topicsWithQuizzes.size > 0;
         const filteredAvailableTopics = uniqueTopics
-          .map((topic) => ({ ...topic, hasQuiz: topicsWithQuizzes.has(topic.id) }))
+          .map((topic) => ({
+            ...topic,
+            hasQuiz: hasQuizRecords ? topicsWithQuizzes.has(topic.id) : true,
+          }))
           .filter((topic) => topic.hasQuiz);
 
         setAvailableTopics(filteredAvailableTopics);

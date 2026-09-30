@@ -1,7 +1,7 @@
 // src/utils/subjectMatching.ts
 // Utility for parsing student registered courses and matching against subject records
 
-import { courseConfig } from "@/student-app/utils/courseConstants";
+import { courseConfig } from "../student-app/utils/courseConstants";
 
 /**
  * Parses registered courses from various data shapes (array, JSON string, comma-separated)
@@ -45,15 +45,29 @@ export function canonicalizeSubject(str: string): string {
   const clean = str.toLowerCase().replace(/[^a-z0-9]/g, "");
 
   // Known curriculum equivalencies & DB spelling quirks
-  if (clean === "furthermathematics" || clean === "futhermathematics" || clean === "furthermaths") {
+  if (
+    clean === "furthermathematics" ||
+    clean === "futhermathematics" ||
+    clean === "furthermaths" ||
+    clean === "futhermaths"
+  ) {
     return "furthermathematics";
+  }
+  if (
+    clean === "mathematics" ||
+    clean === "generalmathematics" ||
+    clean === "maths" ||
+    clean === "math"
+  ) {
+    return "mathematics";
   }
   if (
     clean === "computerscience" ||
     clean === "computerstudies" ||
     clean === "computing" ||
     clean === "ict" ||
-    clean === "informationtechnology"
+    clean === "informationtechnology" ||
+    clean === "computer"
   ) {
     return "computerstudies";
   }
@@ -68,38 +82,92 @@ export function canonicalizeSubject(str: string): string {
   if (clean === "englishlanguage" || clean === "english") {
     return "english";
   }
-  if (clean === "literatureinenglish" || clean === "literature") {
+  if (
+    clean === "literatureinenglish" ||
+    clean === "literature" ||
+    clean === "litinenglish"
+  ) {
     return "literature";
   }
   if (
     clean === "physicaleducation" ||
     clean === "physicalandhealtheducation" ||
+    clean === "physicalhealtheducation" ||
     clean === "phe" ||
     clean === "pe"
   ) {
     return "physicaleducation";
   }
-  if (clean === "basicscience" || clean === "integratedscience") {
+  if (
+    clean === "basicscience" ||
+    clean === "integratedscience" ||
+    clean === "basicscienceandtechnology" ||
+    clean === "basicsciencetechnology" ||
+    clean === "basicsci"
+  ) {
     return "basicscience";
   }
   if (
     clean === "basictechnology" ||
     clean === "introductorytechnology" ||
-    clean === "introtech"
+    clean === "introtech" ||
+    clean === "basictech"
   ) {
     return "basictechnology";
   }
-  if (clean === "socialstudies" || clean === "socialscience") {
+  if (clean === "socialstudies" || clean === "socialscience" || clean === "socialstudy") {
     return "socialstudies";
   }
-  if (clean === "civiceducation" || clean === "civics") {
+  if (clean === "civiceducation" || clean === "civics" || clean === "civic") {
     return "civiceducation";
   }
-  if (clean === "homeeconomics" || clean === "homeec") {
+  if (
+    clean === "businessstudies" ||
+    clean === "businessstudy" ||
+    clean === "business"
+  ) {
+    return "businessstudies";
+  }
+  if (clean === "homeeconomics" || clean === "homeec" || clean === "homeecons") {
     return "homeeconomics";
   }
   if (clean === "creativearts" || clean === "finearts" || clean === "visualarts") {
     return "creativearts";
+  }
+  if (
+    clean === "accounting" ||
+    clean === "financialaccounting" ||
+    clean === "accounts" ||
+    clean === "acc"
+  ) {
+    return "accounting";
+  }
+  if (clean === "commerce" || clean === "commercialstudies") {
+    return "commerce";
+  }
+  if (clean === "economics" || clean === "econs" || clean === "econ") {
+    return "economics";
+  }
+  if (clean === "government" || clean === "govt") {
+    return "government";
+  }
+  if (clean === "geography" || clean === "geo") {
+    return "geography";
+  }
+  if (clean === "history" || clean === "hist") {
+    return "history";
+  }
+  if (clean === "french" || clean === "frenchlanguage") {
+    return "french";
+  }
+  if (clean === "biology" || clean === "bio") {
+    return "biology";
+  }
+  if (clean === "chemistry" || clean === "chem") {
+    return "chemistry";
+  }
+  if (clean === "physics" || clean === "phy") {
+    return "physics";
   }
 
   return clean;
