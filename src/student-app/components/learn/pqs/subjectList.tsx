@@ -151,9 +151,10 @@ const SubjectsList = ({ onBack, selectedExam }: Props) => {
                   <Box
                     key={index}
                     borderRadius="xl"
-                    p={6}
+                    p={{ base: 3, sm: 5, md: 6 }}
                     textAlign="center"
-                    minH="100px"
+                    w="100%"
+                    aspectRatio="254 / 101"
                     display="flex"
                     flexDirection="column"
                     justifyContent="center"
@@ -161,7 +162,7 @@ const SubjectsList = ({ onBack, selectedExam }: Props) => {
                     transition="all 0.3s ease"
                     _hover={{ transform: "translateY(-6px)" }}
                     background={course.image ? `url("${course.image.trim()}")` : course.color}
-                    backgroundSize="cover"
+                    backgroundSize="100% 100%"
                     backgroundPosition="center"
                     backgroundRepeat="no-repeat"
                     cursor="pointer"

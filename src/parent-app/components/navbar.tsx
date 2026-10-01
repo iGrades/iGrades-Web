@@ -273,7 +273,7 @@ const Navbar = ({ setShowLogoutModal }: Props) => {
           {/* Language Selector */}
           <Select.Root
             collection={languages}
-            width={{ base: "85px", sm: "105px", md: "125px" }}
+            width={{ base: "36px", md: "125px" }}
             value={value}
             onValueChange={(e) => {
               setValue(e.value);
@@ -288,8 +288,8 @@ const Navbar = ({ setShowLogoutModal }: Props) => {
               <Select.Trigger
                 display="flex"
                 alignItems="center"
-                justifyContent="space-between"
-                px={2.5}
+                justifyContent={{ base: "center", md: "space-between" }}
+                px={{ base: 0, md: 2.5 }}
                 py={1.5}
                 borderRadius="lg"
                 border="1px solid"
@@ -298,10 +298,15 @@ const Navbar = ({ setShowLogoutModal }: Props) => {
                 _hover={{ bg: "gray.100" }}
                 cursor="pointer"
                 h="36px"
+                w={{ base: "36px", md: "auto" }}
+                minW={{ base: "36px", md: "auto" }}
+                aria-label="Select Language"
               >
-                <HStack gap={1.5} overflow="hidden">
-                  <FiGlobe size={15} color="#525071" />
-                  <Select.ValueText placeholder="EN" />
+                <HStack gap={1.5} overflow="hidden" justify="center">
+                  <FiGlobe size={16} color="#525071" />
+                  <Box display={{ base: "none", md: "inline-block" }} overflow="hidden">
+                    <Select.ValueText placeholder="EN" />
+                  </Box>
                 </HStack>
               </Select.Trigger>
             </Select.Control>

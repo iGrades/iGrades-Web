@@ -168,7 +168,7 @@ const QuizPage = ({ setShowSideBar, setShowNavBar }: Props) => {
   };
 
   return (
-    <>
+    <Box w={{ base: "full", md: "95%" }} m="auto" mb={10}>
       {showTopicList ? (
         <QuizTopicsList
           topicList={topicList}
@@ -373,7 +373,7 @@ const QuizPage = ({ setShowSideBar, setShowNavBar }: Props) => {
         reason={modalState.reason}
         currentPlan={effectivePlan}
       />
-    </>
+    </Box>
   );
 };
 

@@ -216,13 +216,15 @@ const PdfList = ({ topic, pdf, onBack }: Props) => {
                 cursor="pointer"
                 onClick={() => handlePdfClick(pdfFile, index, "pdf")}
               >
-                <Flex gap={4} align="center" flex={1}>
+                <Flex direction={{ base: "column", sm: "row" }} gap={{ base: 3, sm: 4 }} align={{ base: "stretch", sm: "center" }} flex={1} w="100%" minW={0}>
                   {/* Custom Vector Thumbnail */}
                   <Box
                     flexShrink={0}
                     w={{ base: "100%", sm: "140px", md: "170px" }}
-                    h={{ base: "90px", sm: "100px", md: "105px" }}
+                    h={{ base: "110px", sm: "100px", md: "105px" }}
                     position="relative"
+                    borderRadius="xl"
+                    overflow="hidden"
                   >
                     <PdfCustomThumbnail
                       title={pdfFile.title}
@@ -244,7 +246,7 @@ const PdfList = ({ topic, pdf, onBack }: Props) => {
                   </Box>
 
                   {/* PDF Info */}
-                  <Box flex={1} minW={0} pr={2}>
+                  <Box flex={1} minW={0} pr={{ base: 0, md: 2 }}>
                     <Flex align="center" gap={2} mb={1}>
                       <Badge colorScheme="blue" fontSize="10px" px={2} py={0.5} borderRadius="md">
                         CURRICULUM NOTE
@@ -280,10 +282,12 @@ const PdfList = ({ topic, pdf, onBack }: Props) => {
                 <Flex
                   align="center"
                   gap={2}
-                  px={{ base: 2, md: 4 }}
+                  wrap="wrap"
+                  px={{ base: 0, md: 4 }}
                   py={{ base: 2, md: 0 }}
-                  mt={{ base: 2, md: 0 }}
-                  justify={{ base: "flex-end", md: "center" }}
+                  mt={{ base: 3, md: 0 }}
+                  justify={{ base: "stretch", sm: "flex-end", md: "center" }}
+                  w={{ base: "100%", md: "auto" }}
                 >
                   <Button
                     size="sm"
@@ -361,25 +365,31 @@ const PdfList = ({ topic, pdf, onBack }: Props) => {
       >
         <Portal>
           <Dialog.Backdrop />
-          <Dialog.Positioner p={0} m={0}>
+          <Dialog.Positioner p={0} m={0} width="100vw" maxW="100vw" overflow="hidden">
             <Dialog.Content
               maxW="100vw"
               w="100vw"
-              h="100vh"
+              h={{ base: "100dvh", md: "100vh" }}
+              maxH={{ base: "100dvh", md: "100vh" }}
               m={0}
               borderRadius={0}
               display="flex"
               flexDirection="column"
               bg="white"
+              overflow="hidden"
             >
               {/* Header with Navigation & Actions */}
               <Dialog.Header
-                px={{ base: 3, md: 6 }}
+                px={{ base: 2.5, md: 6 }}
                 py={{ base: 2, md: 3 }}
                 borderBottom="1px solid"
                 borderColor="gray.200"
                 bg="white"
                 position="relative"
+                w="100%"
+                maxW="100vw"
+                overflow="hidden"
+                boxSizing="border-box"
               >
                 <Flex
                   justify="space-between"
@@ -489,7 +499,17 @@ const PdfList = ({ topic, pdf, onBack }: Props) => {
               </Dialog.Header>
 
               {/* Body */}
-              <Dialog.Body p={0} flex={1} position="relative" bg={activeTab === "pdf" ? "#0b1120" : "gray.50"} overflowY={activeTab === "pdf" ? "hidden" : "auto"}>
+              <Dialog.Body
+                p={0}
+                flex={1}
+                position="relative"
+                bg={activeTab === "pdf" ? "#0b1120" : "gray.50"}
+                overflowY={activeTab === "pdf" ? "hidden" : "auto"}
+                overflowX="hidden"
+                w="100%"
+                maxW="100vw"
+                boxSizing="border-box"
+              >
                 {selectedPDF && activeTab === "notes" && currentNote && (
                   <Box maxW="850px" mx="auto" p={{ base: 4, md: 8 }}>
                     {/* Header Card */}

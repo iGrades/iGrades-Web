@@ -774,13 +774,14 @@ const CourseSelectionPage = () => {
 
                         {/* Course Graphic Banner */}
                         <Box
-                          h="58px"
+                          h="auto"
+                          aspectRatio="254 / 101"
                           w="full"
                           borderRadius="xl"
                           overflow="hidden"
                           mb={2.5}
                           bg={`url("${getCourseThumbnail(course.id)}")`}
-                          backgroundSize="cover"
+                          backgroundSize="100% 100%"
                           backgroundPosition="center"
                           backgroundRepeat="no-repeat"
                           border="1px solid"

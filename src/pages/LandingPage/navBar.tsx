@@ -148,13 +148,21 @@ const NavBar = () => {
         </HStack>
       </Box>
 
-      {/* Mobile hamburger */}
-      <Box display={{ base: "block", md: "none" }}
-        onClick={toggleMobileNav} cursor="pointer" zIndex="20" p={2}>
-        <Box w="25px" h="3px" bg="black" mb="5px" />
-        <Box w="25px" h="3px" bg="black" mb="5px" />
-        <Box w="25px" h="3px" bg="black" />
-      </Box>
+      {/* Mobile controls */}
+      <HStack display={{ base: "flex", md: "none" }} gap={2} align="center">
+        <LanguageSwitcher size="sm" />
+        <Box
+          onClick={toggleMobileNav}
+          cursor="pointer"
+          zIndex="20"
+          p={2}
+          aria-label="Open mobile menu"
+        >
+          <Box w="25px" h="3px" bg="black" mb="5px" />
+          <Box w="25px" h="3px" bg="black" mb="5px" />
+          <Box w="25px" h="3px" bg="black" />
+        </Box>
+      </HStack>
 
       {/* Mobile overlay */}
       {isMobileNavOpen && (
@@ -202,9 +210,6 @@ const NavBar = () => {
         ))}
 
         <Flex direction="column" mt={8} gap={4}>
-          <Box display="flex" justifyContent="center">
-            <LanguageSwitcher size="md" />
-          </Box>
           <Button variant="outline" border="1px solid" borderColor="primaryColor"
             rounded="xl" color="primaryColor" fontWeight="bold" fontSize="md"
             py={6} onClick={handleLogin}>

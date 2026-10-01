@@ -105,6 +105,8 @@ const SinglePageCanvas = React.forwardRef<HTMLDivElement, SinglePageCanvasProps>
           canvas.height = Math.floor(viewport.height * dpr);
           canvas.style.width = `${width}px`;
           canvas.style.height = `${height}px`;
+          canvas.style.maxWidth = "100%";
+          canvas.style.height = "auto";
 
           const ctx = canvas.getContext("2d");
           if (!ctx) return;
@@ -149,13 +151,15 @@ const SinglePageCanvas = React.forwardRef<HTMLDivElement, SinglePageCanvasProps>
         bg="white"
         mx="auto"
         w="fit-content"
+        maxW="100%"
         transition="transform 0.1s ease-out"
         style={{
-          minWidth: pageWidth > 0 ? `${pageWidth}px` : undefined,
+          width: pageWidth > 0 ? `${pageWidth}px` : "100%",
+          maxWidth: "100%",
           minHeight: pageHeight > 0 ? `${pageHeight}px` : undefined,
         }}
       >
-        <canvas ref={canvasRef} style={{ display: "block" }} />
+        <canvas ref={canvasRef} style={{ display: "block", maxWidth: "100%", height: "auto" }} />
         {/* Floating Page Number indicator at top right of page */}
         <Box
           position="absolute"
@@ -188,7 +192,14 @@ export const NativePdfCanvasViewer: React.FC<PdfViewerProps> = ({
   const [numPages, setNumPages] = useState<number>(0);
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [pageInputVal, setPageInputVal] = useState<string>("1");
-  const [scale, setScale] = useState<number>(1.0);
+  const [scale, setScale] = useState<number>(() => {
+    if (typeof window !== "undefined" && window.innerWidth < 768) {
+      // Standard A4 is ~595.28px wide. Ensure initial scale fits mobile viewport snugly
+      const available = Math.max(window.innerWidth - 24, 180);
+      return Math.min(1.0, Math.max(0.3, Math.floor((available / 595.28) * 100) / 100));
+    }
+    return 1.0;
+  });
   const [rotation, setRotation] = useState<number>(0);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
@@ -398,10 +409,10 @@ export const NativePdfCanvasViewer: React.FC<PdfViewerProps> = ({
           }
         }
 
-        // Available horizontal padding based on screen size (p={{ base: 2, sm: 4, md: 6 }} -> 16px, 32px, 48px)
-        const horizPadding = containerWidth < 640 ? 16 : containerWidth < 768 ? 32 : 48;
-        // 16px safety buffer accounts for vertical scrollbar and prevents horizontal overflow
-        const availableWidth = Math.max(containerWidth - horizPadding - 16, 100);
+        // Available horizontal padding based on screen size (p={{ base: 1.5, sm: 3, md: 6 }})
+        const horizPadding = containerWidth < 640 ? 14 : containerWidth < 768 ? 24 : 48;
+        // Safety buffer accounts for vertical scrollbar and prevents horizontal overflow
+        const availableWidth = Math.max(containerWidth - horizPadding - 8, 80);
 
         if (availableWidth > 0 && unscaledViewport.width > 0) {
           const rawFitScale = availableWidth / unscaledViewport.width;
@@ -745,14 +756,18 @@ export const NativePdfCanvasViewer: React.FC<PdfViewerProps> = ({
         borderColor="gray.800"
         zIndex={20}
         boxShadow="0 4px 12px rgba(0,0,0,0.3)"
+        w="100%"
+        maxW="100%"
+        overflowX="auto"
       >
         <Flex
-          px={{ base: 2.5, sm: 4 }}
+          px={{ base: 2, sm: 4 }}
           py={2}
           align="center"
           justify="space-between"
           wrap="wrap"
-          gap={{ base: 2, md: 3 }}
+          gap={{ base: 1.5, md: 3 }}
+          minW="fit-content"
         >
           {/* Left Group: Page Navigation & Thumbnails Drawer */}
           <Flex align="center" gap={{ base: 1, sm: 2 }} wrap="nowrap" flexShrink={0}>
@@ -1106,13 +1121,15 @@ export const NativePdfCanvasViewer: React.FC<PdfViewerProps> = ({
           ref={scrollContainerRef}
           flex={1}
           w="100%"
+          maxW="100%"
           h="100%"
           overflowX="auto"
           overflowY="auto"
-          p={{ base: 2, sm: 4, md: 6 }}
+          p={{ base: 1.5, sm: 3, md: 6 }}
           position="relative"
           bg="#0b1120"
           onClick={handleCanvasDoubleTap}
+          boxSizing="border-box"
         >
           {/* Loading State */}
           {loading && (

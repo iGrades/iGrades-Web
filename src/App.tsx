@@ -3,7 +3,6 @@ import { useRoutes, useLocation } from "react-router-dom";
 import { StudentsDataProvider } from "@/parent-app/context/studentsDataContext";
 import { UserProvider } from "@/parent-app/context/parentDataContext";
 import { PointsCelebrationModal } from "@/student-app/components/rewards/PointsCelebrationModal";
-import { FloatingLanguageWidget } from "@/components/LanguageSwitcher";
 import { autoTranslator } from "@/services/autoTranslation";
 import { initGlobalActivityTracker, checkAndEnforceSessionExpiry, STORAGE_KEYS } from "@/lib/authSessionManager";
 import { supabase } from "@/lib/supabaseClient";
@@ -47,7 +46,6 @@ function App() {
       <StudentsDataProvider>
         {element}
         <PointsCelebrationModal />
-        <FloatingLanguageWidget />
       </StudentsDataProvider>
     </UserProvider>
   );
