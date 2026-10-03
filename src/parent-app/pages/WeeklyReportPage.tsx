@@ -10,10 +10,12 @@ import { UpgradePromptModal } from "@/components/subscription/UpgradePromptModal
 import AddGraderPopup from "@/parent-app/components/grader/addGraderPopover";
 import { BsFileEarmarkBarGraphFill } from "react-icons/bs";
 import { useTranslation } from "react-i18next";
+import { useNavigationStore } from "@/store/usenavigationStore";
 
 export const WeeklyReportPage = () => {
   const { t } = useTranslation();
-  const { studentsData } = useStudentsData();
+  const setCurrentParentPage = useNavigationStore((state) => state.setCurrentParentPage);
+  const { studentsData, getGraderDetails } = useStudentsData();
   const [selectedStudentId, setSelectedStudentId] = useState<string | null>(null);
   const [showAddChildPopup, setShowAddChildPopup] = useState(false);
 

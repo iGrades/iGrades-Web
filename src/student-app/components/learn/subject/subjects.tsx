@@ -53,7 +53,7 @@ const Subjects = () => {
   const { subjectImages } = useStudentData();
   const { getSubjectByName } = useSubjects();
   const { getTopicsBySubjectId } = useTopics();
-  const { getClassByName } = useClasses();
+  const { classes, getClassByName } = useClasses();
   const { getResourcesByType } = useResources();
 
   // Helper function to convert registered_courses to an array

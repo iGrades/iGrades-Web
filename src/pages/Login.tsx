@@ -57,6 +57,7 @@ export default function Login({ initialType }: LoginProps) {
 
   const [loginState, setLoginState] = useState(isStudentDefault ? "children" : "parent");
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
+  const [isAppleLoading, setIsAppleLoading] = useState(false);
 
   useEffect(() => {
     if (
@@ -141,7 +142,8 @@ export default function Login({ initialType }: LoginProps) {
   const handleGoogleLogin = async () => {
     setIsGoogleLoading(true);
     localStorage.setItem("oauth_role", loginState);
-    const redirectTo = `${window.location.origin}/auth/callback`;
+    localStorage.setItem("oauth_intent", "login");
+    const redirectTo = `${window.location.origin}/auth/callback?role=${encodeURIComponent(loginState)}&intent=login`;
 
     const { error } = await supabase.auth.signInWithOAuth({
       provider: "google",
@@ -151,12 +153,37 @@ export default function Login({ initialType }: LoginProps) {
           access_type: "offline",
           prompt: "select_account",
         },
+        data: {
+          role: loginState,
+        },
       },
     });
 
     if (error) {
       setAlert({ type: "error", message: error.message });
       setIsGoogleLoading(false);
+    }
+  };
+
+  const handleAppleLogin = async () => {
+    setIsAppleLoading(true);
+    localStorage.setItem("oauth_role", loginState);
+    localStorage.setItem("oauth_intent", "login");
+    const redirectTo = `${window.location.origin}/auth/callback?role=${encodeURIComponent(loginState)}&intent=login`;
+
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: "apple",
+      options: {
+        redirectTo,
+        data: {
+          role: loginState,
+        },
+      },
+    });
+
+    if (error) {
+      setAlert({ type: "error", message: error.message });
+      setIsAppleLoading(false);
     }
   };
 
@@ -386,6 +413,9 @@ export default function Login({ initialType }: LoginProps) {
                   Google
                 </Button>
                 <Button
+                  onClick={handleAppleLogin}
+                  loading={isAppleLoading}
+                  loadingText="Connecting..."
                   variant="outline"
                   borderRadius="xl"
                   borderColor="gray.200"
