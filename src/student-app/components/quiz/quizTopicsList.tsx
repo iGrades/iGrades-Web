@@ -475,6 +475,42 @@ const QuizTopicsList = ({
             </Box>
           )}
 
+          {/* ── TOP NAV BAR: BACK TO SUBJECTS ── */}
+          <Flex align="center" justify="space-between" mb={2} px={1}>
+            <Button
+              size="sm"
+              variant="ghost"
+              color="gray.600"
+              _hover={{ color: "gray.900", bg: "gray.100" }}
+              onClick={() => {
+                setShowTopicList(false);
+                setShowSideBar(true);
+                setShowNavBar(true);
+              }}
+              gap={2}
+              fontSize="xs"
+              fontWeight="600"
+              borderRadius="xl"
+              px={3}
+              py={2}
+              h="36px"
+              cursor="pointer"
+              title="Return to subject selection"
+            >
+              <Icon as={LuArrowLeft} boxSize={4} />
+              <Text as="span">Back to Subjects</Text>
+            </Button>
+
+            {selectedCourses.length > 0 && (
+              <HStack gap={1.5} display={{ base: "none", sm: "flex" }}>
+                <Text fontSize="xs" color="gray.400">Subjects:</Text>
+                <Text fontSize="xs" fontWeight="600" color="gray.700">
+                  {selectedCourses.map((c) => c.displayName).join(", ")}
+                </Text>
+              </HStack>
+            )}
+          </Flex>
+
           <Box p={4} borderRadius="md">
             <Flex justify="space-between" align="center">
               <Box width={{ base: "45%", md: "50%" }}>
