@@ -9,6 +9,7 @@ import { ProgressTrendsSection } from "../intelligence/ProgressTrendsSection";
 import { RecentActivitySection } from "../intelligence/RecentActivitySection";
 
 import { useParentSubscriptionEntitlement } from "@/parent-app/hooks/useParentSubscriptionEntitlement";
+import { normalizePlan } from "@/services/subscriptionEntitlements";
 import { ParentPaywallCard } from "@/parent-app/components/subscription/ParentPaywallCard";
 import { UpgradePromptModal } from "@/components/subscription/UpgradePromptModal";
 
@@ -27,8 +28,10 @@ const QuizHistoryList = ({ studentId, student }: QuizHistoryListProps) => {
     closeUpgradeModal,
   } = useParentSubscriptionEntitlement();
 
-  const hasStandardAccess = effectivePlan === "standard" || effectivePlan === "premium";
-  const hasPremiumAccess = effectivePlan === "premium";
+  const isStudentPremium = normalizePlan(
+    studentObj?.subscription,
+    studentObj?.subscription_status
+  ).effectivePlan === "premium";
 
   if (loading) {
     return (
@@ -49,78 +52,35 @@ const QuizHistoryList = ({ studentId, student }: QuizHistoryListProps) => {
   return (
     <>
       <VStack align="stretch" gap={5} w="full">
-        {/* Basic: Overview key metrics and recent quiz history */}
+        {/* Basic & Core: Overview key metrics and recent quiz history */}
         <OverviewMetricsGrid intelligence={intelligence} />
         <RecentActivitySection intelligence={intelligence} />
 
-        {/* Standard: Subject performance and longitudinal trends */}
-        {hasStandardAccess ? (
-          <SubjectPerformanceSection
-            subjects={intelligence.subjects}
-            registeredCourses={studentObj?.registered_courses}
-          />
-        ) : (
-          <ParentPaywallCard
-            title="Subject Performance Breakdown"
-            description="Detailed subject accuracy, course trends, and curriculum mastery are available on Standard and Premium plans."
-            requiredPlan="standard"
-            onUpgradeClick={() =>
-              promptUpgrade(
-                "Subject Performance",
-                "standard",
-                "Upgrade to Standard to monitor subject-by-subject grades and score distributions."
-              )
-            }
-          />
-        )}
+        {/* Core Progress: Subject performance and longitudinal trends */}
+        <SubjectPerformanceSection
+          subjects={intelligence.subjects}
+          registeredCourses={studentObj?.registered_courses}
+        />
 
-        {hasStandardAccess ? (
-          <ProgressTrendsSection intelligence={intelligence} />
-        ) : (
-          <ParentPaywallCard
-            title="Longitudinal Progress Trends"
-            description="Track your child's quiz score progression across weeks with interactive score delta charts on Standard or Premium."
-            requiredPlan="standard"
-            onUpgradeClick={() =>
-              promptUpgrade(
-                "Progress Trends",
-                "standard",
-                "Upgrade to Standard to view score progression over time."
-              )
-            }
-          />
-        )}
+        <ProgressTrendsSection intelligence={intelligence} />
 
-        {hasStandardAccess ? (
-          <StrengthsAndWeaknessesSection intelligence={intelligence} />
-        ) : (
-          <ParentPaywallCard
-            title="Topic Strengths & Focus Areas"
-            description="View high-performing topics and areas where practice is needed to improve grades."
-            requiredPlan="standard"
-            onUpgradeClick={() =>
-              promptUpgrade(
-                "Topic Strengths & Focus Areas",
-                "standard",
-                "Upgrade to Standard to identify exact subject topic strengths."
-              )
-            }
-          />
-        )}
+        <StrengthsAndWeaknessesSection intelligence={intelligence} />
 
-        {/* Premium: Advanced learning intelligence & Action Radar */}
-        {hasPremiumAccess ? (
+        {/* Premium: Action Radar */}
+        {isStudentPremium ? (
           <AttentionAndActionsSection intelligence={intelligence} />
         ) : (
           <ParentPaywallCard
             title="Cognitive Action Radar & Support Insights"
-            description="Advanced parental guidance, priority topic alerts, and home coaching recommendations require Premium."
+            description={`Actionable parental guidance alerts, structured study habit interventions, and targeted learning recommendations require ${studentObj?.firstname || "your child"} to be on Premium (₦25,000).`}
             requiredPlan="premium"
+            childName={studentObj?.firstname}
             onUpgradeClick={() =>
               promptUpgrade(
                 "Action Radar & Support Insights",
                 "premium",
-                "Upgrade to Premium for deep cognitive diagnostic alerts."
+                `Upgrade ${studentObj?.firstname || "your child"} to Premium for deep cognitive diagnostic alerts.`,
+                studentObj
               )
             }
           />

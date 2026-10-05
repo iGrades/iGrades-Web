@@ -55,13 +55,28 @@ export default function AuthCallback() {
       ""
     ).toLowerCase();
 
+    // Retrieve any onboarding draft data saved during parent sign-up form
+    let storedOnboardingData: any = {};
+    try {
+      const rawDraft = localStorage.getItem("parent_signup_draft");
+      const rawForm = localStorage.getItem("formData");
+      if (rawDraft) {
+        storedOnboardingData = { ...JSON.parse(rawDraft) };
+      }
+      if (rawForm) {
+        storedOnboardingData = { ...storedOnboardingData, ...JSON.parse(rawForm) };
+      }
+    } catch {
+      // ignore JSON parse errors
+    }
+
     const userMeta = user.user_metadata || {};
     const effectiveRole = (
       urlRole ||
       localStorage.getItem("oauth_role") ||
       userMeta.role ||
       userMeta.account_type ||
-      "parent"
+      ""
     ).toLowerCase();
 
     const effectiveIntent = (
@@ -72,17 +87,38 @@ export default function AuthCallback() {
 
     const userEmail = user.email ? user.email.trim().toLowerCase() : "";
 
-    // Extract user's name attributes (handles Google, Apple, and fallback)
+    // Extract user's name attributes (handles Google, Apple, and onboarding draft fallback)
     const fullName =
       userMeta.full_name ||
       userMeta.name ||
+      (storedOnboardingData.firstName
+        ? `${storedOnboardingData.firstName} ${storedOnboardingData.lastName || ""}`.trim()
+        : "") ||
       [userMeta.given_name, userMeta.family_name].filter(Boolean).join(" ") ||
       (userEmail ? userEmail.split("@")[0] : "Parent");
 
-    const nameParts = fullName.trim().split(" ");
-    const firstName = userMeta.given_name || nameParts[0] || (userEmail ? userEmail.split("@")[0] : "Parent");
-    const lastName = userMeta.family_name || (nameParts.length > 1 ? nameParts.slice(1).join(" ") : "");
+    const nameParts = fullName.trim().split(/\s+/);
+    const firstName =
+      userMeta.given_name ||
+      storedOnboardingData.firstName?.trim() ||
+      nameParts[0] ||
+      (userEmail ? userEmail.split("@")[0] : "Parent");
+
+    const lastName =
+      userMeta.family_name ||
+      storedOnboardingData.lastName?.trim() ||
+      (nameParts.length > 1 ? nameParts.slice(1).join(" ") : "");
+
+    const phone =
+      user.phone ||
+      userMeta.phone ||
+      storedOnboardingData.phone?.trim() ||
+      null;
+
     const avatar = userMeta.avatar_url || userMeta.picture || "";
+    const aboutUsText =
+      storedOnboardingData.aboutUs?.trim() ||
+      `${providerLabel} Sign-Up`;
 
     // Helper: complete student login, link avatar if available, store in session
     const completeStudentLogin = async (student: any) => {
@@ -250,45 +286,103 @@ export default function AuthCallback() {
     }
 
     // --- CASE B: PARENT REGISTRATION OR RETURNING PARENT MISSING RECORD ---
-    // (effectiveRole === "parent" or default brand new OAuth user)
-    const aboutUsText = `${providerLabel} Sign-In`;
+    // A Google/Apple user is only inserted into parents when establishing parent registration
+    const isParentTarget =
+      effectiveRole === "parent" ||
+      (!effectiveRole && effectiveIntent === "signup") ||
+      (!effectiveRole && !effectiveIntent);
 
-    // Only populate existing columns of the parents table:
-    // ['id', 'user_id', 'email', 'firstname', 'lastname', 'phone', 'about_us', 'profile_image', 'created_at']
-    const parentPayload = {
-      user_id: user.id,
-      email: userEmail || user.email || "",
-      firstname: firstName || "Parent",
-      lastname: lastName || "",
-      phone: user.phone || null,
-      about_us: aboutUsText,
-      profile_image: avatar || null,
-    };
-
-    // Idempotent upsert on user_id (the unique constraint on parents.user_id)
-    const { error: insertErr } = await supabase
-      .from("parents")
-      .upsert(parentPayload, { onConflict: "user_id" });
-
-    if (insertErr) {
-      console.error("Error creating parent profile in parents table:", insertErr);
-      setErrorMsg(`Failed to create your parent profile (${insertErr.message}). Please retry.`);
+    if (!isParentTarget) {
+      console.warn("Unrecognized account role for OAuth callback:", { effectiveRole, effectiveIntent });
+      setErrorMsg("Unable to determine your account type. Please return to login and select your role.");
       isProcessingRef.current = false;
       return;
     }
 
-    // Explicitly verify and fetch the created parent row from the database
-    const { data: verifiedParent, error: fetchErr } = await supabase
-      .from("parents")
-      .select("*")
-      .eq("user_id", user.id)
-      .maybeSingle();
+    // Only populate valid existing columns of the parents table:
+    // ['id', 'user_id', 'email', 'firstname', 'lastname', 'phone', 'about_us', 'profile_image', 'created_at']
+    // Use the Supabase Auth user's UUID as the parent identifier (both id and user_id)
+    const parentPayload = {
+      id: user.id,
+      user_id: user.id,
+      email: userEmail || user.email || "",
+      firstname: firstName || "Parent",
+      lastname: lastName || "",
+      phone: phone,
+      about_us: aboutUsText,
+      profile_image: avatar || null,
+      created_at: new Date().toISOString(),
+    };
 
-    if (fetchErr || !verifiedParent) {
-      console.error("Failed to verify newly created parent row in database:", fetchErr);
+    let verifiedParent: any = null;
+
+    // 1. First check if created in a parallel callback invocation
+    verifiedParent = await findParent();
+
+    if (!verifiedParent) {
+      // 2. Idempotent upsert on user_id (unique constraint on parents.user_id)
+      const { data: upsertData, error: upsertErr } = await supabase
+        .from("parents")
+        .upsert(parentPayload, { onConflict: "user_id" })
+        .select()
+        .maybeSingle();
+
+      if (upsertData) {
+        verifiedParent = upsertData;
+      } else {
+        if (upsertErr) {
+          console.warn("Notice: upsert with onConflict user_id:", upsertErr.message);
+        }
+
+        // 3. Fallback: try onConflict on primary key 'id'
+        const { data: idUpsertData, error: idUpsertErr } = await supabase
+          .from("parents")
+          .upsert(parentPayload, { onConflict: "id" })
+          .select()
+          .maybeSingle();
+
+        if (idUpsertData) {
+          verifiedParent = idUpsertData;
+        } else {
+          if (idUpsertErr) {
+            console.warn("Notice: upsert with onConflict id:", idUpsertErr.message);
+          }
+
+          // 4. Fallback: try standard insert
+          const { data: insertData, error: insertErr } = await supabase
+            .from("parents")
+            .insert(parentPayload)
+            .select()
+            .maybeSingle();
+
+          if (insertData) {
+            verifiedParent = insertData;
+          } else if (insertErr) {
+            console.warn("Notice: standard insert error:", insertErr.message);
+          }
+        }
+      }
+    }
+
+    // 5. Explicit database verification: query the database directly to confirm the parent record exists
+    if (!verifiedParent) {
+      verifiedParent = await findParent();
+    }
+
+    // 6. Hard verification requirement: only continue if parent record is confirmed to exist
+    if (!verifiedParent) {
+      console.error("Failed to verify newly created parent row in database.");
       setErrorMsg("Could not verify your parent profile in database. Please click retry.");
       isProcessingRef.current = false;
       return;
+    }
+
+    // Clean up temporary form drafts now that parent profile is secured
+    try {
+      localStorage.removeItem("formData");
+      localStorage.removeItem("parent_signup_draft");
+    } catch {
+      // ignore
     }
 
     // Database record confirmed: complete login and navigate to parent dashboard

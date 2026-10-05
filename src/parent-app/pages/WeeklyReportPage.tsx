@@ -3,6 +3,7 @@ import { Box, Heading, Text, HStack } from "@chakra-ui/react";
 import { useStudentsData } from "@/parent-app/context/studentsDataContext";
 import { useParentIntelligence } from "@/parent-app/hooks/useParentIntelligence";
 import { useParentSubscriptionEntitlement } from "@/parent-app/hooks/useParentSubscriptionEntitlement";
+import { normalizePlan } from "@/services/subscriptionEntitlements";
 import { StudentSelectorHeader } from "@/parent-app/components/intelligence/StudentSelectorHeader";
 import { WeeklyLearningReportView } from "@/parent-app/components/intelligence/weeklyReport/WeeklyLearningReportView";
 import { ParentPaywallCard } from "@/parent-app/components/subscription/ParentPaywallCard";
@@ -39,9 +40,13 @@ export const WeeklyReportPage = () => {
     promptUpgrade,
     closeUpgradeModal,
     verifyAddChild,
-  } = useParentSubscriptionEntitlement();
+  } = useParentSubscriptionEntitlement(selectedStudent);
 
-  const hasStandardAccess = effectivePlan === "standard" || effectivePlan === "premium";
+  const selectedStudentPlan = normalizePlan(
+    selectedStudent?.subscription,
+    selectedStudent?.subscription_status
+  ).effectivePlan;
+  const isWeeklyReportUnlocked = selectedStudentPlan === "premium";
 
   const handleAddChildClick = () => {
     const check = verifyAddChild();
@@ -93,7 +98,7 @@ export const WeeklyReportPage = () => {
       />
 
       {/* Report View or Paywall */}
-      {hasStandardAccess ? (
+      {isWeeklyReportUnlocked ? (
         <WeeklyLearningReportView
           student={selectedStudent}
           onClose={() => setCurrentParentPage("home")}
@@ -101,13 +106,15 @@ export const WeeklyReportPage = () => {
       ) : (
         <ParentPaywallCard
           title="Weekly Learning Reports"
-          description="Detailed weekly academic summaries, mastery indicators, topic insights, and tailored recommendations require a Standard (₦15,000) or Premium subscription."
-          requiredPlan="standard"
+          description={`Weekly Learning Reports provide detailed weekly academic digests, mastery indicators, and tailored recommendations. Available when ${selectedStudent?.firstname || "your child"} is on Premium (₦25,000).`}
+          requiredPlan="premium"
+          childName={selectedStudent?.firstname}
           onUpgradeClick={() =>
             promptUpgrade(
               "Weekly Learning Reports",
-              "standard",
-              "Weekly learning reports provide executive parent summaries, study habits analysis, and topic mastery tracking."
+              "premium",
+              `Weekly learning reports provide executive parent summaries, study habits analysis, and topic mastery tracking for ${selectedStudent?.firstname || "your child"}.`,
+              selectedStudent
             )
           }
         />

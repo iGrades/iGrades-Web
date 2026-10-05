@@ -36,5 +36,18 @@ async function getParentIdForUser(user: { id: string; email?: string }): Promise
     if (parentByEmail?.id) return parentByEmail.id;
   }
 
-  return null;
+  // 3. Fallback to cached parent in localStorage
+  try {
+    const cached = localStorage.getItem("authdParent");
+    if (cached) {
+      const parsed = JSON.parse(cached);
+      const first = Array.isArray(parsed) ? parsed[0] : parsed;
+      if (first?.id) return first.id;
+    }
+  } catch {
+    // ignore
+  }
+
+  // 4. Default to user's auth UID (which is used as parent id in iGrades)
+  return user.id;
 }

@@ -628,6 +628,89 @@ async function startServer() {
     res.json({ success: true, count, max_allowed: 3 });
   });
 
+  // Monthly Exam Quiz Mode attempt tracking and authoritative verification
+  const lastExamSessionTimeMap = new Map<string, number>();
+
+  async function getStudentMonthlyExamAttempts(studentId: string): Promise<{
+    distinctAttempts: number;
+    effectivePlan: PlanTier;
+  }> {
+    const supabaseBase = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL || "https://jmjballgaxelqhsvhlvl.supabase.co";
+    const sbAnonKey = process.env.SUPABASE_ANON_KEY || process.env.VITE_SUPABASE_ANON_KEY;
+    const headers = { apikey: sbAnonKey || "", Authorization: `Bearer ${sbAnonKey || ""}` };
+
+    let effectivePlan: PlanTier = "basic";
+    try {
+      const studentRes = await fetch(`${supabaseBase}/rest/v1/students?id=eq.${studentId}&select=subscription,subscription_status`, { headers });
+      if (studentRes.ok) {
+        const rows = await studentRes.json();
+        if (Array.isArray(rows) && rows.length > 0) {
+          effectivePlan = subscriptionEngine.normalizePlan(rows[0].subscription, rows[0].subscription_status).effectivePlan;
+        }
+      }
+    } catch (e) {
+      console.warn("Could not fetch student plan:", e);
+    }
+
+    const now = new Date();
+    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
+    const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59).toISOString();
+
+    let distinctAttempts = 0;
+    try {
+      const attemptsRes = await fetch(
+        `${supabaseBase}/rest/v1/attempts?student_id=eq.${studentId}&mode=eq.examination&started_at=gte.${startOfMonth}&started_at=lte.${endOfMonth}&select=id,started_at&order=started_at.asc`,
+        { headers }
+      );
+      if (attemptsRes.ok) {
+        const attempts = await attemptsRes.json();
+        if (Array.isArray(attempts) && attempts.length > 0) {
+          let lastTime = 0;
+          attempts.forEach((a) => {
+            const t = new Date(a.started_at || 0).getTime();
+            if (t - lastTime > 120000) {
+              distinctAttempts++;
+              lastTime = t;
+            }
+          });
+        }
+      }
+    } catch (e) {
+      console.warn("Could not query monthly exam attempts:", e);
+    }
+
+    return { distinctAttempts, effectivePlan };
+  }
+
+  app.get("/api/subscription/exam-usage/:studentId", async (req, res) => {
+    try {
+      const { studentId } = req.params;
+      const { distinctAttempts, effectivePlan } = await getStudentMonthlyExamAttempts(studentId);
+      const evaluation = subscriptionEngine.evaluateExamModeAccess(effectivePlan, distinctAttempts);
+
+      let formattedStatus = "";
+      if (effectivePlan === "premium") {
+        formattedStatus = "Unlimited exam access";
+      } else if (effectivePlan === "standard") {
+        formattedStatus = `${distinctAttempts} of 20 exam attempts used`;
+      } else {
+        formattedStatus = `${distinctAttempts} of 1 exam attempts used`;
+      }
+
+      res.json({
+        studentId,
+        effectivePlan,
+        monthlyAttemptsUsed: distinctAttempts,
+        maxAllowed: evaluation.maxAllowed,
+        allowed: evaluation.allowed,
+        formattedStatus,
+        reason: evaluation.reason,
+      });
+    } catch (err: any) {
+      res.status(500).json({ error: err?.message || "Failed to fetch exam usage" });
+    }
+  });
+
   // Track daily Spark AI interactions on server
   const serverDailySparkUsageMap = new Map<string, { count: number; date: string }>();
 
@@ -876,22 +959,26 @@ async function startServer() {
       const studentStatusHeader = (req.headers["x-student-status"] as string) || "";
       const norm = subscriptionEngine.normalizePlan(studentPlanHeader, studentStatusHeader);
 
-      // 1. Authoritative Past Questions gating: Basic tier is only permitted starter years 2023 & 2024
+      // 1. Authoritative Past Questions gating (Protected 5-year collection: [2026, 2025, 2024, 2023, 2022])
       if (urlPath.includes("/rest/v1/past_questions") && req.method.toUpperCase() === "GET") {
         const yearMatch = urlPath.match(/year=eq\.([^&]+)/);
         if (yearMatch) {
           const reqYear = decodeURIComponent(yearMatch[1]);
-          if (norm.effectivePlan === "basic" && !["2024", "2023"].includes(reqYear)) {
+          const pqAccess = subscriptionEngine.evaluatePastQuestionAccess(norm.effectivePlan, reqYear);
+          if (!pqAccess.allowed) {
             return res.status(403).json({
-              error: `Access Denied: Past questions from ${reqYear} require a Standard or Premium subscription.`,
+              error: pqAccess.reason || `Access Denied: Past questions from ${reqYear} require a higher tier subscription.`,
               code: "PAYWALL_RESTRICTION",
-              required_plan: "standard",
+              required_plan: pqAccess.requiredPlan,
             });
           }
         }
       }
 
-      // 2. Authoritative Examination Mode, AI Proctoring, Proctored Mocks, JAMB Simulation, & Daily Timed Quiz gating
+      // 2. Authoritative Exam Mode attempt gating
+      // BASIC: 1 exam-mode attempt per calendar month
+      // STANDARD: Up to 20 exam-mode attempts per calendar month
+      // PREMIUM: Unlimited access
       const isAttemptInsert =
         (urlPath.includes("/rest/v1/quiz_attempts") || urlPath.includes("/rest/v1/attempts")) &&
         req.method.toUpperCase() === "POST";
@@ -899,74 +986,27 @@ async function startServer() {
       if (isAttemptInsert) {
         const bodyObj = typeof req.body === "object" ? req.body : {};
         const isExamMode = bodyObj.mode === "examination" || bodyObj.quiz_mode === "examination";
-        const isProctored = Boolean(
-          isExamMode || bodyObj.webcam_monitoring || bodyObj.screen_sharing || bodyObj.audio_monitoring
-        );
-        const isMultiSubject =
-          (Array.isArray(bodyObj.subjects) && bodyObj.subjects.length > 1) ||
-          (Array.isArray(bodyObj.subject_ids) && bodyObj.subject_ids.length > 1);
-        const isJambSim = Boolean(
-          bodyObj.is_jamb || bodyObj.is_jamb_simulation || bodyObj.simulation_type === "jamb"
-        );
-        const studentIdHeader =
-          (req.headers["x-student-id"] as string) || (bodyObj && bodyObj.student_id ? bodyObj.student_id : "");
+        const studentId = (req.headers["x-student-id"] as string) || (bodyObj && bodyObj.student_id ? bodyObj.student_id : "");
 
-        if (norm.effectivePlan === "basic") {
-          // Block full examination simulation and AI proctoring for Basic
-          if (isExamMode || isProctored) {
-            return res.status(403).json({
-              error: "Access Denied: AI Proctoring and Proctored Mock Exams are not available on the Basic plan. Upgrade to Standard or Premium to take proctored examinations.",
-              code: "PAYWALL_RESTRICTION",
-              required_plan: "standard",
-            });
-          }
+        if (isExamMode && studentId) {
+          // Check if this attempt is part of an ongoing exam session started within the last 120 seconds
+          // (e.g. multi-subject exam sitting where several subject attempts are created in batch)
+          const lastSessionTime = lastExamSessionTimeMap.get(studentId) || 0;
+          const isOngoingSession = Date.now() - lastSessionTime < 120000;
 
-          // Block multi-subject / JAMB simulations for Basic
-          if (isMultiSubject || isJambSim) {
-            return res.status(403).json({
-              error: "Access Denied: Multi-subject JAMB simulation requires a Standard or Premium subscription.",
-              code: "PAYWALL_RESTRICTION",
-              required_plan: "standard",
-            });
-          }
-
-          // Check daily timed practice limit (up to 3 per day on Basic)
-          if (studentIdHeader) {
-            const todayCount = getServerDailyTimedQuizCount(studentIdHeader);
-            if (todayCount >= 3) {
+          if (!isOngoingSession) {
+            const { distinctAttempts, effectivePlan } = await getStudentMonthlyExamAttempts(studentId);
+            const examAccess = subscriptionEngine.evaluateExamModeAccess(effectivePlan, distinctAttempts);
+            if (!examAccess.allowed) {
               return res.status(403).json({
-                error: "Access Denied: You have completed all 3 daily timed practice quizzes included in the Basic plan. Upgrade to Standard (₦15,000) for generous timed practice.",
-                code: "PAYWALL_RESTRICTION",
-                required_plan: "standard",
+                error: examAccess.reason || "Exam attempt limit reached for this billing period.",
+                code: "EXAM_ATTEMPT_LIMIT_REACHED",
+                required_plan: examAccess.requiredPlan,
+                attempts_used: distinctAttempts,
+                max_allowed: examAccess.maxAllowed,
               });
             }
-            incrementServerDailyTimedQuizCount(studentIdHeader);
-          }
-        } else if (norm.effectivePlan === "standard") {
-          // Standard plan includes up to 3 proctored mock exams per billing cycle
-          if (isProctored && studentIdHeader) {
-            const monthCount = getServerMonthlyProctoredMocks(studentIdHeader);
-            if (monthCount >= 3) {
-              return res.status(403).json({
-                error: "Access Denied: You have completed all 3 proctored mock exams included in your Standard plan for this billing cycle. Upgrade to Premium (₦25,000) for generous fair-use access.",
-                code: "PAYWALL_RESTRICTION",
-                required_plan: "premium",
-              });
-            }
-            incrementServerMonthlyProctoredMocks(studentIdHeader);
-          }
-        } else if (norm.effectivePlan === "premium") {
-          // Premium plan has generous fair-use limit (25 proctored mock exams)
-          if (isProctored && studentIdHeader) {
-            const monthCount = getServerMonthlyProctoredMocks(studentIdHeader);
-            if (monthCount >= 25) {
-              return res.status(403).json({
-                error: "Access Denied: You have reached this billing cycle's generous fair-use limit of 25 proctored mock exams on Premium.",
-                code: "PAYWALL_RESTRICTION",
-                required_plan: "premium",
-              });
-            }
-            incrementServerMonthlyProctoredMocks(studentIdHeader);
+            lastExamSessionTimeMap.set(studentId, Date.now());
           }
         }
       }

@@ -5,19 +5,13 @@ import AddGraderPopup from "../components/grader/addGraderPopover";
 import { useStudentsData } from "../context/studentsDataContext";
 import { useParentSubscriptionEntitlement } from "../hooks/useParentSubscriptionEntitlement";
 import GraderTable from "../components/grader/graderTable";
-import { PiStudentBold, PiUserPlusBold, PiShootingStarDuotone } from "react-icons/pi";
+import { PiStudentBold, PiUserPlusBold } from "react-icons/pi";
 
 const StudentPage = () => {
   const [showBox, setShowBox] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const { studentsData } = useStudentsData();
-  const {
-    maxAllowedChildren,
-    currentChildrenCount,
-    canAddMoreChildren,
-    promptUpgrade,
-    effectivePlan,
-  } = useParentSubscriptionEntitlement();
+  const { currentChildrenCount } = useParentSubscriptionEntitlement();
 
   // Filter children based on search query
   const filteredStudents = useMemo(() => {
@@ -32,14 +26,6 @@ const StudentPage = () => {
   }, [studentsData, searchQuery]);
 
   const handleAddChildClick = () => {
-    if (!canAddMoreChildren) {
-      promptUpgrade(
-        "Add More Children",
-        effectivePlan === "basic" ? "standard" : "premium",
-        `You have reached the maximum of ${maxAllowedChildren} ${maxAllowedChildren === 1 ? "child" : "children"} on your ${effectivePlan.toUpperCase()} plan. Upgrade to expand your parent portal family capacity.`
-      );
-      return;
-    }
     setShowBox(true);
   };
 
@@ -96,7 +82,7 @@ const StudentPage = () => {
                 fontSize="11px"
                 fontWeight="bold"
               >
-                {currentChildrenCount} / {maxAllowedChildren} Connected
+                {currentChildrenCount} Connected
               </Badge>
             </HStack>
             <Text fontSize="xs" color="gray.500" maxW="640px" lineHeight="1.6">
@@ -117,46 +103,10 @@ const StudentPage = () => {
             shadow="sm"
             onClick={handleAddChildClick}
           >
-            <Icon as={canAddMoreChildren ? PiUserPlusBold : PiShootingStarDuotone} mr={1.5} fontSize="1.1rem" />
-            {canAddMoreChildren ? "Add New Child" : "Expand Child Slots"}
+            <Icon as={PiUserPlusBold} mr={1.5} fontSize="1.1rem" />
+            Add New Child
           </Button>
         </Flex>
-
-        {/* Capacity Info Pill */}
-        {!canAddMoreChildren && (
-          <HStack
-            mt={4}
-            p={3}
-            bg="blue.50/50"
-            border="1px solid"
-            borderColor="blue.100"
-            borderRadius="xl"
-            fontSize="xs"
-            color="gray.800"
-            justify="space-between"
-            flexWrap="wrap"
-            gap={2}
-          >
-            <HStack gap={2}>
-              <Icon as={PiShootingStarDuotone} color="#206CE1" fontSize="1.15rem" />
-              <Text fontSize="xs" color="gray.700">
-                You have reached your <strong>{effectivePlan.toUpperCase()}</strong> plan limit ({maxAllowedChildren} {maxAllowedChildren === 1 ? "child" : "children"}).
-              </Text>
-            </HStack>
-            <Text
-              as="button"
-              onClick={handleAddChildClick}
-              color="#206CE1"
-              textDecoration="underline"
-              fontWeight="bold"
-              fontSize="xs"
-              cursor="pointer"
-              _hover={{ color: "#1852B2" }}
-            >
-              Upgrade to connect more →
-            </Text>
-          </HStack>
-        )}
       </Box>
 
       {/* ── TOOLBAR: SEARCH & ACTIONS ── */}

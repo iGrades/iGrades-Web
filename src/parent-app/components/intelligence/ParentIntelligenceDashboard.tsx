@@ -21,6 +21,7 @@ import { ExamReadinessSection } from "./ExamReadinessSection";
 import { WeeklyLearningReportView } from "./weeklyReport/WeeklyLearningReportView";
 import AddGraderPopup from "@/parent-app/components/grader/addGraderPopover";
 import { useParentSubscriptionEntitlement } from "@/parent-app/hooks/useParentSubscriptionEntitlement";
+import { normalizePlan } from "@/services/subscriptionEntitlements";
 import { ParentPaywallCard } from "@/parent-app/components/subscription/ParentPaywallCard";
 import { UpgradePromptModal } from "@/components/subscription/UpgradePromptModal";
 
@@ -53,12 +54,17 @@ export const ParentIntelligenceDashboard = () => {
 
   const {
     effectivePlan,
-    verifyReport,
-    verifyAddChild,
     modalState,
     promptUpgrade,
     closeUpgradeModal,
-  } = useParentSubscriptionEntitlement();
+    verifyAddChild,
+  } = useParentSubscriptionEntitlement(selectedStudent);
+
+  const selectedStudentPlan = normalizePlan(
+    selectedStudent?.subscription,
+    selectedStudent?.subscription_status
+  ).effectivePlan;
+  const isSelectedChildPremium = selectedStudentPlan === "premium";
 
   const handleAddChildClick = () => {
     const check = verifyAddChild();
@@ -70,18 +76,17 @@ export const ParentIntelligenceDashboard = () => {
   };
 
   const handleTabClick = (tab: "overview" | "weekly_report") => {
-    if (tab === "weekly_report") {
-      const check = verifyReport("weekly_report");
-      if (!check.allowed) {
-        promptUpgrade("Weekly Learning Reports", check.requiredPlan, check.reason);
-        return;
-      }
+    if (tab === "weekly_report" && !isSelectedChildPremium) {
+      promptUpgrade(
+        "Weekly Learning Reports",
+        "premium",
+        `Weekly Learning Reports provide comprehensive study digests and require ${selectedStudent?.firstname || "your child"} to be on the Premium plan.`,
+        selectedStudent
+      );
+      return;
     }
     setActiveTab(tab);
   };
-
-  const hasStandardAccess = effectivePlan === "standard" || effectivePlan === "premium";
-  const hasPremiumAccess = effectivePlan === "premium";
 
   return (
     <Box maxW="7xl" mx="auto" px={{ base: 3, md: 6 }} py={{ base: 4, md: 6 }} pb={{ base: "100px", md: "40px" }}>
@@ -212,7 +217,7 @@ export const ParentIntelligenceDashboard = () => {
 
             {/* Render Selected View Tab */}
             {activeTab === "weekly_report" ? (
-              hasStandardAccess ? (
+              isSelectedChildPremium ? (
                 <WeeklyLearningReportView
                   student={selectedStudent}
                   onClose={() => setActiveTab("overview")}
@@ -220,13 +225,15 @@ export const ParentIntelligenceDashboard = () => {
               ) : (
                 <ParentPaywallCard
                   title="Weekly Learning Reports"
-                  description="Detailed weekly academic summaries, mastery indicators, topic insights, and tailored recommendations require a Standard (₦15,000) or Premium subscription."
-                  requiredPlan="standard"
+                  description={`Weekly Learning Reports provide detailed weekly academic digests, mastery indicators, topic insights, and tailored recommendations. Available when ${selectedStudent?.firstname || "your child"} is on Premium (₦25,000).`}
+                  requiredPlan="premium"
+                  childName={selectedStudent?.firstname}
                   onUpgradeClick={() =>
                     promptUpgrade(
                       "Weekly Learning Reports",
-                      "standard",
-                      "Weekly learning reports provide executive parent summaries, study habits analysis, and topic mastery tracking."
+                      "premium",
+                      `Weekly learning reports provide executive parent summaries, study habits analysis, and topic mastery tracking for ${selectedStudent?.firstname || "your child"}.`,
+                      selectedStudent
                     )
                   }
                 />
@@ -234,71 +241,26 @@ export const ParentIntelligenceDashboard = () => {
             ) : (
               intelligence && (
                 <>
-                  {/* 2. Key Metrics Overview Grid (Basic: Average scores & overall activity) */}
+                  {/* 2. Key Metrics Overview Grid (Core: Average scores & overall activity) */}
                   <OverviewMetricsGrid intelligence={intelligence} />
 
-                  {/* 8. Recent Learning Activity Feed (Basic: Basic quiz history and activity) */}
+                  {/* 8. Recent Learning Activity Feed (Core: Basic quiz history and activity) */}
                   <RecentActivitySection intelligence={intelligence} />
 
-                  {/* 5. Subject Performance (Standard: Subject performance and scores) */}
-                  {hasStandardAccess ? (
-                    <SubjectPerformanceSection
-                      subjects={intelligence.subjects}
-                      registeredCourses={selectedStudent?.registered_courses}
-                    />
-                  ) : (
-                    <ParentPaywallCard
-                      title="Subject Performance Breakdown"
-                      description="Analyze how your child is performing across each registered subject, view subject mastery badges, and monitor individual course averages with a Standard or Premium plan."
-                      requiredPlan="standard"
-                      onUpgradeClick={() =>
-                        promptUpgrade(
-                          "Subject Performance",
-                          "standard",
-                          "Subject performance tracking breaks down accuracy and trends for each secondary school course."
-                        )
-                      }
-                    />
-                  )}
+                  {/* 5. Subject Performance (Core: Subject performance and scores) */}
+                  <SubjectPerformanceSection
+                    subjects={intelligence.subjects}
+                    registeredCourses={selectedStudent?.registered_courses}
+                  />
 
-                  {/* 7. Longitudinal Progress Trends (Standard: Progress trends over time) */}
-                  {hasStandardAccess ? (
-                    <ProgressTrendsSection intelligence={intelligence} />
-                  ) : (
-                    <ParentPaywallCard
-                      title="Academic Progress Trends"
-                      description="Track your child's score improvements over time with interactive trend charts, score deltas, and multi-session performance tracking on Standard or Premium."
-                      requiredPlan="standard"
-                      onUpgradeClick={() =>
-                        promptUpgrade(
-                          "Progress Trends",
-                          "standard",
-                          "Progress trends allow parents to visualize test improvements and study habits over weeks and months."
-                        )
-                      }
-                    />
-                  )}
+                  {/* 7. Longitudinal Progress Trends (Core: Progress trends over time) */}
+                  <ProgressTrendsSection intelligence={intelligence} />
 
-                  {/* 6. Strengths & Areas Requiring Attention Deep-Dive (Standard: Useful progress insights) */}
-                  {hasStandardAccess ? (
-                    <StrengthsAndWeaknessesSection intelligence={intelligence} />
-                  ) : (
-                    <ParentPaywallCard
-                      title="Topic Strengths & Focus Areas"
-                      description="Identify exact topics your child excels in and topics where extra practice will produce the highest score improvements. Included with Standard and Premium."
-                      requiredPlan="standard"
-                      onUpgradeClick={() =>
-                        promptUpgrade(
-                          "Topic Strengths & Focus Areas",
-                          "standard",
-                          "Pinpoint specific topic strengths and misconceptions to guide effective home revision."
-                        )
-                      }
-                    />
-                  )}
+                  {/* 6. Strengths & Areas Requiring Attention Deep-Dive (Core: Topic strengths & focus areas) */}
+                  <StrengthsAndWeaknessesSection intelligence={intelligence} />
 
-                  {/* 3. Exam Readiness Section (Premium: Advanced learning intelligence) */}
-                  {hasPremiumAccess ? (
+                  {/* 3. Cognitive Diagnostics: Exam Readiness Section (Premium: Advanced learning intelligence) */}
+                  {isSelectedChildPremium ? (
                     <ExamReadinessSection
                       studentId={selectedStudent.id}
                       studentClass={selectedStudent.class}
@@ -307,31 +269,35 @@ export const ParentIntelligenceDashboard = () => {
                   ) : (
                     <ParentPaywallCard
                       title="Exam Readiness Indicator"
-                      description="Advanced predictive AI calculates real-time exam preparedness for WAEC, JAMB UTME, and NECO with confidence scoring and priority topic roadmaps on Premium."
+                      description={`Advanced predictive AI calculates real-time exam preparedness for WAEC, JAMB UTME, and NECO with confidence scoring and priority topic roadmaps on Premium. Available when ${selectedStudent?.firstname || "your child"} is on Premium (₦25,000).`}
                       requiredPlan="premium"
+                      childName={selectedStudent?.firstname}
                       onUpgradeClick={() =>
                         promptUpgrade(
                           "Exam Readiness Indicator",
                           "premium",
-                          "Deep longitudinal predictive analysis benchmarks your student's test history against national exam standards."
+                          `Deep longitudinal predictive analysis benchmarks ${selectedStudent?.firstname || "your student"}'s test history against national exam standards.`,
+                          selectedStudent
                         )
                       }
                     />
                   )}
 
                   {/* 4. Action Radar: What Needs Attention & What Can I Do (Premium: Advanced cognitive diagnostics) */}
-                  {hasPremiumAccess ? (
+                  {isSelectedChildPremium ? (
                     <AttentionAndActionsSection intelligence={intelligence} />
                   ) : (
                     <ParentPaywallCard
                       title="Parent Action Radar & Cognitive Diagnostics"
-                      description="Actionable parental guidance alerts, structured study habit interventions, and targeted learning recommendations require a Premium subscription."
+                      description={`Actionable parental guidance alerts, structured study habit interventions, and targeted learning recommendations require ${selectedStudent?.firstname || "your child"} to be on Premium (₦25,000).`}
                       requiredPlan="premium"
+                      childName={selectedStudent?.firstname}
                       onUpgradeClick={() =>
                         promptUpgrade(
                           "Action Radar & Diagnostics",
                           "premium",
-                          "Advanced parent intelligence diagnoses specific study roadblocks and provides high-impact home coaching actions."
+                          `Advanced parent intelligence diagnoses specific study roadblocks and provides high-impact home coaching actions for ${selectedStudent?.firstname || "your child"}.`,
+                          selectedStudent
                         )
                       }
                     />

@@ -125,10 +125,12 @@ const Footer = () => {
               </HStack>
               <HStack gap={2.5}>
                 <Icon boxSize={3.5} color="#F18729"><MdPhone /></Icon>
-                <Text fontSize="xs" color="rgba(255,255,255,0.4)"
-                  _hover={{ color: "white" }} transition="color .2s" cursor="default">
-                  +234 800 000 0000
-                </Text>
+                <a href="tel:+2347045422933" style={{ textDecoration: "none" }}>
+                  <Text fontSize="xs" color="rgba(255,255,255,0.4)"
+                    _hover={{ color: "white" }} transition="color .2s">
+                    +234 704 542 2933
+                  </Text>
+                </a>
               </HStack>
             </VStack>
           </Box>

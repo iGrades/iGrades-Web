@@ -3,14 +3,12 @@ import { useUser } from "@/parent-app/context/parentDataContext";
 import { useStudentsData } from "@/parent-app/context/studentsDataContext";
 import {
   normalizePlan,
-  getMaxChildrenAllowed,
+  checkParentFeatureAccess,
   checkAddChildAccess,
-  checkParentDashboardSectionAccess,
-  checkParentReportAccess,
-  checkParentIntelligenceAccess,
   PLAN_CONFIGS,
   type PlanTier,
   type EntitlementCheckResult,
+  type ParentPremiumFeature,
 } from "@/services/subscriptionEntitlements";
 
 export interface UpgradeModalState {
@@ -18,139 +16,183 @@ export interface UpgradeModalState {
   featureName: string;
   requiredPlan: PlanTier;
   reason?: string;
+  childName?: string;
+  childId?: string;
 }
 
-export function useParentSubscriptionEntitlement() {
+export function useParentSubscriptionEntitlement(selectedChild?: any | null) {
   const { parent, loading: isParentLoading } = useUser();
   const { studentsData } = useStudentsData();
 
   const currentParent = parent?.[0] || null;
 
-  // Determine effective subscription of parent:
-  // If parent table explicitly has subscription, use that;
-  // If not, inspect whether any connected child has Standard or Premium (family benefit)
-  const { plan, effectivePlan, isActive, isExpired } = useMemo(() => {
-    let rawPlan = currentParent?.subscription;
-    let rawStatus = currentParent?.subscription_status;
+  // Active child resolution: use selectedChild if provided, or default to the first student
+  const activeChild = useMemo(() => {
+    if (selectedChild) return selectedChild;
+    if (studentsData && studentsData.length > 0) return studentsData[0];
+    return null;
+  }, [selectedChild, studentsData]);
 
-    // Fallback: If parent has no explicit subscription, check children's subscriptions
-    if (!rawPlan && studentsData && studentsData.length > 0) {
-      const hasPremium = studentsData.some((s) =>
-        s.subscription?.toString().toLowerCase().includes("premium")
-      );
-      const hasStandard = studentsData.some((s) =>
-        s.subscription?.toString().toLowerCase().includes("standard")
-      );
-      if (hasPremium) {
-        rawPlan = "premium";
-        rawStatus = "active";
-      } else if (hasStandard) {
-        rawPlan = "standard";
-        rawStatus = "active";
-      }
+  // Derive active child's effective subscription
+  const { effectivePlan: childEffectivePlan, isActive: isChildActive } = useMemo(() => {
+    if (!activeChild) {
+      return { effectivePlan: "basic" as PlanTier, isActive: true };
     }
+    return normalizePlan(activeChild.subscription, activeChild.subscription_status);
+  }, [activeChild]);
 
-    return normalizePlan(rawPlan, rawStatus);
-  }, [currentParent?.subscription, currentParent?.subscription_status, studentsData]);
-
-  const isBasic = effectivePlan === "basic";
-  const isStandard = effectivePlan === "standard";
-  const isPremium = effectivePlan === "premium";
-  const isMissing = !currentParent?.subscription;
-
-  const planDetails = useMemo(() => {
-    return PLAN_CONFIGS[effectivePlan];
-  }, [effectivePlan]);
-
-  const maxAllowedChildren = useMemo(() => {
-    return getMaxChildrenAllowed(effectivePlan);
-  }, [effectivePlan]);
+  // Overall family summary for informational display
+  const hasAnyPremiumChild = useMemo(() => {
+    return (studentsData || []).some(
+      (s) => normalizePlan(s.subscription, s.subscription_status).effectivePlan === "premium"
+    );
+  }, [studentsData]);
 
   const currentChildrenCount = useMemo(() => {
     return studentsData?.length || 0;
   }, [studentsData]);
 
-  // Upgrade prompt modal state
+  // Modal prompt state
   const [modalState, setModalState] = useState<UpgradeModalState>({
     isOpen: false,
     featureName: "",
-    requiredPlan: "standard",
+    requiredPlan: "premium",
     reason: undefined,
   });
 
   const promptUpgrade = useCallback(
-    (featureName: string, requiredPlan: PlanTier = "standard", reason?: string) => {
+    (
+      featureName: string,
+      requiredPlan: PlanTier = "premium",
+      reason?: string,
+      childOverride?: any
+    ) => {
+      const targetChild = childOverride || activeChild;
+      const childName = targetChild ? `${targetChild.firstname || "Your child"}` : "Your child";
       setModalState({
         isOpen: true,
         featureName,
         requiredPlan,
-        reason,
+        reason:
+          reason ||
+          `${featureName} is available when ${childName} is on the Premium plan.`,
+        childName,
+        childId: targetChild?.id,
       });
     },
-    []
+    [activeChild]
   );
 
   const closeUpgradeModal = useCallback(() => {
     setModalState((prev) => ({ ...prev, isOpen: false }));
   }, []);
 
-  // 1. Multiple Children Check
-  const verifyAddChild = useCallback(
-    (customChildCount?: number): EntitlementCheckResult => {
-      const count = customChildCount !== undefined ? customChildCount : currentChildrenCount;
-      return checkAddChildAccess(effectivePlan, count);
+  /**
+   * Evaluates feature access against a specific child (or the active child).
+   * Weekly Reports, Action Radar, and Cognitive Diagnostics are PREMIUM-ONLY.
+   */
+  const checkChildFeature = useCallback(
+    (feature: ParentPremiumFeature, targetChild?: any | null): EntitlementCheckResult => {
+      const child = targetChild !== undefined ? targetChild : activeChild;
+      if (!child) {
+        return {
+          allowed: false,
+          requiredPlan: "premium",
+          isLocked: true,
+          reason: "Please connect and select a child to access learning intelligence.",
+        };
+      }
+      const { effectivePlan } = normalizePlan(child.subscription, child.subscription_status);
+      const childName = child.firstname || "your child";
+      return checkParentFeatureAccess(effectivePlan, feature, childName);
     },
-    [effectivePlan, currentChildrenCount]
+    [activeChild]
   );
 
-  // 2. Parent Progress Dashboard Sections Check
-  const verifyDashboardSection = useCallback(
-    (
-      section: "basic_metrics" | "recent_activity" | "subject_performance" | "progress_trends" | "advanced_intelligence"
-    ): EntitlementCheckResult => {
-      return checkParentDashboardSectionAccess(effectivePlan, section);
+  // Dedicated feature verifiers evaluated for the active child
+  const verifyWeeklyReport = useCallback(
+    (targetChild?: any | null): EntitlementCheckResult => {
+      return checkChildFeature("weekly_reports", targetChild);
     },
-    [effectivePlan]
+    [checkChildFeature]
   );
 
-  // 3. Parent Reports Check
+  const verifyActionRadar = useCallback(
+    (targetChild?: any | null): EntitlementCheckResult => {
+      return checkChildFeature("action_radar", targetChild);
+    },
+    [checkChildFeature]
+  );
+
+  const verifyCognitiveDiagnostics = useCallback(
+    (targetChild?: any | null): EntitlementCheckResult => {
+      return checkChildFeature("cognitive_diagnostics", targetChild);
+    },
+    [checkChildFeature]
+  );
+
+  // Child connection is a core free parent feature: always allowed
+  const verifyAddChild = useCallback((): EntitlementCheckResult => {
+    return checkAddChildAccess();
+  }, []);
+
+  // Backward-compatible aliases
   const verifyReport = useCallback(
-    (
-      reportType: "basic_summary" | "weekly_report" | "advanced_detailed_report"
-    ): EntitlementCheckResult => {
-      return checkParentReportAccess(effectivePlan, reportType);
+    (reportType: string, targetChild?: any | null): EntitlementCheckResult => {
+      if (reportType === "basic_summary") {
+        return { allowed: true, requiredPlan: "basic", isLocked: false };
+      }
+      return checkChildFeature("weekly_reports", targetChild);
     },
-    [effectivePlan]
+    [checkChildFeature]
   );
 
-  // 4. Parent Learning Intelligence Check
   const verifyIntelligence = useCallback(
-    (
-      level: "basic_visibility" | "useful_insights" | "advanced_intelligence"
-    ): EntitlementCheckResult => {
-      return checkParentIntelligenceAccess(effectivePlan, level);
+    (level: string, targetChild?: any | null): EntitlementCheckResult => {
+      if (level === "basic_visibility") {
+        return { allowed: true, requiredPlan: "basic", isLocked: false };
+      }
+      return checkChildFeature("action_radar", targetChild);
     },
-    [effectivePlan]
+    [checkChildFeature]
+  );
+
+  const verifyDashboardSection = useCallback(
+    (section: string, targetChild?: any | null): EntitlementCheckResult => {
+      if (section === "basic_metrics" || section === "recent_activity") {
+        return { allowed: true, requiredPlan: "basic", isLocked: false };
+      }
+      return checkChildFeature("cognitive_diagnostics", targetChild);
+    },
+    [checkChildFeature]
   );
 
   return {
-    rawPlan: plan,
-    effectivePlan,
-    isActive,
-    isExpired,
-    isBasic,
-    isStandard,
-    isPremium,
-    isMissing,
-    loading: isParentLoading,
-    planDetails,
-    maxAllowedChildren,
+    currentParent,
+    activeChild,
+    childEffectivePlan,
+    isChildActive,
+    hasAnyPremiumChild,
     currentChildrenCount,
-    canAddMoreChildren: currentChildrenCount < maxAllowedChildren,
+    maxAllowedChildren: 100, // No artificial cap on connected children
+    canAddMoreChildren: true,
+    effectivePlan: childEffectivePlan,
+    planDetails: PLAN_CONFIGS[childEffectivePlan],
+    loading: isParentLoading,
+
+    // Specific feature checkers
+    checkChildFeature,
+    verifyWeeklyReport,
+    verifyActionRadar,
+    verifyCognitiveDiagnostics,
     verifyAddChild,
-    verifyDashboardSection,
+
+    // Legacy compatibility stubs
     verifyReport,
     verifyIntelligence,
+    verifyDashboardSection,
+
+    // Upgrade prompt modal
     modalState,
     promptUpgrade,
     closeUpgradeModal,

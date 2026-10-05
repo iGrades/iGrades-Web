@@ -53,6 +53,8 @@ const YearsList = ({
   } = useSubscriptionEntitlement();
 
   const pqYears = [
+    "2026",
+    "2025",
     "2024",
     "2023",
     "2022",
@@ -67,12 +69,15 @@ const YearsList = ({
 
   const handleYearClick = async (year: string) => {
     // Entitlement check
-    const access = verifyPQYear(year);
+    const access = verifyPQYear(year, pqYears);
     if (!access.allowed) {
       promptUpgrade(
         `${selectedExam || "Examination"} Past Questions (${year})`,
         access.requiredPlan,
-        access.reason || `Past questions for ${year} require a Standard or Premium plan. Upgrade to Standard (₦15,000) for full 10-year archives!`
+        access.reason ||
+          (access.requiredPlan === "premium"
+            ? `Past questions from ${year} require a Premium subscription.`
+            : `Past questions from the recent 5 years are locked on the Basic plan. Upgrade to Standard to access recent past questions.`)
       );
       return;
     }
@@ -324,7 +329,12 @@ const YearsList = ({
                   </Text>
                   {isLocked && (
                     <Box mt={2} display="flex" justifyContent="center">
-                      <LockedBadge requiredPlan="standard" label="Standard" size="xs" variant="solid" />
+                      <LockedBadge
+                        requiredPlan={access.requiredPlan}
+                        label={access.requiredPlan === "premium" ? "Premium" : "Standard / Premium"}
+                        size="xs"
+                        variant="solid"
+                      />
                     </Box>
                   )}
                 </Box>

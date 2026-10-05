@@ -57,7 +57,13 @@ export default function ParentSignUp() {
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
   ) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+    const updated = { ...formData, [e.target.name]: e.target.value };
+    setFormData(updated);
+    try {
+      localStorage.setItem("parent_signup_draft", JSON.stringify(updated));
+    } catch {
+      // ignore storage error
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {

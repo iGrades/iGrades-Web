@@ -8,19 +8,21 @@ import { PLAN_CONFIGS } from "@/services/subscriptionEntitlements";
 interface ParentPaywallCardProps {
   title: string;
   description: string;
-  requiredPlan: PlanTier;
+  requiredPlan?: PlanTier;
   onUpgradeClick: () => void;
   minH?: string;
+  childName?: string;
 }
 
 export const ParentPaywallCard: React.FC<ParentPaywallCardProps> = ({
   title,
   description,
-  requiredPlan,
+  requiredPlan = "premium",
   onUpgradeClick,
   minH = "220px",
+  childName,
 }) => {
-  const planDetails = PLAN_CONFIGS[requiredPlan] || PLAN_CONFIGS.standard;
+  const planDetails = PLAN_CONFIGS[requiredPlan] || PLAN_CONFIGS.premium;
 
   return (
     <Box
@@ -92,7 +94,9 @@ export const ParentPaywallCard: React.FC<ParentPaywallCardProps> = ({
         onClick={onUpgradeClick}
       >
         <Icon as={PiShootingStarDuotone} mr={1.5} fontSize="1.1rem" />
-        Unlock {planDetails.name} Plan ({planDetails.priceFormatted})
+        {childName
+          ? `Upgrade ${childName} to ${planDetails.name} (${planDetails.priceFormatted})`
+          : `Upgrade Child to ${planDetails.name} (${planDetails.priceFormatted})`}
       </Button>
     </Box>
   );

@@ -17,7 +17,7 @@ import { useAuthdStudentData } from "@/student-app/context/studentDataContext";
 import type { SubscriptionPlan } from "@/types/flutterwave";
 import NavBar from "./LandingPage/navBar";
 import Footer from "./LandingPage/footer";
-import { normalizePlan } from "@/services/subscriptionEntitlements";
+import { normalizePlan, PLAN_COMPARISON_MATRIX } from "@/services/subscriptionEntitlements";
 import { PiShootingStarDuotone } from "react-icons/pi";
 
 const Pricing: React.FC = () => {
@@ -28,48 +28,53 @@ const Pricing: React.FC = () => {
     {
       id: "basic",
       name: "Basic",
-      text: "Ideal for beginners starting their learning journey.",
+      text: "Core secondary school learning with 1 monthly exam simulation.",
       price: "Free",
       amount: 0,
       desc: [
-        "5 Spark AI interactions per day",
-        "Limited Socratic guidance & starter hints",
-        "Basic learning support & curriculum materials",
-        "AI Proctoring & Proctored Mocks: Not available",
-        "Access to selected PDF materials & introductory lessons",
-        "Parent Portal: 1 connected child & basic quiz history",
+        "All secondary school curriculum subjects & lessons",
+        "Full PDF curriculum study notes & formula sheets",
+        "Basic quizzes & practice tests",
+        "Basic progress tracking & score history",
+        "Streaks & iGG Points (earn, track & redeem rewards)",
+        "1 Exam-Mode take per month (WAEC, JAMB, NECO)",
+        "Past Questions: Older archives unlocked (Recent 5 years locked)",
+        "Learning with a Tutor: Locked",
+        "Free Parent connection & basic progress overview",
       ],
     },
     {
       id: "standard",
       name: "Standard",
-      text: "Perfect for regular learners seeking more features.",
+      text: "Expanded assessment with up to 20 monthly exam simulations.",
       price: "₦15,000",
       amount: 15000, 
       desc: [
-        "30 Spark AI interactions per day",
-        "Generous Socratic guidance (multi-level hints)",
-        "Personalized guidance & misconception support",
-        "Limited AI Proctoring (up to 3 proctored mock exams)",
-        "Full Examination Mode (60 questions in 60 mins)",
-        "Full PDF materials library & complete video lessons",
-        "Parent Portal: Up to 3 children & weekly digests",
+        "Everything in the Basic plan",
+        "Up to 20 Exam-Mode takes per month",
+        "Full JAMB UTME 4-Subject Mock Simulations (up to 20/mo)",
+        "Past Questions: Most recent 3 years unlocked",
+        "Detailed performance analytics & topic strength breakdown",
+        "Personalized revision recommendations",
+        "Learning with a Tutor: Locked",
+        "Parent Portal: Multi-child monitoring & basic progress tracking",
       ],
     },
     {
       id: "premium",
       name: "Premium",
-      text: "Best for dedicated learners wanting full experience.",
+      text: "Complete mastery with unlimited exams, all past questions & tutors.",
       price: "₦25,000",
       amount: 25000,
       desc: [
-        "Highest Spark AI daily usage (fair-use limits)",
-        "Advanced Socratic tutoring & deep diagnostic mastery",
-        "Advanced personalized learning & misconception eradication",
-        "Full AI Proctoring with vision & audio monitoring",
-        "Generous proctored mock exams access (fair-use)",
-        "Priority live sessions & complete past questions archive",
-        "Parent Portal: Up to 5 children & predictive exam readiness",
+        "Everything in the Standard plan",
+        "Unlimited Exam-Mode takes (no 20-attempt limit)",
+        "Past Questions: Full access to all recent 5 years & entire archive",
+        "Learning with an iGrades Tutor (VIP Early Access)",
+        "Unlocks Parent Weekly Reports for connected parents",
+        "Unlocks Parent Action Radar for connected parents",
+        "Unlocks Parent Cognitive Diagnostics for connected parents",
+        "Deep longitudinal learning analytics",
       ],
     },
   ];
@@ -135,7 +140,7 @@ const Pricing: React.FC = () => {
   };
 
   const getButtonLabel = (plan: SubscriptionPlan): string => {
-    if (currentPlan === plan.id) return "Current Plan";
+    if (effectivePlan === plan.id && !isExpired) return "Current Plan";
     if (plan.id === "basic") return "Get Started Free";
     return `Unlock ${plan.name} Plan`;
   };
@@ -327,6 +332,63 @@ const Pricing: React.FC = () => {
             );
           })}
         </Flex>
+
+        {/* ── SIDE-BY-SIDE FEATURE MATRIX TABLE ── */}
+        <Box mt={{ base: 16, md: 24 }} bg="white" borderRadius="2xl" p={{ base: 5, md: 8 }} border="1px solid" borderColor="gray.100" shadow="sm">
+          <VStack gap={2} textAlign="center" mb={8}>
+            <Heading size="lg" color="gray.900" fontWeight="800">
+              Detailed Plan Comparison
+            </Heading>
+            <Text fontSize="sm" color="gray.500" maxW="600px">
+              Transparent, student-first monetization. Core learning remains 100% accessible to every student on Basic.
+            </Text>
+          </VStack>
+
+          <Box overflowX="auto">
+            <Box as="table" w="full" fontSize="sm" textAlign="left" style={{ borderCollapse: "collapse" }}>
+              <Box as="thead">
+                <Box as="tr" borderBottom="2px solid" borderColor="gray.200">
+                  <Box as="th" py={3} px={4} color="gray.800" fontWeight="bold">
+                    Feature & Resource
+                  </Box>
+                  <Box as="th" py={3} px={4} color="gray.800" fontWeight="bold" textAlign="center">
+                    Basic (₦0)
+                  </Box>
+                  <Box as="th" py={3} px={4} color="#206CE1" fontWeight="bold" textAlign="center">
+                    Standard (₦15,000)
+                  </Box>
+                  <Box as="th" py={3} px={4} color="purple.600" fontWeight="bold" textAlign="center">
+                    Premium (₦25,000)
+                  </Box>
+                </Box>
+              </Box>
+              <Box as="tbody">
+                {PLAN_COMPARISON_MATRIX.map((row, idx) => (
+                  <Box
+                    as="tr"
+                    key={idx}
+                    borderBottom="1px solid"
+                    borderColor="gray.100"
+                    bg={idx % 2 === 0 ? "white" : "gray.50/50"}
+                  >
+                    <Box as="td" py={3} px={4} fontWeight="medium" color="gray.700">
+                      {row.feature}
+                    </Box>
+                    <Box as="td" py={3} px={4} textAlign="center" color={row.basic === "—" ? "gray.400" : "gray.900"}>
+                      {row.basic}
+                    </Box>
+                    <Box as="td" py={3} px={4} textAlign="center" color={row.standard === "—" ? "gray.400" : "blue.700"} fontWeight={row.standard !== "—" ? "semibold" : "normal"}>
+                      {row.standard}
+                    </Box>
+                    <Box as="td" py={3} px={4} textAlign="center" color="purple.700" fontWeight="semibold">
+                      {row.premium}
+                    </Box>
+                  </Box>
+                ))}
+              </Box>
+            </Box>
+          </Box>
+        </Box>
       </Box>
       <Footer />
     </>

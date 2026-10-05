@@ -81,10 +81,9 @@ const QuizInstructions = ({
 
   const {
     effectivePlan,
-    verifyTimedQuiz,
-    verifyExamSimulation,
-    verifyJambSimulation,
-    recordTimedQuizAttempt,
+    verifyExamModeTake,
+    canTakeExamMode,
+    examAttemptStatusText,
     modalState,
     promptUpgrade,
     closeUpgradeModal,
@@ -100,27 +99,11 @@ const QuizInstructions = ({
   }, [examMode, allocatedTime, selectedCourses.length]);
 
   const fetchQuizQuestions = async () => {
-    // 1. Timed quiz daily limit check
-    const timedAccess = verifyTimedQuiz();
-    if (!timedAccess.allowed) {
-      promptUpgrade("Daily Timed Practice Limit", timedAccess.requiredPlan, timedAccess.reason);
-      return;
-    }
-
-    // 2. Exam simulation check
+    // Authoritative exam attempt limit check (only consumed when actually starting attempt)
     if (examMode === "examination") {
-      const examAccess = verifyExamSimulation();
+      const examAccess = verifyExamModeTake();
       if (!examAccess.allowed) {
-        promptUpgrade("Full Examination Simulation", examAccess.requiredPlan, examAccess.reason);
-        return;
-      }
-    }
-
-    // 3. JAMB 4-subject simulation check
-    if (selectedCourses.length === 4) {
-      const jambAccess = verifyJambSimulation(4);
-      if (!jambAccess.allowed) {
-        promptUpgrade("JAMB 4-Subject Simulation", jambAccess.requiredPlan, jambAccess.reason);
+        promptUpgrade("Exam Quiz Mode", examAccess.requiredPlan, examAccess.reason);
         return;
       }
     }
@@ -623,19 +606,29 @@ const QuizInstructions = ({
                 </Heading>
 
                 <Box mb={4} p={3.5} bg="gray.50" borderRadius="lg" border="1px solid" borderColor="gray.100">
-                  <Text
-                    fontSize="sm"
-                    fontWeight="600"
-                    color="gray.800"
-                    mb={1.5}
-                  >
-                    {examMode === "examination"
-                      ? `⏱️ Examination Duration: ${timePerSubject} minutes per subject (60 questions each). Pass mark: 55%.`
-                      : `📝 Quick Test: 15 questions per subject (Untimed Practice). Pass mark: 55%.`}
-                  </Text>
+                  <HStack justify="space-between" mb={2} flexWrap="wrap" gap={2}>
+                    <Text
+                      fontSize="sm"
+                      fontWeight="700"
+                      color="gray.800"
+                    >
+                      {examMode === "examination"
+                        ? `⏱️ Examination Duration: ${timePerSubject} minutes per subject`
+                        : `📝 Quick Test: 15 questions per subject`}
+                    </Text>
+                    {examMode === "examination" && (
+                      <Badge
+                        colorPalette={effectivePlan === "premium" ? "purple" : canTakeExamMode ? "blue" : "orange"}
+                        size="xs"
+                        variant={effectivePlan === "premium" ? "solid" : "outline"}
+                      >
+                        {examAttemptStatusText}
+                      </Badge>
+                    )}
+                  </HStack>
                   <Text fontSize="xs" color="gray.600" lineHeight="relaxed">
                     {examMode === "examination"
-                      ? "In Examination mode, questions test overall mastery across all subtopics in your selected topics."
+                      ? "In Examination mode, questions test overall mastery simulating WAEC, JAMB, and NECO conditions."
                       : "In Quick Test mode, questions specifically focus on your selected topics and chosen subtopics."}
                   </Text>
                 </Box>

@@ -11,6 +11,7 @@ const LearnNav = ({ learnState, setLearnState }: Props) => {
     { text: "Subjects", state: "subjects" },
     { text: "Past Questions", state: "pqs" },
     { text: "PDFs", state: "pdfs" },
+    { text: "iGrades Tutors", state: "tutors" },
   ];
   return (
     <Flex

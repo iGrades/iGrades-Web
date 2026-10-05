@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback } from "react";
+import { useState, useMemo, useCallback, useEffect } from "react";
 import { useAuthdStudentData } from "@/student-app/context/studentDataContext";
 import {
   normalizePlan,
@@ -6,29 +6,12 @@ import {
   checkPastQuestionYearAccess,
   checkVideoAccess,
   checkPdfAccess,
-  checkQuizModeAccess,
-  checkTimedQuizAccess,
-  checkExamSimulationAccess,
-  checkJambSimulationAccess,
-  checkAnalyticsAccess,
-  checkRecommendationsAccess,
-  checkSparkDailyUsageAccess,
-  checkSparkSocraticAccess,
-  checkSparkPersonalizedSupportAccess,
-  checkAIProctoringAccess,
-  checkProctoredMockAccess,
-  getMaxAllowedSubjects,
-  getTodayTimedQuizCount,
-  incrementTodayTimedQuizCount,
-  getTodaySparkCount,
-  incrementTodaySparkCount,
-  getSparkDailyLimit,
-  getProctoredMocksCount,
-  incrementProctoredMocksCount,
-  STANDARD_MAX_PROCTORED_MOCKS,
-  PREMIUM_FAIR_USE_PROCTORED_MOCKS,
+  checkExamModeAccess,
+  checkTutorAccess,
+  checkPointsAccess,
+  BASIC_MONTHLY_EXAM_ATTEMPTS,
+  STANDARD_MONTHLY_EXAM_ATTEMPTS,
   PLAN_CONFIGS,
-  BASIC_MAX_DAILY_TIMED_QUIZZES,
   type PlanTier,
   type EntitlementCheckResult,
 } from "@/services/subscriptionEntitlements";
@@ -56,10 +39,6 @@ export function useSubscriptionEntitlement() {
     return PLAN_CONFIGS[effectivePlan];
   }, [effectivePlan]);
 
-  const maxAllowedSubjects = useMemo(() => {
-    return getMaxAllowedSubjects(effectivePlan);
-  }, [effectivePlan]);
-
   // Modal prompt state
   const [modalState, setModalState] = useState<UpgradeModalState>({
     isOpen: false,
@@ -84,16 +63,100 @@ export function useSubscriptionEntitlement() {
     setModalState((prev) => ({ ...prev, isOpen: false }));
   }, []);
 
-  const verifySubject = useCallback(
-    (subjectIndex: number, subjectName?: string): EntitlementCheckResult => {
-      return checkSubjectAccess(effectivePlan, subjectIndex, subjectName);
+  // ── Authoritative Monthly Exam Attempt State ─────────────────────────────
+  const [monthlyExamAttempts, setMonthlyExamAttempts] = useState<number>(0);
+  const [isExamUsageLoading, setIsExamUsageLoading] = useState<boolean>(false);
+
+  const maxMonthlyExamAttempts = useMemo(() => {
+    if (effectivePlan === "premium") return Infinity;
+    if (effectivePlan === "standard") return STANDARD_MONTHLY_EXAM_ATTEMPTS;
+    return BASIC_MONTHLY_EXAM_ATTEMPTS;
+  }, [effectivePlan]);
+
+  const examAttemptStatusText = useMemo(() => {
+    if (effectivePlan === "premium") return "Unlimited exam access";
+    if (effectivePlan === "standard") return `${monthlyExamAttempts} of 20 exam attempts used`;
+    return `${monthlyExamAttempts} of 1 exam attempts used`;
+  }, [effectivePlan, monthlyExamAttempts]);
+
+  const canTakeExamMode = useMemo(() => {
+    if (effectivePlan === "premium") return true;
+    if (effectivePlan === "standard") return monthlyExamAttempts < STANDARD_MONTHLY_EXAM_ATTEMPTS;
+    return monthlyExamAttempts < BASIC_MONTHLY_EXAM_ATTEMPTS;
+  }, [effectivePlan, monthlyExamAttempts]);
+
+  // Fetch authoritative monthly exam usage from server / database
+  const refreshExamUsage = useCallback(async () => {
+    if (!authdStudent?.id) return;
+    try {
+      setIsExamUsageLoading(true);
+      const res = await fetch(`/api/subscription/exam-usage/${authdStudent.id}`);
+      if (res.ok) {
+        const data = await res.json();
+        if (typeof data.monthlyAttemptsUsed === "number") {
+          setMonthlyExamAttempts(data.monthlyAttemptsUsed);
+        }
+      }
+    } catch (e) {
+      console.warn("Could not fetch authoritative exam usage, maintaining local count:", e);
+    } finally {
+      setIsExamUsageLoading(false);
+    }
+  }, [authdStudent?.id]);
+
+  useEffect(() => {
+    refreshExamUsage();
+  }, [refreshExamUsage]);
+
+  // ── Feature Verifications ──────────────────────────────────────────────────
+
+  /**
+   * Exam Mode Take verification:
+   * Only called when student starts an exam attempt.
+   */
+  const verifyExamModeTake = useCallback((): EntitlementCheckResult => {
+    return checkExamModeAccess(effectivePlan, monthlyExamAttempts);
+  }, [effectivePlan, monthlyExamAttempts]);
+
+  /**
+   * Mode verification during quiz setup.
+   * Quick test is always allowed for all.
+   * Examination mode evaluates monthly attempts.
+   */
+  const verifyQuizMode = useCallback(
+    (mode: string, _selectedSubjectCount: number = 1): EntitlementCheckResult => {
+      const normMode = (mode || "").trim().toLowerCase();
+      if (normMode !== "examination") {
+        return { allowed: true, requiredPlan: "basic", isLocked: false };
+      }
+      return checkExamModeAccess(effectivePlan, monthlyExamAttempts);
+    },
+    [effectivePlan, monthlyExamAttempts]
+  );
+
+  /**
+   * Past Question Year verification (protected recent 5 years).
+   */
+  const verifyPQYear = useCallback(
+    (year: string, availableYears?: string[]): EntitlementCheckResult => {
+      return checkPastQuestionYearAccess(effectivePlan, year, availableYears);
     },
     [effectivePlan]
   );
 
-  const verifyPQYear = useCallback(
-    (year: string): EntitlementCheckResult => {
-      return checkPastQuestionYearAccess(effectivePlan, year);
+  /**
+   * Learning with a Tutor verification (Premium only).
+   */
+  const verifyTutorAccess = useCallback((): EntitlementCheckResult => {
+    return checkTutorAccess(effectivePlan);
+  }, [effectivePlan]);
+
+  /**
+   * Subjects, Video lessons, and PDFs are NEVER paywalled (Core Learning).
+   */
+  const verifySubject = useCallback(
+    (subjectIndex: number, subjectName?: string): EntitlementCheckResult => {
+      return checkSubjectAccess(effectivePlan, subjectIndex, subjectName);
     },
     [effectivePlan]
   );
@@ -112,91 +175,41 @@ export function useSubscriptionEntitlement() {
     [effectivePlan]
   );
 
-  const verifyQuizMode = useCallback(
-    (mode: string, selectedSubjectCount: number = 1): EntitlementCheckResult => {
-      return checkQuizModeAccess(effectivePlan, mode, selectedSubjectCount);
+  const verifyPoints = useCallback(
+    (feature: "earning" | "viewing" | "streaks" | "history" | "conversion" = "viewing") => {
+      return checkPointsAccess(effectivePlan, feature);
     },
     [effectivePlan]
   );
 
-  const verifyTimedQuiz = useCallback(
-    (customTodayCount?: number): EntitlementCheckResult => {
-      const todayCount = customTodayCount !== undefined
-        ? customTodayCount
-        : getTodayTimedQuizCount(authdStudent?.id);
-      return checkTimedQuizAccess(effectivePlan, todayCount);
-    },
-    [effectivePlan, authdStudent?.id]
-  );
+  // Backward compatibility stubs for legacy components
+  const verifyTimedQuiz = useCallback((): EntitlementCheckResult => {
+    return { allowed: true, requiredPlan: "basic", isLocked: false };
+  }, []);
 
   const verifyExamSimulation = useCallback((): EntitlementCheckResult => {
-    return checkExamSimulationAccess(effectivePlan);
-  }, [effectivePlan]);
+    return checkExamModeAccess(effectivePlan, monthlyExamAttempts);
+  }, [effectivePlan, monthlyExamAttempts]);
 
-  const verifyJambSimulation = useCallback(
-    (subjectCount: number = 4): EntitlementCheckResult => {
-      return checkJambSimulationAccess(effectivePlan, subjectCount);
-    },
-    [effectivePlan]
-  );
+  const verifyJambSimulation = useCallback((): EntitlementCheckResult => {
+    return checkExamModeAccess(effectivePlan, monthlyExamAttempts);
+  }, [effectivePlan, monthlyExamAttempts]);
 
-  const verifyAnalytics = useCallback(
-    (
-      viewType: "basic" | "detailed_breakdown" | "deep_analytics" = "detailed_breakdown"
-    ): EntitlementCheckResult => {
-      return checkAnalyticsAccess(effectivePlan, viewType);
-    },
-    [effectivePlan]
-  );
+  const verifyAnalytics = useCallback((): EntitlementCheckResult => {
+    return { allowed: true, requiredPlan: "basic", isLocked: false };
+  }, []);
 
-  const verifyRecommendations = useCallback(
-    (
-      type: "basic_guidance" | "personalized_paths" | "advanced_intelligence" = "personalized_paths"
-    ): EntitlementCheckResult => {
-      return checkRecommendationsAccess(effectivePlan, type);
-    },
-    [effectivePlan]
-  );
-
-  const verifySparkDailyUsage = useCallback(
-    (customTodayCount?: number): EntitlementCheckResult => {
-      const todayCount = customTodayCount !== undefined
-        ? customTodayCount
-        : getTodaySparkCount(authdStudent?.id);
-      return checkSparkDailyUsageAccess(effectivePlan, todayCount);
-    },
-    [effectivePlan, authdStudent?.id]
-  );
-
-  const verifySparkSocratic = useCallback(() => {
-    return checkSparkSocraticAccess(effectivePlan);
-  }, [effectivePlan]);
-
-  const verifySparkPersonalized = useCallback(() => {
-    return checkSparkPersonalizedSupportAccess(effectivePlan);
-  }, [effectivePlan]);
+  const verifyRecommendations = useCallback((): EntitlementCheckResult => {
+    return { allowed: true, requiredPlan: "basic", isLocked: false };
+  }, []);
 
   const verifyAIProctoring = useCallback((): EntitlementCheckResult => {
-    return checkAIProctoringAccess(effectivePlan);
-  }, [effectivePlan]);
+    return { allowed: true, requiredPlan: "basic", isLocked: false };
+  }, []);
 
-  const verifyProctoredMock = useCallback(
-    (customPeriodCount?: number): EntitlementCheckResult => {
-      const periodCount = customPeriodCount !== undefined
-        ? customPeriodCount
-        : getProctoredMocksCount(authdStudent?.id);
-      return checkProctoredMockAccess(effectivePlan, periodCount);
-    },
-    [effectivePlan, authdStudent?.id]
-  );
-
-  const maxDailySpark = useMemo(() => {
-    return getSparkDailyLimit(effectivePlan);
-  }, [effectivePlan]);
-
-  const maxProctoredMocks = useMemo(() => {
-    return effectivePlan === "premium" ? PREMIUM_FAIR_USE_PROCTORED_MOCKS : STANDARD_MAX_PROCTORED_MOCKS;
-  }, [effectivePlan]);
+  const verifyProctoredMock = useCallback((): EntitlementCheckResult => {
+    return checkExamModeAccess(effectivePlan, monthlyExamAttempts);
+  }, [effectivePlan, monthlyExamAttempts]);
 
   return {
     rawPlan: plan,
@@ -210,36 +223,49 @@ export function useSubscriptionEntitlement() {
     loading: isStudentLoading,
     fetchError: studentFetchError,
     planDetails,
-    maxAllowedSubjects,
-    // Batch 1 Verifications
-    verifySubject,
+    maxAllowedSubjects: 100,
+
+    // Monthly Exam Mode state & verification
+    monthlyExamAttempts,
+    maxMonthlyExamAttempts,
+    canTakeExamMode,
+    examAttemptStatusText,
+    isExamUsageLoading,
+    refreshExamUsage,
+    verifyExamModeTake,
+    verifyQuizMode,
+
+    // Past Questions verification
     verifyPQYear,
+
+    // Tutor verification
+    verifyTutorAccess,
+
+    // Core Learning (always allowed)
+    verifySubject,
     verifyVideo,
     verifyPdf,
-    verifyQuizMode,
-    // Batch 2 Verifications
+    verifyPoints,
+
+    // Compatibility stubs
     verifyTimedQuiz,
     verifyExamSimulation,
     verifyJambSimulation,
     verifyAnalytics,
     verifyRecommendations,
-    // Batch 3 Verifications
-    verifySparkDailyUsage,
-    verifySparkSocratic,
-    verifySparkPersonalized,
     verifyAIProctoring,
     verifyProctoredMock,
-    // Tracking helpers
-    todayTimedQuizCount: getTodayTimedQuizCount(authdStudent?.id),
-    recordTimedQuizAttempt: () => incrementTodayTimedQuizCount(authdStudent?.id),
-    maxDailyTimedQuizzes: BASIC_MAX_DAILY_TIMED_QUIZZES,
-    todaySparkCount: getTodaySparkCount(authdStudent?.id),
-    recordSparkInteraction: () => incrementTodaySparkCount(authdStudent?.id),
-    maxDailySpark,
-    proctoredMocksCount: getProctoredMocksCount(authdStudent?.id),
-    recordProctoredMockAttempt: () => incrementProctoredMocksCount(authdStudent?.id),
-    maxProctoredMocks,
-    // Modal
+    todayTimedQuizCount: 0,
+    recordTimedQuizAttempt: () => 0,
+    maxDailyTimedQuizzes: 999,
+    todaySparkCount: 0,
+    recordSparkInteraction: () => 0,
+    maxDailySpark: 999,
+    proctoredMocksCount: monthlyExamAttempts,
+    recordProctoredMockAttempt: () => 0,
+    maxProctoredMocks: maxMonthlyExamAttempts,
+
+    // Modal helpers
     modalState,
     promptUpgrade,
     closeUpgradeModal,
