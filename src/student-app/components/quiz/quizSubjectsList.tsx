@@ -95,14 +95,14 @@ const QuizSubjectsList = ({
       return;
     }
 
-    // 2. Check multi-subject practice entitlement for Basic tier
+    // 2. Enforce general threshold: maximum 4 subjects per quiz test or quiz exam
     const isCurrentlySelected = isCourseSelected(courseName);
-    if (!isCurrentlySelected && selectedCourses.length >= 1 && effectivePlan === "basic") {
-      promptUpgrade(
-        "Multi-Subject Practice",
-        "standard",
-        "On the Basic plan, you can practice 1 subject at a time. Upgrade to Standard or Premium to combine multiple subjects in mock quizzes and tests!"
-      );
+    if (!isCurrentlySelected && selectedCourses.length >= 4) {
+      toaster.create({
+        title: "Maximum 4 Subjects",
+        description: "You can select up to 4 subjects per quiz test or exam simulation.",
+        type: "warning",
+      });
       return;
     }
 

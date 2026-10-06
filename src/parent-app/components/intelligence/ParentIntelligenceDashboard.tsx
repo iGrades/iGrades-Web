@@ -53,7 +53,7 @@ export const ParentIntelligenceDashboard = () => {
   };
 
   const {
-    effectivePlan,
+    effectivePlan: childEntitlementPlan,
     modalState,
     promptUpgrade,
     closeUpgradeModal,
@@ -64,6 +64,7 @@ export const ParentIntelligenceDashboard = () => {
     selectedStudent?.subscription,
     selectedStudent?.subscription_status
   ).effectivePlan;
+  const effectivePlan = childEntitlementPlan || selectedStudentPlan || "basic";
   const isSelectedChildPremium = selectedStudentPlan === "premium";
 
   const handleAddChildClick = () => {

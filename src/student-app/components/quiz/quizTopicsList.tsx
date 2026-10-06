@@ -451,6 +451,45 @@ const QuizTopicsList = ({
         />
       ) : (
         <>
+          {/* ── TOP NAV BAR: BACK TO SUBJECTS ── */}
+          <Flex align="center" justify="space-between" mb={4} px={1} wrap="wrap" gap={2}>
+            <Button
+              size="sm"
+              variant="outline"
+              bg="white"
+              borderColor="gray.300"
+              color="gray.700"
+              _hover={{ bg: "gray.50", borderColor: "gray.400", color: "gray.900" }}
+              onClick={() => {
+                setShowTopicList(false);
+                setShowSideBar(true);
+                setShowNavBar(true);
+              }}
+              gap={2}
+              fontSize="xs"
+              fontWeight="600"
+              borderRadius="lg"
+              px={3.5}
+              py={1.5}
+              h="36px"
+              cursor="pointer"
+              boxShadow="2xs"
+              title="Return to subject selection"
+            >
+              <Icon as={LuArrowLeft} boxSize={4} color="gray.500" />
+              <Text as="span">Back to Subjects</Text>
+            </Button>
+
+            {selectedCourses.length > 0 && (
+              <HStack gap={1.5} bg="gray.50" px={3} py={1.5} borderRadius="lg" border="1px solid" borderColor="gray.100">
+                <Text fontSize="xs" color="gray.400" fontWeight="500">Subjects ({selectedCourses.length}):</Text>
+                <Text fontSize="xs" fontWeight="600" color="gray.700">
+                  {selectedCourses.map((c) => c.displayName).join(", ")}
+                </Text>
+              </HStack>
+            )}
+          </Flex>
+
           {error && (
             <Alert.Root status="warning" mb={4}>
               <Alert.Indicator />
@@ -474,42 +513,6 @@ const QuizTopicsList = ({
               </Text>
             </Box>
           )}
-
-          {/* ── TOP NAV BAR: BACK TO SUBJECTS ── */}
-          <Flex align="center" justify="space-between" mb={2} px={1}>
-            <Button
-              size="sm"
-              variant="ghost"
-              color="gray.600"
-              _hover={{ color: "gray.900", bg: "gray.100" }}
-              onClick={() => {
-                setShowTopicList(false);
-                setShowSideBar(true);
-                setShowNavBar(true);
-              }}
-              gap={2}
-              fontSize="xs"
-              fontWeight="600"
-              borderRadius="xl"
-              px={3}
-              py={2}
-              h="36px"
-              cursor="pointer"
-              title="Return to subject selection"
-            >
-              <Icon as={LuArrowLeft} boxSize={4} />
-              <Text as="span">Back to Subjects</Text>
-            </Button>
-
-            {selectedCourses.length > 0 && (
-              <HStack gap={1.5} display={{ base: "none", sm: "flex" }}>
-                <Text fontSize="xs" color="gray.400">Subjects:</Text>
-                <Text fontSize="xs" fontWeight="600" color="gray.700">
-                  {selectedCourses.map((c) => c.displayName).join(", ")}
-                </Text>
-              </HStack>
-            )}
-          </Flex>
 
           <Box p={4} borderRadius="md">
             <Flex justify="space-between" align="center">
@@ -924,6 +927,62 @@ const QuizTopicsList = ({
                 })}
               </VStack>
             )}
+
+            {/* Bottom Navigation & Actions Bar */}
+            <Flex
+              mt={8}
+              pt={5}
+              borderTop="1px solid"
+              borderColor="gray.200"
+              justify="space-between"
+              align="center"
+              wrap="wrap"
+              gap={3}
+            >
+              <Button
+                size="sm"
+                variant="outline"
+                bg="white"
+                borderColor="gray.300"
+                color="gray.700"
+                _hover={{ bg: "gray.50", borderColor: "gray.400", color: "gray.900" }}
+                onClick={() => {
+                  setShowTopicList(false);
+                  setShowSideBar(true);
+                  setShowNavBar(true);
+                }}
+                gap={2}
+                fontSize="xs"
+                fontWeight="600"
+                borderRadius="lg"
+                px={4}
+                py={2}
+                h="38px"
+                cursor="pointer"
+                title="Return to subject selection"
+              >
+                <Icon as={LuArrowLeft} boxSize={4} color="gray.500" />
+                <Text as="span">Back to Subjects</Text>
+              </Button>
+
+              <Button
+                bg="primaryColor"
+                px={6}
+                h="38px"
+                rounded="lg"
+                fontWeight="600"
+                fontSize="xs"
+                onClick={handleStartQuiz}
+                disabled={
+                  !selectedMode ||
+                  selectedTopics.length === 0 ||
+                  (selectedMode === "quick test" && selectedSubtopics.length === 0) ||
+                  loadingAvailableTopics
+                }
+              >
+                Continue <GoArrowRight style={{ marginLeft: "6px" }} />
+              </Button>
+            </Flex>
           </Box>
         </>
       )}

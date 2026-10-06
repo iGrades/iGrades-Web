@@ -128,7 +128,7 @@ const Footer = () => {
                 <a href="tel:+2347045422933" style={{ textDecoration: "none" }}>
                   <Text fontSize="xs" color="rgba(255,255,255,0.4)"
                     _hover={{ color: "white" }} transition="color .2s">
-                    +234 704 542 2933
+                    +2347045422933
                   </Text>
                 </a>
               </HStack>

@@ -5,7 +5,6 @@ import QuizSubjectsList from "../components/quiz/quizSubjectsList";
 import QuizTopicsList from "../components/quiz/quizTopicsList";
 import SearchBar from "../components/quiz/searchBar";
 import { toaster } from "@/components/ui/toaster";
-import { PiShootingStarDuotone } from "react-icons/pi";
 import { useSubscriptionEntitlement } from "@/hooks/useSubscriptionEntitlement";
 import { UpgradePromptModal } from "@/components/subscription/UpgradePromptModal";
 
@@ -60,6 +59,14 @@ const QuizPage = ({ setShowSideBar, setShowNavBar }: Props) => {
       return prev.filter((c) => c.displayName !== course);
     } else {
       // Add course and its topics
+      if (prev.length >= 4) {
+        toaster.create({
+          title: "Maximum 4 Subjects",
+          description: "You can select up to 4 subjects per quiz test or quiz exam.",
+          type: "warning",
+        });
+        return prev;
+      }
       const topicsWithCourse = (courseTopics ?? []).map((topic) => ({
         ...topic,
         course,
@@ -92,13 +99,7 @@ const QuizPage = ({ setShowSideBar, setShowNavBar }: Props) => {
 
   const {
     effectivePlan,
-    verifyQuizMode,
-    verifyTimedQuiz,
-    verifyJambSimulation,
-    todayTimedQuizCount,
-    maxDailyTimedQuizzes,
     modalState,
-    promptUpgrade,
     closeUpgradeModal,
   } = useSubscriptionEntitlement();
 
@@ -112,57 +113,22 @@ const QuizPage = ({ setShowSideBar, setShowNavBar }: Props) => {
       return;
     }
 
-    // 1. Verify timed quiz daily limit entitlement for Basic users
-    const timedAccess = verifyTimedQuiz();
-    if (!timedAccess.allowed) {
-      promptUpgrade(
-        "Daily Timed Quiz Limit",
-        timedAccess.requiredPlan,
-        timedAccess.reason || `You have completed your daily limit of ${maxDailyTimedQuizzes} timed practice quizzes on the Basic plan. Upgrade to Standard (₦15,000) for generous timed practice!`
-      );
+    if (selectedForQuiz.length > 4) {
+      toaster.create({
+        title: "Maximum 4 Subjects Allowed",
+        description: "You can select up to 4 subjects per quiz test or quiz exam.",
+        type: "warning",
+      });
       return;
-    }
-
-    // 2. Verify multi-subject & JAMB 4-subject entitlement
-    if (selectedForQuiz.length === 4) {
-      const jambAccess = verifyJambSimulation(4);
-      if (!jambAccess.allowed) {
-        promptUpgrade(
-          "JAMB 4-Subject Simulation",
-          jambAccess.requiredPlan,
-          jambAccess.reason || "JAMB UTME 4-Subject Mock Simulation requires a Standard or Premium subscription. Basic plan supports 1 subject at a time."
-        );
-        return;
-      }
-    } else if (selectedForQuiz.length > 1) {
-      const access = verifyQuizMode("quick test", selectedForQuiz.length);
-      if (!access.allowed) {
-        promptUpgrade(
-          "Multi-Subject Quiz Practice",
-          access.requiredPlan,
-          access.reason || "Multi-subject combined quiz testing requires a Standard or Premium subscription. Basic plan supports 1 subject at a time."
-        );
-        return;
-      }
     }
 
     setShowTopicList(true);
   };
 
   const handleLaunchJambSimulation = () => {
-    const jambAccess = verifyJambSimulation(4);
-    if (!jambAccess.allowed) {
-      promptUpgrade(
-        "JAMB UTME 4-Subject Simulation",
-        jambAccess.requiredPlan,
-        jambAccess.reason || "JAMB UTME 4-Subject Mock Simulation is an examination-grade simulation available on Standard and Premium plans. Upgrade to Standard (₦15,000) to simulate real JAMB exams."
-      );
-      return;
-    }
-
     toaster.create({
-      title: "JAMB Simulation Mode Ready",
-      description: "Select your 4 JAMB subject combination below to generate your official timed exam simulation.",
+      title: "JAMB 4-Subject Simulation Ready",
+      description: "Select up to 4 subjects from the list below and click Next to proceed to topics and start your test.",
       type: "info",
     });
   };
@@ -202,17 +168,15 @@ const QuizPage = ({ setShowSideBar, setShowNavBar }: Props) => {
                   <Badge colorPalette="orange" variant="solid" size="xs" px={2} py={0.5} borderRadius="md">
                     JAMB UTME Mock
                   </Badge>
-                  {effectivePlan === "basic" && (
-                    <Badge colorPalette="gray" variant="surface" size="xs" px={2} py={0.5} borderRadius="md">
-                      Standard / Premium Feature
-                    </Badge>
-                  )}
+                  <Badge colorPalette="blue" variant="surface" size="xs" px={2} py={0.5} borderRadius="md">
+                    Up to 4 Subjects
+                  </Badge>
                 </HStack>
                 <Text fontSize="sm" fontWeight="bold" color="gray.800">
                   JAMB 4-Subject Timed Simulation
                 </Text>
                 <Text fontSize="xs" color="gray.600">
-                  Simulate official JAMB UTME with 4 combined subjects under timed conditions.
+                  Simulate official JAMB UTME with up to 4 combined subjects under timed conditions.
                 </Text>
               </Box>
 
@@ -227,50 +191,9 @@ const QuizPage = ({ setShowSideBar, setShowNavBar }: Props) => {
                 fontWeight="bold"
                 px={4}
               >
-                {effectivePlan === "basic" ? (
-                  <>
-                    <PiShootingStarDuotone style={{ marginRight: "6px" }} />
-                    Unlock Standard Plan
-                  </>
-                ) : (
-                  "Start JAMB Simulation"
-                )}
+                Start 4-Subject Simulation
               </Button>
             </Flex>
-
-            {/* Daily Timed Practice Status for Basic */}
-            {effectivePlan === "basic" && (
-              <Flex
-                mt={3}
-                pt={2.5}
-                borderTop="1px dashed"
-                borderColor="gray.200"
-                justify="space-between"
-                align="center"
-                wrap="wrap"
-                gap={2}
-              >
-                <Text fontSize="xs" color="gray.600">
-                  <strong>Timed Practice Limit:</strong> {todayTimedQuizCount}/{maxDailyTimedQuizzes} used today.
-                </Text>
-                <Button
-                  variant="ghost"
-                  size="xs"
-                  color="#206CE1"
-                  _hover={{ color: "#1852B2", bg: "blue.50" }}
-                  onClick={() =>
-                    promptUpgrade(
-                      "Unlimited Timed Practice",
-                      "standard",
-                      "Upgrade to Standard (₦15,000) for generous timed practice and unlimited exam simulations without daily caps!"
-                    )
-                  }
-                >
-                  <PiShootingStarDuotone style={{ marginRight: "4px" }} />
-                  Unlock Standard Plan for Generous Timed Practice →
-                </Button>
-              </Flex>
-            )}
           </Box>
 
           <Flex
