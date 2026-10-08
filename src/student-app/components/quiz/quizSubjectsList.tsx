@@ -15,6 +15,7 @@ import { useSubscriptionEntitlement } from "@/hooks/useSubscriptionEntitlement";
 import { UpgradePromptModal } from "@/components/subscription/UpgradePromptModal";
 import { LockedBadge } from "@/components/subscription/LockedBadge";
 import { LuLock } from "react-icons/lu";
+import { toaster } from "@/components/ui/toaster";
 
 type Props = {
   selectedCourses: string[];
