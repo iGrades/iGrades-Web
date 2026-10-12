@@ -1,8 +1,8 @@
-import { Flex, Box } from "@chakra-ui/react";
-import MyClasses from "../layouts/myClasses"; 
-import HomeChart from "../components/chart";
+import { Box } from "@chakra-ui/react";
+import MyClasses from "../layouts/myClasses";
 import Analytics from "../components/analytics";
 import RightCTA from "../components/rightCTA";
+import HomeChart from "../components/chart";
 import { ExamReadinessCard } from "../components/readiness/ExamReadinessCard";
 import { NextStudyRecommendationCard } from "../components/recommendations/NextStudyRecommendationCard";
 import { useExamReadiness } from "@/hooks/useExamReadiness";
@@ -16,39 +16,31 @@ const Homepage = () => {
   );
 
   return (
-    <Box pt={2}>
-      <Flex
-        w="95%"
-        m="auto"
-        direction={{ base: "column", lg: "row" }}
-        justify="space-between"
-        align="stretch"
-        gap={5}
-      >
-        <Box w={{ base: "full", lg: "80%" }} mb={{ base: 20, md: 6, lg: 0 }}>
-          <MyClasses />
-          <NextStudyRecommendationCard
-            recommendation={primaryRecommendation}
-            allRecommendations={recommendations}
-            targetExam={readiness?.targetExam || "WAEC"}
-            loading={loading}
-          />
-          <ExamReadinessCard readiness={readiness} loading={loading} />
-          <Flex direction={{ base: "column", md: "row" }} align="stretch" h="full">
-            <HomeChart />
-            <Analytics />
-          </Flex>
-        </Box>
-        <Box
-          w={{ base: "full", lg: "20%" }}
-          mb={{ base: 20, md: 6, lg: 0 }}
-          position={{ md: "sticky" }}
-          top={{ md: "0" }}
-          alignSelf="flex-start"
-        >
-          <RightCTA />
-        </Box>
-      </Flex>
+    <Box pt={2} pb={{ base: 28, md: 12 }}>
+      <Box w={{ base: "95%", xl: "92%" }} maxW="1200px" m="auto">
+        {/* 1. Number of courses and registered courses */}
+        <MyClasses />
+
+        {/* 2. Learning Analytics: shows only 1 subject (highest %) at first glance, 'See more' opens bottom-docked popup */}
+        <Analytics />
+
+        {/* 3. Take quiz and Get a tutor box (Learn with videos removed) */}
+        <RightCTA />
+
+        {/* 4. Quiz Analytics: line graph maintained, 'Last 4 Months' quotes removed */}
+        <HomeChart />
+
+        {/* 5. Exam Readiness Indicator section */}
+        <ExamReadinessCard readiness={readiness} loading={loading} />
+
+        {/* 6. What Should I Study Next section */}
+        <NextStudyRecommendationCard
+          recommendation={primaryRecommendation}
+          allRecommendations={recommendations}
+          targetExam={readiness?.targetExam || "WAEC"}
+          loading={loading}
+        />
+      </Box>
     </Box>
   );
 };

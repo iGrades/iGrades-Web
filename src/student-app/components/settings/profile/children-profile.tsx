@@ -45,30 +45,34 @@ const ChildrenProfile = () => {
       <VStack
         gap={4}
         mb={20}
-        shadow={{ base: "none", md: "sm" }}
-        p={{ base: 1, md: 10, lg: 20 }}
-        rounded="md"
-        w="full"
+        border="none"
+        outline="none"
+        p={{ base: 4, sm: 6 }}
+        boxShadow="none"
+        w="100%"
         bg="white"
       >
         {/* Image Preview */}
         <Box
           position="relative"
-          w={{ base: "100%", md: "3/4" }}
+          w="100%"
           display="flex"
           flexDirection="column"
           justifyContent="center"
           alignItems="center"
-          p={{ base: 1, md: 6 }}
+          p={{ base: 1, md: 4 }}
         >
           <Image
             src={authdStudent?.profile_image}
             alt="Profile"
             boxSize="100px"
-            borderRadius="xl"
+            borderRadius="2xl"
             objectFit="cover"
+            border="none"
+            outline="none"
+            boxShadow="none"
           />
-          <Alert.Root status="info" variant="subtle" color="#474256" mt={5}>
+          <Alert.Root status="info" variant="subtle" color="#474256" mt={5} w="100%" border="none" outline="none" boxShadow="none">
             <Alert.Indicator color="blue.500">
               <IoIosAlert />
             </Alert.Indicator>
@@ -90,8 +94,9 @@ const ChildrenProfile = () => {
               bg="amber.50"
               p={4}
               borderRadius="xl"
-              border="1px solid"
-              borderColor="amber.300"
+              border="none"
+              outline="none"
+              boxShadow="none"
             >
               <Flex justify="space-between" align="center" flexWrap="wrap" gap={2} mb={1.5}>
                 <Flex align="center" gap={1.5}>
@@ -100,7 +105,7 @@ const ChildrenProfile = () => {
                     Class Change Request — Pending Admin Review
                   </Text>
                 </Flex>
-                <Badge colorPalette="amber" size="sm">
+                <Badge colorPalette="amber" size="sm" border="none">
                   Under Review
                 </Badge>
               </Flex>
@@ -119,13 +124,13 @@ const ChildrenProfile = () => {
         
         <Grid
           templateColumns={{ base: "repeat(1, 1fr)", md: "repeat(2, 1fr)" }}
-          gap="1"
-          w="95%"
+          gap={3}
+          w="100%"
         >
           {/* Input Fields */}
           {pageData.map((data, index) => (
             <GridItem key={index} w="100%">
-              <Box key={index} w={{ base: "100%", md: "70%" }} m="auto">
+              <Box key={index} w="100%">
                 <Field.Root>
                   <Field.Label fontSize="xs" textTransform="capitalize" my={2}>
                     {data.label}
@@ -138,9 +143,12 @@ const ChildrenProfile = () => {
                   }
                   fontSize="xs"
                   p={6}
-                  bg="textFieldColor"
+                  bg="#F4F7FB"
                   outline="none"
                   border="none"
+                  boxShadow="none"
+                  borderRadius="lg"
+                  w="100%"
                   disabled
                   _placeholder={{ color: "greyOthers" }}
                 />

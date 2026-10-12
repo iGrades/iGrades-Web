@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useEffect, useState } from "react";
-import { Box, Flex, Text, Image, Heading, HStack } from "@chakra-ui/react";
+import { Box, Flex, Text, Image, Heading } from "@chakra-ui/react";
 import { Tooltip } from "@/components/ui/tooltip";
 import { supabase } from "@/lib/supabaseClient";
 import { useAuthdStudentData } from "../context/studentDataContext";
@@ -51,20 +51,6 @@ const MyClasses = () => {
     return getStudentCoursesArray().length;
   }, [authdStudent?.registered_courses]);
 
-  // RESTORED: Fixed structural visibility for date parse format
-  const formatRelativeTime = (dateString: string) => {
-    const date = new Date(dateString);
-    const now = new Date();
-    const diffInDays = Math.floor(
-      (now.getTime() - date.getTime()) / (1000 * 60 * 60 * 24)
-    );
-
-    if (diffInDays <= 0) return "Today";
-    if (diffInDays === 1) return "Yesterday";
-    if (diffInDays < 7) return `${diffInDays} days ago`;
-    if (diffInDays < 30) return `${Math.floor(diffInDays / 7)} weeks ago`;
-    return `${Math.floor(diffInDays / 30)} months ago`;
-  };
 
   useEffect(() => {
     const calculateActiveClasses = async () => {
@@ -166,127 +152,127 @@ const MyClasses = () => {
   const displayActiveClasses = isLoading ? "..." : activeClassesCount;
 
   return (
-    <>
-      <Flex w="full">
-        <Box bg="white" boxShadow="md" borderRadius="lg" w="full" my={5} p={4}>
-          <Heading as="h1" fontSize='md' my={2}>
-            {t("my_classes")}
-          </Heading>
-          <Flex
-            direction={{ base: "column", lg: "row" }}
-            justify="space-between"
+    <Flex w="full">
+      <Box
+        bg="white"
+        border="1px solid"
+        borderColor="gray.100"
+        borderRadius="2xl"
+        boxShadow="0 1px 3px rgba(0, 0, 0, 0.04)"
+        w="full"
+        my={4}
+        p={{ base: 4, sm: 5 }}
+      >
+        <Heading
+          as="h2"
+          fontSize={{ base: "15px", md: "16px" }}
+          fontWeight="700"
+          color="#1E293B"
+          mb={3.5}
+        >
+          {t("my_classes", "My Classes")}
+        </Heading>
+
+        <Flex
+          direction="row"
+          justify="space-between"
+          alignItems="stretch"
+          gap={{ base: 3, sm: 4 }}
+          w="full"
+        >
+          {/* Registered Courses Card */}
+          <Box
+            display="flex"
             alignItems="center"
+            flex={1}
+            minW={0}
+            bg="#F4F7FB"
+            borderRadius="xl"
+            p={{ base: 3, sm: 4, md: 5 }}
           >
-            {/* Registered Courses Card */}
+            <Image
+              src={childrenBox_ico}
+              boxSize={{ base: "38px", sm: "44px", md: "50px" }}
+              flexShrink={0}
+              alt="Registered courses"
+            />
+            <Box ml={{ base: 2.5, sm: 3.5, md: 4 }} minW={0} flex={1}>
+              <Text
+                fontSize={{ base: "11px", sm: "12px", md: "13px" }}
+                color="#64748B"
+                fontWeight="500"
+                lineHeight="1.25"
+                whiteSpace="normal"
+                wordBreak="normal"
+              >
+                {t("registered_courses", "Registered courses")}
+              </Text>
+              <Heading
+                as="h3"
+                fontSize={{ base: "20px", sm: "24px", md: "26px" }}
+                fontWeight="800"
+                color="#1E293B"
+                lineHeight="1.1"
+                mt={0.5}
+              >
+                {coursesCount < 10 ? `0${coursesCount}` : coursesCount}
+              </Heading>
+            </Box>
+          </Box>
+
+          {/* Active Classes Card */}
+          <Tooltip
+            content={
+              recentActivity.length > 0
+                ? `Recently active: ${recentActivity.map((a) => a.subject).join(", ")}`
+                : "No recent activity in any courses"
+            }
+          >
             <Box
               display="flex"
-              justifyItems="space-between"
               alignItems="center"
-              w={{ base: "full", lg: "48%" }}
-              bg="gray.50"
-              borderRadius="lg"
-              p={{ base: "3", md: "6", lg: "8" }}
-              my={2}
+              flex={1}
+              minW={0}
+              bg="#F4F7FB"
+              borderRadius="xl"
+              p={{ base: 3, sm: 4, md: 5 }}
+              cursor="help"
             >
-              <Image src={childrenBox_ico} boxSize="57px" />
-              <Box mx={5}>
-                <Text fontSize={{ base: "sm", lg: "md" }} mb={1} color="#333951">
-                  {t("registered_courses")}
+              <Image
+                src={activeChildrenBox_ico}
+                boxSize={{ base: "38px", sm: "44px", md: "50px" }}
+                flexShrink={0}
+                alt="Active classes"
+              />
+              <Box ml={{ base: 2.5, sm: 3.5, md: 4 }} minW={0} flex={1}>
+                <Text
+                  fontSize={{ base: "11px", sm: "12px", md: "13px" }}
+                  color="#64748B"
+                  fontWeight="500"
+                  lineHeight="1.25"
+                  whiteSpace="normal"
+                  wordBreak="normal"
+                >
+                  {t("active_classes", "Active classes")}
                 </Text>
-                <Heading as="h2" fontSize={{ base: "lg", md: "xl", lg: "2xl" }} color="#333951">
-                  {coursesCount < 10 ? `0${coursesCount}` : coursesCount}
+                <Heading
+                  as="h3"
+                  fontSize={{ base: "20px", sm: "24px", md: "26px" }}
+                  fontWeight="800"
+                  color="#1E293B"
+                  lineHeight="1.1"
+                  mt={0.5}
+                >
+                  {typeof displayActiveClasses === "number" && displayActiveClasses < 10
+                    ? `0${displayActiveClasses}`
+                    : displayActiveClasses}
                 </Heading>
               </Box>
             </Box>
-
-            {/* Active Classes Card */}
-            <Tooltip
-              content={
-                recentActivity.length > 0
-                  ? `Recently active: ${recentActivity.map((a) => a.subject).join(", ")}`
-                  : "No recent activity in any courses"
-              }
-            >
-              <Box
-                display="flex"
-                justifyItems="space-between"
-                alignItems="center"
-                w={{ base: "full", lg: "48%" }}
-                bg="gray.50"
-                borderRadius="lg"
-                p={{ base: "3", md: "6", lg: "8" }}
-                my={2}
-                cursor="help"
-              >
-                <Image src={activeChildrenBox_ico} boxSize="57px" />
-                <Box mx={5}>
-                  <Text fontSize={{ base: "sm", lg: "md" }} mb={1} color="#333951">
-                    {t("active_classes")}
-                  </Text>
-                  <Heading as="h2" fontSize={{ base: "lg", md: "xl", lg: "2xl" }} color="#333951">
-                    {typeof displayActiveClasses === "number" && displayActiveClasses < 10 ? `0${displayActiveClasses}` : displayActiveClasses}
-                  </Heading>
-                </Box>
-              </Box>
-            </Tooltip>
-          </Flex>
-
-          {/* Sleek, Modern, Minimal Recent Activity Section */}
-          {!isLoading && recentActivity.length > 0 && (
-            <Box mt={4} pt={3.5} borderTop="1px solid" borderColor="gray.100">
-              <Flex
-                direction={{ base: "column", sm: "row" }}
-                align={{ base: "flex-start", sm: "center" }}
-                justify="space-between"
-                gap={2.5}
-              >
-                <HStack gap={2} flexShrink={0}>
-                  <Box w="6px" h="6px" borderRadius="full" bg="#10B981" />
-                  <Text
-                    fontSize="11px"
-                    fontWeight="600"
-                    color="gray.500"
-                    letterSpacing="0.04em"
-                    textTransform="uppercase"
-                  >
-                    {t("recent_activity")}
-                  </Text>
-                </HStack>
-
-                <Flex wrap="wrap" gap={1.5} align="center">
-                  {recentActivity.slice(0, 3).map((activity, index) => (
-                    <HStack
-                      key={index}
-                      bg="gray.50"
-                      px={2.5}
-                      py={1}
-                      borderRadius="full"
-                      border="1px solid"
-                      borderColor="gray.200/80"
-                      gap={1.5}
-                      _hover={{ bg: "gray.100" }}
-                      transition="background 0.15s ease"
-                    >
-                      <Text fontSize="11px" fontWeight="600" color="gray.700">
-                        {activity.subject}
-                      </Text>
-                      <Text fontSize="10px" color="gray.400">
-                        • {formatRelativeTime(activity.lastActivity)}
-                      </Text>
-                    </HStack>
-                  ))}
-                  {recentActivity.length > 3 && (
-                    <Text fontSize="10px" color="gray.400" fontWeight="500" px={1}>
-                      +{recentActivity.length - 3} more
-                    </Text>
-                  )}
-                </Flex>
-              </Flex>
-            </Box>
-          )}
-        </Box>
-      </Flex>
-    </>
+          </Tooltip>
+        </Flex>
+      </Box>
+    </Flex>
   );
 };
 

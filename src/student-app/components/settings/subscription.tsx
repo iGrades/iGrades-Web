@@ -162,9 +162,12 @@ const Subscription: React.FC = () => {
     <Box
       bg="white"
       rounded="2xl"
-      shadow="sm"
-      p={{ base: 4, md: 6 }}
+      border="none"
+      outline="none"
+      boxShadow="none"
+      p={{ base: 4, sm: 6 }}
       mb={10}
+      w="100%"
       h="auto"
     >
       {/* Active Subscription Status Header */}
@@ -174,9 +177,7 @@ const Subscription: React.FC = () => {
         align={{ base: "start", sm: "center" }}
         mb={5}
         gap={3}
-        pb={4}
-        borderBottom="1px solid"
-        borderColor="gray.100"
+        pb={3}
       >
         <Box>
           <HStack gap={2.5} mb={1}>
@@ -189,6 +190,7 @@ const Subscription: React.FC = () => {
               size="sm"
               borderRadius="full"
               px={2.5}
+              border="none"
             >
               Current: {effectivePlan === "premium" ? "Premium" : effectivePlan === "standard" ? "Standard" : "Basic (Free)"}
             </Badge>
@@ -207,12 +209,12 @@ const Subscription: React.FC = () => {
       {isExpired && (
         <Box
           p={4}
-          borderRadius="2xl"
+          borderRadius="xl"
           bg="red.50"
-          border="1px solid"
-          borderColor="red.300"
+          border="none"
+          outline="none"
+          boxShadow="none"
           mb={6}
-          shadow="xs"
         >
           <Flex align="center" gap={3}>
             <Text fontSize="sm" color="red.800" fontWeight="medium">
@@ -224,12 +226,12 @@ const Subscription: React.FC = () => {
       {/* iGrades Points & Store Credit Discount Banner */}
       <Box
         p={4}
-        borderRadius="2xl"
-        bg="white"
-        border="1px solid"
-        borderColor="amber.300"
+        borderRadius="xl"
+        bg="#FFFBEB"
+        border="none"
+        outline="none"
+        boxShadow="none"
         mb={6}
-        shadow="xs"
       >
         <Flex
           direction={{ base: "column", md: "row" }}
@@ -238,7 +240,7 @@ const Subscription: React.FC = () => {
           gap={3}
         >
           <HStack gap={3}>
-            <Box p={2.5} bg="amber.50" border="1px solid" borderColor="amber.200" borderRadius="xl" color="amber.700">
+            <Box p={2.5} bg="amber.100" borderRadius="xl" color="amber.800" border="none">
               <FiAward size={26} />
             </Box>
             <Box>
@@ -246,7 +248,7 @@ const Subscription: React.FC = () => {
                 <Heading size="sm" color="gray.900" fontWeight="extrabold">
                   iGrades Rewards Store Credit
                 </Heading>
-                <Badge colorPalette="amber" variant="subtle" bg="amber.100" color="amber.800" border="1px solid" borderColor="amber.200" px={2} fontSize="10px" fontWeight="bold">
+                <Badge colorPalette="amber" variant="subtle" bg="amber.200" color="amber.900" border="none" px={2} fontSize="10px" fontWeight="bold">
                   {pointsBalance.toLocaleString()} IGG Pts Available
                 </Badge>
               </HStack>
@@ -267,7 +269,9 @@ const Subscription: React.FC = () => {
               _hover={{ bg: "amber.700" }}
               fontWeight="bold"
               borderRadius="xl"
-              shadow="xs"
+              border="none"
+              outline="none"
+              boxShadow="none"
               loading={actionLoading}
               onClick={() => convertPoints(100)}
             >
@@ -281,8 +285,8 @@ const Subscription: React.FC = () => {
         direction={{ base: "column", xl: "row" }}
         justify="center"
         align="stretch"
-        gap={6}
-        mt={6}
+        gap={4}
+        mt={4}
         w="full"
       >
         {subscriptionPlans.map((plan) => {
@@ -292,12 +296,12 @@ const Subscription: React.FC = () => {
           return (
             <Box
               key={plan.id}
-              border="1.5px solid"
-              borderColor={isCurrentPlan ? "#206CE1" : "gray.200"}
+              border="none"
+              outline="none"
+              boxShadow="none"
               p={{ base: 5, md: 6 }}
               rounded="2xl"
-              shadow={isCurrentPlan ? "md" : "xs"}
-              bg={isCurrentPlan ? "blue.50/20" : "white"}
+              bg={isCurrentPlan ? "#EFF6FF" : "#F4F7FB"}
               textAlign="left"
               flex={{ base: "none", xl: 1 }}
               w={{ base: "100%", md: "100%", xl: "32%" }}
@@ -306,8 +310,8 @@ const Subscription: React.FC = () => {
               display="flex"
               flexDirection="column"
               justifyContent="space-between"
-              transition="all 0.2s ease"
-              _hover={{ transform: "translateY(-2px)", shadow: "md" }}
+              transition="all 0.15s ease"
+              _hover={{ bg: isCurrentPlan ? "#DBEAFE" : "#EDF2F7" }}
             >
               <Box>
                 {isCurrentPlan && (

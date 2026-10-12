@@ -351,30 +351,64 @@ const QuizAttempt = ({
 
   // ─── Render ───────────────────────────────────────────────────────────────
 
-  if (isMobile && isMonitoringEnabled) {
+  if (isMobile && isMonitoringEnabled && !bypassedScreenShare) {
     return (
-      <Box h="100vh" display="flex" alignItems="center" justifyContent="center" bg="gray.50" p={6}>
-        <VStack maxW="md" p={8} bg="white" borderRadius="xl" boxShadow="lg" textAlign="center" gap={6}>
-          <Box fontSize="5xl">🚫</Box>
-          <VStack gap={2}>
-            <Text fontSize="xl" fontWeight="bold">Mobile Access Restricted</Text>
-            <Text color="gray.600">
-              For security and monitoring purposes, this quiz can only be taken on a{" "}
-              <b>Desktop or Laptop computer</b>
+      <Box minH="100vh" display="flex" alignItems="center" justifyContent="center" bg="gray.50" p={4}>
+        <VStack maxW="md" w="full" p={{ base: 6, sm: 8 }} bg="white" borderRadius="2xl" boxShadow="xl" textAlign="center" gap={5}>
+          <Box
+            w="64px"
+            h="64px"
+            borderRadius="full"
+            bg="blue.50"
+            color="primaryColor"
+            display="flex"
+            alignItems="center"
+            justifyContent="center"
+            fontSize="28px"
+            mx="auto"
+          >
+            📱
+          </Box>
+          <VStack gap={1.5}>
+            <Text fontSize="lg" fontWeight="bold" color="gray.900">
+              Mobile Examination Mode
+            </Text>
+            <Text fontSize="sm" color="gray.600" lineHeight="1.5">
+              You are taking this exam on a mobile device. AI proctoring will monitor your{" "}
+              <b>Front Camera, Microphone, and App Focus / Tab Switches</b>.
             </Text>
           </VStack>
-          <Alert.Root status="info" size="sm">
+
+          <Alert.Root status="info" size="sm" borderRadius="xl">
             <Alert.Indicator />
-            <Alert.Description>
-              Screen sharing and advanced proctoring features are not supported on mobile browsers.
-              To access the quiz on your mobile device
-              <br /><br />
-              <b>Download mobile app</b>
+            <Alert.Description fontSize="xs" textAlign="left">
+              Full desktop screen sharing is not required on mobile devices. Ensure you remain in the browser and face the camera throughout.
             </Alert.Description>
           </Alert.Root>
-          <Button width="full" bg="primaryColor" onClick={onCancel}>
-            Return to Dashboard
-          </Button>
+
+          <VStack w="full" gap={2.5}>
+            <Button
+              width="full"
+              h="48px"
+              bg="primaryColor"
+              color="white"
+              fontWeight="bold"
+              borderRadius="xl"
+              _active={{ transform: "scale(0.98)" }}
+              onClick={proceedWithWebcamOnly}
+            >
+              Continue in Mobile Proctored Mode
+            </Button>
+            <Button
+              width="full"
+              h="44px"
+              variant="outline"
+              borderRadius="xl"
+              onClick={onCancel}
+            >
+              Return to Dashboard
+            </Button>
+          </VStack>
         </VStack>
       </Box>
     );

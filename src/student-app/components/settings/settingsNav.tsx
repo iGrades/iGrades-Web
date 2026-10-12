@@ -9,6 +9,7 @@ type Props = {
 const SettingsNav = ({ settingsState, setSettingsState }: Props) => {
   const navItems = [
     { text: "Profile", state: "profile" },
+    { text: "Language", state: "language" },
     { text: "Security", state: "security" },
     { text: "Notifications", state: "notification" },
     { text: "Subscription", state: "subscription" },

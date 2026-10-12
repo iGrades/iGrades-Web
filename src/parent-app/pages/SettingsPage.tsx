@@ -5,6 +5,7 @@ import Security from "../components/settings/security";
 import Notification from "../components/settings/notification";
 import Support from "../components/settings/support";
 import { ParentSubscriptionView } from "../components/settings/ParentSubscriptionView";
+import ParentLanguageSettings from "../components/settings/parentLanguageSettings";
 import { useNavigationStore } from "@/store/usenavigationStore";
 
 const SettingsPage = () => {
@@ -42,6 +43,8 @@ const SettingsPage = () => {
           <ParentSubscriptionView />
         ) : currentTab === "support" || currentTab === "help" || currentTab === "faqs" ? (
           <Support />
+        ) : currentTab === "language" ? (
+          <ParentLanguageSettings />
         ) : currentTab === "notification" ? (
           <Notification />
         ) : currentTab === "security" ? (

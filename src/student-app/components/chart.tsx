@@ -310,14 +310,15 @@ const HomeChart = () => {
         bg="white"
         boxShadow="md"
         borderRadius="lg"
-        w={{ base: "100%", md: "60%" }}
+        w="full"
+        my={4}
         p={4}
-        h="68.5vh"
+        minH="260px"
         display="flex"
         alignItems="center"
         justifyContent="center"
       >
-        <DancingLogoLoader size="md" text="Loading Quiz Analytics..." minH="260px" />
+        <DancingLogoLoader size="md" text="Loading Quiz Analytics..." minH="220px" />
       </Box>
     );
   }
@@ -325,13 +326,15 @@ const HomeChart = () => {
   return (
     <Box
       bg="white"
-      boxShadow="md"
-      borderRadius="lg"
-      w={{ base: "100%", md: "60%" }}
+      border="1px solid"
+      borderColor="gray.100"
+      borderRadius="2xl"
+      boxShadow="0 1px 3px rgba(0, 0, 0, 0.04)"
+      w="full"
+      my={4}
       minW="0"
-      p={4}
-      h={{ base: "auto", lg: "68.5vh" }}
-      minH={{ base: "340px", lg: "420px" }}
+      p={{ base: 4, sm: 5 }}
+      h="auto"
       display="flex"
       flexDirection="column"
     >
@@ -344,33 +347,33 @@ const HomeChart = () => {
         gap={2}
       >
         <Box>
-          <Heading fontSize="md" color="gray.800">
-            Quiz Analytics (Last 4 Months)
+          <Heading fontSize={{ base: "15px", md: "16px" }} color="#1E293B" fontWeight="700">
+            Quiz Analytics
           </Heading>
-          <Text fontSize="xs" color="gray.500">
+          <Text fontSize="11px" color="#64748B">
             Average monthly performance across completed quizzes
           </Text>
         </Box>
         {totalAttempts > 0 ? (
-          <Box px={3} py={1} bg="blue.50" borderRadius="full" border="1px solid" borderColor="blue.200">
-            <Text fontSize="xs" fontWeight="semibold" color="blue.700">
+          <Box px={2.5} py={0.5} bg="blue.50" borderRadius="full" border="1px solid" borderColor="blue.200">
+            <Text fontSize="11px" fontWeight="600" color="blue.700">
               Avg: {overallAverage}% ({totalAttempts} {totalAttempts === 1 ? "quiz" : "quizzes"})
             </Text>
           </Box>
         ) : (
-          <Box px={3} py={1} bg="gray.50" borderRadius="full" border="1px solid" borderColor="gray.200">
-            <Text fontSize="xs" color="gray.500">
+          <Box px={2.5} py={0.5} bg="gray.50" borderRadius="full" border="1px solid" borderColor="gray.200">
+            <Text fontSize="11px" color="gray.500">
               0 quizzes taken
             </Text>
           </Box>
         )}
       </Flex>
 
-      <Box w="100%" h={{ base: "260px", sm: "280px", md: "300px", lg: "340px" }} minH="240px" position="relative">
-        <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={240}>
+      <Box w="100%" h={{ base: "190px", sm: "210px", md: "240px" }} minH="180px" position="relative">
+        <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={180}>
           <AreaChart
             data={quizProgress}
-            margin={{ top: 15, right: 15, left: -15, bottom: 5 }}
+            margin={{ top: 10, right: 10, left: 0, bottom: 0 }}
           >
             <defs>
               <linearGradient id="studentQuizGradient" x1="0" y1="0" x2="0" y2="1">
@@ -384,14 +387,15 @@ const HomeChart = () => {
               tickFormatter={(v) => (v ? v.slice(0, 3) : "")}
               axisLine={false}
               tickLine={false}
-              tick={{ fill: "#64748B", fontSize: 11 }}
+              tick={{ fill: "#94A3B8", fontSize: 7.5 }}
             />
             <YAxis
               domain={[0, 100]}
+              width={32}
               tickFormatter={(v) => `${v}%`}
               axisLine={false}
               tickLine={false}
-              tick={{ fill: "#64748B", fontSize: 11 }}
+              tick={{ fill: "#94A3B8", fontSize: 6.5 }}
             />
             <Tooltip content={<CustomTooltip />} />
             <Area
@@ -401,26 +405,38 @@ const HomeChart = () => {
               stroke="#10B981"
               strokeWidth={2.5}
               fill="url(#studentQuizGradient)"
-              dot={{ r: 4, fill: "#10B981", strokeWidth: 2, stroke: "#FFFFFF" }}
-              activeDot={{ r: 6, fill: "#10B981", stroke: "#FFFFFF", strokeWidth: 2 }}
+              dot={{ r: 3.5, fill: "#10B981", strokeWidth: 2, stroke: "#FFFFFF" }}
+              activeDot={{ r: 5.5, fill: "#10B981", stroke: "#FFFFFF", strokeWidth: 2 }}
             />
           </AreaChart>
         </ResponsiveContainer>
       </Box>
 
       {subjects.length > 0 && (
-        <Flex wrap="wrap" gap={2} mt={2} pt={2} borderTop="1px solid" borderColor="gray.100" flexShrink={0} justify="center">
-          {subjects.slice(0, 6).map((s) => (
-            <Flex key={s.name} align="center" gap={1} fontSize="xs" color="gray.600">
-              <Box w="6px" h="6px" borderRadius="full" bg={s.color} />
-              <Text fontSize="2xs" color="gray.500">{s.name}</Text>
+        <Flex
+          wrap="wrap"
+          gap={{ base: 2, sm: 2.5 }}
+          mt={3}
+          pt={2.5}
+          borderTop="1px solid"
+          borderColor="gray.100"
+          flexShrink={0}
+          justify="flex-start"
+          align="center"
+        >
+          {subjects.slice(0, 8).map((s) => (
+            <Flex key={s.name} align="center" gap={1.5} color="#64748B">
+              <Box w="6px" h="6px" borderRadius="full" bg={s.color} flexShrink={0} />
+              <Text fontSize="11px" color="#64748B" fontWeight="500">
+                {s.name}
+              </Text>
             </Flex>
           ))}
         </Flex>
       )}
 
       {totalAttempts === 0 && (
-        <Text fontSize="xs" color="gray.400" textAlign="center" mt={1} flexShrink={0}>
+        <Text fontSize="11px" color="gray.400" textAlign="left" mt={2} flexShrink={0}>
           Take quizzes in your subjects to grow your monthly performance trend
         </Text>
       )}

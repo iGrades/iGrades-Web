@@ -8,18 +8,19 @@ import {
   Button,
   HStack,
   Progress,
-  Icon,
   Badge,
+  IconButton,
+  Portal,
 } from "@chakra-ui/react";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { supabase } from "@/lib/supabaseClient";
 import { DancingLogoLoader } from "@/components/DancingLogoLoader";
 import { useAuthdStudentData } from "@/student-app/context/studentDataContext";
 import { useSubscriptionEntitlement } from "@/hooks/useSubscriptionEntitlement";
 import { UpgradePromptModal } from "@/components/subscription/UpgradePromptModal";
-import { LuChevronDown, LuChevronUp } from "react-icons/lu";
 import { RiCompassesLine } from "react-icons/ri";
 import { PiShootingStarDuotone } from "react-icons/pi";
+import { FiX, FiChevronRight } from "react-icons/fi";
 import { courseConfig } from "@/student-app/utils/courseConstants";
 
 interface CourseProgress {
@@ -33,7 +34,10 @@ interface CourseProgress {
 const Analytics = () => {
   const [courses, setCourses] = useState<CourseProgress[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [showAllCourses, setShowAllCourses] = useState(false);
+  const [isPopupOpen, setIsPopupOpen] = useState(false);
+  const [popupTop, setPopupTop] = useState(180);
+  const cardRef = useRef<HTMLDivElement>(null);
+
   const { authdStudent } = useAuthdStudentData();
   const {
     effectivePlan,
@@ -42,23 +46,22 @@ const Analytics = () => {
     closeUpgradeModal,
   } = useSubscriptionEntitlement();
 
-  const INITIAL_COURSES_TO_SHOW = 4;
-
   const getCourseColor = (dbCourseName: string): string =>
-    courseConfig[dbCourseName.toLowerCase()]?.color || "#718096";
+    courseConfig[dbCourseName?.toLowerCase()]?.color || "#206CE1";
 
-  // derive everything inside the effect so there are no stale closures,
-  // and depend on registered_courses so the effect re-runs if it loads late.
+  // Derive everything inside the effect so there are no stale closures
   useEffect(() => {
     if (!authdStudent?.id) return;
 
-    // parse registered_courses inside the effect
     const raw = authdStudent.registered_courses ?? "[]";
     const registeredCourses: string[] = Array.isArray(raw)
       ? raw
       : (() => {
-          try { return JSON.parse(raw as string); }
-          catch { return (raw as string).split(",").map((c) => c.trim()); }
+          try {
+            return JSON.parse(raw as string);
+          } catch {
+            return (raw as string).split(",").map((c) => c.trim());
+          }
         })();
 
     if (registeredCourses.length === 0) {
@@ -80,7 +83,6 @@ const Analytics = () => {
       try {
         setIsLoading(true);
 
-        // fetch all subjects in ONE query instead of N sequential calls
         const { data: subjectsData, error: subjectsError } = await supabase
           .from("subjects")
           .select("id, name")
@@ -96,21 +98,20 @@ const Analytics = () => {
         );
         const allSubjectIds = subjectsData.map((s) => s.id);
 
-        // single videos query for all subjects at once
-        const [{ data: allVideos, error: videosError }, { data: videoProgress, error: progressError }] =
-          await Promise.all([
-            supabase
-              .from("resources")
-              .select("id, topics(subject_id)")
-              .eq("type", "video")
-              .in("topics.subject_id", allSubjectIds),
-            supabase
-              .from("video_progress")
-              .select("video_id, completed, progress")
-              .eq("student_id", authdStudent.id),
-          ]);
-
-        console.log("video progress from analytics : ", videoProgress)
+        const [
+          { data: allVideos, error: videosError },
+          { data: videoProgress, error: progressError },
+        ] = await Promise.all([
+          supabase
+            .from("resources")
+            .select("id, topics(subject_id)")
+            .eq("type", "video")
+            .in("topics.subject_id", allSubjectIds),
+          supabase
+            .from("video_progress")
+            .select("video_id, completed, progress")
+            .eq("student_id", authdStudent.id),
+        ]);
 
         if (videosError || progressError) {
           setCourses(initZero());
@@ -128,7 +129,10 @@ const Analytics = () => {
           if (!subjectId) {
             return {
               title: config?.displayName || dbName,
-              progress: 0, totalVideos: 0, watchedVideos: 0, dbCourseName: dbName,
+              progress: 0,
+              totalVideos: 0,
+              watchedVideos: 0,
+              dbCourseName: dbName,
             };
           }
 
@@ -141,7 +145,10 @@ const Analytics = () => {
           if (totalVideos === 0) {
             return {
               title: config?.displayName || dbName,
-              progress: 0, totalVideos: 0, watchedVideos: 0, dbCourseName: dbName,
+              progress: 0,
+              totalVideos: 0,
+              watchedVideos: 0,
+              dbCourseName: dbName,
             };
           }
 
@@ -171,158 +178,354 @@ const Analytics = () => {
     fetchVideoProgress();
   }, [authdStudent?.id, authdStudent?.registered_courses]);
 
+  // Sort courses descending by progress percentage
   const sortedCourses = [...courses].sort((a, b) => b.progress - a.progress);
-  const coursesToShow = showAllCourses
-    ? sortedCourses
-    : sortedCourses.slice(0, INITIAL_COURSES_TO_SHOW);
-  const hasMoreCourses = sortedCourses.length > INITIAL_COURSES_TO_SHOW;
+  const topCourse = sortedCourses.length > 0 ? sortedCourses[0] : null;
 
-  if (isLoading || courses.length === 0) {
+  const handleOpenPopup = () => {
+    if (cardRef.current) {
+      const rect = cardRef.current.getBoundingClientRect();
+      // Stop exactly at where the learning analytics section is located at the top
+      const calculatedTop = Math.max(70, Math.floor(rect.top));
+      setPopupTop(calculatedTop);
+    }
+    setIsPopupOpen(true);
+  };
+
+  // Close popup on Escape key
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape" && isPopupOpen) {
+        setIsPopupOpen(false);
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [isPopupOpen]);
+
+  if (isLoading) {
     return (
       <Box
+        ref={cardRef}
         bg="white"
         boxShadow="md"
         borderRadius="lg"
-        w={{ base: "100%", md: "40%" }}
-        minH="350px"
-        p={4}
-        ml={{ md: 5 }}
+        w="full"
+        my={4}
+        p={5}
+        minH="150px"
       >
-        <Heading as="h2" mb={4} fontSize="md">Learning Analytics</Heading>
-        {isLoading ? (
-          <DancingLogoLoader size="sm" text="Loading analytics..." minH="220px" />
-        ) : (
-          <Text fontSize="sm" color="gray.500" textAlign="center" py={8}>
-            No course data available.
-          </Text>
-        )}
+        <Flex justify="space-between" align="center" mb={3}>
+          <Heading as="h2" fontSize="md" color="gray.800">
+            Learning Analytics
+          </Heading>
+        </Flex>
+        <DancingLogoLoader size="sm" text="Loading learning progress..." minH="80px" />
       </Box>
     );
   }
 
   return (
-    <Box
-      bg="white"
-      boxShadow="md"
-      borderRadius="lg"
-      w={{ base: "100%", md: "40%" }}
-      my={{ base: 5, md: 0 }}
-      ml={{ md: 5 }}
-      p={4}
-      h={{ base: "auto", lg: "68.5vh" }}
-      minH={{ base: "300px", lg: "420px" }}
-      display="flex"
-      flexDirection="column"
-    
-    >
-      {/* Heading with Plan Status Badge */}
-      <Flex justify="space-between" align="center" mb={3} flexShrink={0}>
-        <Heading as="h2" fontSize="md">
-          Learning Analytics
-        </Heading>
-        {effectivePlan === "basic" && (
-          <Badge colorPalette="gray" size="xs" variant="surface">
-            Basic Progress
-          </Badge>
-        )}
-        {effectivePlan === "standard" && (
-          <Badge bg="#206CE1" color="white" size="xs" variant="solid">
-            Detailed
-          </Badge>
-        )}
-        {effectivePlan === "premium" && (
-          <Badge bg="#206CE1" color="white" size="xs" variant="solid">
-            Deep AI
-          </Badge>
-        )}
-      </Flex>
+    <>
+      <Box
+        ref={cardRef}
+        bg="white"
+        boxShadow="md"
+        borderRadius="lg"
+        w="full"
+        my={4}
+        p={5}
+      >
+        {/* Header: Title on left, 'See more' button on right */}
+        <Flex justify="space-between" align="center" mb={4}>
+          <HStack gap={2}>
+            <Heading as="h2" fontSize="md" color="gray.800" fontWeight="700">
+              Learning Analytics
+            </Heading>
+            {effectivePlan === "basic" && (
+              <Badge colorPalette="gray" size="xs" variant="surface">
+                Basic
+              </Badge>
+            )}
+            {effectivePlan === "standard" && (
+              <Badge bg="#206CE1" color="white" size="xs" variant="solid">
+                Detailed
+              </Badge>
+            )}
+            {effectivePlan === "premium" && (
+              <Badge bg="#206CE1" color="white" size="xs" variant="solid">
+                Deep AI
+              </Badge>
+            )}
+          </HStack>
 
-      {/* Upgrade Banner for Basic */}
-      {effectivePlan === "basic" && (
-        <Flex
-          p={2.5}
-          mb={2}
-          bg="blue.50"
-          borderRadius="md"
-          border="1px solid"
-          borderColor="blue.200"
-          justify="space-between"
-          align="center"
-          gap={2}
-          flexShrink={0}
-        >
-          <Text fontSize="10px" color="blue.900" fontWeight="500">
-            Topic diagnostics & strengths unlocked on Standard.
-          </Text>
-          <Button
-            size="xs"
-            variant="ghost"
-            color="#206CE1"
-            _hover={{ color: "#1852B2", bg: "blue.100" }}
-            fontSize="10px"
-            p={1}
-            h="auto"
-            onClick={() =>
-              promptUpgrade(
-                "Detailed Performance Analytics",
-                "standard",
-                "Detailed performance breakdown and subject/topic strengths & weaknesses require a Standard or Premium subscription. Upgrade to Standard (₦15,000) to see full diagnostic analytics."
-              )
-            }
-          >
-            <PiShootingStarDuotone style={{ marginRight: "3px" }} />
-            Unlock Standard Plan →
-          </Button>
-        </Flex>
-      )}
-
-      <Box overflowY="auto" flex={1}
-        css={{
-        "&::-webkit-scrollbar": {
-          display: "none",
-        },
-        MsOverflowStyle: "none",
-        scrollbarWidth: "none",
-      }}>
-        {coursesToShow.map((course, idx) => (
-          <Box key={idx} px={2} my={{ base: 8, md: 5, lg: 8 }}>
-            <Flex justify="space-between" align="center" mb={3}>
-              <HStack>
-                <Icon
-                  color="white"
-                  bg={getCourseColor(course.dbCourseName)}
-                  h={8} w={8} p={2} rounded="lg"
-                >
-                  <RiCompassesLine />
-                </Icon>
-                <Text fontSize="xs" fontWeight="medium" textTransform="capitalize">
-                  {course.title}
-                </Text>
-              </HStack>
-              <Text fontSize="xs">{course.progress}%</Text>
-            </Flex>
-            <Progress.Root value={course.progress} colorPalette="cyan" size="xs">
-              <Progress.Track flex="1">
-                <Progress.Range />
-              </Progress.Track>
-            </Progress.Root>
-          </Box>
-        ))}
-
-        {hasMoreCourses && (
-          <Flex justify="center" mt={2}>
+          {courses.length > 0 && (
             <Button
               variant="ghost"
-              size="xs"
-              onClick={() => setShowAllCourses(!showAllCourses)}
-              color="blue.600"
+              size="sm"
+              color="#206CE1"
+              fontWeight="600"
+              fontSize="xs"
+              h="auto"
+              py={1}
+              px={2}
+              _hover={{ bg: "blue.50", textDecoration: "none" }}
+              onClick={handleOpenPopup}
             >
-              {showAllCourses ? "View less" : "View all"}
-              {showAllCourses ? <LuChevronUp /> : <LuChevronDown />}
+              See more
+              <FiChevronRight style={{ marginLeft: "4px" }} />
+            </Button>
+          )}
+        </Flex>
+
+        {/* Upgrade Banner for Basic if applicable */}
+        {effectivePlan === "basic" && (
+          <Flex
+            p={2}
+            mb={3}
+            bg="blue.50"
+            borderRadius="md"
+            border="1px solid"
+            borderColor="blue.200"
+            justify="space-between"
+            align="center"
+            gap={2}
+          >
+            <Text fontSize="10px" color="blue.900" fontWeight="500">
+              Topic diagnostics unlocked on Standard.
+            </Text>
+            <Button
+              size="xs"
+              variant="ghost"
+              color="#206CE1"
+              _hover={{ color: "#1852B2", bg: "blue.100" }}
+              fontSize="10px"
+              p={1}
+              h="auto"
+              onClick={() =>
+                promptUpgrade(
+                  "Detailed Performance Analytics",
+                  "standard",
+                  "Detailed performance breakdown and subject strengths & weaknesses require Standard or Premium. Upgrade to see full diagnostics."
+                )
+              }
+            >
+              <PiShootingStarDuotone style={{ marginRight: "3px" }} />
+              Unlock Standard →
             </Button>
           </Flex>
         )}
+
+        {/* First glance: SHOWS ONLY ONE SUBJECT (the course with the highest percentage) */}
+        {topCourse ? (
+          <Box px={1} py={1}>
+            <Flex justify="space-between" align="center" mb={2}>
+              <HStack gap={3}>
+                <Flex
+                  align="center"
+                  justify="center"
+                  bg={getCourseColor(topCourse.dbCourseName)}
+                  color="white"
+                  h={9}
+                  w={9}
+                  rounded="lg"
+                  flexShrink={0}
+                >
+                  <RiCompassesLine size={20} />
+                </Flex>
+                <Box>
+                  <Text fontSize="sm" fontWeight="600" textTransform="capitalize" color="gray.800">
+                    {topCourse.title}
+                  </Text>
+                  <Text fontSize="2xs" color="gray.400">
+                    {topCourse.watchedVideos} of {topCourse.totalVideos} lessons completed
+                  </Text>
+                </Box>
+              </HStack>
+              <Text fontSize="sm" fontWeight="700" color="gray.700">
+                {topCourse.progress}%
+              </Text>
+            </Flex>
+
+            <Progress.Root value={topCourse.progress} colorPalette="cyan" size="sm">
+              <Progress.Track flex="1" bg="gray.100" h="8px" borderRadius="full">
+                <Progress.Range bg="#288AE4" borderRadius="full" />
+              </Progress.Track>
+            </Progress.Root>
+          </Box>
+        ) : (
+          <Text fontSize="xs" color="gray.400" py={4} textAlign="center">
+            No registered courses found.
+          </Text>
+        )}
       </Box>
+
+      {/* Pop-up connected to the bottom of the page and stopping at where learning analytics section is located at top */}
+      {isPopupOpen && (
+        <Portal>
+          {/* Backdrop overlay */}
+          <Box
+            position="fixed"
+            top={0}
+            left={0}
+            right={0}
+            bottom={0}
+            bg="blackAlpha.600"
+            zIndex={1200}
+            onClick={() => setIsPopupOpen(false)}
+            backdropFilter="blur(2px)"
+          />
+
+          {/* Connected Bottom Sheet Pop-up */}
+          <Box
+            position="fixed"
+            top={`${popupTop}px`}
+            bottom={0}
+            left={0}
+            right={0}
+            maxW={{ base: "100%", md: "780px" }}
+            mx="auto"
+            bg="white"
+            zIndex={1201}
+            borderTopRadius="2xl"
+            boxShadow="0 -10px 40px rgba(0, 0, 0, 0.25)"
+            display="flex"
+            flexDirection="column"
+            overflow="hidden"
+          >
+            {/* Grab / drag indicator bar */}
+            <Flex justify="center" pt={2.5} pb={1} flexShrink={0}>
+              <Box w="40px" h="4px" bg="gray.300" borderRadius="full" />
+            </Flex>
+
+            {/* Pop-up Header */}
+            <Flex
+              justify="space-between"
+              align="center"
+              px={5}
+              py={3}
+              borderBottom="1px solid"
+              borderColor="gray.100"
+              flexShrink={0}
+            >
+              <HStack gap={2}>
+                <Heading as="h3" fontSize="md" color="gray.900" fontWeight="700">
+                  Learning Analytics
+                </Heading>
+                <Badge colorPalette="blue" variant="subtle" size="sm" borderRadius="full">
+                  {sortedCourses.length} {sortedCourses.length === 1 ? "Subject" : "Subjects"}
+                </Badge>
+              </HStack>
+
+              <IconButton
+                aria-label="Close analytics popup"
+                size="sm"
+                variant="ghost"
+                borderRadius="full"
+                color="gray.500"
+                _hover={{ bg: "gray.100", color: "gray.800" }}
+                onClick={() => setIsPopupOpen(false)}
+              >
+                <FiX size={18} />
+              </IconButton>
+            </Flex>
+
+            {/* Pop-up Body: Full list of all registered courses with progress bars */}
+            <Box
+              flex={1}
+              overflowY="auto"
+              px={5}
+              py={4}
+              css={{
+                "&::-webkit-scrollbar": { width: "6px" },
+                "&::-webkit-scrollbar-thumb": {
+                  background: "#CBD5E1",
+                  borderRadius: "3px",
+                },
+              }}
+            >
+              <Text fontSize="xs" color="gray.500" mb={4}>
+                Your overall topic completion across all registered subjects, ranked by progress:
+              </Text>
+
+              {sortedCourses.map((course, idx) => (
+                <Box
+                  key={idx}
+                  p={3.5}
+                  mb={3}
+                  borderRadius="xl"
+                  border="1px solid"
+                  borderColor="gray.100"
+                  bg="gray.50"
+                  _hover={{ bg: "gray.100/60" }}
+                  transition="background 0.15s ease"
+                >
+                  <Flex justify="space-between" align="center" mb={2}>
+                    <HStack gap={3}>
+                      <Flex
+                        align="center"
+                        justify="center"
+                        bg={getCourseColor(course.dbCourseName)}
+                        color="white"
+                        h={9}
+                        w={9}
+                        rounded="lg"
+                        flexShrink={0}
+                      >
+                        <RiCompassesLine size={20} />
+                      </Flex>
+                      <Box>
+                        <Text
+                          fontSize="sm"
+                          fontWeight="600"
+                          textTransform="capitalize"
+                          color="gray.800"
+                        >
+                          {course.title}
+                        </Text>
+                        <Text fontSize="2xs" color="gray.500">
+                          {course.watchedVideos} of {course.totalVideos} lessons completed
+                        </Text>
+                      </Box>
+                    </HStack>
+                    <Text fontSize="sm" fontWeight="700" color="gray.800">
+                      {course.progress}%
+                    </Text>
+                  </Flex>
+
+                  <Progress.Root value={course.progress} colorPalette="cyan" size="sm">
+                    <Progress.Track flex="1" bg="gray.200" h="7px" borderRadius="full">
+                      <Progress.Range bg="#288AE4" borderRadius="full" />
+                    </Progress.Track>
+                  </Progress.Root>
+                </Box>
+              ))}
+            </Box>
+
+            {/* Pop-up Footer */}
+            <Flex
+              px={5}
+              py={3}
+              borderTop="1px solid"
+              borderColor="gray.100"
+              bg="gray.50"
+              justify="flex-end"
+              flexShrink={0}
+            >
+              <Button
+                size="sm"
+                variant="outline"
+                color="gray.700"
+                borderColor="gray.300"
+                borderRadius="lg"
+                onClick={() => setIsPopupOpen(false)}
+              >
+                Close
+              </Button>
+            </Flex>
+          </Box>
+        </Portal>
+      )}
 
       {/* Upgrade Prompt Modal */}
       <UpgradePromptModal
@@ -333,7 +536,7 @@ const Analytics = () => {
         reason={modalState.reason}
         currentPlan={effectivePlan}
       />
-    </Box>
+    </>
   );
 };
 

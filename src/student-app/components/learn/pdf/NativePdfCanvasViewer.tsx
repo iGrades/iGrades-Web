@@ -26,9 +26,11 @@ import {
   LuBookOpen,
   LuSparkles,
   LuMaximize2,
+  LuX,
 } from "react-icons/lu";
 import { DancingLogoLoader } from "@/components/DancingLogoLoader";
 import * as pdfjsLib from "pdfjs-dist";
+import * as pdfWorkerModule from "pdfjs-dist/build/pdf.worker.min.mjs";
 import { jsPDF } from "jspdf";
 import { getCurriculumNote } from "./curriculumStudyNotes";
 
@@ -46,7 +48,8 @@ if (typeof window !== "undefined") {
         .join("");
     };
   }
-  // Point worker to same-origin public file
+  // Provide bundled worker directly on globalThis so PDF.js never fails with dynamic import errors
+  (window as any).pdfjsWorker = pdfWorkerModule;
   pdfjsLib.GlobalWorkerOptions.workerSrc = "/pdf.worker.min.mjs";
 }
 
@@ -55,6 +58,7 @@ interface PdfViewerProps {
   title?: string;
   onDownload?: () => void;
   onOpenNotes?: () => void;
+  onClose?: () => void;
 }
 
 // ─── Individual Page Canvas Component (Vertical List Item) ───────────────────
@@ -188,6 +192,7 @@ export const NativePdfCanvasViewer: React.FC<PdfViewerProps> = ({
   title,
   onDownload,
   onOpenNotes,
+  onClose,
 }) => {
   const [numPages, setNumPages] = useState<number>(0);
   const [currentPage, setCurrentPage] = useState<number>(1);
@@ -1037,6 +1042,30 @@ export const NativePdfCanvasViewer: React.FC<PdfViewerProps> = ({
             >
               <LuExternalLink size={14} />
             </Button>
+
+            {/* Close 'x' Button */}
+            {onClose && (
+              <Button
+                size="xs"
+                variant="subtle"
+                bg="gray.800"
+                color="gray.300"
+                _hover={{ bg: "gray.700", color: "white" }}
+                onClick={onClose}
+                title="Close"
+                aria-label="Close"
+                h="32px"
+                w="32px"
+                minW="32px"
+                p={0}
+                rounded="md"
+                display="inline-flex"
+                alignItems="center"
+                justifyContent="center"
+              >
+                <LuX size={16} />
+              </Button>
+            )}
           </Flex>
         </Flex>
       </Box>

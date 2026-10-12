@@ -161,16 +161,21 @@ const VideosList = ({ topic, videos, onBack }: Props) => {
       {/* Header with back button */}
       <Heading
         as="h3"
+        fontSize={{ base: "15px", sm: "17px" }}
+        fontWeight="600"
         display="flex"
         alignItems="center"
         justifyContent="flex-start"
-        gap={3}
-        mt={3}
-        mb={5}
-        mx={2}
+        gap={2.5}
+        mt={2}
+        mb={4}
+        mx={1}
+        color="#0F172A"
       >
-        <LuArrowLeft onClick={onBack} style={{ cursor: "pointer" }} />
-        {topic.name} Videos
+        <LuArrowLeft onClick={onBack} style={{ cursor: "pointer", flexShrink: 0 }} size={18} />
+        <Text as="span" noOfLines={1}>
+          {topic.name} Videos
+        </Text>
       </Heading>
 
       {/* List of videos with thumbnails */}

@@ -1,14 +1,11 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import {
   Flex,
-  Image,
   Box,
   Heading,
   Text,
   Menu,
   Portal,
-  Select,
-  createListCollection,
   Badge,
   IconButton,
   Popover,
@@ -17,20 +14,15 @@ import {
 } from "@chakra-ui/react";
 import { useAuthdStudentData } from "../context/studentDataContext";
 import { useNavigationStore } from "../../store/usenavigationStore";
-import { useTranslation } from "react-i18next";
 import {
   FiBell,
   FiGlobe,
-  FiChevronDown,
   FiLogOut,
   FiUser,
   FiHelpCircle,
   FiShield,
 } from "react-icons/fi";
-import { LuGraduationCap } from "react-icons/lu";
-import logo from "../../assets/logo.png";
 import AvatarComp from "../../components/avatar";
-import { setGlobalLanguage } from "@/services/autoTranslation";
 
 interface NotificationItem {
   id: string;
@@ -43,19 +35,6 @@ interface NotificationItem {
 const Navbar = () => {
   const { authdStudent, setIsPopOver } = useAuthdStudentData();
   const { setCurrentStudentPage, setStudentSettingsTab } = useNavigationStore();
-  const { t, i18n } = useTranslation();
-
-  const [value, setValue] = useState<string[]>([localStorage.getItem("appLanguage") || i18n.language || "en"]);
-
-  useEffect(() => {
-    const handleLang = (e: any) => {
-      if (e.detail?.lang) {
-        setValue([e.detail.lang]);
-      }
-    };
-    window.addEventListener("appLanguageChanged", handleLang);
-    return () => window.removeEventListener("appLanguageChanged", handleLang);
-  }, []);
 
   // Notifications state for interactive UX
   const [notifications, setNotifications] = useState<NotificationItem[]>([
@@ -88,22 +67,8 @@ const Navbar = () => {
     setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
   };
 
-  const languages = createListCollection({
-    items: [
-      { label: t("langEn") || "English", value: "en" },
-      { label: t("langHa") || "Hausa", value: "ha" },
-      { label: t("langYo") || "Yoruba", value: "yo" },
-      { label: t("langIg") || "Igbo", value: "ig" },
-      { label: t("langAk") || "Akan", value: "ak" },
-      { label: t("langFf") || "Fulfulde", value: "ff" },
-      { label: t("langWo") || "Wolof", value: "wo" },
-      { label: t("langFr") || "Français", value: "fr" },
-      { label: t("langPt") || "Português", value: "pt" },
-    ],
-  });
-
   const currentStudent = authdStudent || null;
-  const studentName = currentStudent?.firstname || "Student";
+  const studentFirstName = currentStudent?.firstname || "Student";
   const fullName = `${currentStudent?.firstname ?? ""} ${currentStudent?.lastname ?? ""}`.trim() || "Student";
 
   return (
@@ -112,123 +77,169 @@ const Navbar = () => {
         as="nav"
         align="center"
         justify="space-between"
-        h={{ base: "64px", md: "72px" }}
+        h={{ base: "56px", md: "64px" }}
         px={{ base: 3, md: 6 }}
       >
-        {/* Left Section: Logo */}
-        <HStack gap={{ base: 2, md: 4 }}>
-          <Box
-            cursor="pointer"
-            onClick={() => setCurrentStudentPage("home")}
-            display="flex"
-            alignItems="center"
-            gap={2}
-            transition="transform 0.15s ease"
-            _hover={{ transform: "scale(1.02)" }}
-          >
-            <Image src={logo} alt="iGrades Logo" h={{ base: "32px", md: "38px" }} fit="contain" />
+        {/* Left Section: Profile Avatar & Greeting 'Hello {userfirstname}' */}
+        <HStack gap={{ base: 2.5, sm: 3 }} align="center">
+          {/* User Profile Avatar with Clickable Menu */}
+          <Menu.Root positioning={{ placement: "bottom-start" }}>
+            <Menu.Trigger asChild>
+              <Box
+                p={0.5}
+                borderRadius="full"
+                cursor="pointer"
+                _hover={{ ring: "2px solid", ringColor: "blue.300" }}
+                transition="all 0.15s ease"
+                minW="38px"
+                minH="38px"
+                display="flex"
+                alignItems="center"
+                justifyContent="center"
+                aria-label="User profile and settings"
+              >
+                <AvatarComp username={fullName} profileImage={currentStudent?.profile_image} />
+              </Box>
+            </Menu.Trigger>
+            <Portal>
+              <Menu.Positioner zIndex={1500}>
+                <Menu.Content bg="white" shadow="xl" borderRadius="xl" border="1px solid" borderColor="gray.100" minW="220px" p={2}>
+                  {/* User Profile Summary inside Dropdown */}
+                  <Box px={3} py={2} borderBottom="1px solid" borderColor="gray.100" mb={1}>
+                    <Text fontSize="sm" fontWeight="bold" color="gray.800" truncate>
+                      {fullName}
+                    </Text>
+                    <HStack justify="space-between" align="center" mt={0.5}>
+                      <Badge colorPalette="blue" variant="subtle" size="xs" borderRadius="md">
+                        Student
+                      </Badge>
+                      {currentStudent?.class && (
+                        <Text fontSize="11px" color="gray.500" fontWeight="medium">
+                          {currentStudent.class}
+                        </Text>
+                      )}
+                    </HStack>
+                  </Box>
+
+                  {/* Profile Account Actions */}
+                  <Menu.Item
+                    value="settings"
+                    onClick={() => {
+                      setCurrentStudentPage("settings");
+                      setStudentSettingsTab("menu");
+                    }}
+                    borderRadius="lg"
+                    py={2}
+                    px={3}
+                    cursor="pointer"
+                    _hover={{ bg: "blue.50", color: "blue.600" }}
+                  >
+                    <HStack gap={2.5}>
+                      <FiUser size={16} />
+                      <Text fontSize="sm" fontWeight="500">Settings & Profile</Text>
+                    </HStack>
+                  </Menu.Item>
+
+                  <Menu.Item
+                    value="language"
+                    onClick={() => {
+                      setCurrentStudentPage("settings");
+                      setStudentSettingsTab("language");
+                    }}
+                    borderRadius="lg"
+                    py={2}
+                    px={3}
+                    cursor="pointer"
+                    _hover={{ bg: "blue.50", color: "blue.600" }}
+                  >
+                    <HStack gap={2.5}>
+                      <FiGlobe size={16} />
+                      <Text fontSize="sm">Language Settings</Text>
+                    </HStack>
+                  </Menu.Item>
+
+                  <Menu.Item
+                    value="security"
+                    onClick={() => {
+                      setCurrentStudentPage("settings");
+                      setStudentSettingsTab("security");
+                    }}
+                    borderRadius="lg"
+                    py={2}
+                    px={3}
+                    cursor="pointer"
+                    _hover={{ bg: "blue.50", color: "blue.600" }}
+                  >
+                    <HStack gap={2.5}>
+                      <FiShield size={16} />
+                      <Text fontSize="sm">Security & Passkey</Text>
+                    </HStack>
+                  </Menu.Item>
+
+                  <Menu.Item
+                    value="help"
+                    onClick={() => {
+                      setCurrentStudentPage("settings");
+                      setStudentSettingsTab("help");
+                    }}
+                    borderRadius="lg"
+                    py={2}
+                    px={3}
+                    cursor="pointer"
+                    _hover={{ bg: "blue.50", color: "blue.600" }}
+                  >
+                    <HStack gap={2.5}>
+                      <FiHelpCircle size={16} />
+                      <Text fontSize="sm">Help & FAQs</Text>
+                    </HStack>
+                  </Menu.Item>
+
+                  <Box my={1} borderBottom="1px solid" borderColor="gray.100" />
+
+                  {/* Logout Action */}
+                  <Menu.Item
+                    value="logout"
+                    onClick={setIsPopOver ? () => setIsPopOver(true) : undefined}
+                    borderRadius="lg"
+                    py={2}
+                    px={3}
+                    cursor="pointer"
+                    color="red.600"
+                    _hover={{ bg: "red.50" }}
+                  >
+                    <HStack gap={2.5}>
+                      <FiLogOut size={16} />
+                      <Text fontSize="sm" fontWeight="medium">
+                        Logout
+                      </Text>
+                    </HStack>
+                  </Menu.Item>
+                </Menu.Content>
+              </Menu.Positioner>
+            </Portal>
+          </Menu.Root>
+
+          {/* Greeting: 'Hello {userfirstname}' */}
+          <Box>
+            <Heading
+              as="h1"
+              fontSize={{ base: "sm", sm: "md", md: "md" }}
+              fontWeight="bold"
+              color="gray.800"
+              lineHeight="1.2"
+            >
+              Hello {studentFirstName} 👋
+            </Heading>
+            {currentStudent?.class && (
+              <Text fontSize="11px" color="gray.500" display={{ base: "none", sm: "block" }}>
+                {currentStudent.class}
+              </Text>
+            )}
           </Box>
         </HStack>
 
-        {/* Center/Greeting Section */}
-        <Box display={{ base: "none", sm: "block" }} maxW={{ base: "180px", md: "280px", lg: "400px" }}>
-          <Heading
-            as="h1"
-            fontSize={{ base: "xs", md: "sm", lg: "md" }}
-            fontWeight="bold"
-            color="gray.800"
-            truncate
-          >
-            {t("welcome") || "Welcome"}, {studentName}! 👋
-          </Heading>
-          <Text fontSize="xs" color="gray.500" truncate display={{ base: "none", md: "block" }}>
-            {t("welcome_complement") || "Ready to learn and test your knowledge today?"}
-          </Text>
-        </Box>
-
-        {/* Right Controls: Class Tag, Language Selector, Notifications, User Avatar */}
-        <HStack gap={{ base: 2, md: 3 }}>
-          {/* Student Class Pill */}
-          {currentStudent?.class && (
-            <Badge
-              display={{ base: "none", md: "inline-flex" }}
-              variant="subtle"
-              colorPalette="blue"
-              px={3}
-              py={1}
-              borderRadius="full"
-              fontSize="xs"
-              fontWeight="medium"
-            >
-              <HStack gap={1}>
-                <LuGraduationCap size={14} />
-                <Text>{currentStudent.class}</Text>
-              </HStack>
-            </Badge>
-          )}
-
-          {/* Language Selector */}
-          <Select.Root
-            collection={languages}
-            width={{ base: "36px", md: "125px" }}
-            value={value}
-            onValueChange={(e) => {
-              setValue(e.value);
-              if (e.value[0]) {
-                i18n.changeLanguage(e.value[0]);
-                setGlobalLanguage(e.value[0]);
-              }
-            }}
-          >
-            <Select.HiddenSelect />
-            <Select.Control>
-              <Select.Trigger
-                display="flex"
-                alignItems="center"
-                justifyContent={{ base: "center", md: "space-between" }}
-                px={{ base: 0, md: 2.5 }}
-                py={1.5}
-                borderRadius="lg"
-                border="1px solid"
-                borderColor="gray.200"
-                bg="gray.50"
-                _hover={{ bg: "gray.100" }}
-                cursor="pointer"
-                h="36px"
-                w={{ base: "36px", md: "auto" }}
-                minW={{ base: "36px", md: "auto" }}
-                aria-label="Select Language"
-              >
-                <HStack gap={1.5} overflow="hidden" justify="center">
-                  <FiGlobe size={16} color="#525071" />
-                  <Box display={{ base: "none", md: "inline-block" }} overflow="hidden">
-                    <Select.ValueText placeholder="EN" />
-                  </Box>
-                </HStack>
-              </Select.Trigger>
-            </Select.Control>
-            <Portal>
-              <Select.Positioner zIndex={1500}>
-                <Select.Content bg="white" shadow="lg" border="1px solid" borderColor="gray.100" borderRadius="xl">
-                  {languages.items.map((language) => (
-                    <Select.Item
-                      item={language}
-                      key={language.value}
-                      cursor="pointer"
-                      py={2}
-                      px={3}
-                      _hover={{ bg: "blue.50" }}
-                    >
-                      {language.label}
-                      <Select.ItemIndicator />
-                    </Select.Item>
-                  ))}
-                </Select.Content>
-              </Select.Positioner>
-            </Portal>
-          </Select.Root>
-
-          {/* Notifications Popover */}
+        {/* Right Section: Notifications Icon */}
+        <HStack gap={2} align="center">
           <Popover.Root positioning={{ placement: "bottom-end" }}>
             <Popover.Trigger asChild>
               <Box position="relative">
@@ -237,18 +248,18 @@ const Navbar = () => {
                   variant="ghost"
                   borderRadius="full"
                   size="sm"
-                  h="36px"
-                  w="36px"
+                  h="38px"
+                  w="38px"
                   color="gray.600"
                   _hover={{ bg: "gray.100", color: "blue.600" }}
                 >
-                  <FiBell size={18} />
+                  <FiBell size={20} />
                 </IconButton>
                 {unreadCount > 0 && (
                   <Box
                     position="absolute"
-                    top="4px"
-                    right="4px"
+                    top="5px"
+                    right="5px"
                     w="8px"
                     h="8px"
                     bg="blue.500"
@@ -325,122 +336,6 @@ const Navbar = () => {
               </Popover.Positioner>
             </Portal>
           </Popover.Root>
-
-          {/* User Profile Menu */}
-          <Menu.Root positioning={{ placement: "bottom-end" }}>
-            <Menu.Trigger asChild>
-              <HStack
-                gap={1.5}
-                p={1}
-                pr={{ base: 1, md: 2 }}
-                borderRadius="full"
-                cursor="pointer"
-                _hover={{ bg: "gray.100" }}
-                transition="background 0.15s ease"
-              >
-                <AvatarComp username={fullName} profileImage={currentStudent?.profile_image} />
-                <FiChevronDown size={14} color="#718096" />
-              </HStack>
-            </Menu.Trigger>
-            <Portal>
-              <Menu.Positioner zIndex={1500}>
-                <Menu.Content bg="white" shadow="xl" borderRadius="xl" border="1px solid" borderColor="gray.100" minW="220px" p={2}>
-                  {/* User Profile Summary inside Dropdown */}
-                  <Box px={3} py={2} borderBottom="1px solid" borderColor="gray.100" mb={1}>
-                    <Text fontSize="sm" fontWeight="bold" color="gray.800" truncate>
-                      {fullName}
-                    </Text>
-                    <HStack justify="space-between" align="center" mt={0.5}>
-                      <Badge colorPalette="blue" variant="subtle" size="xs" borderRadius="md">
-                        Student
-                      </Badge>
-                      {currentStudent?.class && (
-                        <Text fontSize="11px" color="gray.500" fontWeight="medium">
-                          {currentStudent.class}
-                        </Text>
-                      )}
-                    </HStack>
-                  </Box>
-
-                  {/* Profile Account Actions (not duplicating sidebar nav) */}
-                  <Menu.Item
-                    value="my-profile"
-                    onClick={() => {
-                      setCurrentStudentPage("settings");
-                      setStudentSettingsTab("profile");
-                    }}
-                    borderRadius="lg"
-                    py={2}
-                    px={3}
-                    cursor="pointer"
-                    _hover={{ bg: "blue.50", color: "blue.600" }}
-                  >
-                    <HStack gap={2.5}>
-                      <FiUser size={16} />
-                      <Text fontSize="sm">My Student Profile</Text>
-                    </HStack>
-                  </Menu.Item>
-
-                  <Menu.Item
-                    value="security"
-                    onClick={() => {
-                      setCurrentStudentPage("settings");
-                      setStudentSettingsTab("security");
-                    }}
-                    borderRadius="lg"
-                    py={2}
-                    px={3}
-                    cursor="pointer"
-                    _hover={{ bg: "blue.50", color: "blue.600" }}
-                  >
-                    <HStack gap={2.5}>
-                      <FiShield size={16} />
-                      <Text fontSize="sm">Security & Passkey</Text>
-                    </HStack>
-                  </Menu.Item>
-
-                  <Menu.Item
-                    value="help"
-                    onClick={() => {
-                      setCurrentStudentPage("settings");
-                      setStudentSettingsTab("help");
-                    }}
-                    borderRadius="lg"
-                    py={2}
-                    px={3}
-                    cursor="pointer"
-                    _hover={{ bg: "blue.50", color: "blue.600" }}
-                  >
-                    <HStack gap={2.5}>
-                      <FiHelpCircle size={16} />
-                      <Text fontSize="sm">Help & FAQs</Text>
-                    </HStack>
-                  </Menu.Item>
-
-                  <Box my={1} borderBottom="1px solid" borderColor="gray.100" />
-
-                  {/* Logout Action */}
-                  <Menu.Item
-                    value="logout"
-                    onClick={setIsPopOver ? () => setIsPopOver(true) : undefined}
-                    borderRadius="lg"
-                    py={2}
-                    px={3}
-                    cursor="pointer"
-                    color="red.600"
-                    _hover={{ bg: "red.50" }}
-                  >
-                    <HStack gap={2.5}>
-                      <FiLogOut size={16} />
-                      <Text fontSize="sm" fontWeight="medium">
-                        Logout
-                      </Text>
-                    </HStack>
-                  </Menu.Item>
-                </Menu.Content>
-              </Menu.Positioner>
-            </Portal>
-          </Menu.Root>
         </HStack>
       </Flex>
     </Box>

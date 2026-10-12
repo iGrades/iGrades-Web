@@ -3,13 +3,14 @@ import { useState, useEffect } from "react";
 import { GoArrowRight } from "react-icons/go";
 import { LuBookOpen, LuGraduationCap } from "react-icons/lu";
 import { useAuthdStudentData } from "@/student-app/context/studentDataContext";
+import { useSubjects } from "@/student-app/context/dataContext";
 import waec_img from "@/assets/waec_logo.png";
 import jamb_img from "@/assets/jamb_logo.png";
 import neco_img from "@/assets/neco_logo.png";
 import gce_img from "@/assets/waec_gce_logo.jpg";
 import nabtec_img from "@/assets/nabtec_logo.jpg";
 import bece_img from "@/assets/national_bece_logo.png";
-import SubjectsList from "./subjectList";
+import YearsList from "./yearsList";
 
 interface ExamOption {
   type: string;
@@ -74,10 +75,31 @@ const SENIOR_EXAMS: ExamOption[] = [
   },
 ];
 
-const PQs = () => {
+interface PQsProps {
+  selectedSubject?: string;
+  onOpenSubjectModal?: (onSelectSubject?: (subject: string) => void) => void;
+  selectedExam?: string | null;
+  onSelectExam?: (exam: string | null) => void;
+}
+
+const PQs: React.FC<PQsProps> = ({
+  selectedSubject = "General Mathematics",
+  onOpenSubjectModal,
+  selectedExam: controlledSelectedExam,
+  onSelectExam,
+}) => {
   const { authdStudent } = useAuthdStudentData();
-  const [selectedExam, setSelectedExam] = useState<string | null>(null);
-  const [showSubjectList, setShowSubjectList] = useState(false);
+  const { getSubjectByName } = useSubjects();
+  const [internalSelectedExam, setInternalSelectedExam] = useState<string | null>(null);
+
+  const selectedExam = controlledSelectedExam !== undefined ? controlledSelectedExam : internalSelectedExam;
+  const setSelectedExam = (exam: string | null) => {
+    if (onSelectExam) {
+      onSelectExam(exam);
+    } else {
+      setInternalSelectedExam(exam);
+    }
+  };
 
   // Normalize student class to detect Junior (JSS 1 - JSS 3) vs Senior (SSS 1 - SSS 3)
   const studentClass = (authdStudent?.class || authdStudent?.grade_level || "").trim().toUpperCase();
@@ -112,93 +134,86 @@ const PQs = () => {
     }
   }, [studentClass, isJuniorStudent, isSeniorStudent]);
 
-  const handleClick = (examType: string) => {
+  // Handle clicking an exam card: sets the selected exam and opens the subject select popup!
+  const handleExamClick = (examType: string) => {
     setSelectedExam(examType);
-    setShowSubjectList(true);
+    if (onOpenSubjectModal) {
+      onOpenSubjectModal();
+    }
   };
 
   const currentExams = activeTier === "junior" ? JUNIOR_EXAMS : SENIOR_EXAMS;
 
+  // Resolve subject ID for the selected subject
+  const subjectData = getSubjectByName(selectedSubject);
+  const resolvedSubjectId = subjectData?.id || selectedSubject.toLowerCase();
+
   return (
     <>
-      {showSubjectList ? (
-        <SubjectsList
-          onBack={() => setShowSubjectList(false)}
+      {selectedExam ? (
+        <YearsList
+          onBack={() => setSelectedExam(null)}
           selectedExam={selectedExam}
+          selectedCourse={selectedSubject}
+          subjectId={resolvedSubjectId}
         />
       ) : (
-        <Box bg="white" rounded="lg" shadow="sm" p={{ base: 4, md: 6 }} mb={20} h="auto">
+        <Box bg="transparent" p={0} mb={20} w="100%">
+          {/* Header Row: Clean, without 'Past Questions' or 'Senior School Examinations...' texts */}
           <Flex
-            direction={{ base: "column", md: "row" }}
-            justify="space-between"
-            align={{ base: "flex-start", md: "center" }}
-            gap={3}
-            mb={6}
+            justify="flex-end"
+            align="center"
+            mb={4}
+            w="100%"
           >
-            <Box>
-              <Heading color="#333951" fontSize={{ base: "xl", md: "2xl" }}>
-                Past Questions
-              </Heading>
-              <Text color="gray.500" fontSize="xs" mt={1}>
-                {activeTier === "junior"
-                  ? "Junior School Examinations (JSS 1 – JSS 3)"
-                  : "Senior School Examinations (SSS 1 – SSS 3)"}
-                {authdStudent?.class && (
-                  <Text as="span" ml={1} color="#206CE1" fontWeight="600">
-                    • Class: {authdStudent.class}
-                  </Text>
-                )}
-              </Text>
-            </Box>
-
-            {/* School level switch tabs */}
+            {/* Reduced size select buttons between junior and senior school, without box shadows */}
             <HStack
               bg="#F1F5F9"
-              p={1}
+              p="3px"
               borderRadius="full"
               border="1px solid #E2E8F0"
-              gap={1}
+              gap="2px"
             >
               <Box
                 as="button"
                 onClick={() => setActiveTier("junior")}
-                px={{ base: 3, md: 4 }}
-                py={1.5}
+                px={2.5}
+                py={1}
                 borderRadius="full"
-                fontSize="xs"
+                fontSize="11px"
                 fontWeight="600"
                 cursor="pointer"
-                transition="all 0.2s ease"
+                transition="all 0.15s ease"
                 bg={activeTier === "junior" ? "#206CE1" : "transparent"}
-                color={activeTier === "junior" ? "white" : "#475569"}
-                boxShadow={activeTier === "junior" ? "0 2px 8px rgba(32,108,225,0.3)" : "none"}
+                color={activeTier === "junior" ? "white" : "#64748B"}
+                boxShadow="none"
                 display="flex"
                 alignItems="center"
-                gap={1.5}
+                gap={1}
               >
-                <LuBookOpen size={14} />
-                Junior School (JSS 1–3)
+                <LuBookOpen size={12} />
+                Junior (JSS 1–3)
               </Box>
 
               <Box
                 as="button"
                 onClick={() => setActiveTier("senior")}
-                px={{ base: 3, md: 4 }}
-                py={1.5}
+                px={2.5}
+                py={1}
                 borderRadius="full"
-                fontSize="xs"
+                fontSize="11px"
                 fontWeight="600"
                 cursor="pointer"
-                transition="all 0.2s ease"
+                transition="all 0.15s ease"
                 bg={activeTier === "senior" ? "#206CE1" : "transparent"}
-                color={activeTier === "senior" ? "white" : "#475569"}
-                boxShadow={activeTier === "senior" ? "0 2px 8px rgba(32,108,225,0.3)" : "none"}
+                color={activeTier === "senior" ? "white" : "#64748B"}
+                boxShadow="none"
                 display="flex"
                 alignItems="center"
-                gap={1.5}
+                gap={1}
               >
-                <LuGraduationCap size={14} />
-                Senior School (SSS 1–3)
+                <LuGraduationCap size={12} />
+                Senior (SSS 1–3)
               </Box>
             </HStack>
           </Flex>
@@ -216,18 +231,18 @@ const PQs = () => {
               <Box
                 key={exam.type}
                 p={5}
-                bg="textFieldColor"
+                bg="#F8FAFC"
                 borderWidth="1px"
                 borderColor="#E2E8F0"
                 borderRadius="xl"
-                transition="all 0.25s ease"
+                transition="all 0.15s ease"
                 _hover={{
-                  boxShadow: "0 10px 25px rgba(32,108,225,0.1)",
                   borderColor: "#206CE1",
-                  transform: "translateY(-3px)",
+                  bg: "#F1F5F9",
                 }}
+                _active={{ transform: "scale(0.99)" }}
                 cursor="pointer"
-                onClick={() => handleClick(exam.type)}
+                onClick={() => handleExamClick(exam.type)}
                 display="flex"
                 flexDirection="column"
                 justifyContent="space-between"

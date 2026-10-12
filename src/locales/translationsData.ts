@@ -31,8 +31,8 @@ export const translationsData: Record<string, LocaleTranslations> = {
     nav_settings: "Settings",
     nav_students: "Students",
     my_classes: "My Classes",
-    registered_courses: "Registered Courses",
-    active_classes: "Active Classes",
+    registered_courses: "Registered courses",
+    active_classes: "Active classes",
     recent_activity: "Recent Activity",
 
     // Parent Dashboard Headings & Metrics

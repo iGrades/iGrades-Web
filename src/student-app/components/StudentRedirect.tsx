@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useNavigationStore } from "@/store/usenavigationStore";
 
 interface StudentRedirectProps {
-  targetPage: "learn" | "quiz" | "home" | "rewards" | "settings";
+  targetPage: "learn" | "quiz" | "home" | "rewards" | "settings" | "chat";
   targetTab?: string;
 }
 

@@ -8,13 +8,16 @@ import { checkAndEnforceSessionExpiry, recordActivity } from "@/lib/authSessionM
 import Dashboard from "./layouts/dashboard";
 import Navbar from "./components/navbar";
 import Sidebar from "./components/sidebar";
+import FloatingBottomBar from "./components/FloatingBottomBar";
 import Popover from "./modals/popover";
 import Homepage from "./pages/Homepage";
 import QuizPage from "./pages/QuizPage";
 import LearnPage from "./pages/LearnPage";
+import SparkChatPage from "./pages/SparkChatPage";
 import SettingsPage from "./pages/SettingsPage";
 import RewardsPage from "./pages/RewardsPage";
 import AIChatbot from "./components/AIChatbot";
+import type { StudentPage } from "@/store/usenavigationStore";
 
 const Home = () => {
   const currentPage = useNavigationStore((state) => state.currentStudentPage);
@@ -82,8 +85,6 @@ const Home = () => {
   };
 
   // Initialize page from URL on component mount
-  // Define the StudentPage type if not already imported
-  type StudentPage = "home" | "quiz" | "learn" | "rewards" | "settings";
   const isInitializedRef = useRef<boolean>(false);
 
   useEffect(() => {
@@ -91,6 +92,8 @@ const Home = () => {
       "": "home",
       quizzes: "quiz",
       learning: "learn",
+      chat: "chat",
+      spark: "chat",
       rewards: "rewards",
       settings: "settings",
       help: "settings",
@@ -150,6 +153,7 @@ const Home = () => {
           home: "",
           quiz: "quizzes",
           learn: "learning",
+          chat: "chat",
           rewards: "rewards",
           settings: "settings",
         };
@@ -183,6 +187,8 @@ const Home = () => {
         );
       case "learn":
         return <LearnPage />;
+      case "chat":
+        return <SparkChatPage />;
       case "rewards":
         return <RewardsPage />;
       case "settings":
@@ -203,9 +209,9 @@ const Home = () => {
     overflow="hidden"
     bg="textFieldColor"
   >
-   {showNavBar &&  <Navbar />}
+   {showNavBar && currentPage !== "chat" && <Navbar />}
     <Flex flex="1" overflow="hidden">
-      {showSideBar && (
+      {showSideBar && currentPage !== "chat" && (
         <Box
           position="relative"
           flexShrink={0}
@@ -220,7 +226,7 @@ const Home = () => {
 
       <Box
         flex="1"
-        overflowY="auto"
+        overflowY={currentPage === "chat" ? "hidden" : "auto"}
         css={{
           "&::-webkit-scrollbar": {
             display: "none",
@@ -232,8 +238,10 @@ const Home = () => {
         <Dashboard renderPage={renderPage} />
       </Box>
     </Flex>
-    {/* AI tutor is strictly not available in the quiz app */}
-    {currentPage !== "quiz" && <AIChatbot />}
+    {/* Fixed Mobile Bottom Navigation */}
+    {showNavBar && showSideBar && currentPage !== "chat" && <FloatingBottomBar />}
+    {/* AI tutor launcher is strictly not available during quiz or full chat page */}
+    {currentPage !== "quiz" && currentPage !== "chat" && <AIChatbot />}
   </Box>
   {isPopOver && (
     <Popover

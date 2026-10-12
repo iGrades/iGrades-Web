@@ -1,6 +1,6 @@
 import { Grid, Box, Text, Center, useDisclosure, Icon } from "@chakra-ui/react";
 import { useAuthdStudentData } from "@/student-app/context/studentDataContext";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import TopicsList from "./topicsList";
 import {
   useStudentData,
@@ -31,7 +31,12 @@ interface VideoResource {
   topic_id?: string;
 }
 
-const Subjects = () => {
+interface SubjectsProps {
+  selectedSubject?: string;
+  onOpenSubjectModal?: () => void;
+}
+
+const Subjects: React.FC<SubjectsProps> = ({ selectedSubject, onOpenSubjectModal: _onOpenSubjectModal }) => {
   const { authdStudent } = useAuthdStudentData();
   const [loading, setLoading] = useState(false);
   const [topicList, setTopicList] = useState(false);
@@ -135,6 +140,12 @@ const Subjects = () => {
     }
   };
 
+  useEffect(() => {
+    if (selectedSubject) {
+      handleCourseClick(selectedSubject, selectedSubject, 0);
+    }
+  }, [selectedSubject]);
+
   const registeredCoursesArray = getStudentCoursesArray();
 
   // Map courses using the centralized config
@@ -154,7 +165,7 @@ const Subjects = () => {
   });
 
   return (
-    <Box bg="white" rounded="lg" shadow="sm" p={4} mb={20} h="auto">
+    <Box bg="transparent" p={0} mb={20} w="100%">
       {!topicList ? (
         <Grid
           templateColumns={{

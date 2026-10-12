@@ -201,19 +201,22 @@ const QuizPage = ({ setShowSideBar, setShowNavBar }: Props) => {
             align="center"
             mb={4}
             mt={2}
+            gap={{ base: 2, sm: 4 }}
           >
-            <Box w={{ base: "55%", md: "50%", lg: "80%" }}>
+            <Box flex={1}>
               <SearchBar placeholder="Search subject ..." searchResult={searchResult} setSearchResult={setSearchResult} />
             </Box>
 
             <Button
               bg="primaryColor"
-              w={{ base: 36, md: 60 }}
-              p={6}
-              rounded={{ base: "lg", md: "3xl" }}
-              fontWeight="500"
+              px={{ base: 4, sm: 6 }}
+              h={{ base: "44px", md: "48px" }}
+              rounded="xl"
+              fontWeight="600"
+              fontSize={{ base: "xs", sm: "sm" }}
               onClick={handleStartQuiz}
               disabled={selectedForQuiz.length < 1}
+              flexShrink={0}
             >
               Next <GoArrowRight />
             </Button>

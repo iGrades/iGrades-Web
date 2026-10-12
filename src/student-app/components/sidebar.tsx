@@ -1,9 +1,9 @@
 import { useState } from "react";
-import { Box, Icon, Text, Flex, IconButton, Badge, HStack } from "@chakra-ui/react";
-import { AiTwotoneSetting } from "react-icons/ai";
+import { Box, Icon, Text, Flex, Badge, HStack } from "@chakra-ui/react";
 import { TbHomeFilled } from "react-icons/tb";
 import { IoNewspaper } from "react-icons/io5";
 import { TbBrandYoutubeFilled } from "react-icons/tb";
+import { PiSparkleFill } from "react-icons/pi";
 import { FiAward } from "react-icons/fi";
 import { useNavigationStore } from "../../store/usenavigationStore";
 import { useTranslation } from "react-i18next";
@@ -23,11 +23,11 @@ const Sidebar = () => {
     label: string;
     value: StudentPage;
   }[] = [
-    { icon: TbHomeFilled, label: t("nav_home"), value: "home" },
-    { icon: IoNewspaper, label: t("nav_quiz"), value: "quiz" },
-    { icon: TbBrandYoutubeFilled, label: t("nav_learn"), value: "learn" },
+    { icon: TbHomeFilled, label: t("nav_home") || "Home", value: "home" },
+    { icon: IoNewspaper, label: t("nav_quiz") || "Quiz", value: "quiz" },
+    { icon: TbBrandYoutubeFilled, label: t("nav_learn") || "Learn", value: "learn" },
+    { icon: PiSparkleFill, label: "Chat", value: "chat" },
     { icon: FiAward, label: "IGG Points", value: "rewards" },
-    { icon: AiTwotoneSetting, label: t("nav_settings"), value: "settings" },
   ];
   return (
     <>
@@ -189,98 +189,6 @@ const Sidebar = () => {
             </Box>
           );
         })}
-      </Box>
-
-      {/* mobile devices ONLY floating nav */}
-      <Box
-        as="aside"
-        display={{ base: "block", md: "none" }}
-        position="fixed"
-        bottom={0}
-        left="50%"
-        transform="translateX(-50%)"
-        bg="white"
-        borderRadius="none"
-        boxShadow="none"
-        borderTop="1px solid"
-        borderColor="gray.200"
-        px={0}
-        py={0}
-        pb="env(safe-area-inset-bottom, 6px)"
-        width="100%"
-        zIndex={1000}
-      >
-        <Flex justify="space-around" align="center" px={1}>
-          {parentsAsideElem.map(({ icon, label, value }) => {
-            const isActive = currentStudentPage === value;
-            const isRewards = value === "rewards";
-
-            return (
-              <Flex
-                key={label}
-                direction="column"
-                align="center"
-                flex="1"
-                p={1}
-                cursor="pointer"
-                fontWeight={"normal"}
-                position="relative"
-                onClick={() => setCurrentStudentPage(value)}
-              >
-                <Box position="relative">
-                  <IconButton
-                    aria-label={label}
-                    variant="ghost"
-                    size="lg"
-                    fontSize="xl"
-                    color={
-                      isActive
-                        ? isRewards
-                          ? "amber.700"
-                          : "blue.700"
-                        : "fieldTextColor"
-                    }
-                    bg={
-                      isActive
-                        ? isRewards
-                          ? "amber.100"
-                          : "blue.50"
-                        : "transparent"
-                    }
-                    borderRadius="xl"
-                  >
-                    <Icon as={icon} color={isRewards ? "amber.600" : undefined} />
-                  </IconButton>
-
-                  {isRewards && (
-                    <Box
-                      position="absolute"
-                      top="-2px"
-                      right="-6px"
-                      bg="amber.500"
-                      color="white"
-                      fontSize="9px"
-                      fontWeight="bold"
-                      px={1}
-                      py={0.2}
-                      borderRadius="full"
-                      shadow="xs"
-                    >
-                      {pointsBalance > 999 ? `${(pointsBalance / 1000).toFixed(1)}k` : pointsBalance}
-                    </Box>
-                  )}
-                </Box>
-                <Text
-                  fontSize="xs"
-                  fontWeight={isActive ? "bold" : "normal"}
-                  color={isActive ? (isRewards ? "amber.800" : "blue.700") : "gray.600"}
-                >
-                  {label}
-                </Text>
-              </Flex>
-            );
-          })}
-        </Flex>
       </Box>
     </>
   );

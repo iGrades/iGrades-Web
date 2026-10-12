@@ -1,8 +1,10 @@
+"use client";
+
+import { useState } from "react";
 import { Box, Flex, Heading, Text, HStack, Badge, Progress, Button, Icon, Grid } from "@chakra-ui/react";
 import { DancingLogoLoader } from "@/components/DancingLogoLoader";
 import { useNavigationStore } from "@/store/usenavigationStore";
 import {
-  FiTarget,
   FiTrendingUp,
   FiTrendingDown,
   FiMinus,
@@ -10,6 +12,8 @@ import {
   FiArrowRight,
   FiAward,
   FiInfo,
+  FiChevronDown,
+  FiChevronUp,
 } from "react-icons/fi";
 import type { ExamReadinessData } from "@/hooks/useExamReadiness";
 import { useSubscriptionEntitlement } from "@/hooks/useSubscriptionEntitlement";
@@ -24,6 +28,7 @@ interface Props {
 
 export const ExamReadinessCard = ({ readiness, loading }: Props) => {
   const { setCurrentStudentPage } = useNavigationStore();
+  const [showAllSubjects, setShowAllSubjects] = useState(false);
   const {
     effectivePlan,
     verifySubject,
@@ -40,10 +45,10 @@ export const ExamReadinessCard = ({ readiness, loading }: Props) => {
         borderRadius="2xl"
         border="1px solid"
         borderColor="gray.100"
-        boxShadow="0 2px 10px rgba(0, 0, 0, 0.04)"
-        mb={6}
+        boxShadow="0 1px 3px rgba(0, 0, 0, 0.04)"
+        my={4}
       >
-        <DancingLogoLoader size="sm" text="Calculating Exam Readiness Score..." minH="90px" />
+        <DancingLogoLoader size="sm" text="Calculating Exam Readiness..." minH="90px" />
       </Box>
     );
   }
@@ -75,178 +80,213 @@ export const ExamReadinessCard = ({ readiness, loading }: Props) => {
       ? "orange"
       : "gray";
 
+  const displayedSubjects = showAllSubjects ? subjectBreakdown : subjectBreakdown.slice(0, 3);
+
   return (
     <Box
       bg="white"
       borderRadius="2xl"
       border="1px solid"
       borderColor="gray.100"
-      boxShadow="0 4px 20px rgba(32, 108, 225, 0.05)"
-      p={{ base: 4, md: 6 }}
-      mb={6}
-      position="relative"
-      overflow="hidden"
+      boxShadow="0 1px 3px rgba(0, 0, 0, 0.04)"
+      p={{ base: 4, sm: 5 }}
+      my={4}
     >
-      {/* Top Accent Strip */}
-      <Box position="absolute" top={0} left={0} right={0} h="4px" bgGradient="linear(to-r, #1E56B3, #206CE1, #38BDF8)" />
-
-      {/* Header */}
-      <Flex justify="space-between" align={{ base: "start", sm: "center" }} wrap="wrap" gap={3} mb={5}>
-        <HStack gap={3}>
-          <Box bg="blue.50" p={2.5} borderRadius="xl" border="1px solid" borderColor="blue.200">
-            <Icon as={FiTarget} color="#206CE1" boxSize="20px" />
-          </Box>
-          <Box>
-            <HStack gap={2} wrap="wrap">
-              <Heading size={{ base: "sm", md: "md" }} color="gray.900" fontWeight="800">
-                Exam Readiness Indicator
-              </Heading>
-              <Badge colorPalette="blue" variant="solid" size="sm" borderRadius="full" px={2.5}>
-                Target: {targetExam}
-              </Badge>
-            </HStack>
-            <Text fontSize="xs" color="gray.500" mt={0.5}>
-              Current preparation and practice status based on your iGrades assessment data
-            </Text>
-          </Box>
-        </HStack>
-
-        <HStack gap={2}>
-          {hasSufficientData && (
-            <Badge colorPalette="gray" variant="surface" size="xs" borderRadius="full">
-              Confidence: {confidenceLevel}
-            </Badge>
-          )}
-        </HStack>
+      {/* Mobile-Native Section Header */}
+      <Flex justify="space-between" align="center" mb={3.5}>
+        <Box>
+          <Heading
+            as="h2"
+            fontSize={{ base: "15px", md: "16px" }}
+            fontWeight="700"
+            color="#1E293B"
+            lineHeight="shorter"
+          >
+            Exam Readiness
+          </Heading>
+          <Text fontSize="11px" color="#64748B" mt={0.5}>
+            Target: {targetExam} {hasSufficientData ? `· ${confidenceLevel} confidence` : ""}
+          </Text>
+        </Box>
+        <Badge
+          colorPalette={bandColor}
+          variant="solid"
+          size="sm"
+          borderRadius="full"
+          px={2.5}
+          py={0.5}
+          fontSize="11px"
+          fontWeight="700"
+        >
+          {readinessBand}
+        </Badge>
       </Flex>
 
       {/* Insufficient Data State */}
       {!hasSufficientData ? (
         <Box
-          bg="blue.50/40"
+          bg="#F8FAFC"
           border="1px dashed"
-          borderColor="blue.200"
+          borderColor="#CBD5E1"
           borderRadius="xl"
-          p={{ base: 4, md: 6 }}
+          p={4}
           textAlign="center"
         >
-          <Icon as={FiInfo} color="#206CE1" boxSize="24px" mb={2} />
-          <Heading size="sm" color="gray.900" mb={1}>
-            Not enough data yet
+          <Icon as={FiInfo} color="#288AE4" boxSize="20px" mb={1.5} />
+          <Heading fontSize="13px" fontWeight="700" color="#1E293B" mb={1}>
+            Not enough practice data yet
           </Heading>
-          <Text fontSize="xs" color="gray.600" maxW="480px" mx="auto" mb={4}>
-            We need at least 1 practice quiz (10 questions) to calculate your verified exam readiness score for {targetExam}.
+          <Text fontSize="11px" color="#64748B" maxW="360px" mx="auto" mb={3}>
+            Take at least 1 practice quiz (10 questions) to compute your verified readiness score for {targetExam}.
           </Text>
           <Button
             size="sm"
-            bg="#206CE1"
+            w="full"
+            bg="#288AE4"
             color="white"
             borderRadius="xl"
             fontWeight="700"
-            _hover={{ bg: "#1E56B3" }}
+            fontSize="12px"
+            _hover={{ bg: "#1D75C7" }}
             onClick={() => setCurrentStudentPage("quiz")}
           >
-            Take Your First Practice Quiz <Icon as={FiArrowRight} ml={1} />
+            Take Your First Practice Quiz <Icon as={FiArrowRight} ml={1.5} />
           </Button>
         </Box>
       ) : (
         <>
-          {/* Main Score + Quick Stats Banner */}
-          <Grid templateColumns={{ base: "1fr", md: "260px 1fr" }} gap={5} mb={6} alignContent="center">
-            {/* Overall Score Circle/Block */}
-            <Box
-              bg="gray.50"
-              p={5}
-              borderRadius="xl"
-              border="1px solid"
-              borderColor="gray.200"
-              display="flex"
-              flexDirection="column"
-              alignItems="center"
-              justifyContent="center"
-              textAlign="center"
-            >
-              <Text fontSize="xs" fontWeight="800" color="gray.500" textTransform="uppercase" letterSpacing="0.05em">
-                Overall Readiness
+          {/* Mobile Hero Score Card */}
+          <Box
+            bg="#F8FAFC"
+            borderRadius="xl"
+            border="1px solid"
+            borderColor="#E2E8F0"
+            p={3.5}
+            mb={3}
+          >
+            <Flex align="center" gap={3.5}>
+              {/* Score circle badge */}
+              <Flex
+                direction="column"
+                align="center"
+                justify="center"
+                w={{ base: "64px", sm: "70px" }}
+                h={{ base: "64px", sm: "70px" }}
+                borderRadius="full"
+                border="3.5px solid"
+                borderColor={
+                  overallReadiness >= 75
+                    ? "#10B981"
+                    : overallReadiness >= 55
+                    ? "#288AE4"
+                    : overallReadiness >= 40
+                    ? "#F59E0B"
+                    : "#EF4444"
+                }
+                bg="white"
+                flexShrink={0}
+              >
+                <Text fontSize="18px" fontWeight="800" color="#1E293B" lineHeight="1">
+                  {overallReadiness}%
+                </Text>
+                <Text fontSize="8.5px" fontWeight="600" color="#64748B" mt="1px">
+                  READY
+                </Text>
+              </Flex>
+
+              {/* Score description & coverage details */}
+              <Box flex={1} minW={0}>
+                <Text fontSize="10px" fontWeight="700" color="#64748B" textTransform="uppercase" letterSpacing="wider">
+                  Overall Preparation
+                </Text>
+                <Text fontSize="13px" fontWeight="700" color="#1E293B" lineHeight="1.3" mt={0.5}>
+                  {readinessBand === "Exam Ready"
+                    ? "Excellent performance for " + targetExam
+                    : readinessBand === "On Track"
+                    ? "Solid progress toward " + targetExam
+                    : readinessBand === "Developing"
+                    ? "Building foundational knowledge"
+                    : "Focused revision recommended"}
+                </Text>
+                <Text fontSize="10.5px" color="#64748B" mt={1}>
+                  {readiness.subjectsEvaluatedCount} subjects evaluated · {readiness.totalQuestionsAnswered} Qs solved
+                </Text>
+              </Box>
+            </Flex>
+          </Box>
+
+          {/* 4 Diagnostics Quick Metric Tiles (2x2 Mobile Grid) */}
+          <Grid templateColumns="repeat(2, 1fr)" gap={2} mb={3.5}>
+            {/* Strongest */}
+            <Box p={2.5} borderRadius="xl" bg="#F0FDF4" border="1px solid" borderColor="#DCFCE7">
+              <HStack gap={1} color="#15803D" fontSize="10px" fontWeight="700" mb={0.5}>
+                <Icon as={FiAward} boxSize="11px" />
+                <Text>Strongest</Text>
+              </HStack>
+              <Text fontSize="12px" fontWeight="700" color="#1E293B" truncate>
+                {strongestSubjects.length > 0 ? strongestSubjects[0].subjectName : "In progress"}
               </Text>
-              <Heading size="2xl" color="#1E56B3" fontWeight="900" my={2}>
-                {overallReadiness}%
-              </Heading>
-              <Badge colorPalette={bandColor} variant="solid" size="md" borderRadius="full" px={3} py={0.5}>
-                {readinessBand}
-              </Badge>
-              <Text fontSize="10px" color="gray.500" mt={2} textAlign="center">
-                Based on {readiness.subjectsEvaluatedCount} subjects & {readiness.totalQuestionsAnswered} questions solved
+              <Text fontSize="10px" color="#15803D" mt={0.5}>
+                {strongestSubjects.length > 0 ? `${strongestSubjects[0].readinessScore}% ready` : "Practice more"}
               </Text>
             </Box>
 
-            {/* Diagnostics Summary Cards */}
-            <Grid templateColumns={{ base: "repeat(2, 1fr)", sm: "repeat(4, 1fr)" }} gap={3}>
-              {/* Strongest */}
-              <Box p={3.5} borderRadius="xl" bg="green.50/50" border="1px solid" borderColor="green.200">
-                <HStack gap={1.5} color="green.700" fontSize="11px" fontWeight="700" mb={1}>
-                  <Icon as={FiAward} />
-                  <Text>Strongest</Text>
-                </HStack>
-                <Text fontSize="xs" fontWeight="800" color="gray.900" truncate>
-                  {strongestSubjects.length > 0 ? strongestSubjects[0].subjectName : "In progress"}
-                </Text>
-                <Text fontSize="10px" color="green.700" mt={0.5}>
-                  {strongestSubjects.length > 0 ? `${strongestSubjects[0].readinessScore}% ready` : "Practice more"}
-                </Text>
-              </Box>
+            {/* Needs Focus */}
+            <Box p={2.5} borderRadius="xl" bg="#FFF7ED" border="1px solid" borderColor="#FFEDD5">
+              <HStack gap={1} color="#C2410C" fontSize="10px" fontWeight="700" mb={0.5}>
+                <Icon as={FiAlertCircle} boxSize="11px" />
+                <Text>Needs Focus</Text>
+              </HStack>
+              <Text fontSize="12px" fontWeight="700" color="#1E293B" truncate>
+                {weakestSubjects.length > 0 ? weakestSubjects[0].subjectName : "None"}
+              </Text>
+              <Text fontSize="10px" color="#C2410C" mt={0.5}>
+                {weakestSubjects.length > 0 ? `${weakestSubjects[0].readinessScore}% ready` : "All on track"}
+              </Text>
+            </Box>
 
-              {/* Focus Area */}
-              <Box p={3.5} borderRadius="xl" bg="orange.50/50" border="1px solid" borderColor="orange.200">
-                <HStack gap={1.5} color="orange.700" fontSize="11px" fontWeight="700" mb={1}>
-                  <Icon as={FiAlertCircle} />
-                  <Text>Needs Focus</Text>
-                </HStack>
-                <Text fontSize="xs" fontWeight="800" color="gray.900" truncate>
-                  {weakestSubjects.length > 0 ? weakestSubjects[0].subjectName : "None"}
-                </Text>
-                <Text fontSize="10px" color="orange.700" mt={0.5}>
-                  {weakestSubjects.length > 0 ? `${weakestSubjects[0].readinessScore}% ready` : "All on track"}
-                </Text>
-              </Box>
+            {/* Improving */}
+            <Box p={2.5} borderRadius="xl" bg="#EFF6FF" border="1px solid" borderColor="#DBEAFE">
+              <HStack gap={1} color="#1D4ED8" fontSize="10px" fontWeight="700" mb={0.5}>
+                <Icon as={FiTrendingUp} boxSize="11px" />
+                <Text>Improving</Text>
+              </HStack>
+              <Text fontSize="12px" fontWeight="700" color="#1E293B" truncate>
+                {improvingSubjects.length > 0 ? improvingSubjects[0].subjectName : "Steady"}
+              </Text>
+              <Text fontSize="10px" color="#1D4ED8" mt={0.5}>
+                {improvingSubjects.length > 0 ? `+${improvingSubjects[0].trendDiff}% trend` : "Consistent"}
+              </Text>
+            </Box>
 
-              {/* Improving */}
-              <Box p={3.5} borderRadius="xl" bg="blue.50/50" border="1px solid" borderColor="blue.200">
-                <HStack gap={1.5} color="blue.700" fontSize="11px" fontWeight="700" mb={1}>
-                  <Icon as={FiTrendingUp} />
-                  <Text>Improving</Text>
-                </HStack>
-                <Text fontSize="xs" fontWeight="800" color="gray.900" truncate>
-                  {improvingSubjects.length > 0 ? improvingSubjects[0].subjectName : "Steady pace"}
-                </Text>
-                <Text fontSize="10px" color="blue.700" mt={0.5}>
-                  {improvingSubjects.length > 0 ? `+${improvingSubjects[0].trendDiff}% trend` : "Consistent"}
-                </Text>
-              </Box>
-
-              {/* Declining / Review */}
-              <Box p={3.5} borderRadius="xl" bg="purple.50/50" border="1px solid" borderColor="purple.200">
-                <HStack gap={1.5} color="purple.700" fontSize="11px" fontWeight="700" mb={1}>
-                  <Icon as={decliningSubjects.length > 0 ? FiTrendingDown : FiMinus} />
-                  <Text>Review</Text>
-                </HStack>
-                <Text fontSize="xs" fontWeight="800" color="gray.900" truncate>
-                  {decliningSubjects.length > 0 ? decliningSubjects[0].subjectName : "Stable"}
-                </Text>
-                <Text fontSize="10px" color="purple.700" mt={0.5}>
-                  {decliningSubjects.length > 0 ? `${decliningSubjects[0].trendDiff}% down` : "No drops"}
-                </Text>
-              </Box>
-            </Grid>
+            {/* Review */}
+            <Box p={2.5} borderRadius="xl" bg="#FAF5FF" border="1px solid" borderColor="#F3E8FF">
+              <HStack gap={1} color="#7E22CE" fontSize="10px" fontWeight="700" mb={0.5}>
+                <Icon as={decliningSubjects.length > 0 ? FiTrendingDown : FiMinus} boxSize="11px" />
+                <Text>Review</Text>
+              </HStack>
+              <Text fontSize="12px" fontWeight="700" color="#1E293B" truncate>
+                {decliningSubjects.length > 0 ? decliningSubjects[0].subjectName : "Stable"}
+              </Text>
+              <Text fontSize="10px" color="#7E22CE" mt={0.5}>
+                {decliningSubjects.length > 0 ? `${decliningSubjects[0].trendDiff}% down` : "No drops"}
+              </Text>
+            </Box>
           </Grid>
 
-          {/* Subject-by-Subject Readiness Bars */}
-          <Box mb={5}>
-            <Text fontSize="xs" fontWeight="800" color="gray.500" textTransform="uppercase" letterSpacing="0.05em" mb={3}>
-              Subject Readiness Breakdown
-            </Text>
-            <Grid templateColumns={{ base: "1fr", sm: "repeat(2, 1fr)", lg: "repeat(3, 1fr)" }} gap={3}>
-              {subjectBreakdown.map((sub, idx) => {
+          {/* Subject-by-Subject Mobile List */}
+          <Box mb={3.5}>
+            <Flex justify="space-between" align="center" mb={2}>
+              <Text fontSize="11px" fontWeight="700" color="#64748B" textTransform="uppercase" letterSpacing="wider">
+                Subject Breakdown
+              </Text>
+              <Text fontSize="10.5px" color="#94A3B8">
+                {subjectBreakdown.length} total
+              </Text>
+            </Flex>
+
+            <Box display="flex" flexDirection="column" gap={2}>
+              {displayedSubjects.map((sub, idx) => {
                 const isSubjectAllowed = verifySubject(idx, sub.subjectName).allowed;
                 const subColor =
                   sub.status === "exam_ready"
@@ -263,7 +303,7 @@ export const ExamReadinessCard = ({ readiness, loading }: Props) => {
                   (sub.readinessScore || 0) >= 80
                     ? "#10B981"
                     : (sub.readinessScore || 0) >= 65
-                    ? "#206CE1"
+                    ? "#288AE4"
                     : (sub.readinessScore || 0) >= 50
                     ? "#F59E0B"
                     : "#EF4444";
@@ -271,14 +311,14 @@ export const ExamReadinessCard = ({ readiness, loading }: Props) => {
                 return (
                   <Box
                     key={sub.subjectId}
-                    p={3.5}
+                    p={3}
                     borderRadius="xl"
                     border="1px solid"
-                    borderColor={!isSubjectAllowed ? "orange.200" : "gray.100"}
-                    bg={!isSubjectAllowed ? "orange.50/30" : "gray.50/60"}
+                    borderColor={!isSubjectAllowed ? "#FED7AA" : "#F1F5F9"}
+                    bg={!isSubjectAllowed ? "#FFF7ED" : "#F8FAFC"}
                     cursor="pointer"
-                    _hover={{ bg: "white", borderColor: !isSubjectAllowed ? "orange.400" : "blue.200", shadow: "sm" }}
-                    transition="all 0.2s"
+                    _active={{ bg: "#EDF2F7" }}
+                    transition="all 0.15s"
                     onClick={() => {
                       if (!isSubjectAllowed) {
                         promptUpgrade(
@@ -293,7 +333,7 @@ export const ExamReadinessCard = ({ readiness, loading }: Props) => {
                   >
                     <Flex justify="space-between" align="center" mb={1.5}>
                       <HStack gap={1.5}>
-                        <Text fontSize="xs" fontWeight="700" color="gray.900" textTransform="capitalize">
+                        <Text fontSize="12px" fontWeight="700" color="#1E293B" textTransform="capitalize">
                           {sub.subjectName}
                         </Text>
                         {!isSubjectAllowed && (
@@ -301,12 +341,12 @@ export const ExamReadinessCard = ({ readiness, loading }: Props) => {
                         )}
                       </HStack>
                       {sub.readinessScore !== null ? (
-                        <Badge colorPalette={subColor} size="xs" variant="solid" borderRadius="md">
+                        <Badge colorPalette={subColor} size="xs" variant="solid" borderRadius="md" fontSize="10px" px={1.5}>
                           {sub.readinessScore}%
                         </Badge>
                       ) : (
-                        <Badge colorPalette="gray" size="xs" variant="surface" borderRadius="md">
-                          No tests
+                        <Badge colorPalette="gray" size="xs" variant="surface" borderRadius="md" fontSize="10px">
+                          No quizzes
                         </Badge>
                       )}
                     </Flex>
@@ -314,60 +354,83 @@ export const ExamReadinessCard = ({ readiness, loading }: Props) => {
                     {sub.readinessScore !== null ? (
                       <>
                         <Progress.Root value={sub.readinessScore} size="xs">
-                          <Progress.Track bg="gray.200" borderRadius="full">
+                          <Progress.Track bg="#E2E8F0" borderRadius="full" h="4px">
                             <Progress.Range bg={progressCol} borderRadius="full" />
                           </Progress.Track>
                         </Progress.Root>
-                        <HStack justify="space-between" mt={2} fontSize="10px" color="gray.500">
+                        <HStack justify="space-between" mt={1.5} fontSize="9.5px" color="#64748B">
                           <Text>{sub.questionsSolved} Qs solved</Text>
-                          <Text>{sub.topicCoveragePercent}% topic coverage</Text>
+                          <Text>{sub.topicCoveragePercent}% coverage</Text>
                         </HStack>
                       </>
                     ) : (
-                      <Text fontSize="10px" color="gray.400" fontStyle="italic" mt={1}>
-                        Requires 1 quiz to unlock readiness
+                      <Text fontSize="9.5px" color="#94A3B8" fontStyle="italic">
+                        Complete 1 quiz to calculate score
                       </Text>
                     )}
                   </Box>
                 );
               })}
-            </Grid>
+            </Box>
+
+            {/* Expand / Collapse Button if more than 3 subjects */}
+            {subjectBreakdown.length > 3 && (
+              <Button
+                variant="ghost"
+                size="xs"
+                w="full"
+                color="#288AE4"
+                fontWeight="600"
+                fontSize="11px"
+                mt={2}
+                py={1}
+                _hover={{ bg: "#F1F5F9" }}
+                onClick={() => setShowAllSubjects(!showAllSubjects)}
+              >
+                <HStack gap={1}>
+                  <Text>
+                    {showAllSubjects
+                      ? "Show fewer subjects"
+                      : `View all ${subjectBreakdown.length} subjects`}
+                  </Text>
+                  <Icon as={showAllSubjects ? FiChevronUp : FiChevronDown} />
+                </HStack>
+              </Button>
+            )}
           </Box>
 
-          {/* Recommended Next Action Banner */}
+          {/* Recommended Next Action Banner (Mobile Style) */}
           <Box
-            bg="#206CE1"
+            bg="#288AE4"
             color="white"
-            p={{ base: 4, md: 5 }}
+            p={3.5}
             borderRadius="xl"
-            display="flex"
-            flexDirection={{ base: "column", sm: "row" }}
-            justifyContent="space-between"
-            alignItems={{ base: "start", sm: "center" }}
-            gap={3}
+            boxShadow="0 2px 6px rgba(40, 138, 228, 0.2)"
           >
-            <Box>
-              <HStack gap={2} mb={1}>
-                <Badge bg="white/20" color="white" size="xs" borderRadius="full" px={2}>
-                  Recommended Next Action
-                </Badge>
-              </HStack>
-              <Text fontSize="sm" fontWeight="800" color="white">
-                {recommendedNextAction.title}
-              </Text>
-              <Text fontSize="xs" color="blue.100" mt={0.5}>
-                {recommendedNextAction.description}
-              </Text>
-            </Box>
+            <HStack gap={1.5} mb={1}>
+              <Box bg="white/20" px={2} py={0.5} borderRadius="full" fontSize="9.5px" fontWeight="700" letterSpacing="wide">
+                RECOMMENDED ACTION
+              </Box>
+            </HStack>
+            <Text fontSize="13px" fontWeight="700" color="white" lineHeight="1.3">
+              {recommendedNextAction.title}
+            </Text>
+            <Text fontSize="11px" color="white" opacity={0.9} mt={1} lineHeight="1.3">
+              {recommendedNextAction.description}
+            </Text>
 
             <Button
               size="sm"
+              w="full"
+              mt={3}
+              h="36px"
               bg="white"
-              color="#206CE1"
-              borderRadius="xl"
-              fontWeight="800"
-              flexShrink={0}
-              _hover={{ bg: "gray.100" }}
+              color="#288AE4"
+              borderRadius="lg"
+              fontWeight="700"
+              fontSize="12px"
+              _hover={{ bg: "#F8FAFC" }}
+              _active={{ bg: "#E2E8F0" }}
               onClick={() => {
                 if (recommendedNextAction.actionType === "watch_video") {
                   setCurrentStudentPage("learn");
@@ -376,7 +439,7 @@ export const ExamReadinessCard = ({ readiness, loading }: Props) => {
                 }
               }}
             >
-              {recommendedNextAction.ctaText} <Icon as={FiArrowRight} ml={1} />
+              {recommendedNextAction.ctaText} <Icon as={FiArrowRight} ml={1.5} />
             </Button>
           </Box>
         </>
@@ -394,3 +457,5 @@ export const ExamReadinessCard = ({ readiness, loading }: Props) => {
     </Box>
   );
 };
+
+export default ExamReadinessCard;

@@ -1,3 +1,5 @@
+"use client";
+
 import React, { useState } from "react";
 import {
   Box,
@@ -8,6 +10,7 @@ import {
   VStack,
   HStack,
   Flex,
+  Icon,
 } from "@chakra-ui/react";
 import {
   FiClock,
@@ -43,38 +46,38 @@ const TYPE_CONFIG: Record<
 > = {
   review: {
     label: "Mistake Drill",
-    bg: "red.50",
-    color: "red.600",
+    bg: "#FEF2F2",
+    color: "#DC2626",
     icon: FiRepeat,
   },
   topic: {
     label: "Topic Focus",
-    bg: "orange.50",
-    color: "orange.600",
+    bg: "#FFF7ED",
+    color: "#EA580C",
     icon: FiTarget,
   },
   subject: {
     label: "Subject Refresher",
-    bg: "blue.50",
-    color: "blue.600",
+    bg: "#EFF6FF",
+    color: "#2563EB",
     icon: FiBookOpen,
   },
   practice: {
     label: "Targeted Practice",
-    bg: "teal.50",
-    color: "teal.600",
+    bg: "#F0FDFA",
+    color: "#0D9488",
     icon: FiCheckCircle,
   },
   goal: {
     label: "Streak & Goal",
-    bg: "purple.50",
-    color: "purple.600",
+    bg: "#FAF5FF",
+    color: "#9333EA",
     icon: FiAward,
   },
   exam_prep: {
     label: "Exam Simulation",
-    bg: "indigo.50",
-    color: "indigo.600",
+    bg: "#EEF2FF",
+    color: "#4F46E5",
     icon: FiZap,
   },
 };
@@ -100,15 +103,16 @@ export const NextStudyRecommendationCard: React.FC<NextStudyRecommendationCardPr
   if (loading) {
     return (
       <Box
-        p={6}
+        p={4}
         borderRadius="2xl"
         bg="white"
         border="1px solid"
         borderColor="gray.100"
-        boxShadow="0 4px 20px rgba(0,0,0,0.03)"
+        boxShadow="0 1px 3px rgba(0, 0, 0, 0.04)"
+        my={4}
       >
-        <Text fontSize="sm" color="gray.400">
-          Analyzing performance & generating study recommendations...
+        <Text fontSize="11px" color="gray.400">
+          Analyzing performance & finding your next study focus...
         </Text>
       </Box>
     );
@@ -163,7 +167,6 @@ export const NextStudyRecommendationCard: React.FC<NextStudyRecommendationCardPr
       return;
     }
 
-    // Default to quiz practice
     setCurrentStudentPage("quiz");
   };
 
@@ -173,151 +176,147 @@ export const NextStudyRecommendationCard: React.FC<NextStudyRecommendationCardPr
 
   return (
     <Box
-      p={{ base: 5, md: 6 }}
       borderRadius="2xl"
-      bg="linear-gradient(135deg, #FFFFFF 0%, #F8FAFC 100%)"
+      bg="white"
       border="1px solid"
-      borderColor="gray.200"
-      boxShadow="0 10px 30px -5px rgba(32, 108, 225, 0.08)"
-      position="relative"
-      overflow="hidden"
-      mb={6}
+      borderColor="gray.100"
+      boxShadow="0 1px 3px rgba(0, 0, 0, 0.04)"
+      p={{ base: 4, sm: 5 }}
+      my={4}
     >
-      {/* Header section */}
-      <Flex
-        justifyContent="space-between"
-        alignItems={{ base: "flex-start", sm: "center" }}
-        flexDirection={{ base: "column", sm: "row" }}
-        gap={3}
-        mb={4}
-      >
-        <HStack gap={2}>
-          <Box
-            w={8}
-            h={8}
-            borderRadius="lg"
-            bg={config.bg}
-            color={config.color}
-            display="flex"
-            alignItems="center"
-            justifyContent="center"
-            fontSize="18px"
+      {/* Mobile Header */}
+      <Flex justify="space-between" align="center" mb={3.5}>
+        <Box>
+          <Heading
+            as="h2"
+            fontSize={{ base: "15px", md: "16px" }}
+            fontWeight="700"
+            color="#1E293B"
+            lineHeight="shorter"
           >
-            <TypeIcon />
-          </Box>
-          <Box>
-            <Heading size="sm" color="gray.900" fontWeight="700">
-              What Should I Study Next?
-            </Heading>
-            <Text fontSize="xs" color="gray.500">
-              Tailored for your {targetExam} preparation
-            </Text>
-          </Box>
-        </HStack>
+            What should I study next?
+          </Heading>
+          <Text fontSize="11px" color="#64748B" mt={0.5}>
+            Tailored recommendation for {targetExam}
+          </Text>
+        </Box>
 
-        <HStack gap={2}>
-          <Badge
-            variant="subtle"
-            px={2.5}
-            py={1}
-            borderRadius="full"
-            fontSize="xs"
-            fontWeight="600"
+        <HStack gap={1.5}>
+          <Box
             bg={config.bg}
             color={config.color}
+            px={2}
+            py={0.5}
+            borderRadius="full"
+            fontSize="10.5px"
+            fontWeight="700"
           >
             {config.label}
-          </Badge>
-          <HStack
-            gap={1}
-            px={2.5}
-            py={1}
-            borderRadius="full"
-            bg="gray.100"
-            fontSize="xs"
-            color="gray.600"
-            fontWeight="500"
-          >
-            <FiClock />
-            <Text>{recommendation.estimatedMinutes || 15} mins</Text>
-          </HStack>
+          </Box>
         </HStack>
       </Flex>
 
-      {/* Main recommendation body */}
+      {/* Main recommendation mobile card */}
       <Box
-        p={4}
+        p={3.5}
         borderRadius="xl"
-        bg="white"
+        bg="#F8FAFC"
         border="1px solid"
-        borderColor="gray.200"
-        boxShadow="0 2px 8px rgba(0,0,0,0.02)"
-        mb={4}
+        borderColor="#E2E8F0"
+        mb={3}
       >
-        <HStack justify="space-between" align="flex-start" gap={3} mb={2}>
-          <Heading size="xs" color="gray.800" fontWeight="600">
-            {recommendation.title}
-          </Heading>
-          {recommendation.priority === "high" && (
-            <Badge colorPalette="red" variant="solid" fontSize="10px" px={2}>
-              High Priority
-            </Badge>
-          )}
-        </HStack>
+        {/* Top card info row */}
+        <Flex justify="space-between" align="center" mb={2}>
+          <HStack gap={2} minW={0}>
+            <Flex
+              w="28px"
+              h="28px"
+              borderRadius="lg"
+              bg={config.bg}
+              color={config.color}
+              align="center"
+              justify="center"
+              fontSize="14px"
+              flexShrink={0}
+            >
+              <TypeIcon />
+            </Flex>
+            <Text fontSize="13px" fontWeight="700" color="#1E293B" truncate>
+              {recommendation.title}
+            </Text>
+          </HStack>
 
-        <Text fontSize="sm" color="gray.700" lineHeight="1.6" mb={3}>
+          <HStack gap={1.5} flexShrink={0}>
+            {recommendation.priority === "high" && (
+              <Badge colorPalette="red" variant="solid" fontSize="9.5px" px={1.5} py={0.2} borderRadius="md">
+                Priority
+              </Badge>
+            )}
+            <HStack gap={1} fontSize="10px" color="#64748B" bg="#EDF2F7" px={1.5} py={0.5} borderRadius="md">
+              <Icon as={FiClock} boxSize="10px" />
+              <Text>{recommendation.estimatedMinutes || 15}m</Text>
+            </HStack>
+          </HStack>
+        </Flex>
+
+        {/* Description */}
+        <Text fontSize="12px" color="#475569" lineHeight="1.45" mb={2.5}>
           {recommendation.description}
         </Text>
 
+        {/* Why this matters callout */}
         {recommendation.reason && (
-          <HStack
+          <Flex
             gap={2}
-            p={2.5}
+            p={2}
             borderRadius="lg"
-            bg="blue.50"
+            bg="#EFF6FF"
             border="1px solid"
-            borderColor="blue.100"
-            alignItems="flex-start"
-            mb={4}
+            borderColor="#DBEAFE"
+            align="flex-start"
+            mb={3}
           >
-            <Box color="#206CE1" mt={0.5}>
-              <FiHelpCircle size={14} />
+            <Box color="#288AE4" mt={0.5} flexShrink={0}>
+              <Icon as={FiHelpCircle} boxSize="12px" />
             </Box>
-            <Text fontSize="xs" color="blue.900" fontWeight="500">
+            <Text fontSize="11px" color="#1E40AF" lineHeight="1.35">
               <strong>Why this matters:</strong> {recommendation.reason}
             </Text>
-          </HStack>
+          </Flex>
         )}
 
-        {/* Action Buttons */}
-        <Flex
-          gap={3}
-          alignItems="center"
-          flexDirection={{ base: "column", sm: "row" }}
-        >
+        {/* Action Buttons (Mobile-first vertical stack) */}
+        <Box display="flex" flexDirection="column" gap={2}>
           <Button
-            w={{ base: "full", sm: "auto" }}
-            bg="#206CE1"
+            w="full"
+            h="38px"
+            bg="#288AE4"
             color="white"
-            _hover={{ bg: "blue.700", transform: "translateY(-1px)" }}
-            transition="all 0.2s"
-            size="sm"
-            px={5}
-            borderRadius="lg"
-            fontWeight="600"
+            borderRadius="xl"
+            fontWeight="700"
+            fontSize="12.5px"
+            boxShadow="0 2px 6px rgba(40, 138, 228, 0.2)"
+            _hover={{ bg: "#1D75C7" }}
+            _active={{ bg: "#185BA9" }}
             onClick={() => handleAction(recommendation)}
           >
             {recommendation.actionText || "Start Activity"}
-            <FiArrowRight style={{ marginLeft: "6px" }} />
+            <Icon as={FiArrowRight} ml={1.5} />
           </Button>
 
           {recommendation.topicName && (
             <Button
-              w={{ base: "full", sm: "auto" }}
+              w="full"
+              h="34px"
               variant="outline"
-              colorPalette="blue"
-              size="sm"
-              borderRadius="lg"
+              borderColor="#CBD5E1"
+              color="#288AE4"
+              bg="white"
+              borderRadius="xl"
+              fontSize="11.5px"
+              fontWeight="600"
+              _hover={{ bg: "#F8FAFC" }}
+              _active={{ bg: "#F1F5F9" }}
               onClick={() => {
                 if (effectivePlan !== "premium") {
                   promptUpgrade(
@@ -339,42 +338,42 @@ export const NextStudyRecommendationCard: React.FC<NextStudyRecommendationCardPr
                 );
               }}
             >
-              {effectivePlan !== "premium" && (
-                <PiShootingStarDuotone style={{ marginRight: "4px" }} />
-              )}
-              Ask Spark about this topic {effectivePlan !== "premium" && "(Unlock Premium Plan)"}
+              <PiShootingStarDuotone style={{ marginRight: "5px" }} />
+              Ask Spark about this topic {effectivePlan !== "premium" && "(Premium)"}
             </Button>
           )}
-        </Flex>
+        </Box>
       </Box>
 
-      {/* Secondary recommendations toggle */}
+      {/* Secondary recommendations mobile collapsible */}
       {secondaryRecommendations.length > 0 && (
-        <Box pt={2}>
+        <Box pt={1}>
           {effectivePlan === "basic" ? (
             <Flex
-              p={3}
+              p={2.5}
               borderRadius="xl"
-              bg="white"
+              bg="#FFF7ED"
               border="1px dashed"
-              borderColor="orange.300"
+              borderColor="#FDBA74"
               justify="space-between"
               align="center"
-              wrap="wrap"
               gap={2}
             >
-              <HStack gap={2}>
+              <HStack gap={1.5}>
                 <LockedBadge requiredPlan="standard" label="Standard" size="xs" />
-                <Text fontSize="xs" fontWeight="600" color="gray.700">
-                  {secondaryRecommendations.length} more personalized study paths available
+                <Text fontSize="11px" fontWeight="600" color="#9A3412">
+                  {secondaryRecommendations.length} more personalized study paths
                 </Text>
               </HStack>
               <Button
                 size="xs"
-                bg="#206CE1"
+                h="26px"
+                bg="#288AE4"
                 color="white"
-                _hover={{ bg: "#1852B2" }}
                 borderRadius="md"
+                fontSize="10px"
+                fontWeight="700"
+                _hover={{ bg: "#1D75C7" }}
                 onClick={() =>
                   promptUpgrade(
                     "Personalized Study Paths",
@@ -383,7 +382,7 @@ export const NextStudyRecommendationCard: React.FC<NextStudyRecommendationCardPr
                   )
                 }
               >
-                <PiShootingStarDuotone style={{ marginRight: "4px" }} /> Unlock Standard Plan
+                Unlock
               </Button>
             </Flex>
           ) : (
@@ -391,23 +390,26 @@ export const NextStudyRecommendationCard: React.FC<NextStudyRecommendationCardPr
               <Button
                 variant="ghost"
                 size="xs"
-                color="gray.600"
-                _hover={{ color: "gray.900", bg: "transparent" }}
+                w="full"
+                color="#64748B"
+                fontSize="11px"
+                fontWeight="600"
+                py={1}
+                _hover={{ color: "#1E293B", bg: "#F8FAFC" }}
                 onClick={() => setShowSecondary(!showSecondary)}
-                p={0}
               >
-                <HStack gap={1}>
-                  <Text fontWeight="600">
+                <HStack gap={1} justify="center">
+                  <Text>
                     {showSecondary
                       ? "Hide additional recommendations"
-                      : `View ${secondaryRecommendations.length} more personalized recommendations`}
+                      : `View ${secondaryRecommendations.length} more recommendations`}
                   </Text>
-                  {showSecondary ? <FiChevronUp /> : <FiChevronDown />}
+                  <Icon as={showSecondary ? FiChevronUp : FiChevronDown} />
                 </HStack>
               </Button>
 
               {showSecondary && (
-                <VStack gap={2} mt={3} align="stretch">
+                <VStack gap={2} mt={2.5} align="stretch">
                   {secondaryRecommendations.map((secRec) => {
                     const secConfig = TYPE_CONFIG[secRec.type || "topic"] || TYPE_CONFIG.topic;
                     const SecIcon = secConfig.icon;
@@ -415,35 +417,34 @@ export const NextStudyRecommendationCard: React.FC<NextStudyRecommendationCardPr
                     return (
                       <Flex
                         key={secRec.id}
-                        p={3}
+                        p={2.5}
                         borderRadius="lg"
-                        bg="white"
+                        bg="#F8FAFC"
                         border="1px solid"
-                        borderColor="gray.200"
-                        alignItems="center"
-                        justifyContent="space-between"
-                        gap={3}
+                        borderColor="#E2E8F0"
+                        align="center"
+                        justify="space-between"
+                        gap={2}
                       >
-                        <HStack gap={3} flex={1}>
-                          <Box
-                            w={7}
-                            h={7}
+                        <HStack gap={2} flex={1} minW={0}>
+                          <Flex
+                            w="24px"
+                            h="24px"
                             borderRadius="md"
                             bg={secConfig.bg}
                             color={secConfig.color}
-                            display="flex"
-                            alignItems="center"
-                            justifyContent="center"
-                            fontSize="14px"
+                            align="center"
+                            justify="center"
+                            fontSize="12px"
                             flexShrink={0}
                           >
                             <SecIcon />
-                          </Box>
-                          <Box>
-                            <Text fontSize="xs" fontWeight="600" color="gray.800">
+                          </Flex>
+                          <Box minW={0}>
+                            <Text fontSize="11.5px" fontWeight="700" color="#1E293B" truncate>
                               {secRec.title}
                             </Text>
-                            <Text fontSize="11px" color="gray.500" noOfLines={1}>
+                            <Text fontSize="10px" color="#64748B" truncate>
                               {secRec.description}
                             </Text>
                           </Box>
@@ -451,9 +452,14 @@ export const NextStudyRecommendationCard: React.FC<NextStudyRecommendationCardPr
 
                         <Button
                           size="xs"
-                          variant="outline"
-                          colorPalette="blue"
+                          h="26px"
+                          variant="solid"
+                          bg="#288AE4"
+                          color="white"
                           borderRadius="md"
+                          fontSize="10.5px"
+                          fontWeight="600"
+                          _hover={{ bg: "#1D75C7" }}
                           onClick={() => handleAction(secRec)}
                           flexShrink={0}
                         >
@@ -481,3 +487,5 @@ export const NextStudyRecommendationCard: React.FC<NextStudyRecommendationCardPr
     </Box>
   );
 };
+
+export default NextStudyRecommendationCard;

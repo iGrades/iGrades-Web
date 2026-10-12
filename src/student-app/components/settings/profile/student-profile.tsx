@@ -28,6 +28,7 @@ import {
   FiSend,
   FiX,
   FiBookOpen,
+  FiEdit2,
 } from "react-icons/fi";
 import { toaster } from "@/components/ui/toaster";
 import { classChangeService } from "@/services/classChangeService";
@@ -243,25 +244,32 @@ const StudentProfile = () => {
   return (
     <>
       <VStack
-        gap={6}
+        gap={5}
         mb={20}
-        shadow={{ base: "none", md: "sm" }}
-        p={{ base: 4, md: 8 }}
-        rounded="xl"
-        w="full"
+        border="none"
+        outline="none"
+        boxShadow="none"
+        p={{ base: 4, sm: 6 }}
+        w="100%"
         bg="white"
       >
         {/* Photo Section */}
         <Box
           position="relative"
-          w={{ base: "100%", md: "3/4" }}
+          w="full"
           display="flex"
           flexDirection="column"
           justifyContent="center"
           alignItems="center"
-          p={{ base: 1, md: 4 }}
+          py={2}
         >
-          <Box position="relative" alignItems="center" display="flex" flexDirection="column">
+          <Box
+            position="relative"
+            cursor="pointer"
+            onClick={() => inputRef.current?.click()}
+            role="button"
+            aria-label="Change profile photo"
+          >
             <Image
               src={
                 selectedFile
@@ -269,42 +277,51 @@ const StudentProfile = () => {
                   : authdStudent?.profile_image || ""
               }
               alt="Profile"
-              boxSize="90px"
+              boxSize="96px"
               borderRadius="2xl"
               objectFit="cover"
-              border="2px solid"
-              borderColor="gray.100"
+              border="none"
+              outline="none"
+              boxShadow="none"
             />
-            <Input
-              type="file"
-              accept="image/*"
-              hidden
-              ref={inputRef}
-              onChange={(e) => {
-                const file = e.target.files?.[0];
-                if (file) setSelectedFile(file);
-              }}
-            />
-            <Button
-              size="xs"
-              mt={3}
-              onClick={() => inputRef.current?.click()}
-              colorPalette="blue"
-              variant="outline"
-              borderRadius="full"
-              px={3}
+            <Flex
+              position="absolute"
+              bottom="-4px"
+              right="-4px"
+              bg="#288AE4"
+              color="white"
+              boxSize="30px"
+              borderRadius="xl"
+              border="none"
+              outline="none"
+              boxShadow="none"
+              align="center"
+              justify="center"
+              _hover={{ bg: "#1D75C7" }}
+              transition="all 0.15s"
             >
-              Change Photo
-            </Button>
+              <FiEdit2 size={13} />
+            </Flex>
           </Box>
+          <Input
+            type="file"
+            accept="image/*"
+            hidden
+            ref={inputRef}
+            onChange={(e) => {
+              const file = e.target.files?.[0];
+              if (file) setSelectedFile(file);
+            }}
+          />
         </Box>
 
         {/* ─── PROTECTED CLASS MANAGEMENT CARD ─── */}
         <Box
-          w={{ base: "100%", md: "95%" }}
-          border="1px solid"
-          borderColor="blue.100"
-          bg="blue.50/30"
+          w="100%"
+          border="none"
+          outline="none"
+          boxShadow="none"
+          bg="blue.50/40"
           borderRadius="xl"
           p={{ base: 4, md: 5 }}
         >
@@ -349,8 +366,9 @@ const StudentProfile = () => {
             bg="white"
             p={4}
             borderRadius="lg"
-            border="1px solid"
-            borderColor="gray.200"
+            border="none"
+            outline="none"
+            boxShadow="none"
           >
             <Box>
               <Text fontSize="11px" fontWeight="600" color="gray.400" textTransform="uppercase">
@@ -360,7 +378,7 @@ const StudentProfile = () => {
                 <Heading fontSize="lg" fontWeight="800" color="blue.600">
                   {authdStudent?.class || "Unassigned"}
                 </Heading>
-                <Badge colorPalette="blue" size="sm" borderRadius="md">
+                <Badge colorPalette="blue" size="sm" borderRadius="md" border="none">
                   Active
                 </Badge>
               </HStack>
@@ -371,8 +389,8 @@ const StudentProfile = () => {
               <Badge
                 bg="amber.50"
                 color="amber.800"
-                border="1px solid"
-                borderColor="amber.300"
+                border="none"
+                outline="none"
                 borderRadius="lg"
                 px={3}
                 py={2}
@@ -388,6 +406,9 @@ const StudentProfile = () => {
                 colorPalette="blue"
                 variant="solid"
                 borderRadius="lg"
+                border="none"
+                outline="none"
+                boxShadow="none"
                 onClick={handleOpenRequestModal}
                 fontSize="xs"
                 fontWeight="700"
@@ -404,8 +425,9 @@ const StudentProfile = () => {
             <Box
               mt={3}
               bg="amber.50/80"
-              border="1px solid"
-              borderColor="amber.200"
+              border="none"
+              outline="none"
+              boxShadow="none"
               borderRadius="lg"
               p={4}
             >
@@ -422,17 +444,17 @@ const StudentProfile = () => {
               </Flex>
 
               <Grid templateColumns={{ base: "1fr", sm: "1fr 1fr" }} gap={3} my={2}>
-                <Box bg="white" p={2.5} borderRadius="md" border="1px solid" borderColor="amber.200">
+                <Box bg="white" p={2.5} borderRadius="md" border="none" outline="none" boxShadow="none">
                   <Text fontSize="10px" color="gray.500" fontWeight="600">Current Class</Text>
                   <Text fontSize="xs" fontWeight="700" color="gray.800">{pendingRequest.old_class}</Text>
                 </Box>
-                <Box bg="white" p={2.5} borderRadius="md" border="1px solid" borderColor="amber.200">
+                <Box bg="white" p={2.5} borderRadius="md" border="none" outline="none" boxShadow="none">
                   <Text fontSize="10px" color="gray.500" fontWeight="600">Requested Class</Text>
                   <Text fontSize="xs" fontWeight="700" color="blue.700">{pendingRequest.requested_class_name}</Text>
                 </Box>
               </Grid>
 
-              <Box bg="white" p={2.5} borderRadius="md" border="1px solid" borderColor="amber.200" mt={2}>
+              <Box bg="white" p={2.5} borderRadius="md" border="none" outline="none" boxShadow="none" mt={2}>
                 <Text fontSize="10px" color="gray.500" fontWeight="600">
                   {pendingRequest.initiated_by_type === "parent" ? "Reason Submitted by Parent:" : "Your Submitted Reason:"}
                 </Text>
@@ -440,7 +462,7 @@ const StudentProfile = () => {
                   "{pendingRequest.reason}"
                 </Text>
                 {pendingRequest.initiated_by_type === "parent" && (
-                  <Badge bg="purple.50" color="purple.700" size="xs" mt={1}>
+                  <Badge bg="purple.50" color="purple.700" size="xs" mt={1} border="none">
                     Submitted by Parent ({pendingRequest.parent_name || "Parent Account"})
                   </Badge>
                 )}
@@ -457,8 +479,9 @@ const StudentProfile = () => {
             <Box
               mt={3}
               bg={lastReviewedRequest.status === "approved" ? "green.50/80" : "gray.50"}
-              border="1px solid"
-              borderColor={lastReviewedRequest.status === "approved" ? "green.200" : "gray.200"}
+              border="none"
+              outline="none"
+              boxShadow="none"
               borderRadius="lg"
               p={3}
             >
@@ -483,11 +506,11 @@ const StudentProfile = () => {
           )}
         </Box>
 
-        {/* ─── EDITABLE PROFILE FIELDS ─── */}
+        {/* ─── EDITABLE PROFILE FIELDS (100% width, no border/outline/shadow) ─── */}
         <Grid
           templateColumns={{ base: "repeat(1, 1fr)", md: "repeat(2, 1fr)" }}
           gap={3}
-          w={{ base: "100%", md: "95%" }}
+          w="100%"
         >
           {pageData.map((dataKey, index) => (
             <GridItem key={index} w="100%">
@@ -508,11 +531,12 @@ const StudentProfile = () => {
                   }
                   fontSize="xs"
                   p={6}
-                  bg="textFieldColor"
+                  bg="#F4F7FB"
                   outline="none"
-                  border="1px solid"
-                  borderColor="gray.200"
+                  border="none"
+                  boxShadow="none"
                   borderRadius="lg"
+                  w="100%"
                   _placeholder={{ color: "greyOthers" }}
                 />
               </Box>
@@ -520,19 +544,22 @@ const StudentProfile = () => {
           ))}
         </Grid>
 
-        {/* Action Button */}
+        {/* Action Button (100% width, no border/shadow) */}
         <Button
           loading={isLoading}
           loadingText="Updating..."
           spinnerPlacement="start"
           type="button"
           fontWeight="semibold"
-          w={{ base: "100%", md: "95%" }}
+          w="100%"
           my={3}
           p={6}
           bg="blue.500"
           color="white"
           borderRadius="xl"
+          border="none"
+          outline="none"
+          boxShadow="none"
           onClick={handleEdit}
         >
           Update Profile Information

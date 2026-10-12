@@ -94,7 +94,7 @@ const Notifications = () => {
   ];
 
   return (
-    <Box bg="white" rounded="2xl" shadow="sm" p={{ base: 4, md: 6 }} mb={20} h="auto">
+    <Box bg="white" border="none" outline="none" boxShadow="none" p={{ base: 4, sm: 6 }} mb={20} w="100%" h="auto">
       <Flex justify="space-between" align={{ base: "flex-start", sm: "center" }} mb={6} direction={{ base: "column", sm: "row" }} gap={2}>
         <Box>
           <Heading as="h3" fontSize={{ base: "lg", md: "xl" }} color="gray.800">
@@ -104,12 +104,12 @@ const Notifications = () => {
             Choose which notifications and study reminders you would like to receive.
           </Text>
         </Box>
-        <Badge colorPalette="blue" variant="subtle" px={3} py={1} borderRadius="full" fontSize="11px">
+        <Badge colorPalette="blue" variant="subtle" px={3} py={1} borderRadius="full" fontSize="11px" border="none">
           Preferences Auto-Saved
         </Badge>
       </Flex>
 
-      <VStack gap={4} align="stretch">
+      <VStack gap={3} align="stretch" w="100%">
         {notificationChannels.map((item) => {
           const isChecked = prefs[item.id];
           return (
@@ -117,11 +117,13 @@ const Notifications = () => {
               key={item.id}
               justify="space-between"
               align="center"
-              p={{ base: 4, md: 6 }}
-              bg="textFieldColor"
+              p={{ base: 4, md: 5 }}
+              bg="#F4F7FB"
               rounded="xl"
-              border="1px"
-              borderColor={isChecked ? "gray.200" : "gray.100"}
+              border="none"
+              outline="none"
+              boxShadow="none"
+              w="100%"
               transition="all 0.2s"
             >
               <HStack gap={4} align="flex-start" maxW={{ base: "75%", md: "85%" }}>

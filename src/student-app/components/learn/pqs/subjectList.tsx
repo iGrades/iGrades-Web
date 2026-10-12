@@ -1,6 +1,6 @@
 import { Grid, Box, Text, Center, Heading, Icon } from "@chakra-ui/react";
 import { useAuthdStudentData } from "@/student-app/context/studentDataContext";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { LuArrowLeft, LuLock } from "react-icons/lu";
 import YearsList from "./yearsList";
 import { useStudentData, useSubjects } from "@/student-app/context/dataContext";
@@ -13,9 +13,10 @@ import { LockedBadge } from "@/components/subscription/LockedBadge";
 type Props = {
   onBack: () => void;
   selectedExam: string | null;
+  defaultSelectedSubject?: string;
 };
 
-const SubjectsList = ({ onBack, selectedExam }: Props) => {
+const SubjectsList = ({ onBack, selectedExam, defaultSelectedSubject }: Props) => {
   const { authdStudent } = useAuthdStudentData();
   const [loading, setLoading] = useState(false);
   const [selectedCourse, setSelectedCourse] = useState<string>("");
@@ -85,6 +86,12 @@ const SubjectsList = ({ onBack, selectedExam }: Props) => {
     }
   };
 
+  useEffect(() => {
+    if (defaultSelectedSubject) {
+      handleCourseClick(defaultSelectedSubject, defaultSelectedSubject, 0);
+    }
+  }, [defaultSelectedSubject]);
+
   // MAP COURSES USING THE CENTRAL CONFIG
   const registeredCoursesArray = getStudentCoursesArray();
 
@@ -112,7 +119,7 @@ const SubjectsList = ({ onBack, selectedExam }: Props) => {
           subjectId={subjectId}
         />
       ) : (
-        <Box bg="white" rounded="lg" shadow="lg" p={4} mb={20} h="auto">
+        <Box bg="transparent" p={0} mb={20} w="100%">
           {/* Header with back button */}
           <Heading
             as="h3"

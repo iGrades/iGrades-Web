@@ -20,6 +20,10 @@ export interface Message {
   guidanceLevelName?: string;
   misconceptionType?: string | null;
   studentStatus?: string;
+  timestamp?: string;
+  type?: "text" | "audio";
+  audioUrl?: string;
+  audioDuration?: string;
 }
 
 const EXCLUDED_PATHS = ["/login", "/auth", "/signin", "/signup", "quiz", "quizzes"];
@@ -204,7 +208,16 @@ export const useChatbot = () => {
       return;
     }
 
-    const userMessage: Message = { role: "user", content: trimmed };
+    const formatCurrentTime = () => {
+      return new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+    };
+
+    const userMessage: Message = {
+      role: "user",
+      content: trimmed,
+      timestamp: formatCurrentTime(),
+      type: "text",
+    };
     const updatedMessages = [...messages, userMessage];
     setMessages(updatedMessages);
     setInput("");
@@ -333,6 +346,7 @@ export const useChatbot = () => {
       const misconceptionType = data.misconceptionType || null;
       const studentStatus = data.studentStatus || undefined;
 
+      const nowTime = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
       setMessages((prev) => [
         ...prev,
         {
@@ -342,6 +356,8 @@ export const useChatbot = () => {
           guidanceLevelName,
           misconceptionType,
           studentStatus,
+          timestamp: nowTime,
+          type: "text",
         },
       ]);
 
@@ -370,14 +386,140 @@ export const useChatbot = () => {
     executeSend(input);
   }, [executeSend, input]);
 
-  const sendCustomMessage = useCallback((text: string) => {
-    executeSend(text);
-  }, [executeSend]);
+  const sendCustomMessage = useCallback(
+    (text: string) => {
+      executeSend(text);
+    },
+    [executeSend]
+  );
+
+  const handleKeyDown = useCallback(
+    (e: React.KeyboardEvent<HTMLTextAreaElement | HTMLInputElement>) => {
+      if (e.key === "Enter" && !e.shiftKey) {
+        e.preventDefault();
+        sendMessage();
+      }
+    },
+    [sendMessage]
+  );
+
+  const clearMessages = useCallback(() => {
+    setMessages([]);
+    try {
+      localStorage.removeItem(storageKey);
+    } catch (e) {
+      console.warn("Could not clear messages from localStorage:", e);
+    }
+  }, [storageKey]);
+
+  const sendVoiceMessage = useCallback(
+    async (
+      durationStr: string = "00:14",
+      promptSummary: string = "Can you help me solve this problem step-by-step?"
+    ) => {
+      if (isLoading) return;
+
+      const time = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+      const userVoiceMsg: Message = {
+        role: "user",
+        content: promptSummary,
+        type: "audio",
+        audioDuration: durationStr,
+        timestamp: time,
+      };
+
+      const updatedMessages = [...messages, userVoiceMsg];
+      setMessages(updatedMessages);
+      setIsLoading(true);
+
+      try {
+        const performanceProfile = activeContext?.performance || (intelligence ? {
+          topicAccuracyPercent: intelligence.activity?.overallAccuracy ?? 0,
+          recentAttemptsCount: intelligence.activity?.practiceSessionsCount ?? 0,
+          weakTopics: (intelligence.weakTopics || []).slice(0, 3).map((t) => `${t.topicName} (${t.accuracy}%)`),
+          recentScoreSummary: `Readiness ${intelligence.readiness?.readinessBand ?? "Learning"} (${intelligence.readiness?.readinessScore ?? 0}%).`,
+        } : undefined);
+
+        const mergedContext = activeContext
+          ? { ...activeContext, performance: performanceProfile, tutoringState }
+          : { contextType: "general_tutor" as const, performance: performanceProfile, tutoringState };
+
+        const payload = {
+          student_id: authdStudent?.id || null,
+          studentName,
+          gradeLevel: studentGradeLevel,
+          learningContext: mergedContext,
+          messages: updatedMessages.map((m) => ({
+            role: m.role,
+            content: m.content,
+          })),
+        };
+
+        let response: Response | null = null;
+        try {
+          const localRes = await fetch("/api/spark-chat", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload),
+          });
+          if (localRes.ok || localRes.status === 403) {
+            response = localRes;
+          }
+        } catch {
+          // fallback
+        }
+
+        if (response) {
+          const data = await response.json();
+          const reply =
+            data.reply ||
+            data.content?.find((b: any) => b.type === "text")?.text ||
+            data.candidates?.[0]?.content?.parts?.[0]?.text ||
+            data.text ||
+            "I heard your question! Let's think through this step-by-step. What is the fundamental concept or formula you want to test here?";
+
+          setMessages((prev) => [
+            ...prev,
+            {
+              role: "assistant",
+              content: reply,
+              guidanceLevel: data.guidanceLevel || 1,
+              guidanceLevelName: data.guidanceLevelName || "Socratic Guidance",
+              timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+              type: "text",
+            },
+          ]);
+        } else {
+          setMessages((prev) => [
+            ...prev,
+            {
+              role: "assistant",
+              content: "I heard your voice question! Let's break this down step-by-step. What is the first piece of information given in your problem?",
+              timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+              type: "text",
+            },
+          ]);
+        }
+      } catch {
+        setMessages((prev) => [
+          ...prev,
+          {
+            role: "assistant",
+            content: "I received your voice note! Let's review the core syllabus principles for this question.",
+            timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+            type: "text",
+          },
+        ]);
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [isLoading, messages, activeContext, intelligence, tutoringState, authdStudent?.id, studentName, studentGradeLevel]
+  );
 
   const executeSendRef = useRef(executeSend);
   executeSendRef.current = executeSend;
 
-  // Check and consume pending initial prompt when opened
   useEffect(() => {
     if (isOpen) {
       const pending = consumePendingPrompt();
@@ -386,27 +528,6 @@ export const useChatbot = () => {
       }
     }
   }, [isOpen, consumePendingPrompt]);
-
-  const clearMessages = useCallback(() => {
-    setMessages([]);
-    setTutoringState({ currentGuidanceLevel: 1, hintsGiven: 0 });
-    try {
-      localStorage.removeItem(storageKey);
-      localStorage.removeItem(tutorStorageKey);
-    } catch {
-      // ignore
-    }
-  }, [storageKey, tutorStorageKey]);
-
-  const handleKeyDown = useCallback(
-    (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-      if (e.key === "Enter" && !e.shiftKey) {
-        e.preventDefault();
-        sendMessage();
-      }
-    },
-    [sendMessage]
-  );
 
   return {
     // State
@@ -431,6 +552,7 @@ export const useChatbot = () => {
     setInput,
     sendMessage,
     sendCustomMessage,
+    sendVoiceMessage,
     clearMessages,
     clearContext,
     toggleOpen,

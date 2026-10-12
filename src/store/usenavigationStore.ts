@@ -1,7 +1,7 @@
 import { create } from "zustand";
 
 export type ParentPage = "home" | "student" | "weekly_report" | "settings";
-export type StudentPage = "home" | "quiz" | "learn" | "rewards" | "settings";
+export type StudentPage = "home" | "quiz" | "learn" | "chat" | "rewards" | "settings";
 
 interface NavigationState {
   currentParentPage: ParentPage;
@@ -23,6 +23,6 @@ export const useNavigationStore = create<NavigationState>((set) => ({
 
   currentStudentPage: "home",
   setCurrentStudentPage: (page) => set({ currentStudentPage: page }),
-  studentSettingsTab: "profile",
+  studentSettingsTab: "menu",
   setStudentSettingsTab: (tab) => set({ studentSettingsTab: tab }),
 }));

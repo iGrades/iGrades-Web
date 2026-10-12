@@ -62,22 +62,6 @@ const TopicsList = ({
         />
       ) : (
         <>
-          {/* Header with back button */}
-          <Heading
-            as="h3"
-            display="flex"
-            alignItems="center"
-            justifyContent="flex-start"
-            gap={3}
-            mt={3}
-            mb={5}
-            mx={2}
-            cursor="pointer"
-          >
-            <LuArrowLeft onClick={handleBackToSubjects} />
-            {courseName} Topics
-          </Heading>
-
           {/* lists of topics */}
           {topics.length === 0 ? (
             <Text fontSize="xs" color="gray.400">
@@ -93,25 +77,31 @@ const TopicsList = ({
               return (
                 <Flex
                   key={topic.id}
-                  direction={"column"}
-                  justify="space-around"
-                  gap={4}
-                  p={3}
+                  direction="column"
+                  w="100%"
+                  mb={2.5}
                 >
                   <Flex
                     justify="space-between"
-                    p={6}
-                    borderRadius="md"
-                    _hover={{ bg: "gray.100", transform: "translateX(4px)" }}
+                    align="center"
+                    px={4}
+                    py={3.5}
+                    borderRadius="xl"
+                    border="1px solid"
+                    borderColor="#E2E8F0"
+                    boxShadow="none"
+                    _hover={{ bg: "#F1F5F9" }}
+                    _active={{ bg: "#E2E8F0" }}
                     cursor="pointer"
-                    bg={"textFieldColor"}
-                    transition="all 0.2s"
+                    bg="#F8FAFC"
+                    transition="all 0.15s ease"
                     onClick={() => handleTopicClick(topic)}
+                    w="100%"
                   >
-                    <Text fontSize="sm" fontWeight="bold">
+                    <Text fontSize="14px" fontWeight="600" color="#1E293B">
                       {topic.name}
                     </Text>
-                    <Text fontSize="xs" color="gray.600">
+                    <Text fontSize="12px" color="#64748B" fontWeight="500">
                       {numVideos} video{numVideos !== 1 ? "s" : ""}
                     </Text>
                   </Flex>

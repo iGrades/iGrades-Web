@@ -21,7 +21,6 @@ import { useTranslation } from "react-i18next";
 import {
   FiBell,
   FiGlobe,
-  FiChevronDown,
   FiLogOut,
   FiUser,
   FiHelpCircle,
@@ -457,18 +456,20 @@ const Navbar = ({ setShowLogoutModal }: Props) => {
           {/* User Profile Menu */}
           <Menu.Root positioning={{ placement: "bottom-end" }}>
             <Menu.Trigger asChild>
-              <HStack
-                gap={1.5}
-                p={1}
-                pr={{ base: 1, md: 2 }}
+              <Box
+                p={0.5}
                 borderRadius="full"
                 cursor="pointer"
-                _hover={{ bg: "gray.100" }}
-                transition="background 0.15s ease"
+                _hover={{ ring: "2px solid", ringColor: "purple.200" }}
+                transition="all 0.15s ease"
+                minW="36px"
+                minH="36px"
+                display="flex"
+                alignItems="center"
+                justifyContent="center"
               >
                 <AvatarComp username={fullName} profileImage={currentParent?.profile_image} />
-                <FiChevronDown size={14} color="#718096" />
-              </HStack>
+              </Box>
             </Menu.Trigger>
             <Portal>
               <Menu.Positioner zIndex={1500}>

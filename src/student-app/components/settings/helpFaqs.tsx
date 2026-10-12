@@ -143,16 +143,16 @@ const HelpFaqs = () => {
   };
 
   return (
-    <Box w="full" py={2}>
+    <Box w="100%" py={1} mb={10}>
       {/* Header Banner */}
       <Box
         bg="white"
-        p={{ base: 5, md: 8 }}
-        rounded="xl"
-        shadow="sm"
-        border="1px solid"
-        borderColor="gray.100"
-        mb={6}
+        p={{ base: 4, sm: 6 }}
+        border="none"
+        outline="none"
+        boxShadow="none"
+        mb={5}
+        w="100%"
       >
         <Flex
           direction={{ base: "column", md: "row" }}
@@ -174,7 +174,7 @@ const HelpFaqs = () => {
               >
                 <FiHelpCircle size={18} />
               </Box>
-              <Badge colorPalette="blue" variant="subtle" size="sm" rounded="md">
+              <Badge colorPalette="blue" variant="subtle" size="sm" rounded="md" border="none">
                 Student Help Center
               </Badge>
             </HStack>
@@ -198,6 +198,9 @@ const HelpFaqs = () => {
               color="white"
               _hover={{ bg: "#20bd5a" }}
               rounded="lg"
+              border="none"
+              outline="none"
+              boxShadow="none"
               gap={2}
             >
               <BsWhatsapp size={15} />
@@ -207,11 +210,13 @@ const HelpFaqs = () => {
               as="a"
               href="mailto:info@igrades.org"
               size="sm"
-              variant="outline"
-              borderColor="gray.300"
+              bg="#F4F7FB"
               color="gray.700"
-              _hover={{ bg: "gray.50" }}
+              _hover={{ bg: "#EDF2F7" }}
               rounded="lg"
+              border="none"
+              outline="none"
+              boxShadow="none"
               gap={2}
             >
               <FiMail size={15} />
@@ -221,17 +226,17 @@ const HelpFaqs = () => {
         </Flex>
 
         {/* Search Bar */}
-        <Box mt={6} position="relative">
+        <Box mt={6} position="relative" w="100%">
           <Flex
             align="center"
-            bg="gray.50"
-            border="1px solid"
-            borderColor="gray.200"
+            bg="#F4F7FB"
+            border="none"
+            outline="none"
+            boxShadow="none"
             rounded="xl"
             px={4}
             py={2.5}
             gap={3}
-            _focusWithin={{ borderColor: "#206CE1", bg: "white", shadow: "xs" }}
             transition="all 0.2s"
           >
             <FiSearch size={18} color="#718096" />
@@ -242,6 +247,8 @@ const HelpFaqs = () => {
               onChange={(e) => setSearchQuery(e.target.value)}
               fontSize="sm"
               color="gray.800"
+              border="none"
+              outline="none"
             />
             {searchQuery && (
               <Button
@@ -258,7 +265,7 @@ const HelpFaqs = () => {
         </Box>
 
         {/* Category Filters */}
-        <Flex gap={2} mt={4} overflowX="auto" pb={1} css={{ scrollbarWidth: "none" }}>
+        <Flex gap={2} mt={4} overflowX="auto" pb={1} css={{ scrollbarWidth: "none" }} w="100%">
           {categoryFilters.map((cat) => {
             const isSelected = selectedCategory === cat.id;
             const IconComp = cat.icon;
@@ -269,11 +276,12 @@ const HelpFaqs = () => {
                 px={3}
                 py={2}
                 rounded="full"
-                variant={isSelected ? "solid" : "outline"}
-                bg={isSelected ? "#206CE1" : "white"}
+                border="none"
+                outline="none"
+                boxShadow="none"
+                bg={isSelected ? "#206CE1" : "#F4F7FB"}
                 color={isSelected ? "white" : "gray.600"}
-                borderColor={isSelected ? "#206CE1" : "gray.200"}
-                _hover={{ bg: isSelected ? "#1a5bc0" : "gray.50" }}
+                _hover={{ bg: isSelected ? "#1a5bc0" : "#EDF2F7" }}
                 onClick={() => setSelectedCategory(cat.id)}
                 whiteSpace="nowrap"
                 gap={1.5}
@@ -287,9 +295,9 @@ const HelpFaqs = () => {
       </Box>
 
       {/* Main Content: FAQs List & Contact Box */}
-      <Grid templateColumns={{ base: "1fr", lg: "1.8fr 1.2fr" }} gap={6} alignContent="start">
+      <Grid templateColumns={{ base: "1fr", lg: "1.8fr 1.2fr" }} gap={6} alignContent="start" w="100%">
         {/* FAQs Accordion Column */}
-        <VStack align="stretch" gap={3}>
+        <VStack align="stretch" gap={3} w="100%">
           <Flex justify="space-between" align="center" px={1}>
             <Text fontSize="sm" fontWeight="bold" color="gray.700">
               {filteredFaqs.length} {filteredFaqs.length === 1 ? "Question" : "Questions"} Found
@@ -311,12 +319,14 @@ const HelpFaqs = () => {
 
           {filteredFaqs.length === 0 ? (
             <Box
-              bg="white"
+              bg="#F4F7FB"
               p={8}
               rounded="xl"
-              border="1px solid"
-              borderColor="gray.100"
+              border="none"
+              outline="none"
+              boxShadow="none"
               textAlign="center"
+              w="100%"
             >
               <Text fontSize="md" fontWeight="bold" color="gray.700" mb={1}>
                 No questions matching "{searchQuery}"
@@ -326,7 +336,9 @@ const HelpFaqs = () => {
               </Text>
               <Button
                 size="sm"
-                variant="outline"
+                bg="white"
+                border="none"
+                boxShadow="none"
                 onClick={() => {
                   setSearchQuery("");
                   setSelectedCategory("all");
@@ -341,13 +353,14 @@ const HelpFaqs = () => {
               return (
                 <Box
                   key={index}
-                  bg="white"
+                  bg="#F4F7FB"
                   rounded="xl"
-                  border="1px solid"
-                  borderColor={isOpen ? "#206CE133" : "gray.100"}
-                  shadow={isOpen ? "sm" : "xs"}
-                  transition="all 0.2s"
+                  border="none"
+                  outline="none"
+                  boxShadow="none"
+                  transition="all 0.15s"
                   overflow="hidden"
+                  w="100%"
                 >
                   <Flex
                     p={4}
@@ -355,7 +368,7 @@ const HelpFaqs = () => {
                     align="center"
                     cursor="pointer"
                     onClick={() => setExpandedFaq(isOpen ? null : index)}
-                    _hover={{ bg: "gray.50" }}
+                    _hover={{ bg: "#EDF2F7" }}
                     gap={3}
                   >
                     <HStack gap={3} align="center" flex="1">
@@ -363,7 +376,7 @@ const HelpFaqs = () => {
                         w={6}
                         h={6}
                         rounded="full"
-                        bg={isOpen ? "blue.50" : "gray.100"}
+                        bg={isOpen ? "blue.50" : "white"}
                         color={isOpen ? "#206CE1" : "gray.500"}
                         display="flex"
                         alignItems="center"
@@ -397,9 +410,10 @@ const HelpFaqs = () => {
 
           {/* Quick AI Tutor Reminder Banner */}
           <Box
-            bg="linear-gradient(135deg, #206CE10F 0%, #206CE11A 100%)"
-            border="1px solid"
-            borderColor="#206CE133"
+            bg="#EFF6FF"
+            border="none"
+            outline="none"
+            boxShadow="none"
             p={4}
             rounded="xl"
             mt={2}
@@ -422,13 +436,14 @@ const HelpFaqs = () => {
 
         {/* Contact / Inquiry Form Column */}
         <Box
-          bg="white"
-          p={{ base: 5, md: 6 }}
+          bg="#F4F7FB"
+          p={{ base: 4, md: 5 }}
           rounded="xl"
-          shadow="sm"
-          border="1px solid"
-          borderColor="gray.100"
+          border="none"
+          outline="none"
+          boxShadow="none"
           height="fit-content"
+          w="100%"
         >
           <HStack gap={2} mb={1}>
             <FiSend color="#206CE1" size={16} />
@@ -448,8 +463,11 @@ const HelpFaqs = () => {
                 </Text>
                 <Input
                   size="sm"
-                  bg="gray.50"
+                  bg="white"
                   rounded="md"
+                  border="none"
+                  outline="none"
+                  boxShadow="none"
                   value={studentName || "Student"}
                   disabled
                   fontSize="xs"
@@ -463,8 +481,11 @@ const HelpFaqs = () => {
                 </Text>
                 <Input
                   size="sm"
-                  bg="gray.50"
+                  bg="white"
                   rounded="md"
+                  border="none"
+                  outline="none"
+                  boxShadow="none"
                   value={studentEmail || "No registered email"}
                   disabled
                   fontSize="xs"
@@ -481,13 +502,13 @@ const HelpFaqs = () => {
                   w="full"
                   p={2}
                   fontSize="xs"
-                  bg="gray.50"
-                  border="1px solid"
-                  borderColor="gray.200"
+                  bg="white"
+                  border="none"
+                  outline="none"
+                  boxShadow="none"
                   rounded="md"
                   value={formSubject}
                   onChange={(e: any) => setFormSubject(e.target.value)}
-                  _focus={{ borderColor: "#206CE1" }}
                 >
                   <option value="Question about quizzes or scoring">Question about quizzes or scoring</option>
                   <option value="Issue with IGG Points or Rewards">Issue with IGG Points or Rewards</option>
@@ -504,7 +525,10 @@ const HelpFaqs = () => {
                 <Textarea
                   size="sm"
                   rows={4}
-                  bg="gray.50"
+                  bg="white"
+                  border="none"
+                  outline="none"
+                  boxShadow="none"
                   rounded="md"
                   placeholder="Describe what you need help with in detail..."
                   value={formMessage}

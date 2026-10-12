@@ -165,16 +165,21 @@ const PdfList = ({ topic, pdf, onBack }: Props) => {
       {/* Header with back button */}
       <Heading
         as="h3"
+        fontSize={{ base: "15px", sm: "17px" }}
+        fontWeight="600"
         display="flex"
         alignItems="center"
         justifyContent="flex-start"
-        gap={3}
-        mt={3}
-        mb={5}
-        mx={2}
+        gap={2.5}
+        mt={2}
+        mb={4}
+        mx={1}
+        color="#0F172A"
       >
-        <LuArrowLeft onClick={onBack} style={{ cursor: "pointer" }} />
-        {topic.name} — Study Guides & PDFs
+        <LuArrowLeft onClick={onBack} style={{ cursor: "pointer", flexShrink: 0 }} size={18} />
+        <Text as="span" noOfLines={1}>
+          {topic.name} — Study Guides & PDFs
+        </Text>
       </Heading>
 
       {/* List of PDFs with Custom Thumbnails */}
@@ -492,7 +497,12 @@ const PdfList = ({ topic, pdf, onBack }: Props) => {
                       size="sm"
                       onClick={handleCloseDialog}
                       cursor="pointer"
-                      ml={1}
+                      bg="gray.100"
+                      color="gray.600"
+                      _hover={{ bg: "gray.200", color: "gray.900" }}
+                      rounded="lg"
+                      aria-label="Close"
+                      title="Close"
                     />
                   </Flex>
                 </Flex>
@@ -689,6 +699,7 @@ const PdfList = ({ topic, pdf, onBack }: Props) => {
                       title={selectedPDF.title}
                       onDownload={() => handleDownloadPdf(selectedPDF)}
                       onOpenNotes={() => setActiveTab("notes")}
+                      onClose={handleCloseDialog}
                     />
                   </Box>
                 )}

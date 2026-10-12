@@ -114,6 +114,10 @@ export const AIChatbot = () => {
           from { opacity: 0; transform: translateY(16px) scale(0.97); }
           to   { opacity: 1; transform: translateY(0) scale(1); }
         }
+        @keyframes mobileSheetSlideUp {
+          from { opacity: 0; transform: translateY(100%); }
+          to   { opacity: 1; transform: translateY(0); }
+        }
         @keyframes msgFadeIn {
           from { opacity: 0; transform: translateY(6px); }
           to   { opacity: 1; transform: translateY(0); }
@@ -135,29 +139,91 @@ export const AIChatbot = () => {
         .spark-markdown p:last-child { margin-bottom: 0; }
         .spark-markdown .katex-display { margin: 6px 0; overflow-x: auto; overflow-y: hidden; }
         .spark-markdown .katex { font-size: 1.05em; }
+
+        @media (max-width: 768px) {
+          .spark-panel {
+            position: fixed !important;
+            bottom: 0 !important;
+            left: 0 !important;
+            right: 0 !important;
+            width: 100% !important;
+            max-width: 100% !important;
+            height: min(88vh, 660px) !important;
+            border-radius: 24px 24px 0 0 !important;
+            border-bottom: none !important;
+            border-left: none !important;
+            border-right: none !important;
+            animation: mobileSheetSlideUp 0.28s cubic-bezier(.16,1,.3,1) !important;
+            box-shadow: 0 -10px 40px rgba(0,0,0,0.22) !important;
+          }
+          .spark-launcher-btn {
+            display: none !important;
+          }
+          .spark-mobile-backdrop {
+            display: block !important;
+          }
+          .spark-drag-handle {
+            display: block !important;
+          }
+          .spark-input-container {
+            padding-bottom: max(env(safe-area-inset-bottom, 12px), 12px) !important;
+          }
+        }
       `}</style>
+
+      {/* ── Mobile Backdrop Scrim ── */}
+      {isOpen && (
+        <div
+          onClick={toggleOpen}
+          className="spark-mobile-backdrop"
+          style={{
+            display: "none",
+            position: "fixed",
+            inset: 0,
+            background: "rgba(15, 23, 42, 0.45)",
+            backdropFilter: "blur(3px)",
+            zIndex: 20045,
+          }}
+        />
+      )}
 
       {/* ── Chat panel ── */}
       {isOpen && (
-        <div style={{
-          position: "fixed", bottom: "88px", right: "24px",
-          width: "min(380px, calc(100vw - 48px))",
-          height: "min(520px, calc(100vh - 120px))",
-          background: "white", borderRadius: "20px",
-          boxShadow: "0 24px 64px rgba(0,0,0,0.14), 0 4px 16px rgba(0,0,0,0.08)",
-          display: "flex", flexDirection: "column",
-          zIndex: 20050,
-          animation: "chatSlideUp 0.26s cubic-bezier(.16,1,.3,1)",
-          overflow: "hidden", border: "1px solid #edf2f7",
-        }}>
-
+        <div
+          className="spark-panel"
+          style={{
+            position: "fixed", bottom: "88px", right: "24px",
+            width: "min(380px, calc(100vw - 48px))",
+            height: "min(520px, calc(100vh - 120px))",
+            background: "white", borderRadius: "20px",
+            boxShadow: "0 24px 64px rgba(0,0,0,0.14), 0 4px 16px rgba(0,0,0,0.08)",
+            display: "flex", flexDirection: "column",
+            zIndex: 20050,
+            animation: "chatSlideUp 0.26s cubic-bezier(.16,1,.3,1)",
+            overflow: "hidden", border: "1px solid #edf2f7",
+          }}
+        >
           {/* Header */}
           <div style={{
             background: "linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)",
-            padding: "16px 18px",
-            display: "flex", alignItems: "center", justifyContent: "space-between",
+            padding: "14px 18px",
+            display: "flex", flexDirection: "column",
             flexShrink: 0,
           }}>
+            {/* Grab handle for mobile touch ergonomics */}
+            <div
+              className="spark-drag-handle"
+              style={{
+                display: "none",
+                width: "40px",
+                height: "4px",
+                borderRadius: "999px",
+                background: "rgba(255,255,255,0.45)",
+                margin: "0 auto 10px auto",
+              }}
+            />
+
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", width: "100%" }}>
             <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
               <div style={{
                 width: "36px", height: "36px", borderRadius: "50%",
@@ -195,6 +261,7 @@ export const AIChatbot = () => {
               >×</button>
             </div>
           </div>
+        </div>
 
           {/* Spark Plan & Daily Usage Bar */}
           <div style={{
@@ -452,11 +519,14 @@ export const AIChatbot = () => {
           )}
 
           {/* Input */}
-          <div style={{
-            padding: "12px 14px", borderTop: "1px solid #f0f0f0",
-            display: "flex", gap: "8px", alignItems: "flex-end",
-            flexShrink: 0, background: "white",
-          }}>
+          <div
+            className="spark-input-container"
+            style={{
+              padding: "12px 14px", borderTop: "1px solid #f0f0f0",
+              display: "flex", gap: "8px", alignItems: "flex-end",
+              flexShrink: 0, background: "white",
+            }}
+          >
             <textarea
               ref={inputRef}
               className="spark-input"
@@ -504,6 +574,7 @@ export const AIChatbot = () => {
       <button
         onClick={toggleOpen}
         title="Ask iGrades AI"
+        className="spark-launcher-btn"
         style={{
           position: "fixed", bottom: "80px", right: "24px",
           width: "56px", height: "56px", borderRadius: "50%",

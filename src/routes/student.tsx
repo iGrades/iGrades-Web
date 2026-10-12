@@ -40,6 +40,14 @@ const studentRoutes: RouteObject[] = [
     element: <StudentRedirect targetPage="quiz" />,
   },
   {
+    path: "/student/chat",
+    element: <StudentRedirect targetPage="chat" />,
+  },
+  {
+    path: "/student/spark",
+    element: <StudentRedirect targetPage="chat" />,
+  },
+  {
     path: "/student/help",
     element: <StudentRedirect targetPage="settings" targetTab="help" />,
   },
