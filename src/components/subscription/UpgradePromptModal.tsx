@@ -69,6 +69,7 @@ export const UpgradePromptModal: React.FC<UpgradePromptModalProps> = ({
   return (
     <DialogRoot open={isOpen} onOpenChange={(e) => !e.open && onClose()} placement="center">
       <DialogContent
+        zIndex={1600}
         maxW={{ base: "94vw", sm: "520px" }}
         w="full"
         maxH="90vh"

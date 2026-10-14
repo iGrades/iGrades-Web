@@ -188,12 +188,13 @@ const MyIgrade = () => {
     <Box
       as="section"
       bg="white"
-      boxShadow={{ base: "none", md: "md" }}
-      rounded={{ base: "none", md: "2xl" }}
+      border="none"
+      outline="none"
+      boxShadow="none"
       w="full"
       h="auto"
-      mb={{ base: "100px", lg: "10" }}
-      p={{ base: 4, md: 6 }}
+      mb={{ base: "32px", lg: "10" }}
+      p={{ base: 4, sm: 6 }}
     >
       {/* Header with back button */}
       <Heading
@@ -226,7 +227,7 @@ const MyIgrade = () => {
 
       {/* Main content */}
       {loading ? (
-        <DancingLogoLoader size="md" text="Loading settings & profile data..." minH="220px" />
+        <DancingLogoLoader size="md" minH="calc(70vh - 120px)" />
       ) : parent.length > 0 ? (
         renderView()
       ) : (

@@ -30,6 +30,9 @@ interface StudentsDataContextType {
   setStudentsData: Dispatch<SetStateAction<Student[]>>;
   getGraderDetails: () => Promise<void>;
   clearAlert: () => void;
+  selectedStudentId: string | null;
+  setSelectedStudentId: (id: string | null) => void;
+  selectedStudent: Student | null;
 }
 
 // Create context 
@@ -40,9 +43,41 @@ const StudentsDataContext = createContext<StudentsDataContextType | undefined>(
 // Create provider component
 export const StudentsDataProvider = ({ children }: { children: ReactNode }) => {
   const [studentsData, setStudentsData] = useState<Student[]>([]);
+  const [selectedStudentId, setSelectedStudentIdState] = useState<string | null>(() => {
+    try {
+      return localStorage.getItem("parent_selected_student_id") || null;
+    } catch {
+      return null;
+    }
+  });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
   const [alert, setAlert] = useState<Alert | null>(null);
+
+  const setSelectedStudentId = useCallback((id: string | null) => {
+    setSelectedStudentIdState(id);
+    try {
+      if (id) {
+        localStorage.setItem("parent_selected_student_id", id);
+      } else {
+        localStorage.removeItem("parent_selected_student_id");
+      }
+    } catch {
+      // ignore storage error
+    }
+  }, []);
+
+  // Keep selectedStudent in sync
+  useEffect(() => {
+    if (studentsData.length > 0) {
+      if (!selectedStudentId || !studentsData.some((s) => s.id === selectedStudentId)) {
+        setSelectedStudentId(studentsData[0].id);
+      }
+    }
+  }, [studentsData, selectedStudentId, setSelectedStudentId]);
+
+  const selectedStudent =
+    studentsData.find((s) => s.id === selectedStudentId) || (studentsData[0] ?? null);
 
   const clearAlert = () => setAlert(null);
 
@@ -144,6 +179,9 @@ export const StudentsDataProvider = ({ children }: { children: ReactNode }) => {
         setStudentsData,
         getGraderDetails,
         clearAlert,
+        selectedStudentId,
+        setSelectedStudentId,
+        selectedStudent,
       }}
     >
       {children}

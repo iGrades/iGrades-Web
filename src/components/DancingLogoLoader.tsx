@@ -106,6 +106,11 @@ export const DancingLogoLoader: React.FC<DancingLogoLoaderProps> = ({
   const isComplete = typedCount === FULL_LOGO_TEXT.length;
   const letterColor = color === "primaryColor" ? "#206CE1" : color;
 
+  const effectiveMinH = minH !== undefined ? minH : (compact ? "auto" : "calc(65vh - 100px)");
+
+  // Suppress 'Loading...' text under the iGrades loading animation
+  const shouldShowText = text && !text.toLowerCase().includes("loading");
+
   const content = (
     <VStack gap={config.gap} align="center" justify="center" py={compact ? 1 : 2.5}>
       {/* Logo Letters Typing Container */}
@@ -191,8 +196,8 @@ export const DancingLogoLoader: React.FC<DancingLogoLoaderProps> = ({
         </Box>
       </HStack>
 
-      {/* Optional Loading Text */}
-      {text && (
+      {/* Optional Non-Loading Text (Omit 'Loading...' under the iGrades loading animation) */}
+      {shouldShowText && (
         <VStack gap={1} align="center" mt={1}>
           <Text
             fontSize={config.textPt}
@@ -241,7 +246,9 @@ export const DancingLogoLoader: React.FC<DancingLogoLoaderProps> = ({
     return (
       <Flex
         w="full"
-        minH={minH}
+        minH={effectiveMinH}
+        flex="1"
+        my="auto"
         align="center"
         justify="center"
         p={6}
@@ -257,7 +264,15 @@ export const DancingLogoLoader: React.FC<DancingLogoLoaderProps> = ({
   }
 
   return (
-    <Flex w="full" minH={minH} align="center" justify="center" p={2}>
+    <Flex
+      w="full"
+      minH={effectiveMinH}
+      flex="1"
+      my="auto"
+      align="center"
+      justify="center"
+      p={2}
+    >
       {content}
     </Flex>
   );

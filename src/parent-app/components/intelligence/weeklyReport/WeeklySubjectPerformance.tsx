@@ -48,18 +48,11 @@ export const WeeklySubjectPerformance = ({
   return (
     <Box mb={6}>
       <Flex justify="space-between" align="center" mb={3.5} wrap="wrap" gap={2}>
-        <HStack gap={2.5}>
-          <Box bg="blue.50" p={2} borderRadius="xl" border="1px solid" borderColor="blue.200" boxShadow="0 2px 6px rgba(32, 108, 225, 0.12)">
-            <Icon as={PiBookOpenTextFill} color="#206CE1" boxSize="18px" />
-          </Box>
-          <Box>
-            <Heading size="sm" color="gray.900" fontWeight="800">
-              {t("Subject Performance Breakdown")}
-            </Heading>
-            <Text fontSize="xs" color="gray.500" mt={0.5}>
-              {t("Weekly mastery, score adjustments, and key subject highlights.")}
-            </Text>
-          </Box>
+        <HStack gap={2.5} align="center">
+          <Icon as={PiBookOpenTextFill} color="#206CE1" boxSize="20px" flexShrink={0} />
+          <Heading size="sm" color="gray.900" fontWeight="800">
+            {t("Subject Performance Breakdown")}
+          </Heading>
         </HStack>
         <Badge colorPalette="gray" variant="surface" size="sm" borderRadius="full">
           {subjects.length} {t("Active Subject")}{subjects.length === 1 ? "" : "s"}
@@ -81,9 +74,7 @@ export const WeeklySubjectPerformance = ({
           alignItems="center"
           gap={3.5}
         >
-          <Box bg="white" p={2.5} borderRadius="xl" boxShadow="0 2px 6px rgba(16, 185, 129, 0.15)">
-            <Icon as={PiTrophyFill} color="green.600" boxSize="18px" />
-          </Box>
+          <Icon as={PiTrophyFill} color="green.600" boxSize="22px" flexShrink={0} />
           <Box>
             <Text fontSize="11px" fontWeight="800" color="green.800" textTransform="uppercase" letterSpacing="0.04em">
               {t("Strongest Subject")}
@@ -112,9 +103,7 @@ export const WeeklySubjectPerformance = ({
           alignItems="center"
           gap={3.5}
         >
-          <Box bg="white" p={2.5} borderRadius="xl" boxShadow="0 2px 6px rgba(32, 108, 225, 0.15)">
-            <Icon as={PiChartLineUpFill} color="#206CE1" boxSize="18px" />
-          </Box>
+          <Icon as={PiChartLineUpFill} color="#206CE1" boxSize="22px" flexShrink={0} />
           <Box>
             <Text fontSize="11px" fontWeight="800" color="#1E56B3" textTransform="uppercase" letterSpacing="0.04em">
               {t("Most Improved")}
@@ -156,9 +145,7 @@ export const WeeklySubjectPerformance = ({
           alignItems="center"
           gap={3.5}
         >
-          <Box bg="white" p={2.5} borderRadius="xl" boxShadow="0 2px 6px rgba(0, 0, 0, 0.08)">
-            <Icon as={PiWarningCircleFill} color={needsAttentionSubject ? "orange.600" : "gray.500"} boxSize="18px" />
-          </Box>
+          <Icon as={PiWarningCircleFill} color={needsAttentionSubject ? "orange.600" : "gray.500"} boxSize="22px" flexShrink={0} />
           <Box>
             <Text fontSize="11px" fontWeight="800" color={needsAttentionSubject ? "orange.800" : "gray.600"} textTransform="uppercase" letterSpacing="0.04em">
               {t("Needs Attention")}

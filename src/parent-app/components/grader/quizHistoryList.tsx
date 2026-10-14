@@ -35,8 +35,8 @@ const QuizHistoryList = ({ studentId, student }: QuizHistoryListProps) => {
 
   if (loading) {
     return (
-      <Flex justify="center" align="center" minH="280px" w="full">
-        <DancingLogoLoader size="md" text="Loading student intelligence report..." minH="240px" />
+      <Flex justify="center" align="center" minH="calc(70vh - 120px)" w="full" flex={1}>
+        <DancingLogoLoader size="md" />
       </Flex>
     );
   }

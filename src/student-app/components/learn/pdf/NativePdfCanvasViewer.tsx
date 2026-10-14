@@ -1018,7 +1018,7 @@ export const NativePdfCanvasViewer: React.FC<PdfViewerProps> = ({
                 title="Download PDF"
                 h="32px"
                 px={2.5}
-                display={{ base: "none", sm: "inline-flex" }}
+                display="inline-flex"
               >
                 <LuDownload size={14} />
                 <Text display={{ base: "none", md: "inline" }} ml={1.5} fontSize="xs">

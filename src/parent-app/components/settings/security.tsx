@@ -98,15 +98,17 @@ const Security = () => {
   return (
     <Box 
       bg="white" 
-      rounded="2xl" 
-      shadow="sm" 
-      p={{ base: 4, md: 8 }} 
-      mb={{ base: "100px", lg: 10 }} 
+      border="none"
+      outline="none"
+      boxShadow="none"
+      p={{ base: 4, sm: 6 }} 
+      mb={20} 
+      w="100%"
       h="auto"
     >
       {/* Alert Positioned to not disrupt layout flow */}
       {alert && (
-        <Alert.Root status={alert.type} variant="subtle" mb={6} borderRadius="lg">
+        <Alert.Root status={alert.type} variant="subtle" mb={4} borderRadius="lg">
           <Alert.Indicator />
           <Alert.Content fontSize="xs">
             <Alert.Title>
@@ -122,60 +124,72 @@ const Security = () => {
         display="flex"
         alignItems="center"
         justifyContent="flex-start"
-        gap={3}
-        mt={2}
-        mb={{ base: 8, md: 16 }}
-        fontSize={{ base: "lg", md: "xl" }}
+        gap={2}
+        mt={1}
+        mb={{ base: 5, md: 8 }}
+        fontSize={{ base: "14px", md: "16px" }}
+        fontWeight="700"
+        color="gray.800"
       >
-        Change Password
+        Change Account Password
       </Heading>
 
       <VStack
-        gap={6}
-        w={{ base: "100%", md: "80%", lg: "60%" }}
+        gap={4}
+        w={{ base: "100%", md: "85%", lg: "70%" }}
         m="auto"
         align="stretch"
       >
         <Field.Root width="100%">
-          <Field.Label fontSize="xs" fontWeight="bold" mb={2}>Current Password</Field.Label>
+          <Field.Label fontSize="11px" fontWeight="bold" color="gray.700" mb={1.5}>Current Password</Field.Label>
           <PasswordInput
             value={currentPassword}
-            bg="textFieldColor"
-            h="50px" 
-            borderRadius="lg"
+            bg="#F4F7FB"
+            border="none"
+            outline="none"
+            boxShadow="none"
+            h="42px" 
+            borderRadius="xl"
+            fontSize="xs"
             onChange={(e) => setCurrentPassword(e.target.value)}
             placeholder="Enter your current password"
-            _placeholder={{ fontSize: "xs" }}
+            _placeholder={{ fontSize: "11px", color: "gray.400" }}
           />
         </Field.Root>
 
         <Field.Root width="100%">
-          <Field.Label fontSize="xs" fontWeight="bold" mb={2}>New Password</Field.Label>
+          <Field.Label fontSize="11px" fontWeight="bold" color="gray.700" mb={1.5}>New Password</Field.Label>
           <PasswordInput
             value={newPassword}
-            bg="textFieldColor"
-            h="50px" 
-            borderRadius="lg"
+            bg="#F4F7FB"
+            border="none"
+            outline="none"
+            boxShadow="none"
+            h="42px" 
+            borderRadius="xl"
+            fontSize="xs"
             onChange={(e) => setNewPassword(e.target.value)}
-            placeholder="Enter your new password"
-            _placeholder={{ fontSize: "xs" }}
+            placeholder="Enter your new password (min. 6 characters)"
+            _placeholder={{ fontSize: "11px", color: "gray.400" }}
           />
         </Field.Root>
 
-        <Flex justify="center" align="center" mt={6}>
+        <Flex justify="center" align="center" mt={4}>
           <Button
             variant="solid" 
             bg="primaryColor"
             color="white"
-            w={{ base: "full", md: "auto" }}
-            h="50px"
+            w={{ base: "full", sm: "auto" }}
+            h="42px"
             px={8}
-            borderRadius="3xl"
+            borderRadius="xl"
+            fontSize="xs"
             fontWeight="bold"
             onClick={handleUpdatePassword}
             loading={isLoading}
             loadingText="Updating..."
             _active={{ transform: "scale(0.98)" }}
+            _hover={{ bg: "#1956b5" }}
             disabled={isLoading || !currentPassword || !newPassword}
           >
             Update Password <GiPadlock style={{ marginLeft: "8px" }} />

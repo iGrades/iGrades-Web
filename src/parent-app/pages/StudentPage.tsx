@@ -33,14 +33,14 @@ const StudentPage = () => {
     <Flex 
       direction="column" 
       w={{ base: "100%", md: "96%" }} 
-      px={{ base: 4, md: 0 }} 
+      px={{ base: 2, sm: 3, md: 0 }} 
       m="auto"
-      pb={{ base: "100px", lg: "40px" }} 
+      pb={{ base: "32px", lg: "40px" }} 
     >
       {/* ── ACADEMIC HERO & STATUS BANNER ── */}
       <Box
-        mt={4}
-        p={{ base: 5, md: 6 }}
+        mt={2}
+        p={{ base: 4, md: 6 }}
         borderRadius="2xl"
         bg="white"
         border="1px solid"
@@ -52,13 +52,13 @@ const StudentPage = () => {
         <Flex
           direction={{ base: "column", md: "row" }}
           justify="space-between"
-          align={{ base: "flex-start", md: "center" }}
+          align={{ base: "stretch", md: "center" }}
           gap={4}
           position="relative"
           zIndex={1}
         >
           <Box>
-            <HStack gap={2.5} mb={1.5} flexWrap="wrap">
+            <HStack gap={2} mb={1.5} flexWrap="wrap">
               <Box
                 p={2}
                 bg="blue.50"
@@ -68,9 +68,9 @@ const StudentPage = () => {
                 alignItems="center"
                 justifyContent="center"
               >
-                <PiStudentBold size={24} />
+                <PiStudentBold size={22} />
               </Box>
-              <Heading size={{ base: "md", md: "lg" }} fontWeight="800" color="gray.900">
+              <Heading size={{ base: "sm", md: "lg" }} fontWeight="800" color="gray.900">
                 Student Directory & Enrolled Children
               </Heading>
               <Badge
@@ -85,7 +85,7 @@ const StudentPage = () => {
                 {currentChildrenCount} Connected
               </Badge>
             </HStack>
-            <Text fontSize="xs" color="gray.500" maxW="640px" lineHeight="1.6">
+            <Text fontSize="xs" color="gray.500" maxW="640px" lineHeight="1.5">
               Oversee and manage your connected students, monitor curriculum enrollment levels, academic classes, and adjust learning profile details.
             </Text>
           </Box>
@@ -99,7 +99,8 @@ const StudentPage = () => {
             fontWeight="bold"
             fontSize="xs"
             px={5}
-            py={5}
+            py={{ base: 3, md: 5 }}
+            w={{ base: "full", md: "auto" }}
             shadow="sm"
             onClick={handleAddChildClick}
           >

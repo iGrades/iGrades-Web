@@ -157,3 +157,82 @@ pre,
   animation: logo-letters-glow 1.4s ease-in-out infinite;
 }
 
+/* Remove all visible scrollbars across the whole app (both parent and student apps) */
+*,
+*::before,
+*::after {
+  scrollbar-width: none !important;
+  -ms-overflow-style: none !important;
+}
+
+*::-webkit-scrollbar {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+  background: transparent !important;
+}
+
+html,
+body,
+#root {
+  scrollbar-width: none !important;
+  -ms-overflow-style: none !important;
+}
+
+html::-webkit-scrollbar,
+body::-webkit-scrollbar,
+#root::-webkit-scrollbar {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+  background: transparent !important;
+}
+
+/* Top Nav Swipe-Up Greeting & Hand Wave Animations */
+@keyframes wave-hand-once {
+  0% { transform: rotate(0deg); }
+  15% { transform: rotate(20deg); }
+  30% { transform: rotate(-14deg); }
+  45% { transform: rotate(18deg); }
+  60% { transform: rotate(-8deg); }
+  75% { transform: rotate(12deg); }
+  100% { transform: rotate(0deg); }
+}
+
+.animate-wave-hand-once {
+  display: inline-block;
+  transform-origin: 75% 75%;
+  animation: wave-hand-once 1.1s ease-in-out 1;
+}
+
+@keyframes swipeUpEnter {
+  from {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0%);
+    opacity: 1;
+  }
+}
+
+@keyframes swipeUpExit {
+  from {
+    transform: translateY(0%);
+    opacity: 1;
+  }
+  to {
+    transform: translateY(-100%);
+    opacity: 0;
+  }
+}
+
+.animate-swipe-up-enter {
+  animation: swipeUpEnter 0.42s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-swipe-up-exit {
+  animation: swipeUpExit 0.42s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+

@@ -36,18 +36,11 @@ export const StrengthsAndWeaknessesSection = ({ intelligence }: Props) => {
           flexDirection="column"
         >
           <Flex justify="space-between" align="center" mb={3.5}>
-            <HStack gap={2.5}>
-              <Box bg="green.50" p={2.5} borderRadius="xl" border="none" boxShadow="0 2px 8px rgba(16, 185, 129, 0.18)">
-                <Icon as={PiTrophyFill} color="green.600" boxSize="18px" />
-              </Box>
-              <Box>
-                <Heading size={{ base: "sm", md: "md" }} color="gray.900" fontWeight="800">
-                  {t("Student Strengths")}
-                </Heading>
-                <Text fontSize="xs" color="gray.500" mt={0.5}>
-                  {t("Topics and subjects where your child is doing exceptionally well.")}
-                </Text>
-              </Box>
+            <HStack gap={2.5} align="center">
+              <Icon as={PiTrophyFill} color="green.600" boxSize="20px" flexShrink={0} />
+              <Heading size={{ base: "sm", md: "md" }} color="gray.900" fontWeight="800">
+                {t("Student Strengths")}
+              </Heading>
             </HStack>
             <Badge colorPalette="green" variant="subtle" size="sm" borderRadius="full" px={2.5} py={0.5}>
               {t("Doing Great")}
@@ -162,18 +155,11 @@ export const StrengthsAndWeaknessesSection = ({ intelligence }: Props) => {
           flexDirection="column"
         >
           <Flex justify="space-between" align="center" mb={3.5}>
-            <HStack gap={2.5}>
-              <Box bg="orange.50" p={2.5} borderRadius="xl" border="none" boxShadow="0 2px 8px rgba(245, 158, 11, 0.2)">
-                <Icon as={PiNotebookFill} color="orange.600" boxSize="18px" />
-              </Box>
-              <Box>
-                <Heading size={{ base: "sm", md: "md" }} color="gray.900" fontWeight="800">
-                  {t("Areas to Practice")}
-                </Heading>
-                <Text fontSize="xs" color="gray.500" mt={0.5}>
-                  {t("Specific topics where a little more practice can boost your child's grades.")}
-                </Text>
-              </Box>
+            <HStack gap={2.5} align="center">
+              <Icon as={PiNotebookFill} color="orange.600" boxSize="20px" flexShrink={0} />
+              <Heading size={{ base: "sm", md: "md" }} color="gray.900" fontWeight="800">
+                {t("Areas to Practice")}
+              </Heading>
             </HStack>
             <Badge colorPalette="orange" variant="subtle" size="sm" borderRadius="full" px={2.5} py={0.5}>
               {t("Extra Focus")}

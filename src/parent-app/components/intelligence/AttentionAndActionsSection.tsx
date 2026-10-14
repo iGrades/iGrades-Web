@@ -36,18 +36,11 @@ export const AttentionAndActionsSection = ({ intelligence }: Props) => {
           flexDirection="column"
         >
           <Flex justify="space-between" align="center" mb={4}>
-            <HStack gap={2.5}>
-              <Box bg="amber.50" p={2.5} borderRadius="xl" border="none" boxShadow="0 2px 8px rgba(245, 158, 11, 0.2)">
-                <Icon as={PiWarningCircleFill} color="amber.600" boxSize="18px" />
-              </Box>
-              <Box>
-                <Heading size={{ base: "sm", md: "md" }} color="gray.900" fontWeight="800">
-                  {t("What Needs Attention?")}
-                </Heading>
-                <Text fontSize="xs" color="gray.500" mt={0.5}>
-                  {t("Topics and areas where your child could use extra practice or support.")}
-                </Text>
-              </Box>
+            <HStack gap={2.5} align="center">
+              <Icon as={PiWarningCircleFill} color="amber.600" boxSize="20px" flexShrink={0} />
+              <Heading size={{ base: "sm", md: "md" }} color="gray.900" fontWeight="800">
+                {t("What Needs Attention?")}
+              </Heading>
             </HStack>
             <Badge colorPalette="amber" variant="subtle" size="sm" borderRadius="full" px={2.5} py={0.5}>
               {needsAttentionAlerts.length} {t("Points")}
@@ -115,18 +108,11 @@ export const AttentionAndActionsSection = ({ intelligence }: Props) => {
           flexDirection="column"
         >
           <Flex justify="space-between" align="center" mb={4}>
-            <HStack gap={2.5}>
-              <Box bg="blue.50" p={2.5} borderRadius="xl" border="none" boxShadow="0 2px 8px rgba(32, 108, 225, 0.18)">
-                <Icon as={PiHandHeartFill} color="#206CE1" boxSize="18px" />
-              </Box>
-              <Box>
-                <Heading size={{ base: "sm", md: "md" }} color="gray.900" fontWeight="800">
-                  {t("What Can I Do?")}
-                </Heading>
-                <Text fontSize="xs" color="gray.500" mt={0.5}>
-                  {t("Simple, practical tips you can use to help your child improve right now.")}
-                </Text>
-              </Box>
+            <HStack gap={2.5} align="center">
+              <Icon as={PiHandHeartFill} color="#206CE1" boxSize="20px" flexShrink={0} />
+              <Heading size={{ base: "sm", md: "md" }} color="gray.900" fontWeight="800">
+                {t("What Can I Do?")}
+              </Heading>
             </HStack>
             <Badge colorPalette="blue" variant="subtle" size="sm" borderRadius="full" px={2.5} py={0.5}>
               {t("Helpful Tips")}

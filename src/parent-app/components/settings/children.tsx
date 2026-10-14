@@ -28,11 +28,14 @@ const Children = () => {
               flexWrap="wrap"
               gap={3}
               w="full"
-              bg="textFieldColor"
-              borderRadius="lg"
+              bg="#F4F7FB"
+              borderRadius="xl"
+              border="none"
+              outline="none"
+              boxShadow="none"
               p={{ base: "4", md: "4", lg: "5" }}
               transition="all 0.2s"
-              _hover={{ shadow: "sm", transform: "translateY(-2px)" }}
+              _hover={{ bg: "blue.50/30" }}
             >
               <Box
                 display="flex"
@@ -47,28 +50,32 @@ const Children = () => {
                   <Heading
                     as="h2"
                     fontSize={{ base: "sm", md: "md" }}
-                    color="#333951"
+                    fontWeight="700"
+                    color="gray.800"
                     truncate 
                   >
                     {student.firstname} {student.lastname}
                   </Heading>
                   <Text
                     fontSize="xs"
-                    color="#333951"
+                    color="gray.500"
                     textTransform="capitalize"
                     truncate 
+                    mt={0.5}
                   >
-                    {student.school} • <Badge colorPalette="blue" size="xs">{student.class}</Badge>
+                    {student.school || "Student"} • <Badge colorPalette="blue" size="xs" variant="subtle" borderRadius="md">{student.class || "General"}</Badge>
                   </Text>
                 </Box>
               </Box>
 
               <Button
                 size="xs"
-                variant="outline"
-                colorPalette="blue"
-                borderRadius="md"
+                variant="solid"
+                bg="#206CE1"
+                color="white"
+                borderRadius="lg"
                 fontWeight="700"
+                _hover={{ bg: "#1956b5" }}
                 onClick={() => {
                   setSelectedStudent(student);
                   setShowModal(true);

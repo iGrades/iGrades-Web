@@ -45,8 +45,8 @@ export const ParentQuizReportView = () => {
 
   if (loading) {
     return (
-      <Flex justify="center" align="center" minH="280px" w="full">
-        <DancingLogoLoader size="md" text="Loading academic quiz reports..." minH="240px" />
+      <Flex justify="center" align="center" minH="calc(70vh - 120px)" w="full" flex={1}>
+        <DancingLogoLoader size="md" />
       </Flex>
     );
   }
@@ -108,17 +108,8 @@ export const ParentQuizReportView = () => {
           align={{ base: "start", md: "center" }}
           gap={4}
         >
-          <HStack gap={3}>
-            <Box
-              p={3}
-              bg="cyan.50"
-              borderRadius="xl"
-              display="flex"
-              alignItems="center"
-              justifyContent="center"
-            >
-              <Icon as={GiNotebook} boxSize="24px" color="#00A8E6" />
-            </Box>
+          <HStack gap={3} align="center">
+            <Icon as={GiNotebook} boxSize="24px" color="#00A8E6" flexShrink={0} />
             <Box>
               <HStack gap={2}>
                 <Heading size="md" color="gray.900">
@@ -128,9 +119,6 @@ export const ParentQuizReportView = () => {
                   Academic Intelligence
                 </Badge>
               </HStack>
-              <Text fontSize="xs" color="gray.500" mt={0.5}>
-                Review comprehensive quiz history, strengths, weaknesses, and weekly performance digests.
-              </Text>
             </Box>
           </HStack>
 

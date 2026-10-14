@@ -24,20 +24,13 @@ export const RecentActivitySection = ({ intelligence }: Props) => {
   const displayedActivities = isExpanded ? recentActivities : recentActivities.slice(0, 4);
 
   return (
-    <Box bg="white" p={{ base: 4, md: 6 }} borderRadius="2xl" border="1px solid" borderColor="gray.100" boxShadow="0 2px 8px rgba(0, 0, 0, 0.04)">
-      <Flex justify="space-between" align="center" mb={4} wrap="wrap" gap={2}>
-        <HStack gap={2.5}>
-          <Box bg="blue.50" p={2} borderRadius="xl" border="1px solid" borderColor="blue.200" boxShadow="0 2px 6px rgba(32, 108, 225, 0.12)">
-            <Icon as={PiClockCounterClockwiseFill} color="#206CE1" boxSize="18px" />
-          </Box>
-          <Box>
-            <Heading size={{ base: "sm", md: "md" }} color="gray.900" fontWeight="800">
-              {t("Recent Activity")}
-            </Heading>
-            <Text fontSize="xs" color="gray.500" mt={0.5}>
-              {t("A quick list of the latest quizzes taken and lessons watched.")}
-            </Text>
-          </Box>
+    <Box bg="white" py={{ base: 3, md: 4 }} px={{ base: 3.5, md: 5 }} borderRadius="2xl" border="1px solid" borderColor="gray.100" boxShadow="0 2px 8px rgba(0, 0, 0, 0.04)" mb={5}>
+      <Flex justify="space-between" align="center" mb={3} wrap="wrap" gap={2}>
+        <HStack gap={2} align="center">
+          <Icon as={PiClockCounterClockwiseFill} color="#206CE1" boxSize="20px" flexShrink={0} />
+          <Heading size={{ base: "sm", md: "md" }} color="gray.900" fontWeight="800">
+            {t("Recent Activity")}
+          </Heading>
         </HStack>
 
         <HStack gap={2}>
@@ -59,26 +52,29 @@ export const RecentActivitySection = ({ intelligence }: Props) => {
       </Flex>
 
       {recentActivities.length === 0 ? (
-        <Box p={6} textAlign="center" bg="gray.50" borderRadius="xl">
+        <Box p={4} textAlign="center" bg="gray.50" borderRadius="xl">
           <Text fontSize="xs" color="gray.500" fontStyle="italic">
             {t("No quizzes or video lessons recorded yet. Completed activities will show up here as your child studies.")}
           </Text>
         </Box>
       ) : (
         <>
-          <VStack align="stretch" gap={3}>
+          <VStack align="stretch" gap={1.5}>
             {displayedActivities.map((act) => {
               const isQuiz = act.type === "quiz";
               const icon = isQuiz ? PiExamFill : PiPlayCircleFill;
               const iconColor = isQuiz ? "teal.600" : "purple.600";
-              const iconBg = isQuiz ? "teal.50" : "purple.50";
-              const iconBorder = isQuiz ? "teal.200" : "purple.200";
+              const showDate = Boolean(
+                act.formattedDate &&
+                !/recent/i.test(act.formattedDate.trim())
+              );
 
               return (
                 <Box
                   key={act.id}
-                  p={3.5}
-                  borderRadius="xl"
+                  py={1}
+                  px={3}
+                  borderRadius="lg"
                   border="1px solid"
                   borderColor="gray.100"
                   bg="white"
@@ -86,34 +82,34 @@ export const RecentActivitySection = ({ intelligence }: Props) => {
                   transition="all 0.15s"
                 >
                   <Flex justify="space-between" align="center" gap={3}>
-                    <HStack gap={3}>
-                      <Box bg={iconBg} p={2} borderRadius="lg" border="1px solid" borderColor={iconBorder} boxShadow="0 1px 4px rgba(0,0,0,0.06)">
-                        <Icon as={icon} color={iconColor} boxSize="16px" />
-                      </Box>
+                    <HStack gap={2} align="center">
+                      <Icon as={icon} color={iconColor} boxSize="16px" flexShrink={0} />
                       <Box>
-                        <Text fontSize="xs" fontWeight="700" color="gray.900">
+                        <Text fontSize="xs" fontWeight="700" color="gray.900" lineHeight="1.15">
                           {act.title}
                         </Text>
-                        <Text fontSize="11px" color="gray.500" mt={0.5}>
+                        <Text fontSize="10px" color="gray.500" mt="1px" lineHeight="1.15">
                           {act.subtitle}
                         </Text>
                       </Box>
                     </HStack>
 
-                    <HStack gap={2.5}>
+                    <HStack gap={2} align="center">
                       {act.score !== undefined && (
                         <Badge
                           colorPalette={act.score >= 75 ? "green" : act.score >= 50 ? "blue" : "orange"}
                           variant="solid"
-                          size="sm"
+                          size="xs"
                           borderRadius="md"
                         >
                           {act.score}%
                         </Badge>
                       )}
-                      <Text fontSize="11px" color="gray.400" fontWeight="600" whiteSpace="nowrap">
-                        {act.formattedDate}
-                      </Text>
+                      {showDate && (
+                        <Text fontSize="10.5px" color="gray.400" fontWeight="600" whiteSpace="nowrap">
+                          {act.formattedDate}
+                        </Text>
+                      )}
                     </HStack>
                   </Flex>
                 </Box>

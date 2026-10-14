@@ -91,9 +91,7 @@ export const WeeklyLearningReportView = ({ student, onClose }: Props) => {
           />
           <Box>
             <Flex align="center" gap={2}>
-              <Box bg="blue.50" p={1.5} borderRadius="lg" boxShadow="0 1px 4px rgba(32, 108, 225, 0.15)">
-                <Icon as={PiFileTextFill} color="#206CE1" boxSize="18px" />
-              </Box>
+              <Icon as={PiFileTextFill} color="#206CE1" boxSize="20px" flexShrink={0} />
               <Heading size="md" color="gray.900" fontWeight="800">
                 {t("Weekly Learning Report")}
               </Heading>

@@ -16,10 +16,7 @@ import { useEffect, useState, useRef } from "react";
 import { supabase } from "@/lib/supabaseClient";
 import { DancingLogoLoader } from "@/components/DancingLogoLoader";
 import { useAuthdStudentData } from "@/student-app/context/studentDataContext";
-import { useSubscriptionEntitlement } from "@/hooks/useSubscriptionEntitlement";
-import { UpgradePromptModal } from "@/components/subscription/UpgradePromptModal";
 import { RiCompassesLine } from "react-icons/ri";
-import { PiShootingStarDuotone } from "react-icons/pi";
 import { FiX, FiChevronRight } from "react-icons/fi";
 import { courseConfig } from "@/student-app/utils/courseConstants";
 
@@ -39,12 +36,6 @@ const Analytics = () => {
   const cardRef = useRef<HTMLDivElement>(null);
 
   const { authdStudent } = useAuthdStudentData();
-  const {
-    effectivePlan,
-    modalState,
-    promptUpgrade,
-    closeUpgradeModal,
-  } = useSubscriptionEntitlement();
 
   const getCourseColor = (dbCourseName: string): string =>
     courseConfig[dbCourseName?.toLowerCase()]?.color || "#206CE1";
@@ -238,26 +229,9 @@ const Analytics = () => {
       >
         {/* Header: Title on left, 'See more' button on right */}
         <Flex justify="space-between" align="center" mb={4}>
-          <HStack gap={2}>
-            <Heading as="h2" fontSize="md" color="gray.800" fontWeight="700">
-              Learning Analytics
-            </Heading>
-            {effectivePlan === "basic" && (
-              <Badge colorPalette="gray" size="xs" variant="surface">
-                Basic
-              </Badge>
-            )}
-            {effectivePlan === "standard" && (
-              <Badge bg="#206CE1" color="white" size="xs" variant="solid">
-                Detailed
-              </Badge>
-            )}
-            {effectivePlan === "premium" && (
-              <Badge bg="#206CE1" color="white" size="xs" variant="solid">
-                Deep AI
-              </Badge>
-            )}
-          </HStack>
+          <Heading as="h2" fontSize="md" color="gray.800" fontWeight="700">
+            Learning Analytics
+          </Heading>
 
           {courses.length > 0 && (
             <Button
@@ -277,44 +251,6 @@ const Analytics = () => {
             </Button>
           )}
         </Flex>
-
-        {/* Upgrade Banner for Basic if applicable */}
-        {effectivePlan === "basic" && (
-          <Flex
-            p={2}
-            mb={3}
-            bg="blue.50"
-            borderRadius="md"
-            border="1px solid"
-            borderColor="blue.200"
-            justify="space-between"
-            align="center"
-            gap={2}
-          >
-            <Text fontSize="10px" color="blue.900" fontWeight="500">
-              Topic diagnostics unlocked on Standard.
-            </Text>
-            <Button
-              size="xs"
-              variant="ghost"
-              color="#206CE1"
-              _hover={{ color: "#1852B2", bg: "blue.100" }}
-              fontSize="10px"
-              p={1}
-              h="auto"
-              onClick={() =>
-                promptUpgrade(
-                  "Detailed Performance Analytics",
-                  "standard",
-                  "Detailed performance breakdown and subject strengths & weaknesses require Standard or Premium. Upgrade to see full diagnostics."
-                )
-              }
-            >
-              <PiShootingStarDuotone style={{ marginRight: "3px" }} />
-              Unlock Standard →
-            </Button>
-          </Flex>
-        )}
 
         {/* First glance: SHOWS ONLY ONE SUBJECT (the course with the highest percentage) */}
         {topCourse ? (
@@ -526,16 +462,6 @@ const Analytics = () => {
           </Box>
         </Portal>
       )}
-
-      {/* Upgrade Prompt Modal */}
-      <UpgradePromptModal
-        isOpen={modalState.isOpen}
-        onClose={closeUpgradeModal}
-        featureName={modalState.featureName}
-        requiredPlan={modalState.requiredPlan}
-        reason={modalState.reason}
-        currentPlan={effectivePlan}
-      />
     </>
   );
 };

@@ -97,23 +97,16 @@ export const ExamReadinessSection = ({ studentId, studentClass, studentName = "Y
 
       {/* Section Header */}
       <Flex justify="space-between" align={{ base: "start", sm: "center" }} mb={5} wrap="wrap" gap={3}>
-        <HStack gap={2.5}>
-          <Box bg="blue.50" p={2} borderRadius="xl" border="1px solid" borderColor="blue.200" boxShadow="0 2px 6px rgba(32, 108, 225, 0.12)">
-            <Icon as={TbTargetArrow} color="#206CE1" boxSize="18px" />
-          </Box>
-          <Box>
-            <HStack gap={2} wrap="wrap">
-              <Heading size={{ base: "sm", md: "md" }} color="gray.900" fontWeight="800">
-                {t("Exam Readiness Indicator")}
-              </Heading>
-              <Badge colorPalette="blue" variant="solid" size="sm" borderRadius="full" px={2.5}>
-                {t("Target")}: {targetExam}
-              </Badge>
-            </HStack>
-            <Text fontSize="xs" color="gray.500" mt={0.5}>
-              {t("Current preparation and practice status based on available test evidence")}
-            </Text>
-          </Box>
+        <HStack gap={2.5} align="center">
+          <Icon as={TbTargetArrow} color="#206CE1" boxSize="20px" flexShrink={0} />
+          <HStack gap={2} wrap="wrap" align="center">
+            <Heading size={{ base: "sm", md: "md" }} color="gray.900" fontWeight="800">
+              {t("Exam Readiness Indicator")}
+            </Heading>
+            <Badge colorPalette="blue" variant="solid" size="sm" borderRadius="full" px={2.5}>
+              {t("Target")}: {targetExam}
+            </Badge>
+          </HStack>
         </HStack>
 
         <HStack gap={2}>

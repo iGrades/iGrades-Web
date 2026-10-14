@@ -29,6 +29,7 @@ import NativePdfCanvasViewer from "./NativePdfCanvasViewer";
 import { useSubscriptionEntitlement } from "@/hooks/useSubscriptionEntitlement";
 import { UpgradePromptModal } from "@/components/subscription/UpgradePromptModal";
 import { LockedBadge } from "@/components/subscription/LockedBadge";
+import { toaster } from "@/components/ui/toaster";
 
 interface PDFsResource {
   id: string;
@@ -62,6 +63,7 @@ const PdfList = ({ topic, pdf, onBack }: Props) => {
   const {
     effectivePlan,
     verifyPdf,
+    verifyPdfDownload,
     modalState,
     promptUpgrade,
     closeUpgradeModal,
@@ -120,17 +122,30 @@ const PdfList = ({ topic, pdf, onBack }: Props) => {
     }
   };
 
-  const handleDownloadPdf = async (pdfFile: PDFsResource, index: number = 0, e?: React.MouseEvent) => {
+  const handleDownloadPdf = async (pdfFile: PDFsResource, _index: number = 0, e?: React.MouseEvent) => {
     if (e) e.stopPropagation();
-    const access = verifyPdf(index, pdfFile.title);
-    if (!access.allowed) {
+
+    // Tie PDF download strictly to the Premium plan
+    const downloadAccess = verifyPdfDownload(pdfFile.title);
+    if (!downloadAccess.allowed) {
+      toaster.create({
+        title: "Premium Plan Required",
+        description:
+          downloadAccess.reason ||
+          `"${pdfFile.title}" can only be downloaded if you are on a Premium plan.`,
+        type: "info",
+        duration: 5000,
+      });
+
       promptUpgrade(
-        `${pdfFile.title} Download`,
-        access.requiredPlan,
-        access.reason
+        "PDF Study Guide Download",
+        "premium",
+        downloadAccess.reason ||
+          `"${pdfFile.title}" can only be downloaded if you are on a Premium plan. Upgrade to Premium (₦25,000) to save and download offline revision packs.`
       );
       return;
     }
+
     setIsDownloading(true);
 
     try {
@@ -165,19 +180,19 @@ const PdfList = ({ topic, pdf, onBack }: Props) => {
       {/* Header with back button */}
       <Heading
         as="h3"
-        fontSize={{ base: "15px", sm: "17px" }}
+        fontSize={{ base: "13px", sm: "15px" }}
         fontWeight="600"
         display="flex"
         alignItems="center"
         justifyContent="flex-start"
-        gap={2.5}
+        gap={2}
         mt={2}
-        mb={4}
+        mb={3}
         mx={1}
         color="#0F172A"
       >
-        <LuArrowLeft onClick={onBack} style={{ cursor: "pointer", flexShrink: 0 }} size={18} />
-        <Text as="span" noOfLines={1}>
+        <LuArrowLeft onClick={onBack} style={{ cursor: "pointer", flexShrink: 0 }} size={17} />
+        <Text as="span" noOfLines={1} truncate>
           {topic.name} — Study Guides & PDFs
         </Text>
       </Heading>
@@ -483,7 +498,7 @@ const PdfList = ({ topic, pdf, onBack }: Props) => {
                           rounded="lg"
                           h="28px"
                           px={2.5}
-                          display={{ base: "none", xs: "inline-flex" }}
+                          display="inline-flex"
                           onClick={() => handleDownloadPdf(selectedPDF)}
                           loading={isDownloading}
                         >

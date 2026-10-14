@@ -1,12 +1,19 @@
 import { useState } from "react";
-import { Table, Box, Text, Heading, Badge, Button, Icon } from "@chakra-ui/react";
+import { Table, Box, Text, Heading, Badge, Button, Icon, Flex, HStack } from "@chakra-ui/react";
 import AvatarComp from "@/components/avatar";
 import MenuModal from "../menuModal";
 import EditGraderPopup from "./editGraderPopover";
 import DeleteGraderPopover from "./deleteGraderPopover";
 import { ParentClassChangeModal } from "./ParentClassChangeModal";
 import { useStudentsData } from "../../context/studentsDataContext";
-import { PiGraduationCapFill, PiUserPlusBold } from "react-icons/pi";
+import {
+  PiGraduationCapFill,
+  PiUserPlusBold,
+  PiPencilSimpleBold,
+  PiTrashBold,
+  PiArrowsClockwiseBold,
+  PiBuildingsFill,
+} from "react-icons/pi";
 
 type Props = {
   studentsData: any[];
@@ -20,14 +27,162 @@ const GraderTable = ({ studentsData, onOpenAdd }: Props) => {
 
   return (
     <>
+      {/* ── MOBILE FIRST CARD LIST (Phones) ── */}
+      {studentsData.length > 0 && (
+        <Box display={{ base: "flex", md: "none" }} flexDirection="column" gap={3} mb={6}>
+          {studentsData.map((item) => {
+            const subLower = (item.subscription || "basic").toLowerCase();
+            const isPremium = subLower.includes("premium");
+            const isStandard = subLower.includes("standard");
+
+            return (
+              <Box
+                key={item.id}
+                p={4}
+                bg="white"
+                borderRadius="2xl"
+                border="1px solid"
+                borderColor="gray.200"
+                boxShadow="sm"
+                transition="all 0.15s ease"
+              >
+                {/* Header: Avatar, Name, Email, Tier Badge */}
+                <Flex justify="space-between" align="start" mb={3} gap={2}>
+                  <Flex align="center" gap={3} minW="0" flex="1">
+                    <AvatarComp
+                      username={`${item.firstname ?? ""} ${item.lastname ?? ""}`}
+                      profileImage={item.profile_image}
+                    />
+                    <Box minW="0" flex="1">
+                      <Text
+                        color="gray.900"
+                        fontSize="sm"
+                        fontWeight={800}
+                        truncate
+                      >
+                        {item.firstname} {item.lastname}
+                      </Text>
+                      <Text fontSize="11px" color="gray.500" truncate>
+                        {item.email || "Student account"}
+                      </Text>
+                    </Box>
+                  </Flex>
+
+                  <Badge
+                    bg={isPremium ? "purple.600" : isStandard ? "#206CE1" : "gray.100"}
+                    color={isPremium || isStandard ? "white" : "gray.700"}
+                    size="xs"
+                    borderRadius="full"
+                    px={2.5}
+                    py={0.5}
+                    fontWeight="bold"
+                    flexShrink={0}
+                  >
+                    {item.subscription || "Basic Tier"}
+                  </Badge>
+                </Flex>
+
+                {/* Metadata: School and Class Level */}
+                <Flex
+                  bg="gray.50"
+                  p={2.5}
+                  borderRadius="xl"
+                  justify="space-between"
+                  align="center"
+                  mb={3}
+                  gap={2}
+                >
+                  <HStack gap={1.5} minW="0" flex="1">
+                    <Icon as={PiBuildingsFill} color="gray.400" boxSize="13px" flexShrink={0} />
+                    <Text fontSize="11px" color="gray.600" truncate fontWeight="500">
+                      {item.school || "Academic School"}
+                    </Text>
+                  </HStack>
+
+                  <Badge
+                    colorPalette="blue"
+                    variant="solid"
+                    size="xs"
+                    borderRadius="md"
+                    px={2}
+                    fontWeight="700"
+                    flexShrink={0}
+                  >
+                    {item.class || "General"}
+                  </Badge>
+                </Flex>
+
+                {/* Mobile Actions Toolbar */}
+                <Flex justify="space-between" align="center" gap={2} pt={2} borderTop="1px solid" borderColor="gray.100">
+                  <Button
+                    size="xs"
+                    variant="outline"
+                    colorPalette="blue"
+                    borderRadius="lg"
+                    fontSize="11px"
+                    fontWeight="700"
+                    flex="1"
+                    h="32px"
+                    onClick={() => {
+                      setSelectedStudent(item);
+                      setModal("class_change");
+                    }}
+                  >
+                    <Icon as={PiArrowsClockwiseBold} mr={1} />
+                    Transfer
+                  </Button>
+
+                  <Button
+                    size="xs"
+                    variant="subtle"
+                    colorPalette="gray"
+                    borderRadius="lg"
+                    fontSize="11px"
+                    fontWeight="600"
+                    flex="1"
+                    h="32px"
+                    onClick={() => {
+                      setSelectedStudent(item);
+                      setModal("edit");
+                    }}
+                  >
+                    <Icon as={PiPencilSimpleBold} mr={1} />
+                    Edit
+                  </Button>
+
+                  <Button
+                    size="xs"
+                    variant="ghost"
+                    colorPalette="red"
+                    borderRadius="lg"
+                    fontSize="11px"
+                    fontWeight="600"
+                    h="32px"
+                    px={2.5}
+                    onClick={() => {
+                      setSelectedStudent(item);
+                      setModal("delete");
+                    }}
+                  >
+                    <Icon as={PiTrashBold} color="red.500" />
+                  </Button>
+                </Flex>
+              </Box>
+            );
+          })}
+        </Box>
+      )}
+
+      {/* ── DESKTOP & TABLET TABLE VIEW ── */}
       <Box
+        display={{ base: studentsData.length > 0 ? "none" : "block", md: "block" }}
         borderRadius="2xl"
         boxShadow="sm"
         border="1px solid"
         borderColor="gray.100"
         overflow="hidden"
         bg="white"
-        mb={{ base: "100px", lg: "10" }}
+        mb={{ base: "40px", lg: "10" }}
       >
         {studentsData.length > 0 ? (
           <Table.ScrollArea>

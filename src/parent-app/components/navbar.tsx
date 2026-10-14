@@ -1,13 +1,10 @@
 import {
   Flex,
-  Image,
   Box,
   Heading,
   Text,
   Menu,
   Portal,
-  Select,
-  createListCollection,
   Badge,
   IconButton,
   Popover,
@@ -20,19 +17,20 @@ import { useNavigationStore } from "../../store/usenavigationStore";
 import { useTranslation } from "react-i18next";
 import {
   FiBell,
-  FiGlobe,
   FiLogOut,
   FiUser,
   FiHelpCircle,
   FiShield,
   FiCreditCard,
+  FiUsers,
+  FiGlobe,
 } from "react-icons/fi";
-import logo from "../../assets/logo.png";
 import AvatarComp from "../../components/avatar";
-import { setGlobalLanguage } from "@/services/autoTranslation";
 import { useStudentsData } from "../context/studentsDataContext";
 import { classChangeService, type ClassChangeRequest } from "@/services/classChangeService";
 import { ClassChangeNotificationModal } from "./grader/ClassChangeNotificationModal";
+import AddGraderPopup from "./grader/addGraderPopover";
+import { SwipeUpNavGreeting } from "@/components/SwipeUpNavGreeting";
 
 type Props = {
   setShowLogoutModal: Dispatch<SetStateAction<boolean>>;
@@ -48,25 +46,25 @@ interface NotificationItem {
 }
 
 const Navbar = ({ setShowLogoutModal }: Props) => {
-  const { parent } = useUser();
+  const { parent, user } = useUser();
   const { studentsData } = useStudentsData();
-  const { setCurrentParentPage, setParentSettingsTab } = useNavigationStore();
-  const { t, i18n } = useTranslation();
+  const { currentParentPage, setCurrentParentPage, setParentSettingsTab } = useNavigationStore();
+  const { t } = useTranslation();
+
+
+
+  const pageTitleMap: Record<string, string> = {
+    home: t("Home") || "Home",
+    student: t("Students") || "Students",
+    weekly_report: t("Learning Reports") || "Reports",
+    settings: t("Settings") || "Settings",
+  };
+
+  const currentPageTitle = pageTitleMap[currentParentPage] || "Home";
 
   const [selectedDecisionRequest, setSelectedDecisionRequest] = useState<ClassChangeRequest | null>(null);
   const [isDecisionModalOpen, setIsDecisionModalOpen] = useState(false);
-
-  const [value, setValue] = useState<string[]>([localStorage.getItem("appLanguage") || i18n.language || "en"]);
-
-  useEffect(() => {
-    const handleLang = (e: any) => {
-      if (e.detail?.lang) {
-        setValue([e.detail.lang]);
-      }
-    };
-    window.addEventListener("appLanguageChanged", handleLang);
-    return () => window.removeEventListener("appLanguageChanged", handleLang);
-  }, []);
+  const [showAddChildPopup, setShowAddChildPopup] = useState(false);
 
   const [notifications, setNotifications] = useState<NotificationItem[]>([
     {
@@ -210,22 +208,9 @@ const Navbar = ({ setShowLogoutModal }: Props) => {
   };
 
   const currentParent = parent[0] || {};
-  const parentName = currentParent.firstname || "Parent";
-  const fullName = `${currentParent.firstname ?? ""} ${currentParent.lastname ?? ""}`.trim() || "Parent User";
-
-  const languages = createListCollection({
-    items: [
-      { label: t("langEn") || "English", value: "en" },
-      { label: t("langHa") || "Hausa", value: "ha" },
-      { label: t("langYo") || "Yoruba", value: "yo" },
-      { label: t("langIg") || "Igbo", value: "ig" },
-      { label: t("langAk") || "Akan", value: "ak" },
-      { label: t("langFf") || "Fulfulde", value: "ff" },
-      { label: t("langWo") || "Wolof", value: "wo" },
-      { label: t("langFr") || "Français", value: "fr" },
-      { label: t("langPt") || "Português", value: "pt" },
-    ],
-  });
+  const parentFirstName = currentParent.firstname || user?.user_metadata?.first_name || user?.user_metadata?.name?.split(" ")[0] || "";
+  const _parentName = parentFirstName || "Parent";
+  const fullName = `${currentParent.firstname ?? ""} ${currentParent.lastname ?? ""}`.trim() || user?.user_metadata?.name || "Parent User";
 
   return (
     <Box position="sticky" top="0" zIndex="1000" bg="white" shadow="xs" borderBottom="1px solid" borderColor="gray.100">
@@ -233,248 +218,34 @@ const Navbar = ({ setShowLogoutModal }: Props) => {
         as="nav"
         align="center"
         justify="space-between"
-        h={{ base: "64px", md: "72px" }}
+        h={{ base: "56px", md: "64px" }}
         px={{ base: 3, md: 6 }}
       >
-        {/* Left Section: Logo */}
-        <HStack gap={{ base: 2, md: 4 }}>
-          <Box
-            cursor="pointer"
-            onClick={() => setCurrentParentPage("home")}
-            display="flex"
-            alignItems="center"
-            gap={2}
-            transition="transform 0.15s ease"
-            _hover={{ transform: "scale(1.02)" }}
-          >
-            <Image src={logo} alt="iGrades Logo" h={{ base: "32px", md: "38px" }} fit="contain" />
-          </Box>
-        </HStack>
-
-        {/* Center/Greeting Section */}
-        <Box display={{ base: "none", sm: "block" }} maxW={{ base: "180px", md: "280px", lg: "400px" }}>
-          <Heading
-            as="h1"
-            fontSize={{ base: "xs", md: "sm", lg: "md" }}
-            fontWeight="bold"
-            color="gray.800"
-            truncate
-          >
-            {t("welcome") || "Welcome"}, {parentName}! 👋
-          </Heading>
-          <Text fontSize="xs" color="gray.500" truncate display={{ base: "none", md: "block" }}>
-            {t("welcome_complement") || "Monitor and support your child's academic journey"}
-          </Text>
-        </Box>
-
-        {/* Right Controls: Language Selector, Notifications, User Avatar */}
-        <HStack gap={{ base: 2, md: 3 }}>
-          {/* Language Selector */}
-          <Select.Root
-            collection={languages}
-            width={{ base: "36px", md: "125px" }}
-            value={value}
-            onValueChange={(e) => {
-              setValue(e.value);
-              if (e.value[0]) {
-                i18n.changeLanguage(e.value[0]);
-                setGlobalLanguage(e.value[0]);
-              }
-            }}
-          >
-            <Select.HiddenSelect />
-            <Select.Control>
-              <Select.Trigger
-                display="flex"
-                alignItems="center"
-                justifyContent={{ base: "center", md: "space-between" }}
-                px={{ base: 0, md: 2.5 }}
-                py={1.5}
-                borderRadius="lg"
-                border="1px solid"
-                borderColor="gray.200"
-                bg="gray.50"
-                _hover={{ bg: "gray.100" }}
-                cursor="pointer"
-                h="36px"
-                w={{ base: "36px", md: "auto" }}
-                minW={{ base: "36px", md: "auto" }}
-                aria-label="Select Language"
-              >
-                <HStack gap={1.5} overflow="hidden" justify="center">
-                  <FiGlobe size={16} color="#525071" />
-                  <Box display={{ base: "none", md: "inline-block" }} overflow="hidden">
-                    <Select.ValueText placeholder="EN" />
-                  </Box>
-                </HStack>
-              </Select.Trigger>
-            </Select.Control>
-            <Portal>
-              <Select.Positioner zIndex={1500}>
-                <Select.Content bg="white" shadow="lg" border="1px solid" borderColor="gray.100" borderRadius="xl">
-                  {languages.items.map((language) => (
-                    <Select.Item
-                      item={language}
-                      key={language.value}
-                      cursor="pointer"
-                      py={2}
-                      px={3}
-                      _hover={{ bg: "purple.50" }}
-                    >
-                      {language.label}
-                      <Select.ItemIndicator />
-                    </Select.Item>
-                  ))}
-                </Select.Content>
-              </Select.Positioner>
-            </Portal>
-          </Select.Root>
-
-          {/* Notifications Popover */}
-          <Popover.Root positioning={{ placement: "bottom-end" }}>
-            <Popover.Trigger asChild>
-              <Box position="relative">
-                <IconButton
-                  aria-label="Notifications"
-                  variant="ghost"
-                  borderRadius="full"
-                  size="sm"
-                  h="36px"
-                  w="36px"
-                  color="gray.600"
-                  _hover={{ bg: "gray.100", color: "purple.600" }}
-                >
-                  <FiBell size={18} />
-                </IconButton>
-                {unreadCount > 0 && (
-                  <Box
-                    position="absolute"
-                    top="4px"
-                    right="4px"
-                    w="8px"
-                    h="8px"
-                    bg="purple.500"
-                    borderRadius="full"
-                    border="2px solid white"
-                  />
-                )}
-              </Box>
-            </Popover.Trigger>
-            <Portal>
-              <Popover.Positioner zIndex={1500}>
-                <Popover.Content
-                  width={{ base: "290px", sm: "330px" }}
-                  bg="white"
-                  shadow="xl"
-                  borderRadius="xl"
-                  border="1px solid"
-                  borderColor="gray.100"
-                  p={0}
-                  overflow="hidden"
-                >
-                  <Popover.Arrow />
-                  <Box p={3} borderBottom="1px solid" borderColor="gray.100" bg="gray.50">
-                    <Flex align="center" justify="space-between">
-                      <HStack gap={2}>
-                        <Heading size="xs" fontWeight="bold" color="gray.800">
-                          Parent Alerts
-                        </Heading>
-                        {unreadCount > 0 && (
-                          <Badge colorPalette="purple" variant="solid" borderRadius="full" px={2} fontSize="10px">
-                            {unreadCount} new
-                          </Badge>
-                        )}
-                      </HStack>
-                      {unreadCount > 0 && (
-                        <Text
-                          fontSize="xs"
-                          color="purple.600"
-                          fontWeight="medium"
-                          cursor="pointer"
-                          _hover={{ textDecoration: "underline" }}
-                          onClick={markAllRead}
-                        >
-                          Mark all read
-                        </Text>
-                      )}
-                    </Flex>
-                  </Box>
-                  <Stack p={2} gap={1} maxH="280px" overflowY="auto">
-                    {notifications.map((item) => (
-                      <Box
-                        key={item.id}
-                        p={2.5}
-                        borderRadius="lg"
-                        bg={item.read ? "transparent" : item.request ? "blue.50/50" : "purple.50/60"}
-                        cursor={item.request ? "pointer" : "default"}
-                        _hover={{ bg: item.request ? "blue.50" : "gray.50" }}
-                        transition="background 0.15s ease"
-                        onClick={() => handleNotificationItemClick(item)}
-                      >
-                        <Flex justify="space-between" align="baseline" mb={0.5}>
-                          <HStack gap={1.5} maxW="75%">
-                            {item.request && (
-                              <Badge
-                                colorPalette={
-                                  item.request.status === "approved"
-                                    ? "green"
-                                    : item.request.status === "rejected"
-                                    ? "red"
-                                    : "amber"
-                                }
-                                size="2xs"
-                                fontSize="9px"
-                                fontWeight="700"
-                              >
-                                {item.request.status.toUpperCase()}
-                              </Badge>
-                            )}
-                            <Text fontSize="xs" fontWeight="bold" color="gray.800" truncate>
-                              {item.title}
-                            </Text>
-                          </HStack>
-                          <Text fontSize="10px" color="gray.400" flexShrink={0}>
-                            {item.time}
-                          </Text>
-                        </Flex>
-                        <Text fontSize="xs" color="gray.600" lineHeight="1.3">
-                          {item.desc}
-                        </Text>
-                        {item.request && (
-                          <Text fontSize="10px" color="blue.600" fontWeight="600" mt={1}>
-                            Click to view decision details & history →
-                          </Text>
-                        )}
-                      </Box>
-                    ))}
-                  </Stack>
-                </Popover.Content>
-              </Popover.Positioner>
-            </Portal>
-          </Popover.Root>
-
-          {/* User Profile Menu */}
-          <Menu.Root positioning={{ placement: "bottom-end" }}>
+        {/* Left Section: User Profile Avatar with Clickable Menu & Greeting (Matches Student App) */}
+        <HStack gap={{ base: 2.5, sm: 3 }} align="center">
+          {/* User Profile Avatar with Clickable Dropdown Menu */}
+          <Menu.Root positioning={{ placement: "bottom-start" }}>
             <Menu.Trigger asChild>
               <Box
                 p={0.5}
                 borderRadius="full"
                 cursor="pointer"
-                _hover={{ ring: "2px solid", ringColor: "purple.200" }}
+                _hover={{ ring: "2px solid", ringColor: "blue.300" }}
                 transition="all 0.15s ease"
-                minW="36px"
-                minH="36px"
+                minW="38px"
+                minH="38px"
                 display="flex"
                 alignItems="center"
                 justifyContent="center"
+                aria-label="Parent profile and settings"
               >
                 <AvatarComp username={fullName} profileImage={currentParent?.profile_image} />
               </Box>
             </Menu.Trigger>
             <Portal>
               <Menu.Positioner zIndex={1500}>
-                <Menu.Content bg="white" shadow="xl" borderRadius="xl" border="1px solid" borderColor="gray.100" minW="220px" p={2}>
-                  {/* User Header */}
+                <Menu.Content bg="white" shadow="xl" borderRadius="xl" border="1px solid" borderColor="gray.100" minW="230px" p={2}>
+                  {/* User Profile Summary inside Dropdown */}
                   <Box px={3} py={2} borderBottom="1px solid" borderColor="gray.100" mb={1}>
                     <Text fontSize="sm" fontWeight="bold" color="gray.800" truncate>
                       {fullName}
@@ -483,30 +254,74 @@ const Navbar = ({ setShowLogoutModal }: Props) => {
                       <Badge colorPalette="purple" variant="subtle" size="xs" borderRadius="md">
                         Parent / Guardian
                       </Badge>
+                      <Text fontSize="11px" color="gray.500" fontWeight="medium">
+                        {studentsData?.length || 0} {studentsData?.length === 1 ? "child" : "children"}
+                      </Text>
                     </HStack>
+                    {currentParent?.email && (
+                      <Text fontSize="10.5px" color="gray.400" truncate mt={0.5}>
+                        {currentParent.email}
+                      </Text>
+                    )}
                   </Box>
 
-                  {/* Profile Account Actions (not duplicating sidebar nav) */}
+                  {/* Profile Account Actions */}
                   <Menu.Item
-                    value="parent-profile"
+                    value="settings"
                     onClick={() => {
                       setCurrentParentPage("settings");
-                      setParentSettingsTab("igrade");
+                      setParentSettingsTab("menu");
                     }}
                     borderRadius="lg"
                     py={2}
                     px={3}
                     cursor="pointer"
-                    _hover={{ bg: "purple.50", color: "purple.600" }}
+                    _hover={{ bg: "blue.50", color: "blue.600" }}
                   >
                     <HStack gap={2.5}>
                       <FiUser size={16} />
-                      <Text fontSize="sm">My Parent Profile</Text>
+                      <Text fontSize="sm" fontWeight="500">Settings & Profile</Text>
                     </HStack>
                   </Menu.Item>
 
                   <Menu.Item
-                    value="parent-subscription"
+                    value="children"
+                    onClick={() => {
+                      setCurrentParentPage("settings");
+                      setParentSettingsTab("children");
+                    }}
+                    borderRadius="lg"
+                    py={2}
+                    px={3}
+                    cursor="pointer"
+                    _hover={{ bg: "blue.50", color: "blue.600" }}
+                  >
+                    <HStack gap={2.5}>
+                      <FiUsers size={16} />
+                      <Text fontSize="sm">Connected Children</Text>
+                    </HStack>
+                  </Menu.Item>
+
+                  <Menu.Item
+                    value="language"
+                    onClick={() => {
+                      setCurrentParentPage("settings");
+                      setParentSettingsTab("language");
+                    }}
+                    borderRadius="lg"
+                    py={2}
+                    px={3}
+                    cursor="pointer"
+                    _hover={{ bg: "blue.50", color: "blue.600" }}
+                  >
+                    <HStack gap={2.5}>
+                      <FiGlobe size={16} />
+                      <Text fontSize="sm">Language Preferences</Text>
+                    </HStack>
+                  </Menu.Item>
+
+                  <Menu.Item
+                    value="subscription"
                     onClick={() => {
                       setCurrentParentPage("settings");
                       setParentSettingsTab("subscription");
@@ -515,7 +330,7 @@ const Navbar = ({ setShowLogoutModal }: Props) => {
                     py={2}
                     px={3}
                     cursor="pointer"
-                    _hover={{ bg: "purple.50", color: "purple.600" }}
+                    _hover={{ bg: "blue.50", color: "blue.600" }}
                   >
                     <HStack gap={2.5}>
                       <FiCreditCard size={16} />
@@ -533,11 +348,11 @@ const Navbar = ({ setShowLogoutModal }: Props) => {
                     py={2}
                     px={3}
                     cursor="pointer"
-                    _hover={{ bg: "purple.50", color: "purple.600" }}
+                    _hover={{ bg: "blue.50", color: "blue.600" }}
                   >
                     <HStack gap={2.5}>
                       <FiShield size={16} />
-                      <Text fontSize="sm">Security & Passkey</Text>
+                      <Text fontSize="sm">Security & Password</Text>
                     </HStack>
                   </Menu.Item>
 
@@ -551,7 +366,7 @@ const Navbar = ({ setShowLogoutModal }: Props) => {
                     py={2}
                     px={3}
                     cursor="pointer"
-                    _hover={{ bg: "purple.50", color: "purple.600" }}
+                    _hover={{ bg: "blue.50", color: "blue.600" }}
                   >
                     <HStack gap={2.5}>
                       <FiHelpCircle size={16} />
@@ -561,7 +376,7 @@ const Navbar = ({ setShowLogoutModal }: Props) => {
 
                   <Box my={1} borderBottom="1px solid" borderColor="gray.100" />
 
-                  {/* Logout Button */}
+                  {/* Logout Action */}
                   <Menu.Item
                     value="logout"
                     onClick={() => setShowLogoutModal(true)}
@@ -583,6 +398,141 @@ const Navbar = ({ setShowLogoutModal }: Props) => {
               </Menu.Positioner>
             </Portal>
           </Menu.Root>
+
+          {/* Greeting: 'Hello {firstName} 👋' and Current Page Name Swipe-Up Sequence */}
+          <SwipeUpNavGreeting
+            firstName={parentFirstName}
+            pageTitle={currentPageTitle}
+            subtitleGreeting={`Parent Portal · ${studentsData?.length || 0} ${studentsData?.length === 1 ? "Child" : "Children"} Connected`}
+            subtitlePage={`Parent Portal · ${currentPageTitle}`}
+          />
+        </HStack>
+
+        {/* Right Section: Notifications Popover & Student Profile Select Dropdown */}
+        <HStack gap={{ base: 2, sm: 2.5 }} align="center">
+          {/* 1. Notifications Popover (in place of language icon) */}
+          <Popover.Root positioning={{ placement: "bottom-end" }}>
+            <Popover.Trigger asChild>
+              <Box position="relative">
+                <IconButton
+                  aria-label="Notifications"
+                  variant="ghost"
+                  borderRadius="full"
+                  size="sm"
+                  h="38px"
+                  w="38px"
+                  color="gray.600"
+                  _hover={{ bg: "gray.100", color: "blue.600" }}
+                >
+                  <FiBell size={19} />
+                </IconButton>
+                {unreadCount > 0 && (
+                  <Box
+                    position="absolute"
+                    top="5px"
+                    right="5px"
+                    w="8px"
+                    h="8px"
+                    bg="blue.500"
+                    borderRadius="full"
+                    border="2px solid white"
+                  />
+                )}
+              </Box>
+            </Popover.Trigger>
+            <Portal>
+              <Popover.Positioner zIndex={1500}>
+                <Popover.Content
+                  width={{ base: "290px", sm: "340px" }}
+                  bg="white"
+                  shadow="xl"
+                  borderRadius="xl"
+                  border="1px solid"
+                  borderColor="gray.100"
+                  p={0}
+                  overflow="hidden"
+                >
+                  <Popover.Arrow />
+                  <Box p={3} borderBottom="1px solid" borderColor="gray.100" bg="gray.50">
+                    <Flex align="center" justify="space-between">
+                      <HStack gap={2}>
+                        <Heading size="xs" fontWeight="bold" color="gray.800">
+                          Parent Notifications
+                        </Heading>
+                        {unreadCount > 0 && (
+                          <Badge colorPalette="blue" variant="solid" borderRadius="full" px={2} fontSize="10px">
+                            {unreadCount} new
+                          </Badge>
+                        )}
+                      </HStack>
+                      {unreadCount > 0 && (
+                        <Text
+                          fontSize="xs"
+                          color="blue.600"
+                          fontWeight="medium"
+                          cursor="pointer"
+                          _hover={{ textDecoration: "underline" }}
+                          onClick={markAllRead}
+                        >
+                          Mark all read
+                        </Text>
+                      )}
+                    </Flex>
+                  </Box>
+                  <Stack p={2} gap={1} maxH="320px" overflowY="auto">
+                    {notifications.map((item) => (
+                      <Box
+                        key={item.id}
+                        p={2.5}
+                        borderRadius="lg"
+                        bg={item.read ? "transparent" : "blue.50/60"}
+                        _hover={{ bg: "gray.50" }}
+                        transition="background 0.15s ease"
+                        cursor={item.request ? "pointer" : "default"}
+                        onClick={() => handleNotificationItemClick(item)}
+                      >
+                        <Flex justify="space-between" align="baseline" mb={0.5}>
+                          <HStack gap={1.5} maxW="75%">
+                            {item.request && (
+                              <Badge
+                                size="xs"
+                                colorPalette={
+                                  item.request.status === "approved"
+                                    ? "green"
+                                    : item.request.status === "rejected"
+                                    ? "red"
+                                    : "yellow"
+                                }
+                                variant="solid"
+                                fontSize="9px"
+                                px={1}
+                              >
+                                {item.request.status.toUpperCase()}
+                              </Badge>
+                            )}
+                            <Text fontSize="xs" fontWeight="bold" color="gray.800" truncate>
+                              {item.title}
+                            </Text>
+                          </HStack>
+                          <Text fontSize="10px" color="gray.400">
+                            {item.time}
+                          </Text>
+                        </Flex>
+                        <Text fontSize="xs" color="gray.600" lineHeight="1.3">
+                          {item.desc}
+                        </Text>
+                        {item.request && (
+                          <Text fontSize="10px" color="blue.600" fontWeight="600" mt={1}>
+                            Click to view decision details & history →
+                          </Text>
+                        )}
+                      </Box>
+                    ))}
+                  </Stack>
+                </Popover.Content>
+              </Popover.Positioner>
+            </Portal>
+          </Popover.Root>
         </HStack>
       </Flex>
 
@@ -597,6 +547,18 @@ const Navbar = ({ setShowLogoutModal }: Props) => {
           request={selectedDecisionRequest}
           studentId={selectedDecisionRequest.student_id}
           childName={selectedDecisionRequest.student_name}
+        />
+      )}
+
+      {/* Add Child Popover Modal */}
+      {showAddChildPopup && (
+        <AddGraderPopup
+          showBox={showAddChildPopup}
+          setShowBox={setShowAddChildPopup}
+          onClose={() => {
+            setShowAddChildPopup(false);
+            getGraderDetails();
+          }}
         />
       )}
     </Box>

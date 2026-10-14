@@ -69,7 +69,7 @@ export const WeeklyReportPopupBanner = () => {
   return (
     <Box
       position="fixed"
-      bottom={{ base: "72px", md: "24px" }}
+      bottom={{ base: "80px", md: "24px" }}
       left="50%"
       transform="translateX(-50%)"
       zIndex={1500}

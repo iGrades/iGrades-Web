@@ -95,27 +95,29 @@ const Notification = () => {
   return (
     <Box
       bg="white"
-      rounded="2xl"
-      shadow="sm"
-      p={{ base: 4, md: 6 }}
+      border="none"
+      outline="none"
+      boxShadow="none"
+      p={{ base: 4, sm: 6 }}
+      mb={20}
+      w="100%"
       h="auto"
-      mb={{ base: "100px", lg: 10 }}
     >
-      <Flex justify="space-between" align={{ base: "flex-start", sm: "center" }} mb={6} direction={{ base: "column", sm: "row" }} gap={2}>
+      <Flex justify="space-between" align={{ base: "flex-start", sm: "center" }} mb={5} direction={{ base: "column", sm: "row" }} gap={2}>
         <Box>
-          <Heading as="h3" fontSize={{ base: "lg", md: "xl" }} color="gray.800">
+          <Heading as="h3" fontSize={{ base: "14px", md: "16px" }} fontWeight="700" color="gray.800">
             Parent Notification Settings
           </Heading>
-          <Text fontSize="xs" color="gray.500" mt={1}>
+          <Text fontSize="11px" color="gray.500" mt={0.5}>
             Manage how and when you receive monitoring updates and academic reports for your children.
           </Text>
         </Box>
-        <Badge colorPalette="green" variant="subtle" px={3} py={1} borderRadius="full" fontSize="11px">
+        <Badge colorPalette="green" variant="subtle" px={2.5} py={0.5} borderRadius="full" fontSize="10px">
           Preferences Active
         </Badge>
       </Flex>
 
-      <VStack gap={4} align="stretch">
+      <VStack gap={3} align="stretch">
         {notificationChannels.map((item) => {
           const isChecked = prefs[item.id];
           return (
@@ -123,29 +125,30 @@ const Notification = () => {
               key={item.id}
               justify="space-between"
               align="center"
-              p={{ base: 4, md: 6 }}
-              bg="textFieldColor"
+              p={{ base: 3.5, md: 4 }}
+              bg="#F4F7FB"
               rounded="xl"
-              border="1px"
-              borderColor={isChecked ? "gray.200" : "gray.100"}
-              transition="all 0.2s"
+              border="none"
+              outline="none"
+              boxShadow="none"
+              transition="all 0.15s"
             >
-              <HStack gap={4} align="flex-start" maxW={{ base: "75%", md: "85%" }}>
+              <HStack gap={3.5} align="flex-start" maxW={{ base: "75%", md: "85%" }}>
                 <Icon
                   bg={item.bg}
-                  boxSize="42px"
+                  boxSize="36px"
                   color={item.color}
-                  rounded="xl"
-                  p={2.5}
+                  rounded="lg"
+                  p={2}
                   flexShrink={0}
                 >
-                  <item.icon size={22} />
+                  <item.icon size={18} />
                 </Icon>
                 <Box>
-                  <Heading as="h4" fontSize={{ base: "sm", md: "md" }} color="gray.800">
+                  <Heading as="h4" fontSize={{ base: "12px", sm: "13px" }} fontWeight="600" color="gray.800">
                     {item.title}
                   </Heading>
-                  <Text fontSize="xs" color="gray.500" mt={1} lineHeight="tall">
+                  <Text fontSize="11px" color="gray.500" mt={0.5} lineHeight="short">
                     {item.desc}
                   </Text>
                 </Box>
@@ -155,7 +158,7 @@ const Notification = () => {
                 checked={isChecked}
                 onCheckedChange={(e) => handleToggle(item.id, e.checked)}
                 colorPalette="blue"
-                size="lg"
+                size="md"
               >
                 <Switch.HiddenInput />
                 <Switch.Control>

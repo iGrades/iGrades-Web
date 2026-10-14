@@ -166,6 +166,32 @@ export function checkPdfAccess(
 }
 
 /**
+ * PDF downloads are strictly tied to the Premium plan.
+ * Basic & Standard students can read/view all PDFs online,
+ * but downloading and saving offline files requires Premium.
+ */
+export function checkPdfDownloadAccess(
+  effectivePlan: PlanTier,
+  pdfTitle?: string
+): EntitlementCheckResult {
+  if (effectivePlan === "premium") {
+    return {
+      allowed: true,
+      requiredPlan: "premium",
+      isLocked: false,
+      reason: "Unlimited PDF study guide downloads included with Premium.",
+    };
+  }
+
+  return {
+    allowed: false,
+    requiredPlan: "premium",
+    isLocked: true,
+    reason: `${pdfTitle ? `"${pdfTitle}"` : "This study guide"} can only be downloaded if you are on a Premium plan. Upgrade to Premium (₦25,000) to save and download offline revision packs.`,
+  };
+}
+
+/**
  * Basic quizzes & quick tests are core learning: never paywalled.
  */
 export function checkBasicQuizAccess(_effectivePlan: PlanTier): EntitlementCheckResult {
@@ -469,7 +495,8 @@ export interface FeatureComparisonRow {
 export const PLAN_COMPARISON_MATRIX: FeatureComparisonRow[] = [
   { feature: "Core Dashboard", category: "core", basic: "✓", standard: "✓", premium: "✓" },
   { feature: "Lessons & Videos", category: "core", basic: "✓", standard: "✓", premium: "✓" },
-  { feature: "PDF Study Guides", category: "core", basic: "✓", standard: "✓", premium: "✓" },
+  { feature: "PDF Study Guides (Read Online)", category: "core", basic: "✓", standard: "✓", premium: "✓" },
+  { feature: "PDF Offline Downloads", category: "core", basic: "—", standard: "—", premium: "✓ (Unlimited)" },
   { feature: "Basic Quizzes", category: "core", basic: "✓", standard: "✓", premium: "✓" },
   { feature: "Progress Tracking", category: "core", basic: "✓", standard: "✓", premium: "✓" },
   { feature: "Daily Streaks", category: "core", basic: "✓", standard: "✓", premium: "✓" },

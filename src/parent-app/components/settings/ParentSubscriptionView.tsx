@@ -145,7 +145,7 @@ export const ParentSubscriptionView: React.FC = () => {
   };
 
   return (
-    <Box bg="white" rounded="2xl" shadow="sm" p={{ base: 4, md: 8 }} mb={10}>
+    <Box bg="white" border="none" outline="none" boxShadow="none" p={{ base: 4, sm: 6 }} mb={10} w="100%">
       {/* ── HEADER ── */}
       <Flex
         direction={{ base: "column", md: "row" }}
@@ -156,10 +156,10 @@ export const ParentSubscriptionView: React.FC = () => {
       >
         <Box>
           <HStack gap={2.5} mb={1}>
-            <Heading size={{ base: "md", md: "lg" }} color="gray.900" fontWeight="800">
+            <Heading size={{ base: "sm", md: "md" }} color="gray.900" fontWeight="800">
               Family Subscriptions & Entitlements
             </Heading>
-            <Badge colorPalette="blue" variant="solid" size="sm" borderRadius="full" px={2.5}>
+            <Badge colorPalette="blue" variant="solid" size="xs" borderRadius="full" px={2}>
               B2C Model
             </Badge>
           </HStack>
@@ -360,7 +360,7 @@ export const ParentSubscriptionView: React.FC = () => {
                 direction="column"
                 justify="space-between"
                 flex="1"
-                p={{ base: 5, md: 6 }}
+                p={{ base: 4, md: 6 }}
                 borderRadius="2xl"
                 border="2px solid"
                 borderColor={

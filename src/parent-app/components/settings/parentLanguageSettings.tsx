@@ -45,18 +45,18 @@ export const ParentLanguageSettings = () => {
     SUPPORTED_LANGUAGES.find((l) => l.code === currentLang) || SUPPORTED_LANGUAGES[0];
 
   return (
-    <Box bg="white" rounded="2xl" shadow="sm" p={{ base: 4, md: 8 }} mb={20} w="full">
+    <Box bg="white" border="none" outline="none" boxShadow="none" p={{ base: 4, sm: 6 }} mb={20} w="full">
       {/* Header */}
-      <Box mb={6} pb={4} borderBottom="1px solid" borderColor="gray.100">
-        <HStack gap={3} align="center" mb={1}>
-          <Box p={2.5} bg="blue.50" color="blue.600" borderRadius="xl">
-            <Icon as={FiGlobe} boxSize={5} />
+      <Box mb={5} pb={3} borderBottom="1px solid" borderColor="gray.100">
+        <HStack gap={2.5} align="center" mb={1}>
+          <Box p={2} bg="blue.50" color="blue.600" borderRadius="lg">
+            <Icon as={FiGlobe} boxSize={4} />
           </Box>
           <Box>
-            <Heading as="h3" fontSize={{ base: "lg", md: "xl" }} color="gray.800" fontWeight="bold">
+            <Heading as="h3" fontSize={{ base: "14px", md: "16px" }} color="gray.800" fontWeight="bold">
               {t("language") || "Language Preferences"}
             </Heading>
-            <Text fontSize="xs" color="gray.500">
+            <Text fontSize="11px" color="gray.500">
               Select your preferred language for the parent portal, child progress reports, and notifications.
             </Text>
           </Box>

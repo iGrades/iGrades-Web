@@ -15,6 +15,7 @@ import { WeeklyReportPopupBanner } from "./components/intelligence/weeklyReport/
 import DashboardLayout from "@/parent-app/dashboard";
 import Navbar from "@/parent-app/components/navbar";
 import LogoutPopover from "./components/logoutPopover";
+import ParentFloatingBottomBar from "./components/ParentFloatingBottomBar";
 
 
 const Home = () => {
@@ -186,7 +187,7 @@ const Home = () => {
       case "weekly_report":
         return <WeeklyReportPage />;
       case "settings":
-        return <Settings />;
+        return <Settings setShowLogoutModal={setShowLogoutModal} />;
       default:
         return <Homepage />;
     }
@@ -207,12 +208,13 @@ const Home = () => {
             <Navbar setShowLogoutModal={setShowLogoutModal} />
 
             <Flex flex="1" overflow="hidden">
-              {/* Sidebar - will not scroll */}
+              {/* Desktop & Tablet Sidebar */}
               <Box
                 position="relative"
                 flexShrink={0}
                 w={{ base: "0px", md: "76px", lg: "16%" }}
                 minW={{ md: "76px", lg: "190px" }}
+                display={{ base: "none", md: "block" }}
                 overflow="visible"
                 zIndex={90}
               >
@@ -233,6 +235,9 @@ const Home = () => {
                 <DashboardLayout renderPage={renderPage} />
               </Box>
             </Flex>
+
+            {/* Mobile Fixed Floating Bottom Bar */}
+            <ParentFloatingBottomBar />
           </Box>
 
           {/* Floating bottom popup banner 5 seconds after parent arrives */}

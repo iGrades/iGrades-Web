@@ -83,18 +83,11 @@ export const WeeklyOverviewMetrics = ({ report }: Props) => {
   return (
     <Box mb={6}>
       <Flex justify="space-between" align="center" mb={3.5} wrap="wrap" gap={2}>
-        <HStack gap={2.5}>
-          <Box bg="blue.50" p={2} borderRadius="xl" border="1px solid" borderColor="blue.200" boxShadow="0 2px 6px rgba(32, 108, 225, 0.12)">
-            <Icon as={PiChartLineUpFill} color="#206CE1" boxSize="18px" />
-          </Box>
-          <Box>
-            <Heading size="sm" color="gray.900" fontWeight="800">
-              {t("Learning Activity & Progress")}
-            </Heading>
-            <Text fontSize="xs" color="gray.500" mt={0.5}>
-              {t("Quantitative metrics comparing weekly practice volume and accuracy.")}
-            </Text>
-          </Box>
+        <HStack gap={2.5} align="center">
+          <Icon as={PiChartLineUpFill} color="#206CE1" boxSize="20px" flexShrink={0} />
+          <Heading size="sm" color="gray.900" fontWeight="800">
+            {t("Learning Activity & Progress")}
+          </Heading>
         </HStack>
         {getDeltaBadge()}
       </Flex>
@@ -122,9 +115,7 @@ export const WeeklyOverviewMetrics = ({ report }: Props) => {
               <Text fontSize="11px" fontWeight="800" color="gray.500" textTransform="uppercase" letterSpacing="0.04em">
                 {t("Average Accuracy")}
               </Text>
-              <Box bg="blue.50" p={2} borderRadius="xl" boxShadow="0 2px 6px rgba(0, 0, 0, 0.04)">
-                <Icon as={PiGraduationCapFill} color="#206CE1" boxSize="18px" />
-              </Box>
+              <Icon as={PiGraduationCapFill} color="#206CE1" boxSize="18px" flexShrink={0} />
             </Flex>
 
             <Box my={2}>
@@ -181,9 +172,7 @@ export const WeeklyOverviewMetrics = ({ report }: Props) => {
               <Text fontSize="11px" fontWeight="800" color="gray.500" textTransform="uppercase" letterSpacing="0.04em">
                 {t("Questions Solved")}
               </Text>
-              <Box bg="green.50" p={2} borderRadius="xl" boxShadow="0 2px 6px rgba(0, 0, 0, 0.04)">
-                <Icon as={PiCheckSquareOffsetFill} color="#10B981" boxSize="18px" />
-              </Box>
+              <Icon as={PiCheckSquareOffsetFill} color="#10B981" boxSize="18px" flexShrink={0} />
             </Flex>
 
             <Box my={2}>
@@ -228,9 +217,7 @@ export const WeeklyOverviewMetrics = ({ report }: Props) => {
               <Text fontSize="11px" fontWeight="800" color="gray.500" textTransform="uppercase" letterSpacing="0.04em">
                 {t("Video Lessons & Sessions")}
               </Text>
-              <Box bg="purple.50" p={2} borderRadius="xl" boxShadow="0 2px 6px rgba(0, 0, 0, 0.04)">
-                <Icon as={PiVideoFill} color="#6366F1" boxSize="18px" />
-              </Box>
+              <Icon as={PiVideoFill} color="#6366F1" boxSize="18px" flexShrink={0} />
             </Flex>
 
             <Box my={2}>
@@ -278,9 +265,7 @@ export const WeeklyOverviewMetrics = ({ report }: Props) => {
               <Text fontSize="11px" fontWeight="800" color="gray.500" textTransform="uppercase" letterSpacing="0.04em">
                 {t("Estimated Study Time")}
               </Text>
-              <Box bg="teal.50" p={2} borderRadius="xl" boxShadow="0 2px 6px rgba(0, 0, 0, 0.04)">
-                <Icon as={PiClockFill} color="#0D9488" boxSize="18px" />
-              </Box>
+              <Icon as={PiClockFill} color="#0D9488" boxSize="18px" flexShrink={0} />
             </Flex>
 
             <Box my={2}>

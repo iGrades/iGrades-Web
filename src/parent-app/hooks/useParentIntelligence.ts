@@ -130,7 +130,7 @@ const getGradeData = (percentage: number) => {
 const formatTimeAgo = (dateStr: string): string => {
   try {
     const d = new Date(dateStr);
-    if (isNaN(d.getTime())) return "Recently";
+    if (isNaN(d.getTime())) return "";
     const now = new Date();
     const diffMs = now.getTime() - d.getTime();
     const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
@@ -141,7 +141,7 @@ const formatTimeAgo = (dateStr: string): string => {
     if (diffDays < 30) return `${Math.floor(diffDays / 7)} weeks ago`;
     return d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
   } catch {
-    return "Recently";
+    return "";
   }
 };
 
@@ -342,7 +342,7 @@ export const useParentIntelligence = (student: any | null) => {
         subtitle: `Scored ${att.score}%${att.totalQuestions ? ` across ${att.totalQuestions} questions` : ""}`,
         score: att.score,
         timestamp: att.completedAt || new Date().toISOString(),
-        formattedDate: att.completedAt ? formatTimeAgo(att.completedAt) : "Recently",
+        formattedDate: att.completedAt ? formatTimeAgo(att.completedAt) : "",
         passed: att.score >= 50,
       }));
     } else {
@@ -354,7 +354,7 @@ export const useParentIntelligence = (student: any | null) => {
           subtitle: `Overall accuracy ${core.activity.overallAccuracy}% across ${core.activity.totalQuestionsAttempted} questions`,
           score: core.activity.overallAccuracy,
           timestamp: core.activity.lastActiveDate || new Date().toISOString(),
-          formattedDate: core.activity.lastActiveDate ? formatTimeAgo(core.activity.lastActiveDate) : "Recent",
+          formattedDate: core.activity.lastActiveDate ? formatTimeAgo(core.activity.lastActiveDate) : "",
           passed: core.activity.overallAccuracy >= 50,
         },
       ];

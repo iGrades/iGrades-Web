@@ -1,4 +1,3 @@
-
 import { useState, useRef } from "react";
 import {
   Input,
@@ -9,10 +8,14 @@ import {
   Field,
   Grid,
   GridItem,
+  Flex,
+  Icon,
 } from "@chakra-ui/react";
 import { useUser } from "../../context/parentDataContext";
 import { supabase } from "@/lib/supabaseClient";
 import UpdateParentSuccessPopover from "./updateParentSuccessPopover";
+import { FiEdit2 } from "react-icons/fi";
+import { toaster } from "@/components/ui/toaster";
 
 const EditParent = () => {
   const { parent, getParentData } = useUser();
@@ -29,87 +32,174 @@ const EditParent = () => {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [showBox, setShowBox] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
-  
-    const handleImageUpload = async (): Promise<string | null> => {
-      if (!selectedFile) return null;
-  
-      const fileExt = selectedFile.name.split(".").pop();
-      const fileName = `${Date.now()}.${fileExt}`;
-      const filePath = `parents/${fileName}`;
-  
-      const { error } = await supabase.storage
-        .from("profile-photos")
-        .upload(filePath, selectedFile);
-  
-      if (error) {
-        console.error("Upload error:", error);
-        return null;
-      }
-  
-      const {
-        data: { publicUrl },
-      } = supabase.storage.from("profile-photos").getPublicUrl(filePath);
-  
-      return publicUrl;
-    };
-  
-    const handleEdit = async () => {
-      if (!parentData.id) {
-        // Check if parent exists
-        console.error("No parent ID found");
+
+  const handleImageUpload = async (): Promise<string | null> => {
+    if (!selectedFile) return null;
+
+    const fileExt = selectedFile.name.split(".").pop();
+    const fileName = `${Date.now()}.${fileExt}`;
+    const filePath = `parents/${fileName}`;
+
+    const { error } = await supabase.storage
+      .from("profile-photos")
+      .upload(filePath, selectedFile);
+
+    if (error) {
+      console.error("Upload error:", error);
+      return null;
+    }
+
+    const {
+      data: { publicUrl },
+    } = supabase.storage.from("profile-photos").getPublicUrl(filePath);
+
+    return publicUrl;
+  };
+
+  const handleEdit = async () => {
+    if (!parentData.id) {
+      console.error("No parent ID found");
+      return;
+    }
+
+    setIsLoading(true);
+
+    let imageUrl = parentData.profile_image;
+
+    if (selectedFile) {
+      const uploadedUrl = await handleImageUpload();
+      if (!uploadedUrl) {
+        console.error("Image upload failed");
+        toaster.create({
+          title: "Upload Failed",
+          description: "Could not upload new photo. Please try again.",
+          type: "error",
+        });
+        setIsLoading(false);
         return;
       }
-  
-      setIsLoading(true); 
-  
-      let imageUrl = parentData.profile_image; 
-  
-      if (selectedFile) {
-        const uploadedUrl = await handleImageUpload();
-        if (!uploadedUrl) {
-          console.error("Image upload failed");
-          return;
-        }
-        imageUrl = uploadedUrl;
-      }
-  
-      const { error } = await supabase
-        .from("parents")
-        .update({ ...formData, profile_image: imageUrl })
-        .eq("id", parentData.id) 
-        .select();
-  
-      if (error) {
-        console.error("Update error:", error.message);
-      } else {
-        console.log("User updated successfully");
-        setShowBox(true);
-        setIsLoading(false);
-      }
-    };
+      imageUrl = uploadedUrl;
+    }
+
+    const { error } = await supabase
+      .from("parents")
+      .update({ ...formData, profile_image: imageUrl })
+      .eq("id", parentData.id)
+      .select();
+
+    setIsLoading(false);
+
+    if (error) {
+      console.error("Update error:", error.message);
+      toaster.create({
+        title: "Update Failed",
+        description: error.message,
+        type: "error",
+      });
+    } else {
+      setShowBox(true);
+      toaster.create({
+        title: "Profile Updated",
+        description: "Your parent profile details have been saved.",
+        type: "success",
+      });
+    }
+  };
+
+  const getLabel = (key: string) => {
+    switch (key) {
+      case "firstname":
+        return "First Name";
+      case "lastname":
+        return "Last Name";
+      case "email":
+        return "Email Address";
+      case "phone":
+        return "Phone Number";
+      default:
+        return key;
+    }
+  };
 
   return (
     <>
-      <VStack 
-        gap={4} 
-        mb={10} 
-        px={{ base: 4, md: 10, lg: 20 }} 
-        w="full"
+      <VStack
+        gap={5}
+        mb={16}
+        p={{ base: 4, sm: 6 }}
+        w="100%"
+        border="none"
+        outline="none"
+        boxShadow="none"
+        bg="white"
       >
-        {/* Image Preview */}
-        <Box position="relative" textAlign="center">
-          <Image
-            src={
-              selectedFile
-                ? URL.createObjectURL(selectedFile)
-                : parentData.profile_image
-            }
-            alt="Profile"
-            boxSize={{ base: "80px", md: "90px" }}
-            borderRadius="xl"
-            objectFit="cover"
-            m="auto"
-          />
+        {/* Photo Section with Rounded Square and Pencil Badge */}
+        <Box
+          position="relative"
+          w="full"
+          display="flex"
+          flexDirection="column"
+          justifyContent="center"
+          alignItems="center"
+          py={2}
+        >
+          <Box
+            position="relative"
+            cursor="pointer"
+            onClick={() => inputRef.current?.click()}
+            role="button"
+            aria-label="Change parent profile photo"
+          >
+            {selectedFile || parentData.profile_image ? (
+              <Image
+                src={
+                  selectedFile
+                    ? URL.createObjectURL(selectedFile)
+                    : parentData.profile_image
+                }
+                alt="Profile"
+                boxSize="96px"
+                borderRadius="2xl"
+                objectFit="cover"
+                border="none"
+                outline="none"
+                boxShadow="none"
+              />
+            ) : (
+              <Flex
+                boxSize="96px"
+                borderRadius="2xl"
+                bg="#206CE1"
+                color="white"
+                align="center"
+                justify="center"
+                fontSize="32px"
+                fontWeight="800"
+              >
+                {parentData?.firstname?.[0]?.toUpperCase() || "P"}
+              </Flex>
+            )}
+
+            <Flex
+              position="absolute"
+              bottom="-4px"
+              right="-4px"
+              bg="#206CE1"
+              color="white"
+              boxSize="30px"
+              borderRadius="xl"
+              border="none"
+              outline="none"
+              boxShadow="none"
+              align="center"
+              justify="center"
+              _hover={{ bg: "#1D75C7" }}
+              transition="all 0.15s"
+            >
+              <Icon as={FiEdit2} boxSize="13px" />
+            </Flex>
+          </Box>
+
           <Input
             type="file"
             accept="image/*"
@@ -120,37 +210,26 @@ const EditParent = () => {
               if (file) setSelectedFile(file);
             }}
           />
-          <Button
-            size="xs"
-            mt={3}
-            onClick={() => inputRef.current?.click()}
-            colorScheme="blue"
-            variant="ghost" 
-            textDecoration="underline"
-          >
-            Change Photo
-          </Button>
         </Box>
-        
+
+        {/* Input Fields Grid matching Student App */}
         <Grid
           templateColumns={{ base: "1fr", md: "repeat(2, 1fr)" }}
           gap={4}
-          my={4}
+          my={2}
           w="100%"
         >
-          {/* Input Fields */}
           {Object.entries(formData).map(([key, val]) => (
             <GridItem key={key} w="100%">
               <Box w="100%">
                 <Field.Root>
                   <Field.Label
                     fontSize="xs"
-                    fontWeight="bold"
-                    textTransform="capitalize"
-                    color="backgroundColor2"
-                    mb={1}
+                    fontWeight="600"
+                    color="#64748B"
+                    mb={1.5}
                   >
-                    {key.replace("_", " ")}
+                    {getLabel(key)}
                   </Field.Label>
                   <Input
                     name={key}
@@ -158,15 +237,17 @@ const EditParent = () => {
                     onChange={(e) =>
                       setFormData((prev) => ({ ...prev, [key]: e.target.value }))
                     }
-                    placeholder={`Enter ${key}`}
-                    fontSize="sm"
-                    h="48px"      
-                    bg="gray.50"
-                    color="gray.700"
+                    placeholder={`Enter ${getLabel(key).toLowerCase()}`}
+                    fontSize="xs"
+                    p={5}
+                    h="46px"
+                    bg="#F4F7FB"
+                    outline="none"
+                    border="none"
+                    boxShadow="none"
                     borderRadius="lg"
-                    border="1px solid"
-                    borderColor="gray.100"
-                    _focus={{ borderColor: "blue.400", bg: "white" }}
+                    w="100%"
+                    _placeholder={{ color: "gray.400" }}
                   />
                 </Field.Root>
               </Box>
@@ -174,25 +255,27 @@ const EditParent = () => {
           ))}
         </Grid>
 
-        {/* Action Button */}
-        <Box w="full" pt={4}>
-          <Button
-            loading={isLoading}
-            loadingText="Updating..."
-            type="submit"
-            fontWeight="bold"
-            w="full"
-            h="55px" 
-            bg="blue.500"
-            color="white"
-            borderRadius="3xl"
-            boxShadow="0 4px 12px rgba(66, 153, 225, 0.2)"
-            _active={{ transform: "scale(0.98)" }}
-            onClick={handleEdit}
-          >
-            Update Profile
-          </Button>
-        </Box>
+        {/* Action Button: 100% width, borderless, shadowless, matching student profile */}
+        <Button
+          loading={isLoading}
+          loadingText="Updating..."
+          type="button"
+          fontWeight="semibold"
+          w="100%"
+          my={3}
+          p={6}
+          bg="#206CE1"
+          color="white"
+          borderRadius="xl"
+          border="none"
+          outline="none"
+          boxShadow="none"
+          _hover={{ bg: "#1956b5" }}
+          _active={{ transform: "scale(0.99)" }}
+          onClick={handleEdit}
+        >
+          Update Profile Information
+        </Button>
       </VStack>
 
       {showBox && (

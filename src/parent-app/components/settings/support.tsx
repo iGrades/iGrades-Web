@@ -81,58 +81,61 @@ const Support = () => {
     <Box w="full" pb={12}>
       {/* Top Banner */}
       <Box
-        p={{ base: 5, md: 8 }}
-        borderRadius="2xl"
+        p={{ base: 4, md: 5 }}
+        borderRadius="xl"
         bg="white"
         border="1px solid"
         borderColor="gray.100"
         shadow="sm"
-        mb={8}
+        mb={6}
       >
-        <Flex direction={{ base: "column", md: "row" }} justify="space-between" align={{ base: "flex-start", md: "center" }} gap={4}>
+        <Flex direction={{ base: "column", md: "row" }} justify="space-between" align={{ base: "flex-start", md: "center" }} gap={3}>
           <Box maxW="600px">
-            <HStack gap={2} mb={2}>
+            <HStack gap={1.5} mb={1}>
               <Box
-                w={8}
-                h={8}
-                rounded="lg"
+                w={6}
+                h={6}
+                rounded="md"
                 bg="blue.50"
                 color="primaryColor"
                 display="flex"
                 alignItems="center"
                 justifyContent="center"
               >
-                <MdHelpOutline size={20} />
+                <MdHelpOutline size={16} />
               </Box>
-              <Badge colorPalette="blue" variant="subtle" px={2.5} py={0.5} borderRadius="md" fontSize="11px" fontWeight="semibold">
+              <Badge colorPalette="blue" variant="subtle" px={2} py={0.5} borderRadius="md" fontSize="10px" fontWeight="semibold">
                 Parent Support Desk
               </Badge>
-              <HStack gap={1.5}>
-                <Box w={2} h={2} rounded="full" bg="green.500" />
-                <Text fontSize="xs" color="gray.500" fontWeight="medium">Team Online</Text>
+              <HStack gap={1}>
+                <Box w={1.5} h={1.5} rounded="full" bg="green.500" />
+                <Text fontSize="10.5px" color="gray.500" fontWeight="medium">Team Online</Text>
               </HStack>
             </HStack>
-            <Heading size={{ base: "lg", md: "xl" }} color="gray.800" fontWeight="extrabold">
+            <Heading fontSize={{ base: "13px", sm: "14px" }} color="gray.800" fontWeight="bold">
               How can we help your family today?
             </Heading>
-            <Text fontSize="sm" color="gray.600" mt={2} lineHeight="tall">
+            <Text fontSize="11px" color="gray.600" mt={1} lineHeight="normal">
               Whether you need help with your child's curriculum, subscription, analytics, or login credentials, our academic support specialists are ready to assist.
             </Text>
           </Box>
 
           <Button
             asChild
-            size="lg"
+            size="xs"
+            h="28px"
+            px={2.5}
+            fontSize="11px"
             bg="#25D366"
             color="white"
-            _hover={{ bg: "#20b859", transform: "translateY(-2px)" }}
-            borderRadius="xl"
+            _hover={{ bg: "#20b859" }}
+            borderRadius="md"
             fontWeight="bold"
-            shadow="sm"
+            shadow="none"
           >
             <a href="https://wa.me/2347045422933" target="_blank" rel="noopener noreferrer">
-              <HStack gap={2}>
-                <BsWhatsapp size={20} />
+              <HStack gap={1}>
+                <BsWhatsapp size={13} />
                 <Text>Chat on WhatsApp</Text>
               </HStack>
             </a>
@@ -141,102 +144,102 @@ const Support = () => {
       </Box>
 
       {/* Support Channels Grid */}
-      <Grid templateColumns={{ base: "1fr", md: "repeat(3, 1fr)" }} gap={5} mb={8}>
+      <Grid templateColumns={{ base: "1fr", md: "repeat(3, 1fr)" }} gap={4} mb={6}>
         <Box
-          p={5}
+          p={4}
           bg="white"
-          borderRadius="2xl"
+          borderRadius="xl"
           border="1px"
           borderColor="gray.100"
           shadow="sm"
           transition="all 0.2s"
-          _hover={{ transform: "translateY(-2px)", shadow: "md" }}
+          _hover={{ transform: "translateY(-1px)", shadow: "md" }}
         >
-          <Flex align="center" gap={3} mb={3}>
-            <Icon boxSize={10} p={2.5} bg="blue.50" color="blue.600" borderRadius="xl">
-              <MdEmail size={22} />
+          <Flex align="center" gap={2.5} mb={2}>
+            <Icon boxSize={8} p={2} bg="blue.50" color="blue.600" borderRadius="lg">
+              <MdEmail size={16} />
             </Icon>
             <Box>
-              <Text fontSize="xs" color="gray.500" fontWeight="semibold">Email Support</Text>
-              <Text fontSize="sm" fontWeight="bold" color="gray.800">info@igrades.org</Text>
+              <Text fontSize="10.5px" color="gray.500" fontWeight="semibold">Email Support</Text>
+              <Text fontSize="12px" fontWeight="bold" color="gray.800">info@igrades.org</Text>
             </Box>
           </Flex>
-          <Text fontSize="xs" color="gray.600">
-            For general inquiries, billing, and progress certificate queries. Average response time: under 24 hours.
+          <Text fontSize="10.5px" color="gray.600" lineHeight="short">
+            For general inquiries, billing, and progress certificate queries. Average response: under 24 hours.
           </Text>
         </Box>
 
         <Box
-          p={5}
+          p={4}
           bg="white"
-          borderRadius="2xl"
+          borderRadius="xl"
           border="1px"
           borderColor="gray.100"
           shadow="sm"
           transition="all 0.2s"
-          _hover={{ transform: "translateY(-2px)", shadow: "md" }}
+          _hover={{ transform: "translateY(-1px)", shadow: "md" }}
         >
-          <Flex align="center" gap={3} mb={3}>
-            <Icon boxSize={10} p={2.5} bg="green.50" color="green.600" borderRadius="xl">
-              <MdPhone size={22} />
+          <Flex align="center" gap={2.5} mb={2}>
+            <Icon boxSize={8} p={2} bg="green.50" color="green.600" borderRadius="lg">
+              <MdPhone size={16} />
             </Icon>
             <Box>
-              <Text fontSize="xs" color="gray.500" fontWeight="semibold">Direct Line & WhatsApp</Text>
-              <Text fontSize="sm" fontWeight="bold" color="gray.800">+234 704 542 2933</Text>
+              <Text fontSize="10.5px" color="gray.500" fontWeight="semibold">Direct Line & WhatsApp</Text>
+              <Text fontSize="12px" fontWeight="bold" color="gray.800">+234 704 542 2933</Text>
             </Box>
           </Flex>
-          <Text fontSize="xs" color="gray.600">
+          <Text fontSize="10.5px" color="gray.600" lineHeight="short">
             Available Monday – Saturday, 8:00 AM – 8:00 PM for urgent student access assistance.
           </Text>
         </Box>
 
         <Box
-          p={5}
+          p={4}
           bg="white"
-          borderRadius="2xl"
+          borderRadius="xl"
           border="1px"
           borderColor="gray.100"
           shadow="sm"
           transition="all 0.2s"
-          _hover={{ transform: "translateY(-2px)", shadow: "md" }}
+          _hover={{ transform: "translateY(-1px)", shadow: "md" }}
         >
-          <Flex align="center" gap={3} mb={3}>
-            <Icon boxSize={10} p={2.5} bg="purple.50" color="purple.600" borderRadius="xl">
-              <MdLocationOn size={22} />
+          <Flex align="center" gap={2.5} mb={2}>
+            <Icon boxSize={8} p={2} bg="purple.50" color="purple.600" borderRadius="lg">
+              <MdLocationOn size={16} />
             </Icon>
             <Box>
-              <Text fontSize="xs" color="gray.500" fontWeight="semibold">Head Office</Text>
-              <Text fontSize="sm" fontWeight="bold" color="gray.800">Ibadan, Nigeria</Text>
+              <Text fontSize="10.5px" color="gray.500" fontWeight="semibold">Head Office</Text>
+              <Text fontSize="12px" fontWeight="bold" color="gray.800">Ibadan, Nigeria</Text>
             </Box>
           </Flex>
-          <Text fontSize="xs" color="gray.600">
+          <Text fontSize="10.5px" color="gray.600" lineHeight="short">
             No. 80, Road C, Alagbayun road, Akobo, Oyo State. Certified Nigerian Curriculum Hub.
           </Text>
         </Box>
       </Grid>
 
       {/* FAQs and Contact Form Dual Layout */}
-      <Grid templateColumns={{ base: "1fr", lg: "1.2fr 0.8fr" }} gap={8}>
+      <Grid templateColumns={{ base: "1fr", lg: "1.2fr 0.8fr" }} gap={6}>
         {/* FAQs */}
-        <Box bg="white" p={{ base: 5, md: 6 }} borderRadius="2xl" shadow="sm" border="1px" borderColor="gray.100">
-          <HStack gap={2} mb={4}>
-            <Icon as={MdHelpOutline} color="primaryColor" boxSize={5} />
-            <Heading size="md" color="gray.800">
+        <Box bg="white" p={{ base: 4, md: 5 }} borderRadius="xl" shadow="sm" border="1px" borderColor="gray.100">
+          <HStack gap={2} mb={2}>
+            <Icon as={MdHelpOutline} color="primaryColor" boxSize={4} />
+            <Heading fontSize={{ base: "13px", sm: "14px" }} fontWeight="bold" color="gray.800">
               Frequently Asked Questions for Parents
             </Heading>
           </HStack>
-          <Text fontSize="xs" color="gray.500" mb={5}>
+          <Text fontSize="11px" color="gray.500" mb={4}>
             Answers to common questions regarding student management, quiz grading, and account controls.
           </Text>
 
-          <VStack gap={3} align="stretch">
+          <VStack gap={2} align="stretch">
             {parentFaqs.map((faq, idx) => {
               const isOpen = activeFaq === idx;
               return (
                 <Box
                   key={idx}
-                  p={4}
-                  borderRadius="xl"
+                  p={3}
+                  borderRadius="lg"
                   bg={isOpen ? "blue.50/50" : "textFieldColor"}
                   border="1px"
                   borderColor={isOpen ? "blue.200" : "transparent"}
@@ -244,16 +247,16 @@ const Support = () => {
                   transition="all 0.2s"
                   onClick={() => setActiveFaq(isOpen ? null : idx)}
                 >
-                  <Flex justify="space-between" align="center">
-                    <Text fontSize="sm" fontWeight="bold" color={isOpen ? "primaryColor" : "gray.800"}>
+                  <Flex justify="space-between" align="center" gap={2}>
+                    <Text fontSize="11px" fontWeight="600" color={isOpen ? "primaryColor" : "gray.800"}>
                       {faq.q}
                     </Text>
-                    <Text fontSize="md" fontWeight="bold" color="gray.400">
+                    <Text fontSize="13px" fontWeight="bold" color="gray.400" flexShrink={0}>
                       {isOpen ? "−" : "+"}
                     </Text>
                   </Flex>
                   {isOpen && (
-                    <Text fontSize="xs" color="gray.600" mt={2} lineHeight="relaxed">
+                    <Text fontSize="11px" color="gray.600" mt={1.5} lineHeight="relaxed">
                       {faq.a}
                     </Text>
                   )}
@@ -264,29 +267,30 @@ const Support = () => {
         </Box>
 
         {/* Contact Form */}
-        <Box bg="white" p={{ base: 5, md: 6 }} borderRadius="2xl" shadow="sm" border="1px" borderColor="gray.100">
-          <HStack gap={2} mb={4}>
-            <Icon as={BsShieldCheck} color="green.500" boxSize={5} />
-            <Heading size="md" color="gray.800">
+        <Box bg="white" p={{ base: 4, md: 5 }} borderRadius="xl" shadow="sm" border="1px" borderColor="gray.100">
+          <HStack gap={2} mb={2}>
+            <Icon as={BsShieldCheck} color="green.500" boxSize={4} />
+            <Heading fontSize={{ base: "13px", sm: "14px" }} fontWeight="bold" color="gray.800">
               Send Support Message
             </Heading>
           </HStack>
-          <Text fontSize="xs" color="gray.500" mb={5}>
+          <Text fontSize="11px" color="gray.500" mb={4}>
             Have an issue with your account? Fill out the details below and our team will get right on it.
           </Text>
 
           <form onSubmit={handleSubmit}>
-            <VStack gap={4}>
+            <VStack gap={3}>
               <Box w="full">
-                <Text fontSize="xs" fontWeight="semibold" color="gray.700" mb={1}>
+                <Text fontSize="10.5px" fontWeight="semibold" color="gray.700" mb={1}>
                   Your Full Name
                 </Text>
                 <Input
                   placeholder="e.g. Mrs. Adebayo"
-                  fontSize="xs"
-                  p={4}
+                  fontSize="11px"
+                  h="36px"
+                  px={3}
                   bg="textFieldColor"
-                  borderRadius="xl"
+                  borderRadius="lg"
                   border="1px"
                   borderColor="gray.200"
                   value={formData.name}
@@ -295,16 +299,17 @@ const Support = () => {
               </Box>
 
               <Box w="full">
-                <Text fontSize="xs" fontWeight="semibold" color="gray.700" mb={1}>
+                <Text fontSize="10.5px" fontWeight="semibold" color="gray.700" mb={1}>
                   Email Address
                 </Text>
                 <Input
                   type="email"
                   placeholder="e.g. adebayo@example.com"
-                  fontSize="xs"
-                  p={4}
+                  fontSize="11px"
+                  h="36px"
+                  px={3}
                   bg="textFieldColor"
-                  borderRadius="xl"
+                  borderRadius="lg"
                   border="1px"
                   borderColor="gray.200"
                   value={formData.email}
@@ -313,16 +318,17 @@ const Support = () => {
               </Box>
 
               <Box w="full">
-                <Text fontSize="xs" fontWeight="semibold" color="gray.700" mb={1}>
+                <Text fontSize="10.5px" fontWeight="semibold" color="gray.700" mb={1}>
                   Message / Issue Description
                 </Text>
                 <Textarea
                   placeholder="Describe your inquiry or question in detail..."
-                  fontSize="xs"
-                  p={4}
-                  rows={4}
+                  fontSize="11px"
+                  px={3}
+                  py={2}
+                  rows={3}
                   bg="textFieldColor"
-                  borderRadius="xl"
+                  borderRadius="lg"
                   border="1px"
                   borderColor="gray.200"
                   value={formData.message}
@@ -333,17 +339,17 @@ const Support = () => {
               <Button
                 type="submit"
                 w="full"
-                h="48px"
+                h="36px"
                 bg="primaryColor"
                 color="white"
-                borderRadius="xl"
-                fontSize="sm"
+                borderRadius="lg"
+                fontSize="11px"
                 fontWeight="bold"
                 loading={loading}
-                _hover={{ bg: "#1956b5", transform: "translateY(-1px)" }}
+                _hover={{ bg: "#1956b5" }}
               >
-                <HStack gap={2}>
-                  <Icon as={MdSend} />
+                <HStack gap={1.5}>
+                  <Icon as={MdSend} boxSize={3.5} />
                   <Text>Submit Inquiry</Text>
                 </HStack>
               </Button>

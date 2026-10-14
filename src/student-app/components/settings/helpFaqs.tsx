@@ -18,7 +18,6 @@ import {
   FiChevronDown,
   FiChevronUp,
   FiSend,
-  FiCheckCircle,
   FiBookOpen,
   FiAward,
   FiShield,
@@ -161,72 +160,78 @@ const HelpFaqs = () => {
           gap={4}
         >
           <Box>
-            <HStack gap={2} mb={2}>
+            <HStack gap={1.5} mb={1}>
               <Box
-                w={8}
-                h={8}
-                rounded="lg"
+                w={5}
+                h={5}
+                rounded="md"
                 bg="blue.50"
                 color="#206CE1"
                 display="flex"
                 alignItems="center"
                 justifyContent="center"
               >
-                <FiHelpCircle size={18} />
+                <FiHelpCircle size={13} />
               </Box>
-              <Badge colorPalette="blue" variant="subtle" size="sm" rounded="md" border="none">
+              <Badge colorPalette="blue" variant="subtle" size="xs" fontSize="9px" px={1.5} py={0.5} rounded="md" border="none">
                 Student Help Center
               </Badge>
             </HStack>
-            <Heading size={{ base: "lg", md: "xl" }} color="gray.800" fontWeight="bold">
+            <Heading fontSize={{ base: "13px", sm: "14px" }} color="gray.800" fontWeight="bold">
               Help & Frequently Asked Questions
             </Heading>
-            <Text fontSize="sm" color="gray.500" mt={1} maxW="600px">
+            <Text fontSize="11px" color="gray.500" mt={0.5} maxW="600px">
               Need assistance? Explore quick answers below or send a message directly to our student support team.
             </Text>
           </Box>
 
           {/* Quick Direct Contacts */}
-          <HStack gap={3} flexWrap="wrap">
+          <HStack gap={1.5} flexWrap="wrap">
             <Button
               as="a"
               href="https://wa.me/2348000000000"
               target="_blank"
               rel="noopener noreferrer"
-              size="sm"
+              size="xs"
+              h="26px"
+              px={2}
+              fontSize="11px"
               bg="#25D366"
               color="white"
               _hover={{ bg: "#20bd5a" }}
-              rounded="lg"
+              rounded="md"
               border="none"
               outline="none"
               boxShadow="none"
-              gap={2}
+              gap={1}
             >
-              <BsWhatsapp size={15} />
+              <BsWhatsapp size={12} />
               WhatsApp Help
             </Button>
             <Button
               as="a"
               href="mailto:info@igrades.org"
-              size="sm"
+              size="xs"
+              h="26px"
+              px={2}
+              fontSize="11px"
               bg="#F4F7FB"
               color="gray.700"
               _hover={{ bg: "#EDF2F7" }}
-              rounded="lg"
+              rounded="md"
               border="none"
               outline="none"
               boxShadow="none"
-              gap={2}
+              gap={1}
             >
-              <FiMail size={15} />
+              <FiMail size={12} />
               Email Support
             </Button>
           </HStack>
         </Flex>
 
         {/* Search Bar */}
-        <Box mt={6} position="relative" w="100%">
+        <Box mt={4} position="relative" w="100%">
           <Flex
             align="center"
             bg="#F4F7FB"
@@ -239,13 +244,13 @@ const HelpFaqs = () => {
             gap={3}
             transition="all 0.2s"
           >
-            <FiSearch size={18} color="#718096" />
+            <FiSearch size={14} color="#718096" />
             <Input
               variant="unstyled"
-              placeholder="Search by keyword (e.g. 'quizzes', 'points', 'passkey', 'AI assistant')..."
+              placeholder="Search by keyword (e.g. 'quizzes', 'points', 'passkey')..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              fontSize="sm"
+              fontSize="11px"
               color="gray.800"
               border="none"
               outline="none"
@@ -257,6 +262,7 @@ const HelpFaqs = () => {
                 onClick={() => setSearchQuery("")}
                 color="gray.400"
                 _hover={{ color: "gray.600" }}
+                fontSize="10px"
               >
                 Clear
               </Button>
@@ -265,7 +271,7 @@ const HelpFaqs = () => {
         </Box>
 
         {/* Category Filters */}
-        <Flex gap={2} mt={4} overflowX="auto" pb={1} css={{ scrollbarWidth: "none" }} w="100%">
+        <Flex gap={1.5} mt={2.5} overflowX="auto" pb={1} css={{ scrollbarWidth: "none" }} w="100%">
           {categoryFilters.map((cat) => {
             const isSelected = selectedCategory === cat.id;
             const IconComp = cat.icon;
@@ -273,8 +279,9 @@ const HelpFaqs = () => {
               <Button
                 key={cat.id}
                 size="xs"
-                px={3}
-                py={2}
+                px={2.5}
+                py={1}
+                fontSize="10px"
                 rounded="full"
                 border="none"
                 outline="none"
@@ -284,9 +291,9 @@ const HelpFaqs = () => {
                 _hover={{ bg: isSelected ? "#1a5bc0" : "#EDF2F7" }}
                 onClick={() => setSelectedCategory(cat.id)}
                 whiteSpace="nowrap"
-                gap={1.5}
+                gap={1}
               >
-                <IconComp size={12} />
+                <IconComp size={10} />
                 {cat.label}
               </Button>
             );
@@ -295,17 +302,18 @@ const HelpFaqs = () => {
       </Box>
 
       {/* Main Content: FAQs List & Contact Box */}
-      <Grid templateColumns={{ base: "1fr", lg: "1.8fr 1.2fr" }} gap={6} alignContent="start" w="100%">
+      <Grid templateColumns={{ base: "1fr", lg: "1.8fr 1.2fr" }} gap={4} alignContent="start" w="100%">
         {/* FAQs Accordion Column */}
-        <VStack align="stretch" gap={3} w="100%">
+        <VStack align="stretch" gap={2} w="100%">
           <Flex justify="space-between" align="center" px={1}>
-            <Text fontSize="sm" fontWeight="bold" color="gray.700">
+            <Text fontSize="11px" fontWeight="bold" color="gray.700">
               {filteredFaqs.length} {filteredFaqs.length === 1 ? "Question" : "Questions"} Found
             </Text>
             {selectedCategory !== "all" && (
               <Button
                 size="xs"
                 variant="ghost"
+                fontSize="10px"
                 color="#206CE1"
                 onClick={() => {
                   setSelectedCategory("all");
@@ -320,7 +328,7 @@ const HelpFaqs = () => {
           {filteredFaqs.length === 0 ? (
             <Box
               bg="#F4F7FB"
-              p={8}
+              p={5}
               rounded="xl"
               border="none"
               outline="none"
@@ -328,14 +336,15 @@ const HelpFaqs = () => {
               textAlign="center"
               w="100%"
             >
-              <Text fontSize="md" fontWeight="bold" color="gray.700" mb={1}>
+              <Text fontSize="12px" fontWeight="bold" color="gray.700" mb={1}>
                 No questions matching "{searchQuery}"
               </Text>
-              <Text fontSize="sm" color="gray.500" mb={4}>
+              <Text fontSize="11px" color="gray.500" mb={2.5}>
                 Try adjusting your search terms or send us a direct message below.
               </Text>
               <Button
-                size="sm"
+                size="xs"
+                fontSize="11px"
                 bg="white"
                 border="none"
                 boxShadow="none"
@@ -363,18 +372,18 @@ const HelpFaqs = () => {
                   w="100%"
                 >
                   <Flex
-                    p={4}
+                    p={3}
                     justify="space-between"
                     align="center"
                     cursor="pointer"
                     onClick={() => setExpandedFaq(isOpen ? null : index)}
                     _hover={{ bg: "#EDF2F7" }}
-                    gap={3}
+                    gap={2}
                   >
-                    <HStack gap={3} align="center" flex="1">
+                    <HStack gap={2} align="center" flex="1">
                       <Box
-                        w={6}
-                        h={6}
+                        w={4.5}
+                        h={4.5}
                         rounded="full"
                         bg={isOpen ? "blue.50" : "white"}
                         color={isOpen ? "#206CE1" : "gray.500"}
@@ -383,22 +392,22 @@ const HelpFaqs = () => {
                         justifyContent="center"
                         flexShrink={0}
                       >
-                        <Text fontSize="xs" fontWeight="bold">
+                        <Text fontSize="9px" fontWeight="bold">
                           ?
                         </Text>
                       </Box>
-                      <Text fontSize="sm" fontWeight="600" color="gray.800">
+                      <Text fontSize={{ base: "11px", sm: "12px" }} fontWeight="600" color="gray.800" lineHeight="short">
                         {faq.q}
                       </Text>
                     </HStack>
                     <Box color="gray.400" flexShrink={0}>
-                      {isOpen ? <FiChevronUp size={18} /> : <FiChevronDown size={18} />}
+                      {isOpen ? <FiChevronUp size={13} /> : <FiChevronDown size={13} />}
                     </Box>
                   </Flex>
 
                   {isOpen && (
-                    <Box px={4} pb={4} pt={1} borderTop="1px solid" borderColor="gray.50">
-                      <Text fontSize="sm" color="gray.600" lineHeight="tall">
+                    <Box px={3} pb={3} pt={0.5} borderTop="1px solid" borderColor="gray.50">
+                      <Text fontSize="11px" color="gray.600" lineHeight="1.5">
                         {faq.a}
                       </Text>
                     </Box>
@@ -414,19 +423,19 @@ const HelpFaqs = () => {
             border="none"
             outline="none"
             boxShadow="none"
-            p={4}
+            p={3}
             rounded="xl"
-            mt={2}
+            mt={0.5}
           >
-            <HStack gap={3} align="flex-start">
-              <Box p={2} bg="#206CE1" color="white" rounded="lg">
-                <FiCpu size={18} />
+            <HStack gap={2} align="flex-start">
+              <Box p={1} bg="#206CE1" color="white" rounded="md">
+                <FiCpu size={13} />
               </Box>
               <Box>
-                <Text fontSize="sm" fontWeight="bold" color="gray.800">
+                <Text fontSize="11px" fontWeight="bold" color="gray.800">
                   Have an academic question right now?
                 </Text>
-                <Text fontSize="xs" color="gray.600" mt={0.5}>
+                <Text fontSize="10.5px" color="gray.600" mt={0.5} lineHeight="short">
                   Use the 24/7 AI Study Assistant in the bottom right corner of your screen for instant explanations, formulas, and hints.
                 </Text>
               </Box>
@@ -437,7 +446,7 @@ const HelpFaqs = () => {
         {/* Contact / Inquiry Form Column */}
         <Box
           bg="#F4F7FB"
-          p={{ base: 4, md: 5 }}
+          p={{ base: 3.5, md: 4 }}
           rounded="xl"
           border="none"
           outline="none"
@@ -445,132 +454,103 @@ const HelpFaqs = () => {
           height="fit-content"
           w="100%"
         >
-          <HStack gap={2} mb={1}>
-            <FiSend color="#206CE1" size={16} />
-            <Text fontSize="md" fontWeight="bold" color="gray.800">
-              Contact Student Support
+          <HStack gap={1.5} mb={1}>
+            <FiSend color="#206CE1" size={13} />
+            <Text fontSize="12px" fontWeight="bold" color="gray.800">
+              Ask Student Support
             </Text>
           </HStack>
-          <Text fontSize="xs" color="gray.500" mb={4}>
-            Can't find what you're looking for? Submit a ticket and our teachers will help you out.
+          <Text fontSize="10.5px" color="gray.500" mb={3} lineHeight="short">
+            Can't find your answer? Drop your question below and our academic support desk will assist you.
           </Text>
 
           <form onSubmit={handleSupportSubmit}>
-            <VStack gap={3} align="stretch">
+            <VStack gap={2.5} align="stretch">
               <Box>
-                <Text fontSize="xs" fontWeight="600" color="gray.700" mb={1}>
+                <Text fontSize="10.5px" fontWeight="600" color="gray.700" mb={1}>
                   Your Name
                 </Text>
                 <Input
-                  size="sm"
+                  fontSize="11px"
                   bg="white"
-                  rounded="md"
                   border="none"
                   outline="none"
-                  boxShadow="none"
+                  rounded="lg"
+                  h="32px"
                   value={studentName || "Student"}
                   disabled
-                  fontSize="xs"
                   color="gray.600"
                 />
               </Box>
 
               <Box>
-                <Text fontSize="xs" fontWeight="600" color="gray.700" mb={1}>
-                  Your Email
+                <Text fontSize="10.5px" fontWeight="600" color="gray.700" mb={1}>
+                  Email Address
                 </Text>
                 <Input
-                  size="sm"
+                  fontSize="11px"
                   bg="white"
-                  rounded="md"
                   border="none"
                   outline="none"
-                  boxShadow="none"
-                  value={studentEmail || "No registered email"}
+                  rounded="lg"
+                  h="32px"
+                  value={studentEmail || "student@example.com"}
                   disabled
-                  fontSize="xs"
                   color="gray.600"
                 />
               </Box>
 
               <Box>
-                <Text fontSize="xs" fontWeight="600" color="gray.700" mb={1}>
-                  Topic / Issue
+                <Text fontSize="10.5px" fontWeight="600" color="gray.700" mb={1}>
+                  Topic Category
                 </Text>
-                <Box
-                  as="select"
-                  w="full"
-                  p={2}
-                  fontSize="xs"
+                <Input
+                  fontSize="11px"
                   bg="white"
                   border="none"
                   outline="none"
-                  boxShadow="none"
-                  rounded="md"
+                  rounded="lg"
+                  h="32px"
                   value={formSubject}
-                  onChange={(e: any) => setFormSubject(e.target.value)}
-                >
-                  <option value="Question about quizzes or scoring">Question about quizzes or scoring</option>
-                  <option value="Issue with IGG Points or Rewards">Issue with IGG Points or Rewards</option>
-                  <option value="Security or 6-digit Passkey">Security or 6-digit Passkey</option>
-                  <option value="Study Assistant or Learning Materials">Study Assistant or Learning Materials</option>
-                  <option value="Other Question or Feedback">Other Question or Feedback</option>
-                </Box>
+                  onChange={(e) => setFormSubject(e.target.value)}
+                />
               </Box>
 
               <Box>
-                <Text fontSize="xs" fontWeight="600" color="gray.700" mb={1}>
-                  Your Message
+                <Text fontSize="10.5px" fontWeight="600" color="gray.700" mb={1}>
+                  Describe Your Question
                 </Text>
                 <Textarea
-                  size="sm"
-                  rows={4}
+                  fontSize="11px"
                   bg="white"
                   border="none"
                   outline="none"
-                  boxShadow="none"
-                  rounded="md"
-                  placeholder="Describe what you need help with in detail..."
+                  rounded="lg"
+                  rows={3}
+                  placeholder="Type your question or issue in detail..."
                   value={formMessage}
                   onChange={(e) => setFormMessage(e.target.value)}
-                  fontSize="xs"
-                  resize="none"
-                  _focus={{ borderColor: "#206CE1", bg: "white" }}
                 />
               </Box>
 
               <Button
                 type="submit"
+                size="xs"
+                h="32px"
+                fontSize="11px"
                 bg="#206CE1"
                 color="white"
                 _hover={{ bg: "#1a5bc0" }}
-                size="sm"
-                rounded="md"
+                rounded="lg"
+                border="none"
                 loading={isSubmitting}
-                w="full"
-                gap={2}
+                loadingText="Sending..."
                 mt={1}
               >
-                <FiSend size={14} />
-                Send Inquiry
+                Send Message
               </Button>
             </VStack>
           </form>
-
-          <Box mt={5} pt={4} borderTop="1px solid" borderColor="gray.100">
-            <HStack gap={2} mb={2}>
-              <FiCheckCircle color="#38A169" size={14} />
-              <Text fontSize="xs" color="gray.600" fontWeight="500">
-                Typical response time: Within a few hours
-              </Text>
-            </HStack>
-            <HStack gap={2}>
-              <FiMail color="#718096" size={14} />
-              <Text fontSize="xs" color="gray.600">
-                Direct: <Text as="span" fontWeight="600" color="#206CE1">info@igrades.org</Text>
-              </Text>
-            </HStack>
-          </Box>
         </Box>
       </Grid>
     </Box>

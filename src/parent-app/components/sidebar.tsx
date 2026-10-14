@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Box, Icon, Text, Flex, IconButton, HStack } from "@chakra-ui/react";
+import { Box, Icon, Text, Flex, HStack } from "@chakra-ui/react";
 import { AiTwotoneSetting } from "react-icons/ai";
 import { PiStudentDuotone } from "react-icons/pi";
 import { TbHomeFilled } from "react-icons/tb";
@@ -143,70 +143,6 @@ const Sidebar = () => {
             </Box>
           );
         })}
-      </Box>
-
-      {/* Mobile devices ONLY bottom navigation */}
-      <Box
-        as="aside"
-        display={{ base: "block", md: "none" }}
-        position="fixed"
-        bottom={0}
-        left="50%"
-        transform="translateX(-50%)"
-        bg="white"
-        borderRadius="none"
-        boxShadow="none"
-        borderTop="1px solid"
-        borderColor="gray.200"
-        px={0}
-        py={0}
-        pb="env(safe-area-inset-bottom, 6px)"
-        width="100%"
-        zIndex={1000}
-      >
-        <Flex 
-          justify="space-around" 
-          align="center" 
-          maxW="md" 
-          mx="auto"
-        >
-          {parentsAsideElem.map(({ icon, label, value }) => {
-            const isActive = currentParentPage === value;
-            return (
-              <Flex
-                key={label}
-                direction="column"
-                align="center"
-                justify="center"
-                flex="1"
-                cursor="pointer"
-                py={1}
-                onClick={() => setCurrentParentPage(value)}
-              >
-                <IconButton
-                  aria-label={label}
-                  variant="ghost"
-                  size="md" 
-                  fontSize="22px"
-                  color={isActive ? "blue.700" : "fieldTextColor"}
-                  bg={isActive ? "blue.50" : "transparent"}
-                  borderRadius="xl"
-                  mb={1}
-                  _active={{ bg: "blue.100" }}
-                >
-                  <Icon as={icon} />
-                </IconButton>
-                <Text 
-                  fontSize="10px" 
-                  fontWeight={isActive ? "bold" : "medium"}
-                  color={isActive ? "blue.700" : "fieldTextColor"}
-                >
-                  {label}
-                </Text>
-              </Flex>
-            );
-          })}
-        </Flex>
       </Box>
     </>
   );

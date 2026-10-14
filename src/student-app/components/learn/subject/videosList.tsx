@@ -161,19 +161,19 @@ const VideosList = ({ topic, videos, onBack }: Props) => {
       {/* Header with back button */}
       <Heading
         as="h3"
-        fontSize={{ base: "15px", sm: "17px" }}
+        fontSize={{ base: "13px", sm: "15px" }}
         fontWeight="600"
         display="flex"
         alignItems="center"
         justifyContent="flex-start"
-        gap={2.5}
+        gap={2}
         mt={2}
-        mb={4}
+        mb={3}
         mx={1}
         color="#0F172A"
       >
-        <LuArrowLeft onClick={onBack} style={{ cursor: "pointer", flexShrink: 0 }} size={18} />
-        <Text as="span" noOfLines={1}>
+        <LuArrowLeft onClick={onBack} style={{ cursor: "pointer", flexShrink: 0 }} size={17} />
+        <Text as="span" noOfLines={1} truncate>
           {topic.name} Videos
         </Text>
       </Heading>
@@ -185,9 +185,9 @@ const VideosList = ({ topic, videos, onBack }: Props) => {
         </Text>
       ) : (
         <Grid
-          templateColumns="repeat(auto-fill, minmax(225px, 1fr))"
-          gap={6}
-          py={6}
+          templateColumns={{ base: "1fr", sm: "repeat(auto-fill, minmax(220px, 1fr))" }}
+          gap={{ base: 3.5, sm: 4, md: 6 }}
+          py={{ base: 2, md: 4 }}
         >
           {videos.map((video, index) => {
             const access = verifyVideo(index, video.title);

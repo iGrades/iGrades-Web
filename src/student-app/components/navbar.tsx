@@ -23,6 +23,7 @@ import {
   FiShield,
 } from "react-icons/fi";
 import AvatarComp from "../../components/avatar";
+import { SwipeUpNavGreeting } from "@/components/SwipeUpNavGreeting";
 
 interface NotificationItem {
   id: string;
@@ -34,7 +35,17 @@ interface NotificationItem {
 
 const Navbar = () => {
   const { authdStudent, setIsPopOver } = useAuthdStudentData();
-  const { setCurrentStudentPage, setStudentSettingsTab } = useNavigationStore();
+  const { currentStudentPage, setCurrentStudentPage, setStudentSettingsTab } = useNavigationStore();
+
+  const pageTitleMap: Record<string, string> = {
+    home: "Home",
+    learn: "Learn",
+    quiz: "Practice Quiz",
+    chat: "AI Tutor",
+    rewards: "Rewards",
+    settings: "Settings",
+  };
+  const currentPageTitle = pageTitleMap[currentStudentPage] || "Home";
 
   // Notifications state for interactive UX
   const [notifications, setNotifications] = useState<NotificationItem[]>([
@@ -219,23 +230,13 @@ const Navbar = () => {
             </Portal>
           </Menu.Root>
 
-          {/* Greeting: 'Hello {userfirstname}' */}
-          <Box>
-            <Heading
-              as="h1"
-              fontSize={{ base: "sm", sm: "md", md: "md" }}
-              fontWeight="bold"
-              color="gray.800"
-              lineHeight="1.2"
-            >
-              Hello {studentFirstName} 👋
-            </Heading>
-            {currentStudent?.class && (
-              <Text fontSize="11px" color="gray.500" display={{ base: "none", sm: "block" }}>
-                {currentStudent.class}
-              </Text>
-            )}
-          </Box>
+          {/* Greeting: 'Hello {studentFirstName} 👋' and Current Page Name Swipe-Up Sequence */}
+          <SwipeUpNavGreeting
+            firstName={studentFirstName}
+            pageTitle={currentPageTitle}
+            subtitleGreeting={currentStudent?.class}
+            subtitlePage={currentStudent?.class}
+          />
         </HStack>
 
         {/* Right Section: Notifications Icon */}

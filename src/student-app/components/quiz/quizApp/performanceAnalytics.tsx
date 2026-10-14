@@ -82,17 +82,6 @@ const PerformanceAnalytics = ({ quizResults, quizData }: PerformanceAnalyticsPro
           </HStack>
 
           <HStack gap={2}>
-            {effectivePlan === "basic" && (
-              <Button
-                size="xs"
-                bg="#206CE1"
-                color="white"
-                _hover={{ bg: "#1852B2" }}
-                onClick={handleDetailedUpgradeClick}
-              >
-                <PiShootingStarDuotone style={{ marginRight: "4px" }} /> Unlock Standard Plan
-              </Button>
-            )}
             {effectivePlan === "standard" && (
               <Button
                 size="xs"

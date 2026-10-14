@@ -6,6 +6,7 @@ import {
   checkPastQuestionYearAccess,
   checkVideoAccess,
   checkPdfAccess,
+  checkPdfDownloadAccess,
   checkExamModeAccess,
   checkTutorAccess,
   checkPointsAccess,
@@ -175,6 +176,13 @@ export function useSubscriptionEntitlement() {
     [effectivePlan]
   );
 
+  const verifyPdfDownload = useCallback(
+    (pdfTitle?: string): EntitlementCheckResult => {
+      return checkPdfDownloadAccess(effectivePlan, pdfTitle);
+    },
+    [effectivePlan]
+  );
+
   const verifyPoints = useCallback(
     (feature: "earning" | "viewing" | "streaks" | "history" | "conversion" = "viewing") => {
       return checkPointsAccess(effectivePlan, feature);
@@ -245,6 +253,7 @@ export function useSubscriptionEntitlement() {
     verifySubject,
     verifyVideo,
     verifyPdf,
+    verifyPdfDownload,
     verifyPoints,
 
     // Compatibility stubs

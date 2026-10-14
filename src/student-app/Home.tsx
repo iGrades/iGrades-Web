@@ -217,6 +217,7 @@ const Home = () => {
           flexShrink={0}
           w={{ base: "0px", md: "76px", lg: "16%" }}
           minW={{ md: "76px", lg: "190px" }}
+          display={{ base: "none", md: "block" }}
           overflow="visible"
           zIndex={90}
         >

@@ -1,5 +1,5 @@
 import { useState, useMemo } from "react";
-import { Box, Flex, Heading, Text, VStack, HStack, Badge, Progress, Icon, Table, Button } from "@chakra-ui/react";
+import { Box, Flex, Heading, Text, HStack, Badge, Icon, VStack, Button } from "@chakra-ui/react";
 import { FiMinus } from "react-icons/fi";
 import {
   PiBookOpenTextFill,
@@ -30,19 +30,29 @@ export const SubjectPerformanceSection = ({ subjects, onSelectSubject, registere
     return subjects;
   }, [subjects, registeredCourses]);
 
-  const visibleSubjects = isExpanded ? displayedSubjects : displayedSubjects.slice(0, 4);
+  const visibleSubjects = isExpanded ? displayedSubjects : displayedSubjects.slice(0, 5);
+
   const getStatusBadge = (status: SubjectIntelligence["status"]) => {
+    const badgeStyle = {
+      fontSize: "8px",
+      lineHeight: "10px",
+      h: "14px",
+      px: "4px",
+      py: "0px",
+      borderRadius: "full",
+      fontWeight: "700" as const,
+    };
     switch (status) {
       case "strong":
-        return <Badge colorPalette="green" variant="solid" size="sm" borderRadius="full">{t("Strong")}</Badge>;
+        return <Badge colorPalette="green" variant="solid" size="2xs" {...badgeStyle}>{t("Strong")}</Badge>;
       case "good":
-        return <Badge colorPalette="blue" variant="subtle" size="sm" borderRadius="full">{t("On Track")}</Badge>;
+        return <Badge colorPalette="blue" variant="subtle" size="2xs" {...badgeStyle}>{t("On Track")}</Badge>;
       case "fair":
-        return <Badge colorPalette="yellow" variant="subtle" size="sm" borderRadius="full">{t("Fair")}</Badge>;
+        return <Badge colorPalette="yellow" variant="subtle" size="2xs" {...badgeStyle}>{t("Fair")}</Badge>;
       case "needs_attention":
-        return <Badge colorPalette="orange" variant="subtle" size="sm" borderRadius="full">{t("Needs Practice")}</Badge>;
+        return <Badge colorPalette="orange" variant="subtle" size="2xs" {...badgeStyle}>{t("Practice")}</Badge>;
       default:
-        return <Badge colorPalette="gray" variant="surface" size="sm" borderRadius="full">{t("Not Started")}</Badge>;
+        return <Badge colorPalette="gray" variant="surface" size="2xs" {...badgeStyle}>{t("New")}</Badge>;
     }
   };
 
@@ -54,196 +64,232 @@ export const SubjectPerformanceSection = ({ subjects, onSelectSubject, registere
   };
 
   return (
-    <Box bg="white" p={{ base: 4, md: 6 }} borderRadius="2xl" border="1px solid" borderColor="gray.100" boxShadow="0 2px 8px rgba(0, 0, 0, 0.04)" mb={6}>
-      <Flex justify="space-between" align="center" mb={4} wrap="wrap" gap={2}>
-        <HStack gap={2.5}>
-          <Box bg="blue.50" p={2} borderRadius="xl" border="1px solid" borderColor="blue.200" boxShadow="0 2px 6px rgba(32, 108, 225, 0.12)">
-            <Icon as={PiBookOpenTextFill} color="#206CE1" boxSize="18px" />
-          </Box>
-          <Box>
-            <Heading size={{ base: "sm", md: "md" }} color="gray.900" fontWeight="800">
-              {t("Subject Performance")}
-            </Heading>
-            <Text fontSize="xs" color="gray.500" mt={0.5}>
-              {t("See your child's average quiz scores, progress, and activity in each subject.")}
-            </Text>
-          </Box>
+    <Box
+      bg="white"
+      p={{ base: 2.5, md: 3 }}
+      borderRadius="xl"
+      border="1px solid"
+      borderColor="gray.100"
+      boxShadow="0 1px 4px rgba(0, 0, 0, 0.03)"
+      mb={4}
+    >
+      {/* Compact Header: Subject Performance text on same line, small subjects count tag */}
+      <Flex justify="space-between" align="center" mb={2} wrap="nowrap" gap={2}>
+        <HStack gap={1.5} flexShrink={0} minW={0} align="center">
+          <Icon as={PiBookOpenTextFill} color="#206CE1" boxSize="18px" flexShrink={0} />
+          <Heading
+            size="xs"
+            color="gray.900"
+            fontWeight="800"
+            whiteSpace="nowrap"
+            lineHeight="normal"
+          >
+            {t("Subject Performance")}
+          </Heading>
         </HStack>
-        <Badge colorPalette="gray" variant="surface" size="sm" borderRadius="full">
-          {displayedSubjects.length > 4 && !isExpanded
-            ? `${displayedSubjects.length} ${t("Registered Subjects")}`
-            : `${displayedSubjects.length} ${t("Registered Subject")}${displayedSubjects.length === 1 ? "" : "s"}`}
+        <Badge
+          colorPalette="gray"
+          variant="surface"
+          size="2xs"
+          fontSize="9px"
+          h="15px"
+          lineHeight="1"
+          borderRadius="full"
+          px={1.5}
+          py={0}
+          flexShrink={0}
+          whiteSpace="nowrap"
+        >
+          {displayedSubjects.length} {displayedSubjects.length === 1 ? t("Subject") : t("Subjects")}
         </Badge>
       </Flex>
 
       {displayedSubjects.length === 0 ? (
-        <Box p={6} textAlign="center" bg="gray.50" borderRadius="xl">
+        <Box p={3} textAlign="center" bg="gray.50" borderRadius="lg">
           <Text fontSize="xs" color="gray.500">
             {t("No subjects registered yet. Add subjects to view detailed scores and progress.")}
           </Text>
         </Box>
       ) : (
         <>
-          <Table.ScrollArea border="1px solid" borderColor="gray.100" borderRadius="xl">
-            <Table.Root size={{ base: "sm", md: "md" }} stickyHeader>
-              <Table.Header>
-                <Table.Row bg="gray.50">
-                  <Table.ColumnHeader fontSize="xs" fontWeight="700" color="gray.600">
-                    {t("Subject")}
-                  </Table.ColumnHeader>
-                  <Table.ColumnHeader fontSize="xs" fontWeight="700" color="gray.600" textAlign="center">
-                    {t("Average Score")}
-                  </Table.ColumnHeader>
-                  <Table.ColumnHeader fontSize="xs" fontWeight="700" color="gray.600" textAlign="center">
-                    {t("Score Trend")}
-                  </Table.ColumnHeader>
-                  <Table.ColumnHeader fontSize="xs" fontWeight="700" color="gray.600" textAlign="center">
-                    {t("Questions Solved")}
-                  </Table.ColumnHeader>
-                  <Table.ColumnHeader fontSize="xs" fontWeight="700" color="gray.600" textAlign="center">
-                    {t("Performance")}
-                  </Table.ColumnHeader>
-                  <Table.ColumnHeader fontSize="xs" fontWeight="700" color="gray.600" textAlign="right">
-                    {t("Last Active")}
-                  </Table.ColumnHeader>
-                </Table.Row>
-              </Table.Header>
-              <Table.Body>
-                {visibleSubjects.map((sub) => {
-                const trendIcon = sub.trend === "up" ? PiChartLineUpFill : sub.trend === "down" ? PiTrendDownBold : FiMinus;
-                const trendColor = sub.trend === "up" ? "green.600" : sub.trend === "down" ? "red.600" : "gray.600";
-                const trendText =
-                  sub.trend === "up"
-                    ? `↑ +${sub.trendDiff}%`
-                    : sub.trend === "down"
-                    ? `↓ ${sub.trendDiff}%`
-                    : sub.trend === "stable"
-                    ? `→ ${t("Stable")}`
-                    : `— ${t("New")}`;
+          {/* One Subject Per Line - Vertically Shrunk & Ultra-Compact */}
+          <VStack gap={1.5} align="stretch" w="full">
+            {visibleSubjects.map((sub) => {
+              const trendIcon = sub.trend === "up" ? PiChartLineUpFill : sub.trend === "down" ? PiTrendDownBold : FiMinus;
+              const trendColor = sub.trend === "up" ? "green.600" : sub.trend === "down" ? "red.600" : "gray.500";
+              const trendText =
+                sub.trend === "up"
+                  ? `+${sub.trendDiff}%`
+                  : sub.trend === "down"
+                  ? `${sub.trendDiff}%`
+                  : sub.trend === "stable"
+                  ? t("Stable")
+                  : t("New");
 
-                return (
-                  <Table.Row
-                    key={sub.subjectId}
-                    _hover={{ bg: "blue.50/20", cursor: onSelectSubject ? "pointer" : "default" }}
-                    onClick={() => onSelectSubject?.(sub.subjectId)}
+              return (
+                <Flex
+                  key={sub.subjectId}
+                  align="center"
+                  justify="space-between"
+                  px={{ base: 2.5, md: 3 }}
+                  py={1.5}
+                  bg="gray.50/50"
+                  borderRadius="lg"
+                  border="1px solid"
+                  borderColor="gray.100"
+                  onClick={() => onSelectSubject?.(sub.subjectId)}
+                  cursor={onSelectSubject ? "pointer" : "default"}
+                  _hover={
+                    onSelectSubject
+                      ? {
+                          borderColor: "blue.300",
+                          bg: "blue.50/20",
+                          transform: "translateY(-1px)",
+                          boxShadow: "0 2px 6px rgba(32, 108, 225, 0.06)",
+                        }
+                      : {}
+                  }
+                  transition="all 0.15s ease"
+                  wrap="nowrap"
+                  gap={{ base: 2, md: 3 }}
+                  minH="36px"
+                >
+                  {/* Left: Subject Name & Status Badge */}
+                  <HStack gap={1.5} minW={0} flex={{ base: "1 1 auto", sm: "0 0 180px", md: "0 0 220px" }}>
+                    <Text
+                      fontSize="xs"
+                      fontWeight="700"
+                      color="gray.900"
+                      textTransform="capitalize"
+                      truncate
+                      whiteSpace="nowrap"
+                      title={sub.subjectName}
+                    >
+                      {sub.subjectName}
+                    </Text>
+                    <Box flexShrink={0}>{getStatusBadge(sub.status)}</Box>
+                  </HStack>
+
+                  {/* Mid-Left: Tests & Questions count (compact) */}
+                  <Text
+                    fontSize="10px"
+                    color="gray.400"
+                    flexShrink={0}
+                    display={{ base: "none", sm: "block" }}
+                    w={{ sm: "75px", md: "90px" }}
+                    truncate
                   >
-                    {/* Subject Name & Grade */}
-                    <Table.Cell py={3.5}>
-                      <VStack align="start" gap={0.5}>
-                        <Text fontSize="xs" fontWeight="700" color="gray.900" textTransform="capitalize">
-                          {sub.subjectName}
-                        </Text>
-                        <Text fontSize="10px" color="gray.500">
-                          {sub.sessionsCount} {t("test")}{sub.sessionsCount === 1 ? "" : "s"} {t("taken")}
-                        </Text>
-                      </VStack>
-                    </Table.Cell>
+                    {sub.sessionsCount} {t("tests")} • {sub.questionsAttempted} {t("Qs")}
+                  </Text>
 
-                    {/* Current Accuracy & Progress Bar */}
-                    <Table.Cell py={3.5} minW="140px">
-                      {sub.sessionsCount > 0 ? (
-                        <Box>
-                          <Flex justify="space-between" align="center" mb={1}>
-                            <Text fontSize="xs" fontWeight="800" color="gray.900">
-                              {sub.accuracy}%
-                            </Text>
-                            <Badge
-                              colorPalette={
-                                sub.accuracy >= 80
-                                  ? "green"
-                                  : sub.accuracy >= 70
-                                  ? "blue"
-                                  : sub.accuracy >= 55
-                                  ? "yellow"
-                                  : sub.accuracy >= 40
-                                  ? "orange"
-                                  : "red"
-                              }
-                              size="xs"
-                              variant="solid"
-                              borderRadius="md"
-                            >
-                              {t("Grade")} {sub.grade}
-                            </Badge>
-                          </Flex>
-                          <Progress.Root value={sub.accuracy} size="xs" colorPalette="blue">
-                            <Progress.Track bg="gray.100" borderRadius="full">
-                              <Progress.Range bg={getProgressColor(sub.accuracy)} borderRadius="full" />
-                            </Progress.Track>
-                          </Progress.Root>
-                        </Box>
-                      ) : (
-                        <Text fontSize="xs" color="gray.400" textAlign="center" fontStyle="italic">
-                          {t("No tests yet")}
-                        </Text>
-                      )}
-                    </Table.Cell>
+                  {/* Center: Slim Progress Bar */}
+                  <Box
+                    flex="1"
+                    maxW={{ base: "60px", sm: "100px", md: "160px" }}
+                    minW={{ base: "40px", sm: "60px" }}
+                    bg="gray.200/80"
+                    h="4px"
+                    borderRadius="full"
+                    overflow="hidden"
+                    flexShrink={1}
+                  >
+                    <Box
+                      w={`${Math.min(100, Math.max(0, sub.sessionsCount > 0 ? sub.accuracy : 0))}%`}
+                      h="100%"
+                      bg={getProgressColor(sub.accuracy)}
+                      borderRadius="full"
+                    />
+                  </Box>
 
-                    {/* Recent Trend */}
-                    <Table.Cell py={3.5} textAlign="center">
-                      <HStack justify="center" gap={1} color={trendColor} fontSize="xs" fontWeight="700">
-                        <Icon as={trendIcon} />
-                        <Text>{trendText}</Text>
+                  {/* Score & Grade Badge */}
+                  <HStack gap={1.5} align="center" flexShrink={0} minW="55px" justify="flex-end">
+                    <Text fontSize="xs" fontWeight="800" color="gray.900">
+                      {sub.sessionsCount > 0 ? `${sub.accuracy}%` : "—"}
+                    </Text>
+                    {sub.sessionsCount > 0 && (
+                      <Badge
+                        colorPalette={
+                          sub.accuracy >= 80
+                            ? "green"
+                            : sub.accuracy >= 65
+                            ? "blue"
+                            : sub.accuracy >= 50
+                            ? "yellow"
+                            : "orange"
+                        }
+                        size="2xs"
+                        variant="solid"
+                        borderRadius="sm"
+                        px={1}
+                        fontSize="9px"
+                        fontWeight="700"
+                      >
+                        {sub.grade || (sub.accuracy >= 75 ? "A" : sub.accuracy >= 60 ? "B" : sub.accuracy >= 45 ? "C" : "D")}
+                      </Badge>
+                    )}
+                  </HStack>
+
+                  {/* Right: Trend Indicator */}
+                  <HStack
+                    gap={1}
+                    color={trendColor}
+                    fontWeight="700"
+                    fontSize="10px"
+                    flexShrink={0}
+                    minW={{ base: "45px", md: "55px" }}
+                    justify="flex-end"
+                  >
+                    <Icon as={trendIcon} boxSize="10px" />
+                    <Text>{trendText}</Text>
+                  </HStack>
+
+                  {/* Rightmost: Last Activity (Desktop/Tablet) */}
+                  <Box display={{ base: "none", md: "block" }} flexShrink={0} w="70px" textAlign="right">
+                    {sub.lastActivity ? (
+                      <HStack gap={1} color="gray.400" fontSize="10px" justify="flex-end">
+                        <Icon as={PiClockFill} boxSize="10px" />
+                        <Text truncate>{sub.lastActivity}</Text>
                       </HStack>
-                    </Table.Cell>
-
-                    {/* Questions Attempted */}
-                    <Table.Cell py={3.5} textAlign="center">
-                      <Text fontSize="xs" fontWeight="600" color="gray.800">
-                        {sub.questionsAttempted} {t("Qs")}
+                    ) : (
+                      <Text color="gray.400" fontSize="10px" fontStyle="italic">
+                        {t("Not started")}
                       </Text>
-                    </Table.Cell>
+                    )}
+                  </Box>
+                </Flex>
+              );
+            })}
+          </VStack>
 
-                    {/* Performance */}
-                    <Table.Cell py={3.5} textAlign="center">
-                      {getStatusBadge(sub.status)}
-                    </Table.Cell>
-
-                    {/* Last Activity */}
-                    <Table.Cell py={3.5} textAlign="right">
-                      {sub.lastActivity ? (
-                        <HStack justify="end" gap={1} color="gray.600" fontSize="xs">
-                          <Icon as={PiClockFill} boxSize="12px" color="gray.400" />
-                          <Text>{sub.lastActivity}</Text>
-                        </HStack>
-                      ) : (
-                        <Text fontSize="xs" color="gray.400" fontStyle="italic">
-                          {t("Not started")}
-                        </Text>
-                      )}
-                    </Table.Cell>
-                  </Table.Row>
-                );
-              })}
-            </Table.Body>
-          </Table.Root>
-        </Table.ScrollArea>
-
-        {displayedSubjects.length > 4 && (
-          <Flex justify="center" mt={4} pt={2}>
-            <Button
-              variant="subtle"
-              size="xs"
-              colorPalette="blue"
-              borderRadius="full"
-              px={4}
-              py={1.5}
-              fontWeight="600"
-              onClick={() => setIsExpanded(!isExpanded)}
-            >
-              <HStack gap={1.5}>
-                <Text>
-                  {isExpanded
-                    ? t("Show fewer subjects")
-                    : `${t("View all")} ${displayedSubjects.length} ${t("subjects")}`}
-                </Text>
-                <Icon as={isExpanded ? PiCaretUpBold : PiCaretDownBold} boxSize="13px" />
-              </HStack>
-            </Button>
-          </Flex>
-        )}
-      </>
-    )}
-  </Box>
-);
+          {displayedSubjects.length > 5 && (
+            <Flex justify="center" mt={2}>
+              <Button
+                variant="subtle"
+                size="xs"
+                colorPalette="blue"
+                borderRadius="full"
+                px={2.5}
+                py={0.5}
+                h="22px"
+                fontSize="10px"
+                fontWeight="600"
+                onClick={() => setIsExpanded(!isExpanded)}
+              >
+                <HStack gap={1}>
+                  <Text>
+                    {isExpanded
+                      ? t("Show fewer subjects")
+                      : `${t("View all")} ${displayedSubjects.length} ${t("subjects")}`}
+                  </Text>
+                  <Icon as={isExpanded ? PiCaretUpBold : PiCaretDownBold} boxSize="10px" />
+                </HStack>
+              </Button>
+            </Flex>
+          )}
+        </>
+      )}
+    </Box>
+  );
 };
+
+export default SubjectPerformanceSection;

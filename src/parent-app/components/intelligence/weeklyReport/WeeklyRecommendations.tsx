@@ -11,10 +11,10 @@ import type { WeeklyRecommendation } from "@/parent-app/hooks/useWeeklyLearningR
 
 type Props = {
   recommendations: WeeklyRecommendation[];
-  studentFirstName: string;
+  studentFirstName?: string;
 };
 
-export const WeeklyRecommendations = ({ recommendations, studentFirstName }: Props) => {
+export const WeeklyRecommendations = ({ recommendations, studentFirstName: _studentFirstName }: Props) => {
   const { t } = useTranslation();
 
   const getRecMeta = (type: WeeklyRecommendation["type"]) => {
@@ -58,18 +58,11 @@ export const WeeklyRecommendations = ({ recommendations, studentFirstName }: Pro
   return (
     <Box mb={6}>
       <Flex justify="space-between" align="center" mb={3.5} wrap="wrap" gap={2}>
-        <HStack gap={2.5}>
-          <Box bg="amber.50" p={2} borderRadius="xl" border="1px solid" borderColor="amber.200" boxShadow="0 2px 6px rgba(245, 158, 11, 0.12)">
-            <Icon as={PiLightbulbFill} color="amber.600" boxSize="18px" />
-          </Box>
-          <Box>
-            <Heading size="sm" color="gray.900" fontWeight="800">
-              {t("Recommended Action for Parents")}
-            </Heading>
-            <Text fontSize="xs" color="gray.500" mt={0.5}>
-              {t("Constructive, practical suggestions derived from")} {studentFirstName}'s {t("recent practice results.")}
-            </Text>
-          </Box>
+        <HStack gap={2.5} align="center">
+          <Icon as={PiLightbulbFill} color="amber.600" boxSize="20px" flexShrink={0} />
+          <Heading size="sm" color="gray.900" fontWeight="800">
+            {t("Recommended Action for Parents")}
+          </Heading>
         </HStack>
         <Badge colorPalette="green" variant="subtle" size="sm" borderRadius="full">
           {t("Supportive Guidance")}
@@ -101,9 +94,7 @@ export const WeeklyRecommendations = ({ recommendations, studentFirstName }: Pro
                   <Badge colorPalette={meta.badgePalette} variant="solid" size="xs" borderRadius="full">
                     {rec.badgeText}
                   </Badge>
-                  <Box bg={meta.bg} p={2} borderRadius="xl" boxShadow="0 2px 6px rgba(0, 0, 0, 0.05)">
-                    <Icon as={meta.icon} color={meta.color} boxSize="16px" />
-                  </Box>
+                  <Icon as={meta.icon} color={meta.color} boxSize="18px" flexShrink={0} />
                 </Flex>
 
                 <Text fontSize="sm" fontWeight="800" color="gray.900" mb={1.5}>

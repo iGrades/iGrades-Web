@@ -24,18 +24,11 @@ export const WeeklyTopicInsights = ({
   return (
     <Box mb={6}>
       <Flex justify="space-between" align="center" mb={3.5} wrap="wrap" gap={2}>
-        <HStack gap={2.5}>
-          <Box bg="purple.50" p={2} borderRadius="xl" border="1px solid" borderColor="purple.200" boxShadow="0 2px 6px rgba(147, 51, 234, 0.12)">
-            <Icon as={PiTargetFill} color="purple.600" boxSize="18px" />
-          </Box>
-          <Box>
-            <Heading size="sm" color="gray.900" fontWeight="800">
-              {t("Granular Topic Insights")}
-            </Heading>
-            <Text fontSize="xs" color="gray.500" mt={0.5}>
-              {t("Pinpointing specific concepts where your child is excelling and where practice will help most.")}
-            </Text>
-          </Box>
+        <HStack gap={2.5} align="center">
+          <Icon as={PiTargetFill} color="purple.600" boxSize="20px" flexShrink={0} />
+          <Heading size="sm" color="gray.900" fontWeight="800">
+            {t("Granular Topic Insights")}
+          </Heading>
         </HStack>
       </Flex>
 
@@ -51,9 +44,7 @@ export const WeeklyTopicInsights = ({
           transition="all 0.25s cubic-bezier(0.4, 0, 0.2, 1)"
         >
           <Flex align="center" gap={2.5} mb={3.5}>
-            <Box bg="green.50" p={2} borderRadius="xl" boxShadow="0 2px 6px rgba(16, 185, 129, 0.15)">
-              <Icon as={PiCheckCircleFill} color="green.600" boxSize="18px" />
-            </Box>
+            <Icon as={PiCheckCircleFill} color="green.600" boxSize="20px" flexShrink={0} />
             <Box>
               <Text fontSize="xs" fontWeight="800" color="green.900" textTransform="uppercase" letterSpacing="0.04em">
                 {t("Strong & Improving Topics")}
@@ -112,9 +103,7 @@ export const WeeklyTopicInsights = ({
           transition="all 0.25s cubic-bezier(0.4, 0, 0.2, 1)"
         >
           <Flex align="center" gap={2.5} mb={3.5}>
-            <Box bg="orange.50" p={2} borderRadius="xl" boxShadow="0 2px 6px rgba(245, 158, 11, 0.15)">
-              <Icon as={PiNotebookFill} color="orange.600" boxSize="18px" />
-            </Box>
+            <Icon as={PiNotebookFill} color="orange.600" boxSize="20px" flexShrink={0} />
             <Box>
               <Text fontSize="xs" fontWeight="800" color="orange.900" textTransform="uppercase" letterSpacing="0.04em">
                 {t("Requires Practice")}
@@ -173,9 +162,7 @@ export const WeeklyTopicInsights = ({
           transition="all 0.25s cubic-bezier(0.4, 0, 0.2, 1)"
         >
           <Flex align="center" gap={2.5} mb={3.5}>
-            <Box bg="red.50" p={2} borderRadius="xl" boxShadow="0 2px 6px rgba(239, 68, 68, 0.15)">
-              <Icon as={PiArrowCounterClockwiseBold} color="red.600" boxSize="16px" />
-            </Box>
+            <Icon as={PiArrowCounterClockwiseBold} color="red.600" boxSize="18px" flexShrink={0} />
             <Box>
               <Text fontSize="xs" fontWeight="800" color="red.900" textTransform="uppercase" letterSpacing="0.04em">
                 {t("Repeated Mistakes")}

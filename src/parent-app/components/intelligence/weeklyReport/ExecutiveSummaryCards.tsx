@@ -85,18 +85,11 @@ export const ExecutiveSummaryCards = ({ executiveAnswers, studentFirstName }: Pr
   return (
     <Box mb={6}>
       <Flex justify="space-between" align="center" mb={3.5}>
-        <HStack gap={2.5}>
-          <Box bg="purple.50" p={2} borderRadius="xl" border="1px solid" borderColor="purple.200" boxShadow="0 2px 6px rgba(147, 51, 234, 0.12)">
-            <Icon as={PiSparkleFill} color="purple.600" boxSize="18px" />
-          </Box>
-          <Box>
-            <Heading size="sm" color="gray.900" fontWeight="800">
-              {t("Weekly Executive Summary")}
-            </Heading>
-            <Text fontSize="xs" color="gray.500" mt={0.5}>
-              {t("Key insights answering essential questions about your child's weekly learning routine.")}
-            </Text>
-          </Box>
+        <HStack gap={2.5} align="center">
+          <Icon as={PiSparkleFill} color="purple.600" boxSize="20px" flexShrink={0} />
+          <Heading size="sm" color="gray.900" fontWeight="800">
+            {t("Weekly Executive Summary")}
+          </Heading>
         </HStack>
         <Badge colorPalette="blue" variant="subtle" size="sm" px={2.5} py={0.5} borderRadius="full">
           {t("6 Core Answers")}
@@ -128,9 +121,7 @@ export const ExecutiveSummaryCards = ({ executiveAnswers, studentFirstName }: Pr
                   <Text fontSize="11px" fontWeight="800" color="gray.500" textTransform="uppercase" letterSpacing="0.04em">
                     {card.question}
                   </Text>
-                  <Box bg={card.bgLight} p={2} borderRadius="xl" boxShadow="0 2px 6px rgba(0, 0, 0, 0.04)">
-                    <Icon as={card.icon} color={card.accentColor} boxSize="16px" />
-                  </Box>
+                  <Icon as={card.icon} color={card.accentColor} boxSize="18px" flexShrink={0} />
                 </Flex>
 
                 <Text fontSize="sm" fontWeight="800" color="gray.900" lineHeight="snug" mb={1.5}>

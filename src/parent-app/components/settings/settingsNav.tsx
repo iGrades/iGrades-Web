@@ -21,11 +21,13 @@ const SettingsNav = ({ settingsState, setSettingsState }: Props) => {
       as="nav"
       justify="start"
       align="center"
-      gap={2} 
+      gap={1.5} 
       p={1.5}
-      shadow="md"
+      shadow="xs"
+      border="1px solid"
+      borderColor="gray.100"
       bg="white"
-      rounded="md"
+      rounded="xl"
       w="full"
       overflowX="auto"
       whiteSpace="nowrap"
@@ -43,20 +45,20 @@ const SettingsNav = ({ settingsState, setSettingsState }: Props) => {
         return (
           <Box
             key={idx}
-            bg={isActive ? "#206CE11A" : "transparent"}
+            bg={isActive ? "blue.50" : "transparent"}
             py={2}
-            px={4} 
-            rounded="md"
-            minW={{ base: "max-content", md: "110px" }}
+            px={3.5} 
+            rounded="lg"
+            minW={{ base: "max-content", md: "100px" }}
             textAlign="center"
             cursor="pointer"
-            transition="all 0.2s"
+            transition="all 0.15s ease"
             _active={{ transform: "scale(0.95)" }}
             onClick={() => setSettingsState(item.state)}
           >
             <Text
-              color={isActive ? "primaryColor" : "gray.500"} 
-              fontSize={{ base: "xs", md: "sm" }}
+              color={isActive ? "#206CE1" : "gray.600"} 
+              fontSize="xs"
               fontWeight={isActive ? 700 : 500}
             >
               {item.text}

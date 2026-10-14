@@ -16,7 +16,6 @@ import {
   PiTrophyFill,
   PiCheckCircleFill,
   PiPulseFill,
-  PiTargetBold,
 } from "react-icons/pi";
 import { useTranslation } from "react-i18next";
 import {
@@ -44,14 +43,14 @@ const getSubjectColor = (name?: string): string => {
 
 export const ProgressTrendsSection = ({ intelligence }: Props) => {
   const { t } = useTranslation();
-  const { trendHistory = [], subjects = [], overallTrend, overallTrendDiff } = intelligence;
+  const { trendHistory = [], subjects = [] } = intelligence;
 
   // Selected subject filter ("all" or subject name / id)
   const [selectedSubject, setSelectedSubject] = useState<string>("all");
   // View mode: "attempt" (individual quiz points) or "daily" (daily averages)
   const [viewMode, setViewMode] = useState<"attempt" | "daily">("attempt");
-  // Benchmark reference lines toggle
-  const [showBenchmarks, setShowBenchmarks] = useState<boolean>(true);
+  // Benchmark reference lines
+  const [showBenchmarks] = useState<boolean>(true);
 
   // Active subjects with at least one recorded session
   const activeSubjects = useMemo(() => {
@@ -254,18 +253,11 @@ export const ProgressTrendsSection = ({ intelligence }: Props) => {
     >
       {/* Header with Title and Global Trajectory */}
       <Flex justify="space-between" align={{ base: "flex-start", sm: "center" }} mb={4} wrap="wrap" gap={3}>
-        <HStack gap={2.5}>
-          <Box bg="teal.50" p={2} borderRadius="xl" border="1px solid" borderColor="teal.200" boxShadow="0 2px 6px rgba(13, 148, 136, 0.15)">
-            <Icon as={PiChartLineUpFill} color="#0D9488" boxSize="18px" />
-          </Box>
-          <Box>
-            <Heading size={{ base: "sm", md: "md" }} color="gray.900" fontWeight="800">
-              {t("Score Progress Over Time")}
-            </Heading>
-            <Text fontSize="xs" color="gray.500" mt={0.5}>
-              {t("Chronological score progression across practice tests and exams.")}
-            </Text>
-          </Box>
+        <HStack gap={2} align="center">
+          <Icon as={PiChartLineUpFill} color="#0D9488" boxSize="20px" flexShrink={0} />
+          <Heading size={{ base: "sm", md: "md" }} color="gray.900" fontWeight="800">
+            {t("Score Progress Over Time")}
+          </Heading>
         </HStack>
 
         <HStack gap={2} wrap="wrap">
@@ -290,21 +282,6 @@ export const ProgressTrendsSection = ({ intelligence }: Props) => {
               </HStack>
             </Badge>
           )}
-
-          <Badge
-            colorPalette={overallTrend === "up" ? "green" : overallTrend === "down" ? "red" : "blue"}
-            variant="surface"
-            size="sm"
-            borderRadius="full"
-            px={2.5}
-            py={1}
-          >
-            {overallTrend === "up"
-              ? `${t("Overall Trend")}: +${overallTrendDiff}%`
-              : overallTrend === "down"
-              ? `${t("Overall Trend")}: ${overallTrendDiff}%`
-              : `${t("Overall Trend")}: ${t("Steady")}`}
-          </Badge>
         </HStack>
       </Flex>
 
@@ -372,34 +349,53 @@ export const ProgressTrendsSection = ({ intelligence }: Props) => {
         </Grid>
       )}
 
-      {/* Controls: Subject Filter Pills and View Mode Toggle */}
+      {/* Controls: Subject Filter (Left) and View Mode Toggle (Right) on the same line */}
       <Flex
         justify="space-between"
         align="center"
-        wrap="wrap"
-        gap={2.5}
+        wrap="nowrap"
+        gap={3}
         mb={3.5}
         pb={2.5}
         borderBottom="1px solid"
         borderColor="gray.100"
+        w="full"
       >
-        {/* Subject Filter Pills */}
-        <HStack gap={1.5} wrap="wrap" flex="1">
+        {/* Left: All Subjects & Subject Filter Pills */}
+        <HStack
+          gap={1.5}
+          wrap="nowrap"
+          flex="1"
+          align="center"
+          overflowX="auto"
+          py={0.5}
+          css={{
+            "&::-webkit-scrollbar": { display: "none" },
+            scrollbarWidth: "none",
+            msOverflowStyle: "none",
+          }}
+        >
           <Box
             as="button"
             onClick={() => setSelectedSubject("all")}
             px={3}
-            py={1}
+            py={1.5}
             borderRadius="full"
             fontSize="xs"
             fontWeight="700"
+            whiteSpace="nowrap"
+            display="inline-flex"
+            alignItems="center"
+            justifyContent="center"
+            flexShrink={0}
+            lineHeight="1.2"
             transition="all 0.15s ease"
             cursor="pointer"
             bg={selectedSubject === "all" ? "#206CE1" : "gray.100"}
             color={selectedSubject === "all" ? "white" : "gray.700"}
             _hover={{ bg: selectedSubject === "all" ? "#1956B8" : "gray.200" }}
           >
-            {t("All Subjects")} ({trendHistory.length})
+            {t("All Subjects")}
           </Box>
 
           {activeSubjects.map((sub) => {
@@ -414,10 +410,16 @@ export const ProgressTrendsSection = ({ intelligence }: Props) => {
                 key={sub.subjectId}
                 onClick={() => setSelectedSubject(sub.subjectName)}
                 px={3}
-                py={1}
+                py={1.5}
                 borderRadius="full"
                 fontSize="xs"
                 fontWeight="700"
+                whiteSpace="nowrap"
+                display="inline-flex"
+                alignItems="center"
+                justifyContent="center"
+                flexShrink={0}
+                lineHeight="1.2"
                 transition="all 0.15s ease"
                 cursor="pointer"
                 bg={isSelected ? subColor : "gray.50"}
@@ -426,10 +428,10 @@ export const ProgressTrendsSection = ({ intelligence }: Props) => {
                 borderColor={isSelected ? subColor : "gray.200"}
                 _hover={{ bg: isSelected ? subColor : "gray.100" }}
               >
-                <HStack gap={1.5}>
-                  <Box w="6px" h="6px" borderRadius="full" bg={isSelected ? "white" : subColor} />
-                  <Text textTransform="capitalize">
-                    {sub.subjectName} ({sub.sessionsCount})
+                <HStack gap={1.5} align="center" whiteSpace="nowrap">
+                  <Box w="6px" h="6px" borderRadius="full" bg={isSelected ? "white" : subColor} flexShrink={0} />
+                  <Text textTransform="capitalize" whiteSpace="nowrap">
+                    {sub.subjectName}
                   </Text>
                 </HStack>
               </Box>
@@ -437,62 +439,43 @@ export const ProgressTrendsSection = ({ intelligence }: Props) => {
           })}
         </HStack>
 
-        {/* View Mode & Benchmarks Controls */}
-        <HStack gap={2}>
-          <HStack
-            bg="gray.100"
-            p="2px"
-            borderRadius="lg"
-            fontSize="11px"
-            fontWeight="700"
-          >
-            <Box
-              as="button"
-              px={2.5}
-              py={1}
-              borderRadius="md"
-              cursor="pointer"
-              bg={viewMode === "attempt" ? "white" : "transparent"}
-              color={viewMode === "attempt" ? "gray.900" : "gray.500"}
-              boxShadow={viewMode === "attempt" ? "0 1px 3px rgba(0,0,0,0.08)" : "none"}
-              onClick={() => setViewMode("attempt")}
-            >
-              {t("Every Quiz")}
-            </Box>
-            <Box
-              as="button"
-              px={2.5}
-              py={1}
-              borderRadius="md"
-              cursor="pointer"
-              bg={viewMode === "daily" ? "white" : "transparent"}
-              color={viewMode === "daily" ? "gray.900" : "gray.500"}
-              boxShadow={viewMode === "daily" ? "0 1px 3px rgba(0,0,0,0.08)" : "none"}
-              onClick={() => setViewMode("daily")}
-            >
-              {t("Daily Average")}
-            </Box>
-          </HStack>
-
+        {/* Right: View Mode Toggle (Every Quiz & Daily Average) on the right side */}
+        <HStack
+          bg="gray.100"
+          p="2px"
+          borderRadius="lg"
+          fontSize="11px"
+          fontWeight="700"
+          flexShrink={0}
+          align="center"
+        >
           <Box
             as="button"
-            onClick={() => setShowBenchmarks(!showBenchmarks)}
             px={2.5}
             py={1}
-            borderRadius="lg"
-            fontSize="11px"
-            fontWeight="600"
-            border="1px solid"
-            borderColor={showBenchmarks ? "green.300" : "gray.200"}
-            bg={showBenchmarks ? "green.50" : "white"}
-            color={showBenchmarks ? "green.700" : "gray.600"}
+            borderRadius="md"
             cursor="pointer"
-            _hover={{ bg: showBenchmarks ? "green.100" : "gray.50" }}
+            whiteSpace="nowrap"
+            bg={viewMode === "attempt" ? "white" : "transparent"}
+            color={viewMode === "attempt" ? "gray.900" : "gray.500"}
+            boxShadow={viewMode === "attempt" ? "0 1px 3px rgba(0,0,0,0.08)" : "none"}
+            onClick={() => setViewMode("attempt")}
           >
-            <HStack gap={1}>
-              <Icon as={PiTargetBold} boxSize="12px" />
-              <Text display={{ base: "none", sm: "inline" }}>{t("Benchmarks")}</Text>
-            </HStack>
+            {t("Every Quiz")}
+          </Box>
+          <Box
+            as="button"
+            px={2.5}
+            py={1}
+            borderRadius="md"
+            cursor="pointer"
+            whiteSpace="nowrap"
+            bg={viewMode === "daily" ? "white" : "transparent"}
+            color={viewMode === "daily" ? "gray.900" : "gray.500"}
+            boxShadow={viewMode === "daily" ? "0 1px 3px rgba(0,0,0,0.08)" : "none"}
+            onClick={() => setViewMode("daily")}
+          >
+            {t("Daily Average")}
           </Box>
         </HStack>
       </Flex>
