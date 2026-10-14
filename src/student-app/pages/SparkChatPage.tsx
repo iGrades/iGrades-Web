@@ -14,6 +14,7 @@ import {
   HStack,
   IconButton,
   Image,
+  Spinner,
 } from "@chakra-ui/react";
 import {
   IoArrowBack,
@@ -936,18 +937,24 @@ export const SparkChatPage = () => {
             </HStack>
           </Flex>
         ) : (
-          /* Standard Input Bar (Pill + Standalone Squircle Send Button) */
-          <Flex align="center" gap={2.5}>
+          /* Standard Input Bar (Pill + Standalone Fit Circular Send Button) */
+          <Flex align="center" gap={{ base: 2, sm: 2.5 }}>
             {/* Elongated Input Pill */}
             <Flex
               flex={1}
               align="center"
               bg="#F8FAFC"
               border="1px solid #E2E8F0"
-              borderRadius="28px"
-              h="52px"
-              px={3.5}
-              gap={2.5}
+              borderRadius="full"
+              h={{ base: "46px", sm: "48px" }}
+              px={{ base: 3, sm: 3.5 }}
+              gap={{ base: 1.5, sm: 2 }}
+              _focusWithin={{
+                borderColor: "#93C5FD",
+                bg: "#FFFFFF",
+                boxShadow: "0 0 0 2px rgba(59, 130, 246, 0.12)",
+              }}
+              transition="all 0.18s ease"
             >
               {/* Left Emoji/Smiley Icon Button */}
               <IconButton
@@ -961,7 +968,7 @@ export const SparkChatPage = () => {
                 _active={{ transform: "scale(0.9)" }}
                 onClick={() => setIsEmojiPickerOpen((prev) => !prev)}
               >
-                <IoHappyOutline size={22} />
+                <IoHappyOutline size={21} />
               </IconButton>
 
               {/* Text Input Field */}
@@ -995,7 +1002,7 @@ export const SparkChatPage = () => {
                 _active={{ transform: "scale(0.9)" }}
                 onClick={() => setIsRecordingVoice(true)}
               >
-                <IoMicOutline size={22} />
+                <IoMicOutline size={21} />
               </IconButton>
 
               {/* Right Inside Pill: Attachment / Paperclip Icon */}
@@ -1010,7 +1017,7 @@ export const SparkChatPage = () => {
                 _active={{ transform: "scale(0.9)" }}
                 onClick={() => fileInputRef.current?.click()}
               >
-                <IoAttachOutline size={22} />
+                <IoAttachOutline size={21} />
               </IconButton>
               <input
                 ref={fileInputRef}
@@ -1026,29 +1033,51 @@ export const SparkChatPage = () => {
               />
             </Flex>
 
-            {/* Standalone Squircle Send Button (Messages-1.png & Messages-10.png) */}
+            {/* Standalone Fit Circular Send Button */}
             <Box
               as="button"
-              w="50px"
-              h="50px"
-              borderRadius="18px"
-              bg="#2563EB"
+              type="button"
+              aria-label="Send message"
+              flexShrink={0}
+              w={{ base: "46px", sm: "48px" }}
+              h={{ base: "46px", sm: "48px" }}
+              borderRadius="full"
+              bg={input.trim() && !isLoading ? "#206CE1" : "#E2E8F0"}
+              color={input.trim() && !isLoading ? "white" : "#94A3B8"}
               display="flex"
               alignItems="center"
               justifyContent="center"
-              color="white"
-              boxShadow="0 4px 14px rgba(37, 99, 235, 0.28)"
-              cursor="pointer"
-              transition="all 0.15s ease"
-              _hover={{ bg: "#1D4ED8" }}
-              _active={{ transform: "scale(0.93)" }}
+              boxShadow={
+                input.trim() && !isLoading
+                  ? "0 4px 14px rgba(32, 108, 225, 0.3)"
+                  : "none"
+              }
+              cursor={input.trim() && !isLoading ? "pointer" : "not-allowed"}
+              transition="all 0.18s cubic-bezier(0.16, 1, 0.3, 1)"
+              _hover={
+                input.trim() && !isLoading
+                  ? {
+                      bg: "#1B58B8",
+                      transform: "scale(1.05)",
+                      boxShadow: "0 6px 18px rgba(32, 108, 225, 0.38)",
+                    }
+                  : undefined
+              }
+              _active={
+                input.trim() && !isLoading
+                  ? { transform: "scale(0.92)" }
+                  : undefined
+              }
               onClick={sendMessage}
               disabled={isLoading || !input.trim()}
-              opacity={input.trim() ? 1 : 0.9}
             >
-              <Box transform="rotate(-15deg)" ml="2px">
-                <IoSend size={20} color="white" />
-              </Box>
+              {isLoading ? (
+                <Spinner size="xs" color={input.trim() ? "white" : "gray.400"} />
+              ) : (
+                <Box display="flex" alignItems="center" justifyContent="center" ml="2px">
+                  <IoSend size={18} />
+                </Box>
+              )}
             </Box>
           </Flex>
         )}
