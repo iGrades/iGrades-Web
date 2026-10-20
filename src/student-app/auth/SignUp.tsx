@@ -741,34 +741,44 @@ function StudentSignUp() {
               />
             </Box>
 
-            <Box>
+            <Box gridColumn={{ base: "span 1", md: "span 2" }}>
               <label
                 htmlFor="passcode"
                 style={{
-                  fontSize: "14px",
+                  fontSize: "13px",
                   fontWeight: "600",
                   color: "#334155",
                   marginBottom: "8px",
                   display: "block",
+                  textAlign: "center",
                 }}
               >
-                Passkey
+                Passkey (6 digits)
               </label>
 
-              <Flex justify="center" align="end" h="11" mb="2px">
+              <Flex justify="center" align="center" py={1}>
                 <PinInput.Root
                   size="md"
                   value={passkey}
                   onValueChange={(e) => setPassKey(e.value)}
                 >
                   <PinInput.HiddenInput />
-                  <PinInput.Control style={{ gap: "8px" }}>
-                    <PinInput.Input index={0} bg="gray.50" border="1px solid" borderColor="gray.200" borderRadius="xl" fontWeight="700" h="11" w="11" _focus={{ borderColor: "primaryColor", boxShadow: "0 0 0 1px #206CE1" }} />
-                    <PinInput.Input index={1} bg="gray.50" border="1px solid" borderColor="gray.200" borderRadius="xl" fontWeight="700" h="11" w="11" _focus={{ borderColor: "primaryColor", boxShadow: "0 0 0 1px #206CE1" }} />
-                    <PinInput.Input index={2} bg="gray.50" border="1px solid" borderColor="gray.200" borderRadius="xl" fontWeight="700" h="11" w="11" _focus={{ borderColor: "primaryColor", boxShadow: "0 0 0 1px #206CE1" }} />
-                    <PinInput.Input index={3} bg="gray.50" border="1px solid" borderColor="gray.200" borderRadius="xl" fontWeight="700" h="11" w="11" _focus={{ borderColor: "primaryColor", boxShadow: "0 0 0 1px #206CE1" }} />
-                    <PinInput.Input index={4} bg="gray.50" border="1px solid" borderColor="gray.200" borderRadius="xl" fontWeight="700" h="11" w="11" _focus={{ borderColor: "primaryColor", boxShadow: "0 0 0 1px #206CE1" }} />
-                    <PinInput.Input index={5} bg="gray.50" border="1px solid" borderColor="gray.200" borderRadius="xl" fontWeight="700" h="11" w="11" _focus={{ borderColor: "primaryColor", boxShadow: "0 0 0 1px #206CE1" }} />
+                  <PinInput.Control style={{ gap: "6px", display: "flex", justifyContent: "center" }}>
+                    {[0, 1, 2, 3, 4, 5].map((idx) => (
+                      <PinInput.Input
+                        key={idx}
+                        index={idx}
+                        bg="gray.50"
+                        border="1px solid"
+                        borderColor="gray.200"
+                        borderRadius="xl"
+                        fontWeight="700"
+                        h={{ base: "42px", sm: "46px" }}
+                        w={{ base: "38px", sm: "44px" }}
+                        fontSize={{ base: "md", sm: "lg" }}
+                        _focus={{ borderColor: "primaryColor", boxShadow: "0 0 0 1px #206CE1" }}
+                      />
+                    ))}
                   </PinInput.Control>
                 </PinInput.Root>
               </Flex>

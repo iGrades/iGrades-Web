@@ -82,19 +82,19 @@ const ParentLogin = ({ setAlert }: Props) => {
   return (
     <form onSubmit={handlePasswordLogin}>
       <Grid
-        templateColumns={'base: "repeat(1, 1fr)"'}
-        gap={"5"}
-        my={4}
-        px={{ md: 2 }}
+        templateColumns="repeat(1, 1fr)"
+        gap={4}
+        my={3}
+        px={0}
       >
         {parentFormFields.map((field) => (
-          <Box key={field.name} className="">
+          <Box key={field.name}>
             <Field.Root>
               <Field.Label
                 color="#334155"
-                fontSize="sm"
+                fontSize="xs"
                 fontWeight="600"
-                mb={2}
+                mb={1.5}
               >
                 {field.name === "email" ? "Email Address" : "Password"}
               </Field.Label>
@@ -126,7 +126,7 @@ const ParentLogin = ({ setAlert }: Props) => {
                 border="1px solid"
                 borderColor="gray.200"
                 borderRadius="xl"
-                h="12"
+                h="11"
                 fontSize="sm"
                 px={10}
                 _focus={{ borderColor: "primaryColor", boxShadow: "0 0 0 1px #206CE1" }}
@@ -137,15 +137,7 @@ const ParentLogin = ({ setAlert }: Props) => {
         ))}
       </Grid>
       
-       {/*<Flex justify={"center"} my={10}>
-      <HCaptcha
-        sitekey={import.meta.env.HCAPTCHA_SITE_KEY}
-        onVerify={(token) => setCaptchaToken(token)}
-        onExpire={() => setCaptchaToken(null)}
-      />
-       </Flex>*/}
-
-      <Flex justify="center" my={5} px={{ md: 2 }}>
+      <Flex justify="center" my={4} px={0}>
         <Button
           loading={isLoading}
           loadingText="Signing in..."
@@ -153,7 +145,8 @@ const ParentLogin = ({ setAlert }: Props) => {
           type="submit"
           fontWeight="700"
           w="full"
-          h="12"
+          h="11"
+          fontSize="sm"
           bg="primaryColor"
           color="white"
           borderRadius="xl"

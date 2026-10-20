@@ -3,6 +3,8 @@
  * Translates every letter, word, component, and page in the application.
  */
 
+import { apiUrl } from "../lib/apiConfig";
+
 export interface LanguageOption {
   code: string;
   name: string;
@@ -1167,7 +1169,7 @@ class UniversalAutoTranslator {
     const targetLang = this.currentLang;
 
     try {
-      const res = await fetch("/api/translate", {
+      const res = await fetch(apiUrl("/api/translate"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

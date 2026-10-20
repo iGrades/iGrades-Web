@@ -1,28 +1,52 @@
 import type { RouteObject } from "react-router-dom";
-import LandingPage from "@/pages/LandingPage/index";
-
-import AboutPage from "@/pages/AboutPage";
-import DownloadPage from "@/pages/DownloadPage";
-import ContactPage from "@/pages/ContactPage";
-import Pricing from "@/pages/PricingPage";
-// import Home from "../parent-app/Home";
+import { Navigate } from "react-router-dom";
+import MobileWelcomeExperience from "@/pages/MobileWelcomeExperience";
 import Login from "@/pages/Login";
 import SignUp from "@/pages/SignUp";
 import Verify from "@/parent-app/auth/Verify";
 import AuthCallback from "@/pages/AuthCallback";
-import UpcomingPage from "@/pages/UpcomingPage";
 import PrivacyPolicy from "@/pages/PrivacyPolicyPage";
 import TermsOfService from "@/pages/TermsOfServicePage";
 
 const publicRoutes: RouteObject[] = [
   {
     path: "/",
-    element: <LandingPage />,
+    element: <MobileWelcomeExperience />,
   },
   {
-    path: "/about",
-    element: <AboutPage />,
+    path: "/welcome",
+    element: <MobileWelcomeExperience />,
   },
+  {
+    path: "/onboarding",
+    element: <MobileWelcomeExperience />,
+  },
+  // Seamless fallback redirects for old public marketing website paths
+  {
+    path: "/about",
+    element: <Navigate to="/" replace />,
+  },
+  {
+    path: "/download",
+    element: <Navigate to="/" replace />,
+  },
+  {
+    path: "/contact",
+    element: <Navigate to="/" replace />,
+  },
+  {
+    path: "/pricing",
+    element: <Navigate to="/" replace />,
+  },
+  {
+    path: "/upcoming",
+    element: <Navigate to="/" replace />,
+  },
+  {
+    path: "/start-a-class",
+    element: <Navigate to="/" replace />,
+  },
+  // Mobile legal policies
   {
     path: "/privacy-policy",
     element: <PrivacyPolicy />,
@@ -43,26 +67,7 @@ const publicRoutes: RouteObject[] = [
     path: "/terms-of-use",
     element: <TermsOfService />,
   },
-  {
-    path: "/upcoming",
-    element: <UpcomingPage />,
-  },
-  {
-    path: "/start-a-class",
-    element: <UpcomingPage />,
-  },
-  {
-    path: "/download",
-    element: <DownloadPage />,
-  },
-  {
-    path: "/contact",
-    element: <ContactPage />,
-  },
-  {
-    path: "/pricing",
-    element: <Pricing />,
-  },
+  // Core authentication and registration
   {
     path: "/login",
     element: <Login />,

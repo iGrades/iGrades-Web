@@ -199,19 +199,20 @@ const Analytics = () => {
       <Box
         ref={cardRef}
         bg="white"
-        boxShadow="md"
-        borderRadius="lg"
+        boxShadow="sm"
+        borderRadius="xl"
         w="full"
-        my={4}
-        p={5}
-        minH="150px"
+        my={{ base: 1, md: 1.5 }}
+        px={{ base: 3, md: 3.5 }}
+        py={{ base: 1.5, md: 2 }}
+        minH="52px"
       >
-        <Flex justify="space-between" align="center" mb={3}>
-          <Heading as="h2" fontSize="md" color="gray.800">
+        <Flex justify="space-between" align="center" mb={1}>
+          <Heading as="h2" fontSize={{ base: "12px", sm: "13px" }} color="gray.800" fontWeight="700">
             Learning Analytics
           </Heading>
         </Flex>
-        <DancingLogoLoader size="sm" text="Loading learning progress..." minH="80px" />
+        <DancingLogoLoader size="xs" compact minH="24px" />
       </Box>
     );
   }
@@ -221,76 +222,77 @@ const Analytics = () => {
       <Box
         ref={cardRef}
         bg="white"
-        boxShadow="md"
-        borderRadius="lg"
+        boxShadow="sm"
+        borderRadius="xl"
         w="full"
-        my={4}
-        p={5}
+        my={{ base: 1, md: 1.5 }}
+        px={{ base: 3, md: 3.5 }}
+        py={{ base: 1.5, md: 2 }}
       >
         {/* Header: Title on left, 'See more' button on right */}
-        <Flex justify="space-between" align="center" mb={4}>
-          <Heading as="h2" fontSize="md" color="gray.800" fontWeight="700">
+        <Flex justify="space-between" align="center" mb={1}>
+          <Heading as="h2" fontSize={{ base: "12px", sm: "13px" }} color="gray.800" fontWeight="700">
             Learning Analytics
           </Heading>
 
           {courses.length > 0 && (
             <Button
               variant="ghost"
-              size="sm"
+              size="xs"
               color="#206CE1"
               fontWeight="600"
-              fontSize="xs"
-              h="auto"
-              py={1}
-              px={2}
+              fontSize="11px"
+              h="20px"
+              py={0}
+              px={1}
               _hover={{ bg: "blue.50", textDecoration: "none" }}
               onClick={handleOpenPopup}
             >
               See more
-              <FiChevronRight style={{ marginLeft: "4px" }} />
+              <FiChevronRight style={{ marginLeft: "2px" }} />
             </Button>
           )}
         </Flex>
 
         {/* First glance: SHOWS ONLY ONE SUBJECT (the course with the highest percentage) */}
         {topCourse ? (
-          <Box px={1} py={1}>
-            <Flex justify="space-between" align="center" mb={2}>
-              <HStack gap={3}>
+          <Box px={0} py={0}>
+            <Flex justify="space-between" align="center" mb={1}>
+              <HStack gap={2}>
                 <Flex
                   align="center"
                   justify="center"
                   bg={getCourseColor(topCourse.dbCourseName)}
                   color="white"
-                  h={9}
-                  w={9}
-                  rounded="lg"
+                  h="25px"
+                  w="25px"
+                  rounded="md"
                   flexShrink={0}
                 >
-                  <RiCompassesLine size={20} />
+                  <RiCompassesLine size={14} />
                 </Flex>
                 <Box>
-                  <Text fontSize="sm" fontWeight="600" textTransform="capitalize" color="gray.800">
+                  <Text fontSize="12px" fontWeight="600" textTransform="capitalize" color="gray.800" lineHeight="1.15">
                     {topCourse.title}
                   </Text>
-                  <Text fontSize="2xs" color="gray.400">
+                  <Text fontSize="10px" color="gray.400" lineHeight="1.15">
                     {topCourse.watchedVideos} of {topCourse.totalVideos} lessons completed
                   </Text>
                 </Box>
               </HStack>
-              <Text fontSize="sm" fontWeight="700" color="gray.700">
+              <Text fontSize="12px" fontWeight="700" color="gray.700">
                 {topCourse.progress}%
               </Text>
             </Flex>
 
-            <Progress.Root value={topCourse.progress} colorPalette="cyan" size="sm">
-              <Progress.Track flex="1" bg="gray.100" h="8px" borderRadius="full">
+            <Progress.Root value={topCourse.progress} colorPalette="cyan" size="xs">
+              <Progress.Track flex="1" bg="gray.100" h="3.5px" borderRadius="full">
                 <Progress.Range bg="#288AE4" borderRadius="full" />
               </Progress.Track>
             </Progress.Root>
           </Box>
         ) : (
-          <Text fontSize="xs" color="gray.400" py={4} textAlign="center">
+          <Text fontSize="xs" color="gray.400" py={1} textAlign="center">
             No registered courses found.
           </Text>
         )}

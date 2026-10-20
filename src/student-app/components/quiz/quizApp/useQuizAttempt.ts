@@ -3,6 +3,7 @@ import { supabase } from "@/lib/supabaseClient";
 import { useAuthdStudentData } from "@/student-app/context/studentDataContext";
 import { celebratePointsGained } from "@/student-app/components/rewards/pointsCelebrationStore";
 import { incrementTodayTimedQuizCount } from "@/services/subscriptionEntitlements";
+import { apiUrl } from "@/lib/apiConfig";
 import type { QuizAttemptProps, QuizResults, SubjectResult } from "./types";
 
 const getGradeInfo = (percentage: number) => {
@@ -252,7 +253,7 @@ export const useQuizAttempt = (quizData: QuizAttemptProps["quizData"]) => {
       // 5b. Record timed practice attempt count
       if (authdStudent?.id) {
         incrementTodayTimedQuizCount(authdStudent.id);
-        fetch("/api/subscription/record-timed-quiz", {
+        fetch(apiUrl("/api/subscription/record-timed-quiz"), {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ student_id: authdStudent.id }),
@@ -268,7 +269,7 @@ export const useQuizAttempt = (quizData: QuizAttemptProps["quizData"]) => {
           const scorePercent = results.subjectResults[currentSubject?.id]?.percentage || 50;
 
           // Call local server endpoint first, with fallback to functions URL
-          const awardUrl = "/api/award-points";
+          const awardUrl = apiUrl("/api/award-points");
           const res = await fetch(awardUrl, {
             method: "POST",
             headers: {

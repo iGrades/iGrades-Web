@@ -3,6 +3,7 @@ import { supabase } from "@/lib/supabaseClient";
 import { useAuthdStudentData } from "@/student-app/context/studentDataContext";
 import { toaster } from "@/components/ui/toaster";
 import { celebratePointsGained } from "@/student-app/components/rewards/pointsCelebrationStore";
+import { apiUrl } from "@/lib/apiConfig";
 
 export interface PointsTransaction {
   id: string;
@@ -112,7 +113,7 @@ export function usePointsSystem() {
 
       // C. Server API call for store credit and enriched data
       try {
-        const res = await fetch(`/api/points-data/${studentId}`);
+        const res = await fetch(apiUrl(`/api/points-data/${studentId}`));
         if (res.ok) {
           const json = await res.json();
           if (json.data) {
@@ -198,7 +199,7 @@ export function usePointsSystem() {
       const { data: session } = await supabase.auth.getSession();
       const token = session?.session?.access_token;
 
-      let response = await fetch("/api/award-points", {
+      let response = await fetch(apiUrl("/api/award-points"), {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -344,7 +345,7 @@ export function usePointsSystem() {
 
       // Try server API first
       try {
-        const res = await fetch("/api/convert-points", {
+        const res = await fetch(apiUrl("/api/convert-points"), {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
@@ -413,7 +414,7 @@ export function usePointsSystem() {
 
       // Try server API first
       try {
-        const res = await fetch("/api/apply-credit", {
+        const res = await fetch(apiUrl("/api/apply-credit"), {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({

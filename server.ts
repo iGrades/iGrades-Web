@@ -355,7 +355,30 @@ Every great score starts with a solid grasp of the basics. Which specific part o
 
 async function startServer() {
   const app = express();
-  const PORT = 3000;
+  const PORT = process.env.PORT ? parseInt(process.env.PORT, 10) : 3000;
+
+  // CORS middleware to support mobile WebView (Capacitor) and cross-origin requests
+  app.use((req, res, next) => {
+    const origin = req.headers.origin;
+    if (origin) {
+      res.setHeader("Access-Control-Allow-Origin", origin);
+      res.setHeader("Access-Control-Allow-Credentials", "true");
+    } else {
+      res.setHeader("Access-Control-Allow-Origin", "*");
+    }
+    res.setHeader(
+      "Access-Control-Allow-Methods",
+      "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+    );
+    res.setHeader(
+      "Access-Control-Allow-Headers",
+      "Content-Type, Authorization, apikey, x-student-id, x-student-subscription, x-student-status, x-client-info, x-requested-with"
+    );
+    if (req.method === "OPTIONS") {
+      return res.sendStatus(204);
+    }
+    next();
+  });
 
   app.use(express.json({ limit: "15mb" }));
   // Raw body parser for /api/supabase-proxy to capture binary uploads (PDFs, media, octet-stream) up to 150MB

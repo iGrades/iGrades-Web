@@ -12,8 +12,7 @@ import {
 } from "@chakra-ui/react";
 import { Link as RouterLink } from "react-router-dom";
 import { FiShield, FiArrowLeft, FiClock } from "react-icons/fi";
-import NavBar from "./LandingPage/navBar";
-import Footer from "./LandingPage/footer";
+import igradeWhiteIcon from "@/assets/igrades-icon white.png";
 
 export default function PrivacyPolicy() {
   useEffect(() => {
@@ -35,7 +34,53 @@ export default function PrivacyPolicy() {
 
   return (
     <Box bg="#F8FAFC" minH="100vh" color="#0F172A">
-      <NavBar />
+      {/* Mobile App Header */}
+      <HStack
+        as="header"
+        bg="white"
+        px={{ base: 4, sm: 6 }}
+        py={3.5}
+        borderBottom="1px solid"
+        borderColor="gray.200"
+        align="center"
+        justify="space-between"
+        position="sticky"
+        top={0}
+        zIndex={50}
+      >
+        <Link asChild color="#0F172A">
+          <RouterLink to="/">
+            <HStack gap={2}>
+              <Box
+                w="30px"
+                h="30px"
+                bg="#206CE1"
+                borderRadius="lg"
+                display="flex"
+                alignItems="center"
+                justifyContent="center"
+              >
+                <img
+                  src={igradeWhiteIcon}
+                  alt="iGrades"
+                  style={{ width: "18px", height: "18px", objectFit: "contain" }}
+                />
+              </Box>
+              <Text fontWeight="800" fontSize="sm" color="#0F172A">
+                iGrades
+              </Text>
+            </HStack>
+          </RouterLink>
+        </Link>
+        <Link asChild color="#206CE1" fontSize="sm" fontWeight="600">
+          <RouterLink to="/">
+            <HStack gap={1}>
+              <FiArrowLeft size={14} />
+              <Text>Home</Text>
+            </HStack>
+          </RouterLink>
+        </Link>
+      </HStack>
 
       {/* Header Banner */}
       <Box
@@ -700,7 +745,20 @@ export default function PrivacyPolicy() {
         </Box>
       </Container>
 
-      <Footer />
+      {/* Mobile Footer */}
+      <Box
+        as="footer"
+        bg="white"
+        borderTop="1px solid"
+        borderColor="gray.200"
+        py={6}
+        px={4}
+        textAlign="center"
+      >
+        <Text fontSize="xs" color="#64748B">
+          © {new Date().getFullYear()} iGrades Mobile Learning. All rights reserved.
+        </Text>
+      </Box>
     </Box>
   );
 }

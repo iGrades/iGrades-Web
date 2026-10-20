@@ -167,7 +167,7 @@ export default function ParentSignUp() {
                 <Field.Root>
                   <Field.Label
                     color="#334155"
-                    fontSize="sm"
+                    fontSize="xs"
                     fontWeight="600"
                     mb={1.5}
                   >
@@ -215,7 +215,7 @@ export default function ParentSignUp() {
               </Box>
             ))}
           </Grid>
-          <Flex mt={4} flexWrap="wrap" gap={2}>
+          <Flex mt={3} flexWrap="wrap" gap={1.5}>
             {[
               { label: "Lowercase Letter", met: hasLower },
               { label: "Uppercase Letter", met: hasUpper },
@@ -226,8 +226,8 @@ export default function ParentSignUp() {
               <Tag.Root
                 key={idx}
                 size="sm"
-                p={1.5}
-                px={3}
+                p={1}
+                px={2.5}
                 rounded="full"
                 bg={rule.met ? "emerald.50" : "gray.100"}
                 border="1px solid"
@@ -250,9 +250,9 @@ export default function ParentSignUp() {
               </Tag.Root>
             ))}
           </Flex>
-          <Box mt={4}>
+          <Box mt={3}>
             <Field.Root>
-              <Field.Label color="#334155" fontSize="sm" fontWeight="600" mb={1.5}>
+              <Field.Label color="#334155" fontSize="xs" fontWeight="600" mb={1.5}>
                 How did you hear about us?
               </Field.Label>
             </Field.Root>
@@ -274,7 +274,7 @@ export default function ParentSignUp() {
             />
           </Box>
           {alert && (
-            <Alert.Root status={alert.type} variant="subtle" mt={6} borderRadius="xl">
+            <Alert.Root status={alert.type} variant="subtle" mt={4} borderRadius="xl">
               <Alert.Indicator />
               <Alert.Content>
                 <Alert.Title fontSize="sm" fontWeight="700">
@@ -285,7 +285,7 @@ export default function ParentSignUp() {
             </Alert.Root>
           )}
 
-          <Text mt={6} color="#64748B" fontSize="xs" textAlign="center" lineHeight="1.5">
+          <Text mt={4} color="#64748B" fontSize="xs" textAlign="center" lineHeight="1.5">
             By clicking continue, I agree to{" "}
             <Link
               asChild
@@ -297,7 +297,7 @@ export default function ParentSignUp() {
                 Terms of Service
               </RouterLink>
             </Link>{" "}
-            and acknowledge <br /> that I have read the{" "}
+            and acknowledge our{" "}
             <Link
               asChild
               color="#206CE1"
@@ -309,7 +309,7 @@ export default function ParentSignUp() {
               </RouterLink>
             </Link>
           </Text>
-          <Flex justify="center" my={6}>
+          <Flex justify="center" my={4}>
             <Button
               loading={isLoading}
               loadingText="Creating your account..."
@@ -317,7 +317,8 @@ export default function ParentSignUp() {
               type="submit"
               fontWeight="700"
               w="full"
-              h="12"
+              h="11"
+              fontSize="sm"
               bg="primaryColor"
               color="white"
               borderRadius="xl"

@@ -12,6 +12,7 @@ import {
   getSparkDailyLimit,
   checkSparkDailyUsageAccess,
 } from "@/services/subscriptionEntitlements";
+import { apiUrl } from "@/lib/apiConfig";
 
 export interface Message {
   role: "user" | "assistant";
@@ -42,7 +43,7 @@ export const useChatbot = () => {
   // Sync Spark usage count from server on mount
   useEffect(() => {
     if (authdStudent?.id) {
-      fetch(`/api/subscription/spark-usage-today/${authdStudent.id}`)
+      fetch(apiUrl(`/api/subscription/spark-usage-today/${authdStudent.id}`))
         .then((res) => res.json())
         .then((data) => {
           if (typeof data.count === "number") {
@@ -265,7 +266,7 @@ export const useChatbot = () => {
 
       // 1. Try application server /api/spark-chat (powered by Gemini API)
       try {
-        const localRes = await fetch("/api/spark-chat", {
+        const localRes = await fetch(apiUrl("/api/spark-chat"), {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(payload),
@@ -457,7 +458,7 @@ export const useChatbot = () => {
 
         let response: Response | null = null;
         try {
-          const localRes = await fetch("/api/spark-chat", {
+          const localRes = await fetch(apiUrl("/api/spark-chat"), {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(payload),

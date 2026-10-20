@@ -138,15 +138,15 @@ const ChildrenLogin = ({ setAlert }: Props) => {
   };
 
   return (
-    <Box px={{ md: 2 }}>
-      <Grid templateColumns={'base: "repeat(1, 1fr)"'} gap={"5"} my={4}>
+    <Box px={0}>
+      <Grid templateColumns="repeat(1, 1fr)" gap={4} my={3}>
         <Box>
           <Field.Root>
             <Field.Label
               color="#334155"
-              fontSize="sm"
+              fontSize="xs"
               fontWeight="600"
-              mb={2}
+              mb={1.5}
             >
               Email Address
             </Field.Label>
@@ -165,7 +165,7 @@ const ChildrenLogin = ({ setAlert }: Props) => {
               border="1px solid"
               borderColor="gray.200"
               borderRadius="xl"
-              h="12"
+              h="11"
               fontSize="sm"
               px={10}
               _focus={{ borderColor: "primaryColor", boxShadow: "0 0 0 1px #206CE1" }}
@@ -175,15 +175,15 @@ const ChildrenLogin = ({ setAlert }: Props) => {
         </Box>
 
         <Box w="full">
-          <Flex justify="space-between" align="baseline" mb={2}>
-            <Text color="#334155" fontSize="sm" fontWeight="600">
+          <Flex justify="space-between" align="baseline" mb={1.5}>
+            <Text color="#334155" fontSize="xs" fontWeight="600">
               Passkey
             </Text>
-            <Text color="gray.400" fontSize="xs">
+            <Text color="gray.400" fontSize="2xs">
               6 digits
             </Text>
           </Flex>
-          <HStack justify="center" gap={{ base: 2, md: 4 }} mb={6}>
+          <HStack justify="center" gap={{ base: 1.5, sm: 2.5 }} mb={4} w="full">
             <PinInput.Root
               size="md"
               value={passcode}
@@ -195,10 +195,10 @@ const ChildrenLogin = ({ setAlert }: Props) => {
                   <PinInput.Input
                     key={index}
                     index={index}
-                    fontSize="lg"
-                    fontWeight="600"
-                    width={{ base: "42px", md: "55px" }}
-                    height={{ base: "45px", md: "50px" }}
+                    fontSize={{ base: "md", sm: "lg" }}
+                    fontWeight="700"
+                    width={{ base: "38px", sm: "46px" }}
+                    height={{ base: "44px", sm: "48px" }}
                     borderRadius="xl"
                     bg="gray.50"
                     color="gray.800"
@@ -218,7 +218,7 @@ const ChildrenLogin = ({ setAlert }: Props) => {
           </HStack>
         </Box>
       </Grid>
-      <Flex justify="center" my={5}>
+      <Flex justify="center" my={4}>
         <Button
           loading={isLoading}
           loadingText="Signing in..."
@@ -226,7 +226,8 @@ const ChildrenLogin = ({ setAlert }: Props) => {
           type="submit"
           fontWeight="700"
           w="full"
-          h="12"
+          h="11"
+          fontSize="sm"
           bg="primaryColor"
           color="white"
           borderRadius="xl"

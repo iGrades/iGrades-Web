@@ -8,15 +8,12 @@ import {
   Flex,
   Link,
   Heading,
-  Image,
   HStack,
   SimpleGrid,
 } from "@chakra-ui/react";
 import { FcGoogle } from "react-icons/fc";
 import { FaApple } from "react-icons/fa";
 
-import logo from "../assets/landing-page/logo.png";
-import sideImage from "../assets/login_illustration-removebg-preview.png";
 import ParentLogin from "@/parent-app/auth/Login";
 import StudentLogin from "@/student-app/auth/Login";
 import { supabase } from "@/lib/supabaseClient";
@@ -211,121 +208,42 @@ export default function Login({ initialType }: LoginProps) {
           </Box>
         )}
 
-        {/* Main Card Container */}
+        {/* Mobile/Tablet Card Container */}
         <Flex
           w="full"
-          maxW="1200px"
-          minH={{ base: "100vh", md: "720px" }}
+          maxW={{ base: "100%", sm: "440px", md: "480px" }}
+          minH={{ base: "100vh", sm: "auto" }}
+          my={{ base: 0, sm: 6 }}
           bg="white"
-          borderRadius={{ base: "none", md: "3xl" }}
-          boxShadow={{ base: "none", md: "2xl" }}
+          borderRadius={{ base: "none", sm: "3xl" }}
+          boxShadow={{ base: "none", sm: "0 20px 45px rgba(32, 108, 225, 0.08), 0 4px 14px rgba(15, 23, 42, 0.04)" }}
+          border={{ base: "none", sm: "1px solid" }}
+          borderColor="slate.100"
           overflow="hidden"
           position="relative"
-          flexDirection={{ base: "column", lg: "row" }}
+          flexDirection="column"
+          px={{ base: 5, sm: 8 }}
+          pt={{ base: 8, sm: 10 }}
+          pb={{ base: 8, sm: 10 }}
         >
-          {/* ── LEFT PANEL (Desktop with elegant wave background) ── */}
-          <Box
-            display={{ base: "none", lg: "flex" }}
-            w="48%"
-            position="relative"
-            bg="white"
-            overflow="hidden"
-            flexDirection="column"
-          >
-            {/* Organic Bezier Curved Wave SVG Separator */}
-            <svg
-              viewBox="0 0 100 100"
-              preserveAspectRatio="none"
-              style={{
-                position: "absolute",
-                top: 0,
-                left: 0,
-                width: "100%",
-                height: "100%",
-                zIndex: 0,
-              }}
-            >
-              <path
-                d="M0,0 L100,0 C92,18 96,38 78,54 C60,68 44,82 44,100 L0,100 Z"
-                fill="#EBF3FF"
-              />
-            </svg>
-
-            {/* Back to Home Logo */}
-            <RouterLink to="/" style={{ textDecoration: 'none', display: 'inline-block', zIndex: 10 }}>
-              <Box px={10} pt={10} cursor="pointer" _hover={{ opacity: 0.8 }} transition="opacity 0.2s">
-                <Image src={logo} alt="iGrades logo" h="45px" objectFit="contain" />
-              </Box>
-            </RouterLink>
-
-            {/* Welcome Quote */}
-            <Box px={10} mt={6} zIndex={10}>
-              <Text fontSize="xs" fontWeight="800" letterSpacing="0.15em" textTransform="uppercase" color="primaryColor" mb={2}>
-                iGrade Learning
-              </Text>
-              <Heading as="h2" fontSize="2xl" fontWeight="800" color="#1E293B" lineHeight="1.3" maxW="280px">
-                Welcome back. Let's pick up where you left off.
+          {/* Form Wrap */}
+          <Box w="full" maxW="420px" mx="auto">
+            {/* Header Info */}
+            <Box textAlign="center" mb={{ base: 5, sm: 6 }}>
+              <Heading as="h1" fontSize={{ base: "22px", sm: "26px" }} fontWeight="800" color="#1E293B" mb={1.5} letterSpacing="-0.02em">
+                Welcome Back
               </Heading>
+              <Text fontSize={{ base: "xs", sm: "sm" }} fontWeight="500" color="#64748B">
+                Sign in to continue to your account
+              </Text>
             </Box>
-
-            {/* Illustration */}
-            <Flex flex={1} align="flex-end" justify="center" pb={10} px={6} zIndex={10}>
-              <Image
-                src={sideImage}
-                alt="Login illustration"
-                w="90%"
-                maxH="420px"
-                objectFit="contain"
-              />
-            </Flex>
-          </Box>
-
-          {/* ── RIGHT PANEL ── */}
-          <Flex
-            flex={1}
-            bg="white"
-            align="center"
-            justify="center"
-            py={{ base: 8, md: 12 }}
-            px={{ base: 4, sm: 8, md: 16, lg: 20 }}
-            flexDirection="column"
-            position="relative"
-            overflow="hidden"
-          >
-            {/* Mobile/Tablet Watermark Background Illustration */}
-            <Image
-              src={sideImage}
-              alt=""
-              position="absolute"
-              top="50%"
-              left="50%"
-              transform="translate(-50%, -50%)"
-              maxW={{ base: "320px", md: "450px" }}
-              opacity={0.05}
-              pointerEvents="none"
-              zIndex={0}
-              display={{ base: "block", lg: "none" }}
-            />
-
-            {/* Form Wrap */}
-            <Box w="full" maxW="440px" m="auto">
-              
-              {/* Header Info */}
-              <Box textAlign="center" mb={6}>
-                <Heading as="h1" fontSize="2xl" fontWeight="800" color="#1E293B" mb={1}>
-                  Welcome Back
-                </Heading>
-                <Text fontSize="sm" fontWeight="500" color="#64748B">
-                  Sign in to continue to your account
-                </Text>
-              </Box>
 
               {/* Segmented Tab Switcher (Parent vs Student) */}
               <Flex
                 bg="#F1F5F9"
                 p="1"
                 borderRadius="full"
-                mb={6}
+                mb={5}
                 gap={1}
                 border="1px solid"
                 borderColor="gray.200"
@@ -339,12 +257,12 @@ export default function Login({ initialType }: LoginProps) {
                       flex={1}
                       variant="ghost"
                       borderRadius="full"
-                      py={2}
-                      fontSize="xs"
+                      h="38px"
+                      fontSize={{ base: "xs", sm: "sm" }}
                       fontWeight="700"
                       color={active ? "#1E293B" : "#64748B"}
                       bg={active ? "white" : "transparent"}
-                      boxShadow={active ? "0px 2px 4px rgba(0, 0, 0, 0.05)" : "none"}
+                      boxShadow={active ? "0px 2px 4px rgba(0, 0, 0, 0.06)" : "none"}
                       _hover={{ bg: active ? "white" : "rgba(0,0,0,0.03)" }}
                       transition="all 0.2s"
                     >
@@ -355,7 +273,7 @@ export default function Login({ initialType }: LoginProps) {
               </Flex>
 
               {/* Active Form */}
-              <Box mb={6}>
+              <Box mb={5}>
                 {loginState === "parent" ? (
                   <ParentLogin setAlert={setAlert} />
                 ) : (
@@ -365,7 +283,7 @@ export default function Login({ initialType }: LoginProps) {
 
               {/* Forgot Password Helper */}
               {loginState === "parent" && (
-                <Flex justify="flex-end" mt={-2} mb={6}>
+                <Flex justify="flex-end" mt={-2} mb={5}>
                   <Link
                     asChild
                     fontSize="xs"
@@ -381,16 +299,16 @@ export default function Login({ initialType }: LoginProps) {
               )}
 
               {/* Divider */}
-              <HStack my={6} gap={4} width="full" align="center">
+              <HStack my={5} gap={3} width="full" align="center">
                 <Box flex={1} h="1px" bg="gray.100" />
-                <Text fontSize="xs" fontWeight="600" color="gray.400" whiteSpace="nowrap">
+                <Text fontSize="2xs" textTransform="uppercase" letterSpacing="0.05em" fontWeight="600" color="gray.400" whiteSpace="nowrap">
                   or continue with
                 </Text>
                 <Box flex={1} h="1px" bg="gray.100" />
               </HStack>
 
               {/* Social Logins */}
-              <SimpleGrid columns={2} gap={4} mb={6} width="full">
+              <SimpleGrid columns={2} gap={3} mb={5} width="full">
                 <Button
                   onClick={handleGoogleLogin}
                   loading={isGoogleLoading}
@@ -400,8 +318,8 @@ export default function Login({ initialType }: LoginProps) {
                   borderColor="gray.200"
                   bg="white"
                   color="#1E293B"
-                  h="12"
-                  fontSize="sm"
+                  h="11"
+                  fontSize="xs"
                   fontWeight="600"
                   _hover={{ bg: "gray.50", borderColor: "gray.300" }}
                   display="flex"
@@ -421,8 +339,8 @@ export default function Login({ initialType }: LoginProps) {
                   borderColor="gray.200"
                   bg="white"
                   color="#1E293B"
-                  h="12"
-                  fontSize="sm"
+                  h="11"
+                  fontSize="xs"
                   fontWeight="600"
                   _hover={{ bg: "gray.50", borderColor: "gray.300" }}
                   display="flex"
@@ -436,7 +354,7 @@ export default function Login({ initialType }: LoginProps) {
               </SimpleGrid>
 
               {/* Toggle to Signup */}
-              <Text fontSize="xs" fontWeight="500" color="#64748B" textAlign="center" mt={4}>
+              <Text fontSize="xs" fontWeight="500" color="#64748B" textAlign="center" mt={3}>
                 Don't have an account?{" "}
                 <Link
                   onClick={() => navigate("/signup")}
@@ -469,7 +387,6 @@ export default function Login({ initialType }: LoginProps) {
               </HStack>
 
             </Box>
-          </Flex>
         </Flex>
       </Flex>
     </>

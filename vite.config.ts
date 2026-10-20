@@ -17,6 +17,7 @@ export default defineConfig(({ mode }) => {
       "import.meta.env.ENC_KEY": JSON.stringify(getEnv("ENC_KEY")),
       "import.meta.env.HCAPTCHA_SITE_KEY": JSON.stringify(getEnv("HCAPTCHA_SITE_KEY")),
       "import.meta.env.FLUTTERWAVE_PUBLIC_KEY": JSON.stringify(getEnv("FLUTTERWAVE_PUBLIC_KEY")),
+      "import.meta.env.VITE_API_BASE_URL": JSON.stringify(getEnv("VITE_API_BASE_URL")),
     },
     server: {
       host: "0.0.0.0",

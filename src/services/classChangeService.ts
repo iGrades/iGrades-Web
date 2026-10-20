@@ -40,6 +40,8 @@ export interface AdminNotification {
   created_at: string;
 }
 
+import { apiUrl } from "@/lib/apiConfig";
+
 // Runtime constants so value-level imports never fail in browser / Vite dev mode
 export const ClassChangeRequest = {} as const;
 export const AdminNotification = {} as const;
@@ -48,7 +50,7 @@ export const classChangeService = {
   async getStudentRequests(studentId: string): Promise<ClassChangeRequest[]> {
     if (!studentId) return [];
     try {
-      const res = await fetch(`/api/class-change-requests?student_id=${encodeURIComponent(studentId)}`);
+      const res = await fetch(apiUrl(`/api/class-change-requests?student_id=${encodeURIComponent(studentId)}`));
       if (!res.ok) throw new Error("Failed to load class change requests");
       return await res.json();
     } catch (e) {
@@ -60,7 +62,7 @@ export const classChangeService = {
   async getRequestsByStudentIds(studentIds: string[]): Promise<ClassChangeRequest[]> {
     if (!studentIds || studentIds.length === 0) return [];
     try {
-      const res = await fetch(`/api/class-change-requests?student_ids=${encodeURIComponent(studentIds.join(","))}`);
+      const res = await fetch(apiUrl(`/api/class-change-requests?student_ids=${encodeURIComponent(studentIds.join(","))}`));
       if (!res.ok) throw new Error("Failed to load requests for students");
       return await res.json();
     } catch (e) {
@@ -72,7 +74,7 @@ export const classChangeService = {
   async getRequestById(id: string): Promise<ClassChangeRequest | null> {
     if (!id) return null;
     try {
-      const res = await fetch(`/api/class-change-requests/${encodeURIComponent(id)}`);
+      const res = await fetch(apiUrl(`/api/class-change-requests/${encodeURIComponent(id)}`));
       if (!res.ok) return null;
       return await res.json();
     } catch {
@@ -83,7 +85,7 @@ export const classChangeService = {
   async getParentRequests(parentId: string): Promise<ClassChangeRequest[]> {
     if (!parentId) return [];
     try {
-      const res = await fetch(`/api/class-change-requests?parent_id=${encodeURIComponent(parentId)}`);
+      const res = await fetch(apiUrl(`/api/class-change-requests?parent_id=${encodeURIComponent(parentId)}`));
       if (!res.ok) throw new Error("Failed to load parent class change requests");
       return await res.json();
     } catch (e) {
@@ -95,8 +97,8 @@ export const classChangeService = {
   async getAllRequests(status?: string): Promise<ClassChangeRequest[]> {
     try {
       const url = status && status !== "all" 
-        ? `/api/class-change-requests?status=${encodeURIComponent(status)}`
-        : `/api/class-change-requests`;
+        ? apiUrl(`/api/class-change-requests?status=${encodeURIComponent(status)}`)
+        : apiUrl(`/api/class-change-requests`);
       const res = await fetch(url);
       if (!res.ok) throw new Error("Failed to load requests");
       return await res.json();
@@ -121,7 +123,7 @@ export const classChangeService = {
     parent_name?: string;
     parent_email?: string;
   }): Promise<ClassChangeRequest> {
-    const res = await fetch("/api/class-change-requests", {
+    const res = await fetch(apiUrl("/api/class-change-requests"), {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(params),
@@ -142,7 +144,7 @@ export const classChangeService = {
     action: "approve" | "reject";
     review_reason?: string;
   }): Promise<ClassChangeRequest> {
-    const res = await fetch(`/api/class-change-requests/${params.requestId}/review`, {
+    const res = await fetch(apiUrl(`/api/class-change-requests/${params.requestId}/review`), {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(params),
@@ -157,7 +159,7 @@ export const classChangeService = {
 
   async getAdminNotifications(): Promise<AdminNotification[]> {
     try {
-      const res = await fetch("/api/admin-notifications");
+      const res = await fetch(apiUrl("/api/admin-notifications"));
       if (!res.ok) return [];
       return await res.json();
     } catch {
@@ -167,7 +169,7 @@ export const classChangeService = {
 
   async markNotificationRead(id: string): Promise<boolean> {
     try {
-      const res = await fetch(`/api/admin-notifications/${id}/read`, { method: "POST" });
+      const res = await fetch(apiUrl(`/api/admin-notifications/${id}/read`), { method: "POST" });
       return res.ok;
     } catch {
       return false;
@@ -176,7 +178,7 @@ export const classChangeService = {
 
   async markAllNotificationsRead(): Promise<boolean> {
     try {
-      const res = await fetch(`/api/admin-notifications/read-all`, { method: "POST" });
+      const res = await fetch(apiUrl(`/api/admin-notifications/read-all`), { method: "POST" });
       return res.ok;
     } catch {
       return false;

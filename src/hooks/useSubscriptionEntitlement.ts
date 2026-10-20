@@ -16,6 +16,7 @@ import {
   type PlanTier,
   type EntitlementCheckResult,
 } from "@/services/subscriptionEntitlements";
+import { apiUrl } from "@/lib/apiConfig";
 
 export interface UpgradeModalState {
   isOpen: boolean;
@@ -91,7 +92,7 @@ export function useSubscriptionEntitlement() {
     if (!authdStudent?.id) return;
     try {
       setIsExamUsageLoading(true);
-      const res = await fetch(`/api/subscription/exam-usage/${authdStudent.id}`);
+      const res = await fetch(apiUrl(`/api/subscription/exam-usage/${authdStudent.id}`));
       if (res.ok) {
         const data = await res.json();
         if (typeof data.monthlyAttemptsUsed === "number") {

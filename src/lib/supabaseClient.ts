@@ -1,12 +1,18 @@
 // src/lib/supabaseClient.ts
 import { createClient } from "@supabase/supabase-js";
 import { authSessionStorage, recordActivity } from "./authSessionManager";
+import { apiUrl, isNativeMobile, getApiBaseUrl } from "./apiConfig";
 
 const supabaseUrl = (import.meta.env.SUPABASE_URL as string) || "https://jmjballgaxelqhsvhlvl.supabase.co";
 const supabaseAnonKey = (import.meta.env.SUPABASE_ANON_KEY as string) || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.dummy_anon_key";
 
 const shouldUseProxy = () => {
   if (typeof window === "undefined") return false;
+  // In native mobile (Capacitor), only use the proxy if a verified external API base URL is configured.
+  // When no backend URL is set, mobile connects directly to Supabase over HTTPS.
+  if (isNativeMobile()) {
+    return Boolean(getApiBaseUrl());
+  }
   const hostname = window.location.hostname;
   // Route through proxy only in sandboxed preview/dev environments (e.g. Cloud Run or localhost)
   // Production hosts like igrades.org or www.igrades.org connect directly to Supabase
@@ -44,7 +50,8 @@ const customFetch: typeof fetch = async (input, init) => {
   // Supabase Storage endpoints (/storage/v1/) support CORS natively (wildcard origin)
   // and must connect directly so binary streams, file uploads, and downloads are never truncated
   if (shouldUseProxy() && rawUrl.includes(".supabase.co") && !rawUrl.includes("/storage/v1/")) {
-    const proxyUrl = rawUrl.replace(/^https?:\/\/[^/]+/, "/api/supabase-proxy");
+    const proxyPath = rawUrl.replace(/^https?:\/\/[^/]+/, "/api/supabase-proxy");
+    const proxyUrl = apiUrl(proxyPath);
     try {
       const response = await fetch(proxyUrl, modifiedInit);
       // If the proxy responds with 404 or 405 (proxy not deployed on this server), fallback to direct Supabase call
