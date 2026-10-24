@@ -10,14 +10,22 @@ export default defineConfig(({ mode }) => {
 
   return {
     plugins: [react(), tsconfigPaths()],
-    envPrefix: ["VITE_", "SUPABASE_", "ENC_", "HCAPTCHA_", "FLUTTERWAVE_"],
+    envPrefix: ["VITE_", "SUPABASE_", "ENC_", "HCAPTCHA_", "FLUTTERWAVE_", "API_", "BASE_"],
     define: {
       "import.meta.env.SUPABASE_URL": JSON.stringify(getEnv("SUPABASE_URL")),
       "import.meta.env.SUPABASE_ANON_KEY": JSON.stringify(getEnv("SUPABASE_ANON_KEY")),
       "import.meta.env.ENC_KEY": JSON.stringify(getEnv("ENC_KEY")),
       "import.meta.env.HCAPTCHA_SITE_KEY": JSON.stringify(getEnv("HCAPTCHA_SITE_KEY")),
       "import.meta.env.FLUTTERWAVE_PUBLIC_KEY": JSON.stringify(getEnv("FLUTTERWAVE_PUBLIC_KEY")),
-      "import.meta.env.VITE_API_BASE_URL": JSON.stringify(getEnv("VITE_API_BASE_URL")),
+      "import.meta.env.API_BASE_URL": JSON.stringify(
+        getEnv("API_BASE_URL") || getEnv("BASE_API_URL") || "https://igrades-web.onrender.com"
+      ),
+      "import.meta.env.BASE_API_URL": JSON.stringify(
+        getEnv("BASE_API_URL") || getEnv("API_BASE_URL") || "https://igrades-web.onrender.com"
+      ),
+      "import.meta.env.VITE_API_BASE_URL": JSON.stringify(
+        getEnv("API_BASE_URL") || getEnv("BASE_API_URL") || getEnv("VITE_API_BASE_URL") || "https://igrades-web.onrender.com"
+      ),
     },
     server: {
       host: "0.0.0.0",

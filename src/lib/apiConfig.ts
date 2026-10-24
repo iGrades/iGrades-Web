@@ -68,27 +68,25 @@ export const isProductionWeb = (): boolean => {
   return !isNativeMobile() && !isWebDevelopment();
 };
 
+/**
+ * Default production backend endpoint for iGrades.
+ */
+export const DEFAULT_API_BASE_URL = "https://igrades-web.onrender.com";
+
 export const getApiBaseUrl = (): string => {
+  // Read API_BASE_URL without 'VITE' prefix as configured in secrets/environment
   const envUrl = (
-    (typeof import.meta !== "undefined" && import.meta.env?.VITE_API_BASE_URL) ||
     (typeof import.meta !== "undefined" && (import.meta.env as any)?.API_BASE_URL) ||
-    ""
+    (typeof import.meta !== "undefined" && (import.meta.env as any)?.BASE_API_URL) ||
+    (typeof import.meta !== "undefined" && import.meta.env?.VITE_API_BASE_URL) ||
+    DEFAULT_API_BASE_URL
   ).trim();
 
   if (envUrl) {
     return envUrl.replace(/\/+$/, "");
   }
 
-  if (isNativeMobile()) {
-    console.warn(
-      "[iGrades Mobile Prerequisite] VITE_API_BASE_URL is not configured. " +
-      "Native Capacitor mobile builds require a deployed, reachable HTTPS Express backend URL."
-    );
-    return "";
-  }
-
-  // Web environment default: empty string for same-origin relative requests
-  return "";
+  return DEFAULT_API_BASE_URL;
 };
 
 /**
