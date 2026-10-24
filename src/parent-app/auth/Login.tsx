@@ -127,7 +127,7 @@ const ParentLogin = ({ setAlert }: Props) => {
                 borderColor="gray.200"
                 borderRadius="xl"
                 h="11"
-                fontSize="sm"
+                fontSize={{ base: "16px", md: "sm" }}
                 px={10}
                 _focus={{ borderColor: "primaryColor", boxShadow: "0 0 0 1px #206CE1" }}
                 _placeholder={{ color: "gray.400" }}

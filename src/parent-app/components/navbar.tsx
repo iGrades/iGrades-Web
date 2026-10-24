@@ -213,7 +213,7 @@ const Navbar = ({ setShowLogoutModal }: Props) => {
   const fullName = `${currentParent.firstname ?? ""} ${currentParent.lastname ?? ""}`.trim() || user?.user_metadata?.name || "Parent User";
 
   return (
-    <Box position="sticky" top="0" zIndex="1000" bg="white" shadow="xs" borderBottom="1px solid" borderColor="gray.100">
+    <Box position="sticky" top="0" zIndex="1000" bg="white" shadow="xs" borderBottom="1px solid" borderColor="gray.100" pt="env(safe-area-inset-top, 0px)">
       <Flex
         as="nav"
         align="center"

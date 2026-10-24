@@ -12,6 +12,10 @@ import { PasskeyProvider } from './parent-app/context/passkeyContext.tsx';
 import { AuthdStudentDataProvider } from './student-app/context/studentDataContext.tsx';
 import { DataProvider } from './student-app/context/dataContext.tsx';
 import { ErrorBoundary } from './components/ErrorBoundary.tsx';
+import { nativeShellService } from './services/nativeShellService';
+
+// Initialize Capacitor native shell capabilities (StatusBar, Keyboard, safe-area variables)
+nativeShellService.initialize();
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>

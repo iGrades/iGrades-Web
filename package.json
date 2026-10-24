@@ -8,9 +8,19 @@
     "build": "vite build",
     "start": "tsx server.ts",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "cap:sync": "cap sync",
+    "cap:copy": "cap copy"
   },
   "dependencies": {
+    "@capacitor-community/keep-awake": "^8.0.1",
+    "@capacitor/android": "^8.5.3",
+    "@capacitor/app": "^8.1.2",
+    "@capacitor/core": "^8.5.3",
+    "@capacitor/haptics": "^8.0.2",
+    "@capacitor/ios": "^8.5.3",
+    "@capacitor/keyboard": "^8.0.6",
+    "@capacitor/status-bar": "^8.0.4",
     "@chakra-ui/charts": "^3.21.0",
     "@chakra-ui/react": "^3.30.0",
     "@emailjs/browser": "^4.4.1",
@@ -56,6 +66,7 @@
     "react-dom": "$react-dom"
   },
   "devDependencies": {
+    "@capacitor/cli": "^8.5.3",
     "@eslint/js": "^9.25.0",
     "@types/express": "^5.0.6",
     "@types/react": "^19.1.2",

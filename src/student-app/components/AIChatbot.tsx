@@ -1,5 +1,3 @@
-"use client";
-
 import Markdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import remarkMath from "remark-math";
@@ -148,25 +146,43 @@ export const AIChatbot = () => {
             right: 0 !important;
             width: 100% !important;
             max-width: 100% !important;
-            height: min(88vh, 660px) !important;
+            height: min(88dvh, 660px) !important;
             border-radius: 24px 24px 0 0 !important;
             border-bottom: none !important;
             border-left: none !important;
             border-right: none !important;
             animation: mobileSheetSlideUp 0.28s cubic-bezier(.16,1,.3,1) !important;
             box-shadow: 0 -10px 40px rgba(0,0,0,0.22) !important;
+            z-index: 1150 !important;
           }
           .spark-launcher-btn {
-            display: none !important;
+            display: none !important; /* On mobile phones, Chat is accessed cleanly via the FloatingBottomBar Chat tab */
+          }
+          .spark-input-container {
+            padding-bottom: max(calc(env(safe-area-inset-bottom, 0px) + 12px), 12px) !important;
           }
           .spark-mobile-backdrop {
             display: block !important;
+            z-index: 1100 !important;
           }
           .spark-drag-handle {
             display: block !important;
           }
           .spark-input-container {
             padding-bottom: max(env(safe-area-inset-bottom, 12px), 12px) !important;
+          }
+        }
+
+        @media (min-width: 769px) {
+          .spark-panel {
+            position: fixed !important;
+            bottom: max(calc(env(safe-area-inset-bottom, 20px) + 64px), 88px) !important;
+            right: max(calc(env(safe-area-inset-right, 20px) + 4px), 24px) !important;
+            width: min(390px, calc(100vw - 120px)) !important;
+            height: min(540px, calc(100dvh - 120px)) !important;
+            max-height: calc(100dvh - 100px) !important;
+            border-radius: 20px !important;
+            z-index: 1150 !important;
           }
         }
       `}</style>
@@ -182,7 +198,7 @@ export const AIChatbot = () => {
             inset: 0,
             background: "rgba(15, 23, 42, 0.45)",
             backdropFilter: "blur(3px)",
-            zIndex: 20045,
+            zIndex: 1100,
           }}
         />
       )}
@@ -192,13 +208,16 @@ export const AIChatbot = () => {
         <div
           className="spark-panel"
           style={{
-            position: "fixed", bottom: "88px", right: "24px",
-            width: "min(380px, calc(100vw - 48px))",
-            height: "min(520px, calc(100vh - 120px))",
+            position: "fixed",
+            bottom: "max(calc(env(safe-area-inset-bottom, 20px) + 64px), 88px)",
+            right: "max(calc(env(safe-area-inset-right, 20px) + 4px), 24px)",
+            width: "min(390px, calc(100vw - 120px))",
+            height: "min(540px, calc(100dvh - 120px))",
+            maxHeight: "calc(100dvh - 100px)",
             background: "white", borderRadius: "20px",
             boxShadow: "0 24px 64px rgba(0,0,0,0.14), 0 4px 16px rgba(0,0,0,0.08)",
             display: "flex", flexDirection: "column",
-            zIndex: 20050,
+            zIndex: 1150,
             animation: "chatSlideUp 0.26s cubic-bezier(.16,1,.3,1)",
             overflow: "hidden", border: "1px solid #edf2f7",
           }}
@@ -570,19 +589,28 @@ export const AIChatbot = () => {
         </div>
       )}
 
-      {/* ── Floating button ── */}
+      {/* ── Floating button (Tablets & Desktop) ── */}
       <button
         onClick={toggleOpen}
         title="Ask iGrades AI"
+        aria-label="Ask iGrades AI Tutor"
         className="spark-launcher-btn"
         style={{
-          position: "fixed", bottom: "80px", right: "24px",
-          width: "56px", height: "56px", borderRadius: "50%",
+          position: "fixed",
+          bottom: "max(calc(env(safe-area-inset-bottom, 20px) + 4px), 24px)",
+          right: "max(calc(env(safe-area-inset-right, 20px) + 4px), 24px)",
+          width: "52px",
+          height: "52px",
+          borderRadius: "50%",
           background: isOpen
             ? "#4f46e5"
             : "linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)",
-          border: "none", cursor: "pointer", zIndex: 20050,
-          display: "flex", alignItems: "center", justifyContent: "center",
+          border: "none",
+          cursor: "pointer",
+          zIndex: 900, // Safe stacking: sits below modals (1400-2000), popovers (1500), and navbar/bottom bar (1000)
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
           boxShadow: "0 4px 20px rgba(99,102,241,0.45)",
           animation: !isOpen ? "sparkPulse 2.5s ease-in-out infinite" : "none",
           transition: "all 0.2s cubic-bezier(.16,1,.3,1)",
@@ -595,7 +623,7 @@ export const AIChatbot = () => {
         }
         {hasUnread && !isOpen && (
           <span style={{
-            position: "absolute", top: "4px", right: "4px",
+            position: "absolute", top: "3px", right: "3px",
             width: "10px", height: "10px", borderRadius: "50%",
             background: "#f56565", border: "2px solid white",
           }} />

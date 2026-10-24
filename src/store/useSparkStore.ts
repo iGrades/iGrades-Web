@@ -40,11 +40,13 @@ export interface LearningContext {
 
 interface SparkState {
   isOpen: boolean;
+  hasUnread: boolean;
   activeContext: LearningContext | null;
   pendingInitialPrompt: string | null;
   
   // Actions
   setIsOpen: (isOpen: boolean) => void;
+  setHasUnread: (hasUnread: boolean) => void;
   toggleSpark: () => void;
   openSpark: () => void;
   closeSpark: () => void;
@@ -56,12 +58,14 @@ interface SparkState {
 
 export const useSparkStore = create<SparkState>((set, get) => ({
   isOpen: false,
+  hasUnread: false,
   activeContext: null,
   pendingInitialPrompt: null,
 
-  setIsOpen: (isOpen) => set({ isOpen }),
-  toggleSpark: () => set((state) => ({ isOpen: !state.isOpen })),
-  openSpark: () => set({ isOpen: true }),
+  setIsOpen: (isOpen) => set({ isOpen, ...(isOpen ? { hasUnread: false } : {}) }),
+  setHasUnread: (hasUnread) => set({ hasUnread }),
+  toggleSpark: () => set((state) => ({ isOpen: !state.isOpen, ...(!state.isOpen ? { hasUnread: false } : {}) })),
+  openSpark: () => set({ isOpen: true, hasUnread: false }),
   closeSpark: () => set({ isOpen: false }),
 
   setContext: (context) => set({ activeContext: context }),
@@ -70,6 +74,7 @@ export const useSparkStore = create<SparkState>((set, get) => ({
   openWithContext: (context, initialPrompt) => {
     set({
       isOpen: true,
+      hasUnread: false,
       activeContext: context,
       pendingInitialPrompt: initialPrompt || null,
     });

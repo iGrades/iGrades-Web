@@ -131,7 +131,7 @@ const AdminLogin = () => {
                   _placeholder={{ color: "#64748B" }}
                   _focus={{ borderColor: "#3B82F6", boxShadow: "0 0 0 1px #3B82F6" }}
                   h="44px"
-                  fontSize="13px"
+                  fontSize={{ base: "16px", sm: "16px", md: "13px" }}
                   px={4}
                 />
               </Box>
@@ -163,7 +163,7 @@ const AdminLogin = () => {
                   _placeholder={{ color: "#64748B" }}
                   _focus={{ borderColor: "#3B82F6", boxShadow: "0 0 0 1px #3B82F6" }}
                   h="44px"
-                  fontSize="13px"
+                  fontSize={{ base: "16px", sm: "16px", md: "13px" }}
                   px={4}
                   pr={10}
                 />

@@ -1,5 +1,6 @@
 import { Box, Heading, Text, Flex, RadioGroup, VStack, HStack, Progress } from "@chakra-ui/react";
 import type { QuestionComponentProps } from "./types";
+import { hapticsService } from "@/services/hapticsService";
 
 export const QuestionComponent = ({
   currentQuestion,
@@ -95,12 +96,15 @@ export const QuestionComponent = ({
 
           <RadioGroup.Root
             value={selectedAnswer}
-            onValueChange={(details) =>
-              onAnswerSelect(
-                currentQuestion.id,
-                details.value ? details.value.toUpperCase() : ""
-              )
-            }
+            onValueChange={(details) => {
+              if (details.value) {
+                hapticsService.triggerAnswerSelection();
+                onAnswerSelect(
+                  currentQuestion.id,
+                  details.value.toUpperCase()
+                );
+              }
+            }}
             size="sm"
             colorPalette="blue"
             disabled={disabled}

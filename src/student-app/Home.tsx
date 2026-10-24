@@ -1,10 +1,11 @@
 import { Box, Flex } from "@chakra-ui/react";
 import { useNavigationStore } from "@/store/usenavigationStore";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, lazy, Suspense } from "react";
 import { useAuthdStudentData } from "@/student-app/context/studentDataContext";
 import { useNavigate, useLocation } from "react-router-dom";
 import { supabase } from "@/lib/supabaseClient";
 import { checkAndEnforceSessionExpiry, recordActivity } from "@/lib/authSessionManager";
+import { DancingLogoLoader } from "@/components/DancingLogoLoader";
 import Dashboard from "./layouts/dashboard";
 import Navbar from "./components/navbar";
 import Sidebar from "./components/sidebar";
@@ -13,11 +14,13 @@ import Popover from "./modals/popover";
 import Homepage from "./pages/Homepage";
 import QuizPage from "./pages/QuizPage";
 import LearnPage from "./pages/LearnPage";
-import SparkChatPage from "./pages/SparkChatPage";
 import SettingsPage from "./pages/SettingsPage";
 import RewardsPage from "./pages/RewardsPage";
-import AIChatbot from "./components/AIChatbot";
 import type { StudentPage } from "@/store/usenavigationStore";
+
+// Lazy load KaTeX and AI tutor components
+const SparkChatPage = lazy(() => import("./pages/SparkChatPage"));
+const AIChatbot = lazy(() => import("./components/AIChatbot"));
 
 const Home = () => {
   const currentPage = useNavigationStore((state) => state.currentStudentPage);
@@ -188,7 +191,17 @@ const Home = () => {
       case "learn":
         return <LearnPage />;
       case "chat":
-        return <SparkChatPage />;
+        return (
+          <Suspense
+            fallback={
+              <Flex justify="center" align="center" minH="50vh" w="100%">
+                <DancingLogoLoader size="md" text="Loading Spark AI..." />
+              </Flex>
+            }
+          >
+            <SparkChatPage />
+          </Suspense>
+        );
       case "rewards":
         return <RewardsPage />;
       case "settings":
@@ -204,19 +217,20 @@ const Home = () => {
     as="main"
     display="flex"
     flexDirection="column"
-    minH="100vh"
-    maxH="100vh"
+    minH={{ base: "100dvh", md: "100vh" }}
+    h={{ base: "100dvh", md: "100vh" }}
+    maxH={{ base: "100dvh", md: "100vh" }}
     overflow="hidden"
     bg="textFieldColor"
   >
    {showNavBar && currentPage !== "chat" && <Navbar />}
-    <Flex flex="1" overflow="hidden">
+    <Flex flex="1" minH="0" overflow="hidden">
       {showSideBar && currentPage !== "chat" && (
         <Box
           position="relative"
           flexShrink={0}
-          w={{ base: "0px", md: "76px", lg: "16%" }}
-          minW={{ md: "76px", lg: "190px" }}
+          w={{ base: "0px", md: "80px", lg: "16%" }}
+          minW={{ md: "80px", lg: "190px" }}
           display={{ base: "none", md: "block" }}
           overflow="visible"
           zIndex={90}
@@ -227,8 +241,11 @@ const Home = () => {
 
       <Box
         flex="1"
+        minH="0"
         overflowY={currentPage === "chat" ? "hidden" : "auto"}
+        overscrollBehavior="contain"
         css={{
+          WebkitOverflowScrolling: "touch",
           "&::-webkit-scrollbar": {
             display: "none",
           },
@@ -242,7 +259,11 @@ const Home = () => {
     {/* Fixed Mobile Bottom Navigation */}
     {showNavBar && showSideBar && currentPage !== "chat" && <FloatingBottomBar />}
     {/* AI tutor launcher is strictly not available during quiz or full chat page */}
-    {currentPage !== "quiz" && currentPage !== "chat" && <AIChatbot />}
+    {currentPage !== "quiz" && currentPage !== "chat" && (
+      <Suspense fallback={null}>
+        <AIChatbot />
+      </Suspense>
+    )}
   </Box>
   {isPopOver && (
     <Popover

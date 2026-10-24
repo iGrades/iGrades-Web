@@ -15,6 +15,8 @@ interface MonitoringViewProps {
   reportInfraction?: (type: any, message?: string) => void;
   proctorStatus?: AIProctoringStatus;
   effectivePlan?: string;
+  isScreenShareSupported?: boolean;
+  bypassedScreenShare?: boolean;
 }
 
 export const MonitoringView = memo(({
@@ -26,6 +28,8 @@ export const MonitoringView = memo(({
   setScreenNode,
   proctorStatus,
   effectivePlan,
+  isScreenShareSupported = true,
+  bypassedScreenShare = false,
 }: MonitoringViewProps) => {
   const getProctorBadge = () => {
     if (!proctorStatus || !proctorStatus.isModelReady) {
@@ -206,14 +210,34 @@ export const MonitoringView = memo(({
                 <Box
                   boxSize="6px"
                   borderRadius="full"
-                  bg={hasScreenAccess ? "green.500" : "red.500"}
+                  bg={
+                    hasScreenAccess
+                      ? "green.500"
+                      : !isScreenShareSupported || bypassedScreenShare
+                      ? "blue.500"
+                      : "red.500"
+                  }
                 />
                 <Text fontSize="10px" fontWeight="semibold" color="gray.700">
                   Screen
                 </Text>
               </HStack>
-              <Text fontSize="9px" color={hasScreenAccess ? "green.600" : "red.500"}>
-                {hasScreenAccess ? "SHARED" : "OFF"}
+              <Text
+                fontSize="9px"
+                fontWeight="semibold"
+                color={
+                  hasScreenAccess
+                    ? "green.600"
+                    : !isScreenShareSupported || bypassedScreenShare
+                    ? "blue.600"
+                    : "red.500"
+                }
+              >
+                {hasScreenAccess
+                  ? "SHARED"
+                  : !isScreenShareSupported || bypassedScreenShare
+                  ? "TAB FOCUS"
+                  : "OFF"}
               </Text>
             </HStack>
 

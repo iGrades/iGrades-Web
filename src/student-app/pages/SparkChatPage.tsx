@@ -1,5 +1,3 @@
-"use client";
-
 import React, { useState, useRef, useEffect, useCallback } from "react";
 import Markdown from "react-markdown";
 import remarkGfm from "remark-gfm";
@@ -198,7 +196,8 @@ export const SparkChatPage = () => {
       {/* ──────────────── Top Header Bar ──────────────── */}
       <Box
         px={3}
-        py={2.5}
+        pt="calc(env(safe-area-inset-top, 0px) + 8px)"
+        pb={2.5}
         bg="white"
         borderBottom={isSearchOpen ? "1px solid #F1F5F9" : "none"}
         flexShrink={0}
@@ -887,7 +886,7 @@ export const SparkChatPage = () => {
       <Box
         px={{ base: 3.5, sm: 4 }}
         pt={2}
-        pb="max(env(safe-area-inset-bottom, 12px), 12px)"
+        pb="max(calc(env(safe-area-inset-bottom, 0px) + 12px), 12px)"
         bg="white"
         flexShrink={0}
       >
@@ -1108,7 +1107,7 @@ export const SparkChatPage = () => {
             borderTopRadius="36px"
             zIndex={2001}
             px={{ base: 6, sm: 8 }}
-            pb={{ base: 8, sm: 10 }}
+            pb="max(calc(env(safe-area-inset-bottom, 0px) + 24px), 32px)"
             pt={3}
             boxShadow="0 -10px 40px rgba(0, 0, 0, 0.15)"
           >

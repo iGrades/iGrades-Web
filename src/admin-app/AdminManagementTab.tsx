@@ -228,7 +228,7 @@ const AdminManagementTab = ({ currentAdminId }: { currentAdminId: string }) => {
                 border="1px solid"
                 borderColor="gray.200"
                 borderRadius="lg"
-                fontSize="13px"
+                fontSize={{ base: "16px", md: "13px" }}
                 h="40px"
                 _focus={{ borderColor: "blue.500", boxShadow: "none" }}
               />
@@ -248,7 +248,7 @@ const AdminManagementTab = ({ currentAdminId }: { currentAdminId: string }) => {
                 border="1px solid"
                 borderColor="gray.200"
                 borderRadius="lg"
-                fontSize="13px"
+                fontSize={{ base: "16px", md: "13px" }}
                 h="40px"
                 _focus={{ borderColor: "blue.500", boxShadow: "none" }}
               />

@@ -7,6 +7,7 @@ import { useNavigationStore, type ParentPage } from "@/store/usenavigationStore"
 import { useStudentsData } from "@/parent-app/context/studentsDataContext";
 import { useTranslation } from "react-i18next";
 import type { IconType } from "react-icons";
+import { hapticsService } from "@/services/hapticsService";
 
 interface NavItem {
   icon: IconType;
@@ -69,7 +70,7 @@ export const ParentFloatingBottomBar = () => {
       boxShadow="0 -2px 12px rgba(0, 0, 0, 0.06)"
       px={1}
       pt={1.5}
-      pb="max(env(safe-area-inset-bottom, 8px), 8px)"
+      pb="max(calc(env(safe-area-inset-bottom, 0px) + 8px), 8px)"
       zIndex={1000}
     >
       <Flex justify="space-around" align="center" w="full" maxW="480px" mx="auto">
@@ -110,6 +111,7 @@ export const ParentFloatingBottomBar = () => {
               transition="transform 0.15s cubic-bezier(0.16, 1, 0.3, 1), color 0.15s ease"
               _active={{ transform: "scale(0.92)" }}
               onClick={() => {
+                hapticsService.triggerNavigationTap();
                 if (item.value === "settings") {
                   setParentSettingsTab("menu");
                 }

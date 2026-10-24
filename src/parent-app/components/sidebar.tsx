@@ -13,7 +13,6 @@ const Sidebar = () => {
   const { currentParentPage, setCurrentParentPage } = useNavigationStore();
   const { t } = useTranslation();
   const [hoveredItem, setHoveredItem] = useState<ParentPage | null>(null);
-  const [clickedItem, setClickedItem] = useState<ParentPage | null>(null);
 
   const parentsAsideElem: {
     icon: IconType;
@@ -46,8 +45,6 @@ const Sidebar = () => {
         {parentsAsideElem.map((item, index) => {
           const isActive = currentParentPage === item.value;
           const isHovered = hoveredItem === item.value;
-          const isClicked = clickedItem === item.value;
-          const showTabletText = isHovered || isClicked;
 
           return (
             <Box
@@ -67,14 +64,13 @@ const Sidebar = () => {
                   ? "primaryColor"
                   : "fieldTextColor"
               }
-              bg={isActive ? "#206CE11A" : "transparent"}
+              bg={isActive ? "#206CE11A" : isHovered ? "#206CE10D" : "transparent"}
               _hover={{ bg: "#206CE10D" }} 
               transition="all 0.2s"
               onMouseEnter={() => setHoveredItem(item.value)}
               onMouseLeave={() => setHoveredItem(null)}
               onClick={() => {
                 setCurrentParentPage(item.value);
-                setClickedItem(item.value);
               }}
             >
               {/* Desktop layout: Icon + Text in HStack */}
@@ -90,7 +86,7 @@ const Sidebar = () => {
                 </Text>
               </HStack>
 
-              {/* Tablet layout: Icon centered, with text shown only on hover and clicking */}
+              {/* Tablet layout: Touch-friendly icon + always-visible label */}
               <Flex
                 direction="column"
                 align="center"
@@ -99,45 +95,49 @@ const Sidebar = () => {
                 w="full"
                 position="relative"
               >
-                <Icon as={item.icon} boxSize="20px" />
+                <Box
+                  display="flex"
+                  alignItems="center"
+                  justifyContent="center"
+                  w="42px"
+                  h="28px"
+                  borderRadius="full"
+                  bg={isActive ? "blue.50" : "transparent"}
+                  transition="all 0.2s ease"
+                >
+                  <Icon
+                    as={item.icon}
+                    boxSize="20px"
+                    color={isActive ? "#206CE1" : "gray.500"}
+                  />
+                </Box>
 
-                {/* On tablet: text label shown only on hover or clicking */}
-                {showTabletText && (
-                  <Text
-                    fontSize="10px"
-                    fontWeight="600"
-                    lineHeight="1.1"
-                    mt={1}
-                    textAlign="center"
-                    whiteSpace="nowrap"
-                    maxW="64px"
-                    noOfLines={1}
-                  >
-                    {item.label}
-                  </Text>
-                )}
+                <Text
+                  fontSize="10.5px"
+                  fontWeight={isActive ? "700" : "500"}
+                  lineHeight="1.15"
+                  mt={1}
+                  textAlign="center"
+                  whiteSpace="nowrap"
+                  maxW="68px"
+                  truncate
+                  color={isActive ? "#206CE1" : "gray.600"}
+                >
+                  {item.label}
+                </Text>
 
-                {/* Floating pill flyout on tablet hover/click for clear readability */}
-                {showTabletText && (
+                {/* Left Active indicator bar on tablet rail */}
+                {isActive && (
                   <Box
                     position="absolute"
-                    left="calc(100% + 12px)"
+                    left="-6px"
                     top="50%"
                     transform="translateY(-50%)"
-                    bg="gray.900"
-                    color="white"
-                    px={2.5}
-                    py={1.5}
-                    borderRadius="md"
-                    fontSize="xs"
-                    fontWeight="600"
-                    whiteSpace="nowrap"
-                    boxShadow="md"
-                    zIndex={1200}
-                    pointerEvents="none"
-                  >
-                    {item.label}
-                  </Box>
+                    w="3px"
+                    h="22px"
+                    borderRadius="full"
+                    bg="#206CE1"
+                  />
                 )}
               </Flex>
             </Box>

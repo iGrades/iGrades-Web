@@ -16,22 +16,23 @@ const AddGraderPopup = ({ onClose, showBox, setShowBox }: AddGraderPopupProps) =
       top={0}
       left={0}
       w="100vw"
-      h="100vh"
+      h={{ base: "100dvh", md: "100vh" }}
       bg="rgba(0, 0, 0, 0.6)"
       zIndex={2000} 
       display="flex"
       justifyContent="center"
       alignItems={{ base: "flex-start", md: "center" }} 
       p={{ base: "0", md: "4" }}
+      pt={{ base: "env(safe-area-inset-top, 0px)", md: "4" }}
     >
       <Box
         position="relative"
         width={{ base: "100%", md: "90%", lg: "60%" }}
-        maxH={{ base: "100vh", md: "90vh" }}
+        maxH={{ base: "100dvh", md: "90vh" }}
         rounded={{ base: "none", md: "3xl" }}
         overflowY="auto"
         bg="white" 
-        pb={{ base: "120px", md: "0" }} 
+        pb={{ base: "max(calc(env(safe-area-inset-bottom, 0px) + 100px), 110px)", md: "0" }} 
         css={{
           "&::-webkit-scrollbar": {
             display: "none",
@@ -52,7 +53,7 @@ const AddGraderPopup = ({ onClose, showBox, setShowBox }: AddGraderPopupProps) =
         {/* Close/Cancel Button */}
         <Button
           position={{ base: "fixed", md: "absolute" }} 
-          bottom={{ base: "20px", md: "auto" }}
+          bottom={{ base: "max(calc(env(safe-area-inset-bottom, 0px) + 16px), 20px)", md: "auto" }}
           top={{ base: "auto", md: "30px" }}
           right={{ base: "50%", md: "10px" }}
           transform={{ base: "translateX(50%)", md: "none" }} 

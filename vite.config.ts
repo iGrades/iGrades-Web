@@ -28,7 +28,78 @@ export default defineConfig(({ mode }) => {
       alias: {
         "@": "/src",
       },
-      dedupe: ["react", "react-dom", "@chakra-ui/react", "@chakra-ui/charts", "@emotion/react", "framer-motion"],
+      dedupe: [
+        "react",
+        "react-dom",
+        "react-dom/client",
+        "react/jsx-runtime",
+        "react/jsx-dev-runtime",
+        "@chakra-ui/react",
+        "@chakra-ui/charts",
+        "@emotion/react",
+        "framer-motion",
+      ],
+    },
+    optimizeDeps: {
+      include: [
+        "react",
+        "react-dom",
+        "react-dom/client",
+        "react/jsx-runtime",
+        "react/jsx-dev-runtime",
+        "react-router-dom",
+        "react-markdown",
+        "remark-gfm",
+        "remark-math",
+        "rehype-katex",
+        "katex",
+        "@chakra-ui/react",
+        "react-icons/io5",
+        "react-icons/pi",
+        "zustand",
+      ],
+    },
+    build: {
+      chunkSizeWarningLimit: 1200,
+      rollupOptions: {
+        output: {
+          manualChunks(id) {
+            if (id.includes("node_modules")) {
+              if (id.includes("pdfjs-dist") || id.includes("jspdf")) {
+                return "vendor-pdf";
+              }
+              if (
+                id.includes("katex") ||
+                id.includes("rehype-katex") ||
+                id.includes("remark-math") ||
+                id.includes("remark-gfm")
+              ) {
+                return "vendor-math";
+              }
+              if (
+                id.includes("recharts") ||
+                id.includes("@chakra-ui/charts") ||
+                id.includes("d3-")
+              ) {
+                return "vendor-charts";
+              }
+              if (id.includes("@supabase")) {
+                return "vendor-supabase";
+              }
+              if (
+                id.includes("@chakra-ui") ||
+                id.includes("@emotion") ||
+                id.includes("framer-motion")
+              ) {
+                return "vendor-ui";
+              }
+              if (id.includes("react-icons")) {
+                return "vendor-icons";
+              }
+            }
+          },
+        },
+      },
     },
   };
 });

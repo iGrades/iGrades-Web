@@ -174,13 +174,17 @@ const Security = () => {
             mask={showPasskey ? false : true}
           >
             <PinInput.HiddenInput />
-            <PinInput.Control>
-              <PinInput.Input index={0} />
-              <PinInput.Input index={1} />
-              <PinInput.Input index={2} />
-              <PinInput.Input index={3} />
-              <PinInput.Input index={4} />
-              <PinInput.Input index={5} />
+            <PinInput.Control style={{ gap: "6px" }}>
+              {[0, 1, 2, 3, 4, 5].map((idx) => (
+                <PinInput.Input
+                  key={idx}
+                  index={idx}
+                  fontSize={{ base: "18px", sm: "18px" }}
+                  w={{ base: "38px", sm: "44px" }}
+                  h={{ base: "44px", sm: "48px" }}
+                  borderRadius="xl"
+                />
+              ))}
             </PinInput.Control>
           </PinInput.Root>
 

@@ -20,6 +20,7 @@ import {
   LuRotateCw,
   LuExternalLink,
   LuDownload,
+  LuShare2,
   LuTriangleAlert,
   LuRefreshCw,
   LuLayoutGrid,
@@ -27,6 +28,8 @@ import {
   LuSparkles,
   LuMaximize2,
   LuX,
+  LuEllipsisVertical,
+  LuCheck,
 } from "react-icons/lu";
 import { DancingLogoLoader } from "@/components/DancingLogoLoader";
 import * as pdfjsLib from "pdfjs-dist";
@@ -56,7 +59,9 @@ if (typeof window !== "undefined") {
 interface PdfViewerProps {
   url: string;
   title?: string;
+  description?: string;
   onDownload?: () => void;
+  onShare?: () => void;
   onOpenNotes?: () => void;
   onClose?: () => void;
 }
@@ -190,7 +195,9 @@ SinglePageCanvas.displayName = "SinglePageCanvas";
 export const NativePdfCanvasViewer: React.FC<PdfViewerProps> = ({
   url,
   title,
+  description: _description,
   onDownload,
+  onShare,
   onOpenNotes,
   onClose,
 }) => {
@@ -211,11 +218,13 @@ export const NativePdfCanvasViewer: React.FC<PdfViewerProps> = ({
   const [isFullscreen, setIsFullscreen] = useState<boolean>(false);
   const [showThumbnails, setShowThumbnails] = useState<boolean>(false);
   const [autoFitWidth, setAutoFitWidth] = useState<boolean>(true);
+  const [isOverflowOpen, setIsOverflowOpen] = useState<boolean>(false);
 
   const pdfDocRef = useRef<any>(null);
   const pageRefs = useRef<{ [pageNum: number]: HTMLDivElement | null }>({});
   const rootContainerRef = useRef<HTMLDivElement | null>(null);
   const scrollContainerRef = useRef<HTMLDivElement | null>(null);
+  const overflowMenuRef = useRef<HTMLDivElement | null>(null);
   const lastTapRef = useRef<number>(0);
 
   // Sync page input value with currentPage
@@ -743,6 +752,32 @@ export const NativePdfCanvasViewer: React.FC<PdfViewerProps> = ({
     return () => window.removeEventListener("keydown", handleKeyDown);
   });
 
+  // ─── Close Overflow Menu on Outside Click or Escape ─────────────────────────
+  useEffect(() => {
+    if (!isOverflowOpen) return;
+    const handleClickOutside = (e: MouseEvent | TouchEvent) => {
+      if (
+        overflowMenuRef.current &&
+        !overflowMenuRef.current.contains(e.target as Node)
+      ) {
+        setIsOverflowOpen(false);
+      }
+    };
+    const handleEscKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        setIsOverflowOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    document.addEventListener("touchstart", handleClickOutside);
+    document.addEventListener("keydown", handleEscKey);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("touchstart", handleClickOutside);
+      document.removeEventListener("keydown", handleEscKey);
+    };
+  }, [isOverflowOpen]);
+
   return (
     <Flex
       ref={rootContainerRef}
@@ -759,24 +794,47 @@ export const NativePdfCanvasViewer: React.FC<PdfViewerProps> = ({
         bg="#1e293b"
         borderBottom="1px solid"
         borderColor="gray.800"
-        zIndex={20}
+        zIndex={30}
         boxShadow="0 4px 12px rgba(0,0,0,0.3)"
         w="100%"
         maxW="100%"
-        overflowX="auto"
+        position="relative"
       >
         <Flex
-          px={{ base: 2, sm: 4 }}
+          px={{ base: 2, sm: 3, md: 4 }}
           py={2}
           align="center"
           justify="space-between"
-          wrap="wrap"
-          gap={{ base: 1.5, md: 3 }}
-          minW="fit-content"
+          gap={{ base: 1, sm: 2, md: 3 }}
+          w="100%"
         >
           {/* Left Group: Page Navigation & Thumbnails Drawer */}
-          <Flex align="center" gap={{ base: 1, sm: 2 }} wrap="nowrap" flexShrink={0}>
-            {/* Sidebar toggle */}
+          <Flex align="center" gap={{ base: 1, sm: 1.5 }} wrap="nowrap" flexShrink={0}>
+            {/* Close 'x' Button on mobile left for quick exit */}
+            {onClose && (
+              <Button
+                size="xs"
+                variant="subtle"
+                bg="gray.800"
+                color="gray.300"
+                _hover={{ bg: "gray.700", color: "white" }}
+                onClick={onClose}
+                title="Close Viewer"
+                aria-label="Close Viewer"
+                h="32px"
+                w="32px"
+                minW="32px"
+                p={0}
+                rounded="md"
+                display={{ base: "inline-flex", md: "none" }}
+                alignItems="center"
+                justifyContent="center"
+              >
+                <LuX size={16} />
+              </Button>
+            )}
+
+            {/* Sidebar toggle (Desktop & Tablet) */}
             <Button
               size="xs"
               variant={showThumbnails ? "solid" : "subtle"}
@@ -788,9 +846,10 @@ export const NativePdfCanvasViewer: React.FC<PdfViewerProps> = ({
               minW={{ base: "34px", sm: "36px" }}
               h="32px"
               px={2}
+              display={{ base: "none", md: "inline-flex" }}
             >
               <LuLayoutGrid size={15} />
-              <Text display={{ base: "none", md: "inline" }} ml={1.5} fontSize="xs">
+              <Text ml={1.5} fontSize="xs">
                 Pages
               </Text>
             </Button>
@@ -804,7 +863,7 @@ export const NativePdfCanvasViewer: React.FC<PdfViewerProps> = ({
               _hover={{ bg: "gray.700" }}
               onClick={handleFirstPage}
               disabled={currentPage <= 1 || loading}
-              display={{ base: "none", sm: "inline-flex" }}
+              display={{ base: "none", md: "inline-flex" }}
               title="First Page"
               h="32px"
               px={2}
@@ -812,7 +871,7 @@ export const NativePdfCanvasViewer: React.FC<PdfViewerProps> = ({
               <LuChevronsLeft size={15} />
             </Button>
 
-            {/* Prev Page */}
+            {/* Prev Page - Primary Mobile Action */}
             <Button
               size="xs"
               variant="subtle"
@@ -822,29 +881,29 @@ export const NativePdfCanvasViewer: React.FC<PdfViewerProps> = ({
               onClick={handlePrevPage}
               disabled={currentPage <= 1 || loading}
               title="Previous Page (Left Arrow)"
-              minW={{ base: "34px", sm: "36px" }}
+              minW={{ base: "30px", sm: "34px" }}
               h="32px"
-              px={2}
+              px={1.5}
             >
               <LuChevronLeft size={16} />
             </Button>
 
-            {/* Direct Page Input */}
+            {/* Direct Page Input - Primary Mobile Action */}
             <Flex
               align="center"
               bg="gray.900"
-              px={2}
+              px={{ base: 1.5, sm: 2 }}
               py={0.5}
               borderRadius="lg"
               border="1px solid"
               borderColor="gray.700"
               h="32px"
             >
-              <Text fontSize="11px" color="gray.400" mr={1} display={{ base: "none", xs: "inline" }}>
+              <Text fontSize="11px" color="gray.400" mr={1} display={{ base: "none", sm: "inline" }}>
                 Pg
               </Text>
               <Input
-                w={{ base: "32px", sm: "38px" }}
+                w={{ base: "28px", sm: "36px" }}
                 h="24px"
                 p={0}
                 textAlign="center"
@@ -867,7 +926,7 @@ export const NativePdfCanvasViewer: React.FC<PdfViewerProps> = ({
               </Text>
             </Flex>
 
-            {/* Next Page */}
+            {/* Next Page - Primary Mobile Action */}
             <Button
               size="xs"
               variant="subtle"
@@ -877,9 +936,9 @@ export const NativePdfCanvasViewer: React.FC<PdfViewerProps> = ({
               onClick={handleNextPage}
               disabled={currentPage >= numPages || loading}
               title="Next Page (Right Arrow)"
-              minW={{ base: "34px", sm: "36px" }}
+              minW={{ base: "30px", sm: "34px" }}
               h="32px"
-              px={2}
+              px={1.5}
             >
               <LuChevronRight size={16} />
             </Button>
@@ -893,7 +952,7 @@ export const NativePdfCanvasViewer: React.FC<PdfViewerProps> = ({
               _hover={{ bg: "gray.700" }}
               onClick={handleLastPage}
               disabled={currentPage >= numPages || loading}
-              display={{ base: "none", sm: "inline-flex" }}
+              display={{ base: "none", md: "inline-flex" }}
               title="Last Page"
               h="32px"
               px={2}
@@ -902,8 +961,9 @@ export const NativePdfCanvasViewer: React.FC<PdfViewerProps> = ({
             </Button>
           </Flex>
 
-          {/* Middle Group: Zoom Tools */}
-          <Flex align="center" gap={1.5} flexShrink={0}>
+          {/* Middle Group: Zoom Tools (Primary) */}
+          <Flex align="center" gap={{ base: 1, sm: 1.5 }} flexShrink={0}>
+            {/* Zoom Out - Primary */}
             <Button
               size="xs"
               variant="subtle"
@@ -912,30 +972,31 @@ export const NativePdfCanvasViewer: React.FC<PdfViewerProps> = ({
               _hover={{ bg: "gray.700" }}
               onClick={handleZoomOut}
               title="Zoom Out (-)"
-              minW={{ base: "32px", sm: "34px" }}
+              minW={{ base: "30px", sm: "34px" }}
               h="32px"
-              px={1.5}
+              px={1}
             >
               <LuZoomOut size={15} />
             </Button>
 
-            {/* Zoom Percentage Badge */}
+            {/* Zoom Percentage Badge - Primary */}
             <Button
               size="xs"
               variant="ghost"
               color="gray.300"
               _hover={{ bg: "gray.800", color: "white" }}
               onClick={handleResetZoom}
-              title="Click to reset to 100%"
-              minW="48px"
+              title="Click to reset zoom"
+              minW={{ base: "40px", sm: "46px" }}
               h="32px"
-              px={1.5}
+              px={1}
               fontSize="xs"
               fontWeight="bold"
             >
               {Math.round(scale * 100)}%
             </Button>
 
+            {/* Zoom In - Primary */}
             <Button
               size="xs"
               variant="subtle"
@@ -944,14 +1005,14 @@ export const NativePdfCanvasViewer: React.FC<PdfViewerProps> = ({
               _hover={{ bg: "gray.700" }}
               onClick={handleZoomIn}
               title="Zoom In (+)"
-              minW={{ base: "32px", sm: "34px" }}
+              minW={{ base: "30px", sm: "34px" }}
               h="32px"
-              px={1.5}
+              px={1}
             >
               <LuZoomIn size={15} />
             </Button>
 
-            {/* Fit Width Button */}
+            {/* Fit Width Button (Visible on Tablet/Desktop; In Overflow Menu on Mobile) */}
             <Button
               size="xs"
               variant={autoFitWidth ? "solid" : "subtle"}
@@ -962,15 +1023,15 @@ export const NativePdfCanvasViewer: React.FC<PdfViewerProps> = ({
               title="Fit to Width"
               h="32px"
               px={2}
-              display={{ base: "none", xs: "inline-flex" }}
+              display={{ base: "none", md: "inline-flex" }}
             >
               <LuMaximize2 size={14} />
-              <Text display={{ base: "none", md: "inline" }} ml={1} fontSize="xs">
+              <Text ml={1} fontSize="xs">
                 Fit Width
               </Text>
             </Button>
 
-            {/* Rotate Button */}
+            {/* Rotate Button (Visible on Tablet/Desktop; In Overflow Menu on Mobile) */}
             <Button
               size="xs"
               variant="subtle"
@@ -982,14 +1043,35 @@ export const NativePdfCanvasViewer: React.FC<PdfViewerProps> = ({
               minW="32px"
               h="32px"
               px={2}
+              display={{ base: "none", md: "inline-flex" }}
             >
               <LuRotateCw size={14} />
             </Button>
           </Flex>
 
-          {/* Right Group: Fullscreen, Notes & Download */}
-          <Flex align="center" gap={1.5} flexShrink={0}>
-            {/* Fullscreen Toggle */}
+          {/* Right Group: Download, Fullscreen, Overflow Menu & Close */}
+          <Flex align="center" gap={{ base: 1, sm: 1.5 }} flexShrink={0}>
+            {/* Download / Save Button (Primary Action) */}
+            {onDownload && (
+              <Button
+                size="xs"
+                bg="blue.600"
+                color="white"
+                _hover={{ bg: "blue.500" }}
+                onClick={onDownload}
+                title="Save PDF to device"
+                h="32px"
+                px={{ base: 2, sm: 2.5 }}
+                display="inline-flex"
+              >
+                <LuDownload size={14} />
+                <Text display={{ base: "none", sm: "inline" }} ml={1.5} fontSize="xs">
+                  Save
+                </Text>
+              </Button>
+            )}
+
+            {/* Fullscreen Toggle (Tablet & Desktop) */}
             <Button
               size="xs"
               variant={isFullscreen ? "solid" : "subtle"}
@@ -1000,34 +1082,36 @@ export const NativePdfCanvasViewer: React.FC<PdfViewerProps> = ({
               title={isFullscreen ? "Exit Fullscreen (Esc)" : "Enter Fullscreen (F)"}
               h="32px"
               px={2.5}
+              display={{ base: "none", md: "inline-flex" }}
             >
               {isFullscreen ? <LuMinimize size={15} /> : <LuMaximize size={15} />}
-              <Text display={{ base: "none", sm: "inline" }} ml={1.5} fontSize="xs">
+              <Text display={{ base: "none", lg: "inline" }} ml={1.5} fontSize="xs">
                 {isFullscreen ? "Exit" : "Fullscreen"}
               </Text>
             </Button>
 
-            {/* Download Button (if prop provided) */}
-            {onDownload && (
+            {/* Share Button (Tablet & Desktop) */}
+            {onShare && (
               <Button
                 size="xs"
-                bg="blue.600"
-                color="white"
-                _hover={{ bg: "blue.500" }}
-                onClick={onDownload}
-                title="Download PDF"
+                variant="subtle"
+                bg="gray.800"
+                color="gray.300"
+                _hover={{ bg: "gray.700", color: "white" }}
+                onClick={onShare}
+                title="Share study guide"
                 h="32px"
                 px={2.5}
-                display="inline-flex"
+                display={{ base: "none", md: "inline-flex" }}
               >
-                <LuDownload size={14} />
-                <Text display={{ base: "none", md: "inline" }} ml={1.5} fontSize="xs">
-                  Save
+                <LuShare2 size={14} />
+                <Text display={{ base: "none", lg: "inline" }} ml={1.5} fontSize="xs">
+                  Share
                 </Text>
               </Button>
             )}
 
-            {/* External link */}
+            {/* External link (Tablet & Desktop) */}
             <Button
               size="xs"
               variant="subtle"
@@ -1043,7 +1127,7 @@ export const NativePdfCanvasViewer: React.FC<PdfViewerProps> = ({
               <LuExternalLink size={14} />
             </Button>
 
-            {/* Close 'x' Button */}
+            {/* Close 'x' Button (Tablet & Desktop) */}
             {onClose && (
               <Button
                 size="xs"
@@ -1059,13 +1143,256 @@ export const NativePdfCanvasViewer: React.FC<PdfViewerProps> = ({
                 minW="32px"
                 p={0}
                 rounded="md"
-                display="inline-flex"
+                display={{ base: "none", md: "inline-flex" }}
                 alignItems="center"
                 justifyContent="center"
               >
                 <LuX size={16} />
               </Button>
             )}
+
+            {/* ─── MOBILE OVERFLOW COMPACT MENU ─── */}
+            <Box position="relative" ref={overflowMenuRef} display={{ base: "inline-block", md: "none" }}>
+              <Button
+                size="xs"
+                variant="subtle"
+                bg={isOverflowOpen ? "blue.600" : "gray.800"}
+                color="white"
+                _hover={{ bg: isOverflowOpen ? "blue.500" : "gray.700" }}
+                onClick={() => setIsOverflowOpen((prev) => !prev)}
+                title="More PDF options"
+                aria-label="More PDF options"
+                aria-haspopup="true"
+                aria-expanded={isOverflowOpen}
+                h="32px"
+                w="32px"
+                minW="32px"
+                p={0}
+                rounded="md"
+              >
+                <LuEllipsisVertical size={16} />
+              </Button>
+
+              {/* Compact Dropdown Popover */}
+              {isOverflowOpen && (
+                <Box
+                  position="absolute"
+                  top="calc(100% + 8px)"
+                  right={0}
+                  w="210px"
+                  bg="#0f172a"
+                  border="1px solid"
+                  borderColor="gray.700"
+                  borderRadius="xl"
+                  boxShadow="0 12px 36px rgba(0,0,0,0.75)"
+                  py={1.5}
+                  zIndex={100}
+                  role="menu"
+                  backdropFilter="blur(16px)"
+                >
+                  {/* Option: Fit Width */}
+                  <Flex
+                    as="button"
+                    w="100%"
+                    align="center"
+                    justify="space-between"
+                    px={3.5}
+                    py={2}
+                    color="gray.200"
+                    fontSize="xs"
+                    fontWeight="500"
+                    _hover={{ bg: "gray.800", color: "white" }}
+                    onClick={() => {
+                      handleFitWidth();
+                      setIsOverflowOpen(false);
+                    }}
+                    role="menuitem"
+                  >
+                    <Flex align="center" gap={2}>
+                      <LuMaximize2 size={14} color="#60a5fa" />
+                      <Text>Fit to Width</Text>
+                    </Flex>
+                    {autoFitWidth && <LuCheck size={14} color="#60a5fa" />}
+                  </Flex>
+
+                  {/* Option: Rotate 90° */}
+                  <Flex
+                    as="button"
+                    w="100%"
+                    align="center"
+                    gap={2}
+                    px={3.5}
+                    py={2}
+                    color="gray.200"
+                    fontSize="xs"
+                    fontWeight="500"
+                    _hover={{ bg: "gray.800", color: "white" }}
+                    onClick={() => {
+                      handleRotate();
+                      setIsOverflowOpen(false);
+                    }}
+                    role="menuitem"
+                  >
+                    <LuRotateCw size={14} color="#93c5fd" />
+                    <Text>Rotate 90° Clockwise</Text>
+                  </Flex>
+
+                  {/* Option: Page Thumbnails */}
+                  <Flex
+                    as="button"
+                    w="100%"
+                    align="center"
+                    justify="space-between"
+                    px={3.5}
+                    py={2}
+                    color="gray.200"
+                    fontSize="xs"
+                    fontWeight="500"
+                    _hover={{ bg: "gray.800", color: "white" }}
+                    onClick={() => {
+                      setShowThumbnails((s) => !s);
+                      setIsOverflowOpen(false);
+                    }}
+                    role="menuitem"
+                  >
+                    <Flex align="center" gap={2}>
+                      <LuLayoutGrid size={14} color="#a5b4fc" />
+                      <Text>Page Thumbnails</Text>
+                    </Flex>
+                    {showThumbnails && <LuCheck size={14} color="#60a5fa" />}
+                  </Flex>
+
+                  {/* Option: Fullscreen */}
+                  <Flex
+                    as="button"
+                    w="100%"
+                    align="center"
+                    gap={2}
+                    px={3.5}
+                    py={2}
+                    color="gray.200"
+                    fontSize="xs"
+                    fontWeight="500"
+                    _hover={{ bg: "gray.800", color: "white" }}
+                    onClick={() => {
+                      toggleFullscreen();
+                      setIsOverflowOpen(false);
+                    }}
+                    role="menuitem"
+                  >
+                    {isFullscreen ? (
+                      <>
+                        <LuMinimize size={14} color="#38bdf8" />
+                        <Text>Exit Fullscreen</Text>
+                      </>
+                    ) : (
+                      <>
+                        <LuMaximize size={14} color="#38bdf8" />
+                        <Text>Enter Fullscreen</Text>
+                      </>
+                    )}
+                  </Flex>
+
+                  {/* Option: First Page */}
+                  <Flex
+                    as="button"
+                    w="100%"
+                    align="center"
+                    gap={2}
+                    px={3.5}
+                    py={2}
+                    color={currentPage <= 1 ? "gray.600" : "gray.200"}
+                    fontSize="xs"
+                    fontWeight="500"
+                    _hover={currentPage > 1 ? { bg: "gray.800", color: "white" } : {}}
+                    disabled={currentPage <= 1}
+                    onClick={() => {
+                      if (currentPage > 1) {
+                        handleFirstPage();
+                        setIsOverflowOpen(false);
+                      }
+                    }}
+                    role="menuitem"
+                  >
+                    <LuChevronsLeft size={14} />
+                    <Text>First Page</Text>
+                  </Flex>
+
+                  {/* Option: Last Page */}
+                  <Flex
+                    as="button"
+                    w="100%"
+                    align="center"
+                    gap={2}
+                    px={3.5}
+                    py={2}
+                    color={currentPage >= numPages ? "gray.600" : "gray.200"}
+                    fontSize="xs"
+                    fontWeight="500"
+                    _hover={currentPage < numPages ? { bg: "gray.800", color: "white" } : {}}
+                    disabled={currentPage >= numPages}
+                    onClick={() => {
+                      if (currentPage < numPages) {
+                        handleLastPage();
+                        setIsOverflowOpen(false);
+                      }
+                    }}
+                    role="menuitem"
+                  >
+                    <LuChevronsRight size={14} />
+                    <Text>Last Page ({numPages})</Text>
+                  </Flex>
+
+                  <Box my={1} borderBottom="1px solid" borderColor="gray.800" />
+
+                  {/* Option: Share */}
+                  {onShare && (
+                    <Flex
+                      as="button"
+                      w="100%"
+                      align="center"
+                      gap={2}
+                      px={3.5}
+                      py={2}
+                      color="gray.200"
+                      fontSize="xs"
+                      fontWeight="500"
+                      _hover={{ bg: "gray.800", color: "white" }}
+                      onClick={() => {
+                        onShare();
+                        setIsOverflowOpen(false);
+                      }}
+                      role="menuitem"
+                    >
+                      <LuShare2 size={14} color="#34d399" />
+                      <Text>Share Document</Text>
+                    </Flex>
+                  )}
+
+                  {/* Option: Open in New Tab */}
+                  <Flex
+                    as="button"
+                    w="100%"
+                    align="center"
+                    gap={2}
+                    px={3.5}
+                    py={2}
+                    color="gray.200"
+                    fontSize="xs"
+                    fontWeight="500"
+                    _hover={{ bg: "gray.800", color: "white" }}
+                    onClick={() => {
+                      window.open(url, "_blank");
+                      setIsOverflowOpen(false);
+                    }}
+                    role="menuitem"
+                  >
+                    <LuExternalLink size={14} color="#94a3b8" />
+                    <Text>Open in New Tab</Text>
+                  </Flex>
+                </Box>
+              )}
+            </Box>
           </Flex>
         </Flex>
       </Box>

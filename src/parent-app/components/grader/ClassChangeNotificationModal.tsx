@@ -127,6 +127,8 @@ export const ClassChangeNotificationModal = ({
       alignItems="center"
       justifyContent="center"
       p={{ base: 3, sm: 4, md: 6 }}
+      pt={{ base: "max(calc(env(safe-area-inset-top, 0px) + 12px), 12px)", md: 4 }}
+      pb={{ base: "max(calc(env(safe-area-inset-bottom, 0px) + 12px), 12px)", md: 4 }}
     >
       <Box
         bg="white"
@@ -134,7 +136,7 @@ export const ClassChangeNotificationModal = ({
         boxShadow="2xl"
         w="full"
         maxW={{ base: "100%", sm: "540px", md: "640px" }}
-        maxH="92vh"
+        maxH={{ base: "94dvh", md: "92vh" }}
         display="flex"
         flexDirection="column"
         overflow="hidden"

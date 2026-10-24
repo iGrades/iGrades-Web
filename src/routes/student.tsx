@@ -1,8 +1,18 @@
+import { lazy, Suspense } from "react";
 import type { RouteObject } from "react-router-dom";
+import { Center } from "@chakra-ui/react";
+import { DancingLogoLoader } from "@/components/DancingLogoLoader";
 import Home from "@/student-app/Home";
-import Verify from "@/student-app/auth/Verify";
-import CourseSelectionPage from "@/student-app/pages/CourseSelectionPage";
 import StudentRedirect from "@/student-app/components/StudentRedirect";
+
+const Verify = lazy(() => import("@/student-app/auth/Verify"));
+const CourseSelectionPage = lazy(() => import("@/student-app/pages/CourseSelectionPage"));
+
+const RouteLoadingFallback = () => (
+  <Center minH="100vh" bg="#F4F7FB">
+    <DancingLogoLoader size="md" />
+  </Center>
+);
 
 const studentRoutes: RouteObject[] = [
   // dynamic routes for student dashboard with names
@@ -77,11 +87,19 @@ const studentRoutes: RouteObject[] = [
   },
   {
     path: "/verify-student",
-    element: <Verify />,
+    element: (
+      <Suspense fallback={<RouteLoadingFallback />}>
+        <Verify />
+      </Suspense>
+    ),
   },
   {
     path: "/course-selection",
-    element: <CourseSelectionPage />,
+    element: (
+      <Suspense fallback={<RouteLoadingFallback />}>
+        <CourseSelectionPage />
+      </Suspense>
+    ),
   },
 ];
 

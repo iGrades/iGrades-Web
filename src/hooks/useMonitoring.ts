@@ -1,5 +1,33 @@
 import { useState, useCallback, useRef, useEffect } from "react";
 
+/**
+ * Detects whether desktop screen sharing (getDisplayMedia) is genuinely supported
+ * in the current runtime environment.
+ *
+ * Mobile browsers (iOS Safari, Android Chrome, and Capacitor/Cordova WebViews)
+ * lack WebRTC getDisplayMedia support or disallow it via OS-level sandboxing.
+ */
+export const checkScreenShareSupport = (): boolean => {
+  if (typeof window === "undefined" || typeof navigator === "undefined") return false;
+
+  // 1. Verify getDisplayMedia API exists on navigator.mediaDevices
+  const hasGetDisplayMedia =
+    Boolean(navigator.mediaDevices) &&
+    typeof navigator.mediaDevices.getDisplayMedia === "function";
+
+  if (!hasGetDisplayMedia) return false;
+
+  // 2. Mobile User Agents: iOS Safari / Android Chrome / Mobile WebViews do not support getDisplayMedia
+  const isMobileDevice =
+    /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
+      navigator.userAgent
+    );
+
+  if (isMobileDevice) return false;
+
+  return true;
+};
+
 export const useMonitoring = (options?: {
   disabled?: boolean;
   onScreenShareEnded?: () => void;
@@ -25,6 +53,15 @@ export const useMonitoring = (options?: {
   const [audioError, setAudioError] = useState<string | null>(null);
 
   const [showMonitoring, setShowMonitoring] = useState(true);
+
+  // Platform screen-sharing support detection
+  const [isScreenShareSupported] = useState<boolean>(() => checkScreenShareSupport());
+  const [bypassedScreenShare, setBypassedScreenShare] = useState<boolean>(
+    () => !checkScreenShareSupport()
+  );
+  const [monitoringMode, setMonitoringMode] = useState<"desktop_full" | "mobile_proctored">(
+    () => (!checkScreenShareSupport() ? "mobile_proctored" : "desktop_full")
+  );
 
   // ── Video node setters ─────────────────────────────────────────────────────
   // Comparing node.srcObject avoids unnecessary re-assignments
@@ -88,20 +125,26 @@ export const useMonitoring = (options?: {
     }
   }, []);
 
-  const [bypassedScreenShare, setBypassedScreenShare] = useState(false);
-
   const initializeScreenShare = useCallback(async (): Promise<boolean> => {
     try {
       setIsScreenLoading(true);
       setScreenError(null);
 
-      if (!navigator.mediaDevices || !navigator.mediaDevices.getDisplayMedia) {
-        throw new Error("Screen sharing is not supported in this browser environment.");
+      if (!checkScreenShareSupport()) {
+        const msg =
+          "Desktop screen sharing is not supported on this mobile device or browser. Mobile proctoring uses Front Camera, Microphone, and Tab/App Visibility monitoring instead.";
+        setScreenError(msg);
+        setHasScreenAccess(false);
+        setBypassedScreenShare(true);
+        setMonitoringMode("mobile_proctored");
+        return false;
       }
 
       const stream = await navigator.mediaDevices.getDisplayMedia({ video: true });
       setScreenStream(stream);
       setHasScreenAccess(true);
+      setBypassedScreenShare(false);
+      setMonitoringMode("desktop_full");
 
       // If the user stops screen share via the browser's built-in button,
       // update state so the warning banner shows immediately
@@ -114,8 +157,13 @@ export const useMonitoring = (options?: {
       return true;
     } catch (err: any) {
       let msg = err?.message || "Failed to start screen share.";
-      if (msg.includes("display-capture") || msg.includes("permissions policy") || msg.includes("disallowed")) {
-        msg = "Screen share is disallowed by browser/iframe security policy. You can proceed with webcam monitoring or open the app directly in a new tab.";
+      if (
+        msg.includes("display-capture") ||
+        msg.includes("permissions policy") ||
+        msg.includes("disallowed")
+      ) {
+        msg =
+          "Screen share is disallowed by browser/iframe security policy. You can proceed with webcam & tab visibility monitoring, or open the app directly in a new tab.";
       }
       setScreenError(msg);
       setHasScreenAccess(false);
@@ -127,6 +175,8 @@ export const useMonitoring = (options?: {
 
   const proceedWithWebcamOnly = useCallback(() => {
     setBypassedScreenShare(true);
+    setMonitoringMode("mobile_proctored");
+    setScreenError(null);
   }, []);
 
   const initializeAudio = useCallback(async (): Promise<boolean> => {
@@ -148,13 +198,23 @@ export const useMonitoring = (options?: {
 
   // ── Start all monitoring (Webcam, Audio, and Screen Share) ───────────────────
   const handleStartMonitoring = useCallback(async (): Promise<boolean> => {
-    const [webcamOk, audioOk, screenOk] = await Promise.all([
+    // 1. Always start Webcam and Audio
+    const [webcamOk, audioOk] = await Promise.all([
       initializeWebcam(),
       initializeAudio(),
-      initializeScreenShare(),
     ]);
+
+    // 2. Only attempt desktop screen share if genuinely supported and not in mobile proctored mode
+    let screenOk = false;
+    if (checkScreenShareSupport() && !bypassedScreenShare) {
+      screenOk = await initializeScreenShare();
+    } else {
+      // Mobile / camera-and-visibility path: screen share is omitted
+      screenOk = true;
+    }
+
     return webcamOk && audioOk && screenOk;
-  }, [initializeWebcam, initializeAudio, initializeScreenShare]);
+  }, [initializeWebcam, initializeAudio, initializeScreenShare, bypassedScreenShare]);
 
   // ── Stop all monitoring ───────────────────────────────────────────────────
 
@@ -168,7 +228,7 @@ export const useMonitoring = (options?: {
     setHasWebcamAccess(false);
     setHasScreenAccess(false);
     setHasAudioAccess(false);
-    setBypassedScreenShare(false);
+    setBypassedScreenShare(!checkScreenShareSupport());
     videoRef.current = null;
     screenVideoRef.current = null;
   }, [webcamStream, screenStream, audioStream]);
@@ -197,13 +257,15 @@ export const useMonitoring = (options?: {
     screenError,
     audioError,
     showMonitoring: disabled ? false : showMonitoring,
+    isScreenShareSupported,
+    monitoringMode,
     bypassedScreenShare,
     proceedWithWebcamOnly,
 
-    // Dialog dismisses when disabled, or when webcam, audio, and screen share are all granted
+    // Dialog dismisses when disabled, or when webcam, audio, and screen share/mobile path are all granted
     showAccessDialog:
       !disabled &&
-      !(hasWebcamAccess && hasAudioAccess && (hasScreenAccess || bypassedScreenShare)),
+      !(hasWebcamAccess && hasAudioAccess && (hasScreenAccess || bypassedScreenShare || !isScreenShareSupported)),
 
     handleStartMonitoring,
     initializeWebcam,

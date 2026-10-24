@@ -15,11 +15,57 @@
 export const isNativeMobile = (): boolean => {
   if (typeof window === "undefined") return false;
   const win = window as any;
-  return Boolean(
+
+  // 1. Official Capacitor runtime flags & platform methods
+  if (
     win?.Capacitor?.isNativePlatform?.() ||
-    win?.location?.protocol === "capacitor:" ||
-    (win?.location?.hostname === "localhost" && win?.location?.port === "")
-  );
+    win?.Capacitor?.getPlatform?.() === "ios" ||
+    win?.Capacitor?.getPlatform?.() === "android"
+  ) {
+    return true;
+  }
+
+  // 2. Custom protocols used by Capacitor/Ionic WebViews
+  const protocol = win?.location?.protocol || "";
+  if (protocol === "capacitor:" || protocol === "ionic:") {
+    return true;
+  }
+
+  // 3. Origin check for iOS WKWebView (capacitor://localhost)
+  if (typeof win?.location?.origin === "string" && win.location.origin.startsWith("capacitor://")) {
+    return true;
+  }
+
+  // 4. Android WebView asset server check (localhost with no port on mobile device)
+  const isLocalhostNoPort = win?.location?.hostname === "localhost" && (!win?.location?.port || win.location.port === "");
+  const isMobileUA = /iPhone|iPad|iPod|Android/i.test(navigator?.userAgent || "");
+  if (isLocalhostNoPort && isMobileUA) {
+    return true;
+  }
+
+  return false;
+};
+
+/** Alias for isNativeMobile for semantic clarity */
+export const isCapacitorApp = (): boolean => isNativeMobile();
+
+/**
+ * Checks if the current environment is local development (e.g. localhost:3000)
+ * or a sandboxed container preview (e.g. Cloud Run preview).
+ */
+export const isWebDevelopment = (): boolean => {
+  if (typeof window === "undefined") return false;
+  if (isNativeMobile()) return false;
+  const hostname = window.location.hostname;
+  return hostname === "localhost" || hostname === "127.0.0.1" || hostname.endsWith(".run.app");
+};
+
+/**
+ * Checks if running on a deployed production web domain (e.g. igrades.org, Vercel SPA)
+ */
+export const isProductionWeb = (): boolean => {
+  if (typeof window === "undefined") return false;
+  return !isNativeMobile() && !isWebDevelopment();
 };
 
 export const getApiBaseUrl = (): string => {

@@ -20,10 +20,9 @@ const Popover = ({head, info, firstBtnText, secondBtnText, clickFunc, setIsPopOv
     <>
       <Box
         position="fixed"
-        top={0}
-        left={0}
+        inset={0}
         w="100vw"
-        h="100vh"
+        h={{ base: "100dvh", md: "100vh" }}
         bg="rgba(0, 0, 0, 0.6)"
         zIndex={1000}
         display="flex"
@@ -34,7 +33,7 @@ const Popover = ({head, info, firstBtnText, secondBtnText, clickFunc, setIsPopOv
         <Box
           position="relative"
           width={{ base: "95%", md: "80%", lg: "50%" }}
-          maxH="90vh"
+          maxH={{ base: "85dvh", md: "90vh" }}
           overflowY="auto"
           bg="white"
           borderRadius="2xl"

@@ -1,22 +1,46 @@
 // src/lib/supabaseClient.ts
 import { createClient } from "@supabase/supabase-js";
 import { authSessionStorage, recordActivity } from "./authSessionManager";
-import { apiUrl, isNativeMobile, getApiBaseUrl } from "./apiConfig";
+import { isNativeMobile, isWebDevelopment, apiUrl } from "./apiConfig";
 
-const supabaseUrl = (import.meta.env.SUPABASE_URL as string) || "https://jmjballgaxelqhsvhlvl.supabase.co";
-const supabaseAnonKey = (import.meta.env.SUPABASE_ANON_KEY as string) || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.dummy_anon_key";
+const supabaseUrl =
+  (typeof import.meta !== "undefined" && (import.meta.env?.SUPABASE_URL as string)) ||
+  "https://jmjballgaxelqhsvhlvl.supabase.co";
+const supabaseAnonKey =
+  (typeof import.meta !== "undefined" && (import.meta.env?.SUPABASE_ANON_KEY as string)) ||
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.dummy_anon_key";
 
-const shouldUseProxy = () => {
+/**
+ * Determines whether Supabase queries should route through the same-origin Express proxy.
+ *
+ * Environment matrix:
+ * 1. Capacitor Native Mobile (iOS / Android):
+ *    - MUST NEVER use the development /api/supabase-proxy endpoint.
+ *    - Connects directly to the configured Supabase HTTPS endpoint using the anon key.
+ *    - Preserves native SSL, Auth, RLS, and avoids non-existent local or remote proxy latency.
+ *    - Returns false.
+ *
+ * 2. Deployed Production Web (e.g. igrades.org, Vercel SPA):
+ *    - Static hosting where server.ts does not run.
+ *    - Connects directly to Supabase over HTTPS.
+ *    - Returns false.
+ *
+ * 3. Local Web Development & Sandboxed Preview Environments:
+ *    - Retained ONLY where the existing web architecture genuinely requires it:
+ *      Local development with Express dev server or Cloud Run sandbox preview (*.run.app)
+ *      to handle iframe cross-origin restrictions and preview headers.
+ *    - Returns true (with automatic fallback to direct Supabase if proxy is not deployed).
+ */
+export const shouldUseProxy = (): boolean => {
   if (typeof window === "undefined") return false;
-  // In native mobile (Capacitor), only use the proxy if a verified external API base URL is configured.
-  // When no backend URL is set, mobile connects directly to Supabase over HTTPS.
+
+  // 1. Capacitor Native Mobile: Never use dev proxy
   if (isNativeMobile()) {
-    return Boolean(getApiBaseUrl());
+    return false;
   }
-  const hostname = window.location.hostname;
-  // Route through proxy only in sandboxed preview/dev environments (e.g. Cloud Run or localhost)
-  // Production hosts like igrades.org or www.igrades.org connect directly to Supabase
-  return hostname === "localhost" || hostname === "127.0.0.1" || hostname.endsWith(".run.app");
+
+  // 2. Web development and sandboxed container previews only
+  return isWebDevelopment();
 };
 
 const customFetch: typeof fetch = async (input, init) => {

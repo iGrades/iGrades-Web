@@ -5,9 +5,11 @@ import { TbBrandYoutubeFilled } from "react-icons/tb";
 import { PiSparkleFill } from "react-icons/pi";
 import { FiAward } from "react-icons/fi";
 import { useNavigationStore, type StudentPage } from "@/store/usenavigationStore";
+import { useSparkStore } from "@/store/useSparkStore";
 import { useTranslation } from "react-i18next";
 import { usePointsSystem } from "../hooks/usePointsSystem";
 import type { IconType } from "react-icons";
+import { hapticsService } from "@/services/hapticsService";
 
 interface NavItem {
   icon: IconType;
@@ -18,6 +20,7 @@ interface NavItem {
 
 export const FloatingBottomBar = () => {
   const { currentStudentPage, setCurrentStudentPage } = useNavigationStore();
+  const hasUnread = useSparkStore((s) => s.hasUnread);
   const { t } = useTranslation();
   const { pointsBalance } = usePointsSystem();
 
@@ -73,10 +76,10 @@ export const FloatingBottomBar = () => {
       boxShadow="0 -2px 10px rgba(0, 0, 0, 0.05)"
       px={1}
       pt={1.5}
-      pb="max(env(safe-area-inset-bottom, 8px), 8px)"
+      pb="max(calc(env(safe-area-inset-bottom, 0px) + 8px), 8px)"
       zIndex={1000}
     >
-      <Flex justify="space-around" align="center" w="full">
+      <Flex justify="space-around" align="center" w="full" maxW="520px" mx="auto">
         {navItems.map((item) => {
           const isActive = currentStudentPage === item.value;
           const isChat = item.value === "chat";
@@ -109,6 +112,7 @@ export const FloatingBottomBar = () => {
               justify="center"
               flex="1"
               minH="50px"
+              minW="48px"
               py={1}
               px={1}
               cursor="pointer"
@@ -118,7 +122,13 @@ export const FloatingBottomBar = () => {
               position="relative"
               transition="transform 0.15s cubic-bezier(0.16, 1, 0.3, 1), color 0.15s ease"
               _active={{ transform: "scale(0.92)" }}
-              onClick={() => setCurrentStudentPage(item.value)}
+              onClick={() => {
+                hapticsService.triggerNavigationTap();
+                if (item.value === "chat") {
+                  useSparkStore.getState().setHasUnread(false);
+                }
+                setCurrentStudentPage(item.value);
+              }}
             >
               <Box
                 position="relative"
@@ -158,17 +168,22 @@ export const FloatingBottomBar = () => {
                   </Box>
                 )}
 
-                {/* Subtle sparkle indicator on Chat tab */}
+                {/* Unread dot or subtle sparkle indicator on Chat tab */}
                 {isChat && !isActive && (
                   <Box
                     position="absolute"
-                    top="0px"
-                    right="2px"
-                    w="5px"
-                    h="5px"
+                    top="-1px"
+                    right="-1px"
+                    w={hasUnread ? "8px" : "5px"}
+                    h={hasUnread ? "8px" : "5px"}
                     borderRadius="full"
-                    bg="purple.400"
-                    boxShadow="0 0 4px rgba(168, 85, 247, 0.6)"
+                    bg={hasUnread ? "red.500" : "purple.400"}
+                    border={hasUnread ? "1.5px solid white" : "none"}
+                    boxShadow={
+                      hasUnread
+                        ? "0 0 6px rgba(239, 68, 68, 0.7)"
+                        : "0 0 4px rgba(168, 85, 247, 0.6)"
+                    }
                   />
                 )}
               </Box>

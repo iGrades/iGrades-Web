@@ -19,6 +19,7 @@ import { useScreenshotDetection } from "@/hooks/useScreenshotDetection";
 import { useScreenRecordingDetection } from "@/hooks/useScreenRecordingDetection";
 import { useAIProctoring } from "@/hooks/useAIProctoring";
 import { FiCamera, FiMic, FiMonitor, FiShield } from "react-icons/fi";
+import { useExamWakeLock } from "@/services/examWakeLockService";
 
 
 // ─── Memoized Monitoring View (unchanged) ─────────────────────────────────────
@@ -36,6 +37,7 @@ const MemoizedMonitoring = memo(
     bypassedScreenShare,
     initializeScreenShare,
     proctorStatus,
+    isScreenShareSupported = true,
   }: any) => {
     return (
       <>
@@ -48,12 +50,12 @@ const MemoizedMonitoring = memo(
           </Alert.Root>
         )}
 
-        {!hasScreenAccess && !bypassedScreenShare && (
+        {!hasScreenAccess && !bypassedScreenShare && isScreenShareSupported && (
           <Alert.Root status="error" size="sm" mb={2}>
             <Alert.Indicator />
             <Alert.Title fontSize="xs">Screen Sharing Inactive</Alert.Title>
             <Alert.Description fontSize="xs">
-              Entire screen sharing is required during the examination.
+              Entire screen sharing is required during desktop examinations.
             </Alert.Description>
             {initializeScreenShare && (
               <Button
@@ -68,6 +70,16 @@ const MemoizedMonitoring = memo(
           </Alert.Root>
         )}
 
+        {(!isScreenShareSupported || bypassedScreenShare) && hasWebcamAccess && (
+          <Alert.Root status="info" size="sm" mb={2} borderRadius="md">
+            <Alert.Indicator />
+            <Alert.Title fontSize="xs">Mobile Proctored Mode Active</Alert.Title>
+            <Alert.Description fontSize="xs">
+              Front Camera & Tab/App Focus tracking active. Maintain eye contact with the screen.
+            </Alert.Description>
+          </Alert.Root>
+        )}
+
         {showMonitoring && (hasWebcamAccess || hasScreenAccess) && (
           <MonitoringView
             hasWebcamAccess={hasWebcamAccess}
@@ -79,6 +91,8 @@ const MemoizedMonitoring = memo(
             toggleMonitoring={toggleMonitoring}
             handleManualPlay={handleManualPlay}
             proctorStatus={proctorStatus}
+            isScreenShareSupported={isScreenShareSupported}
+            bypassedScreenShare={bypassedScreenShare}
           />
         )}
       </>
@@ -124,6 +138,10 @@ const QuizAttempt = ({
     isSubjectCompleted,
   } = useQuizAttempt(quizData);
 
+  // Screen keep-awake: enabled strictly during active timed examinations; auto-released on submit, cancel, timeout, or exit
+  const isExaminationActive = quizData.mode === "examination" && !showResults;
+  useExamWakeLock(isExaminationActive);
+
   const { authdStudent } = useAuthdStudentData();
 
   // Test mode has quiz monitoring functionality completely removed.
@@ -149,6 +167,8 @@ const QuizAttempt = ({
     isAudioLoading,
     showMonitoring,
     showAccessDialog,
+    isScreenShareSupported,
+    monitoringMode: _monitoringMode,
     bypassedScreenShare,
     handleStartMonitoring,
     initializeWebcam,
@@ -286,7 +306,7 @@ const QuizAttempt = ({
     // In examination mode, initialize once required media access is granted.
     const shouldInitialize =
       !isMonitoringEnabled ||
-      (hasWebcamAccess && hasAudioAccess && (hasScreenAccess || bypassedScreenShare));
+      (hasWebcamAccess && hasAudioAccess && (hasScreenAccess || bypassedScreenShare || !isScreenShareSupported));
 
     if (shouldInitialize && !hasInitializedAttempts.current) {
       hasInitializedAttempts.current = true;
@@ -321,6 +341,7 @@ const QuizAttempt = ({
     hasAudioAccess,
     hasScreenAccess,
     bypassedScreenShare,
+    isScreenShareSupported,
     createAttemptRecord,
     quizData.quizzes,
     quizData.subjects,
@@ -351,7 +372,7 @@ const QuizAttempt = ({
 
   // ─── Render ───────────────────────────────────────────────────────────────
 
-  if (isMobile && isMonitoringEnabled && !bypassedScreenShare) {
+  if ((isMobile || !isScreenShareSupported) && isMonitoringEnabled && !bypassedScreenShare) {
     return (
       <Box minH="100vh" display="flex" alignItems="center" justifyContent="center" bg="gray.50" p={4}>
         <VStack maxW="md" w="full" p={{ base: 6, sm: 8 }} bg="white" borderRadius="2xl" boxShadow="xl" textAlign="center" gap={5}>
@@ -371,18 +392,18 @@ const QuizAttempt = ({
           </Box>
           <VStack gap={1.5}>
             <Text fontSize="lg" fontWeight="bold" color="gray.900">
-              Mobile Examination Mode
+              Mobile Proctored Examination Mode
             </Text>
             <Text fontSize="sm" color="gray.600" lineHeight="1.5">
-              You are taking this exam on a mobile device. AI proctoring will monitor your{" "}
-              <b>Front Camera, Microphone, and App Focus / Tab Switches</b>.
+              You are taking this examination on a mobile device. AI proctoring will monitor your{" "}
+              <b>Front Camera, Microphone, and App / Tab Focus</b>.
             </Text>
           </VStack>
 
-          <Alert.Root status="info" size="sm" borderRadius="xl">
+          <Alert.Root status="warning" size="sm" borderRadius="xl">
             <Alert.Indicator />
             <Alert.Description fontSize="xs" textAlign="left">
-              Full desktop screen sharing is not required on mobile devices. Ensure you remain in the browser and face the camera throughout.
+              <b>Academic Integrity Disclosure:</b> Mobile operating systems do not support full desktop screen recording. This session monitors facial pose, audio anomalies, and application switching, but cannot record background phone applications. If your course requires complete desktop screen recording, please use a desktop computer.
             </Alert.Description>
           </Alert.Root>
 
@@ -406,7 +427,7 @@ const QuizAttempt = ({
               borderRadius="xl"
               onClick={onCancel}
             >
-              Return to Dashboard
+              Cancel & Return to Dashboard
             </Button>
           </VStack>
         </VStack>
@@ -429,7 +450,7 @@ const QuizAttempt = ({
 
   if (isMonitoringEnabled && showAccessDialog) {
     const allGranted =
-      hasWebcamAccess && hasAudioAccess && (hasScreenAccess || bypassedScreenShare);
+      hasWebcamAccess && hasAudioAccess && (hasScreenAccess || bypassedScreenShare || !isScreenShareSupported);
 
     return (
       <Dialog.Root
@@ -458,8 +479,8 @@ const QuizAttempt = ({
               <VStack align="stretch" gap={4}>
                 <Text fontSize="sm" color="gray.600">
                   To ensure academic integrity, this examination requires active verification of your{" "}
-                  <b>Camera, Microphone, and Entire Screen</b>. Real-time AI proctoring monitors head
-                  movements, looking away, unauthorized persons, and external objects (phones, notes).
+                  <b>{isScreenShareSupported ? "Camera, Microphone, and Entire Screen" : "Front Camera, Microphone, and Tab/App Focus"}</b>.
+                  Real-time AI proctoring monitors head movements, looking away, unauthorized persons, and external devices.
                 </Text>
 
                 {/* Device Access Checklist */}
@@ -550,56 +571,75 @@ const QuizAttempt = ({
                     </HStack>
                   </HStack>
 
-                  {/* Screen Share Checklist Item */}
+                  {/* Screen Share / Focus Checklist Item */}
                   <HStack justify="space-between" p={2} bg="white" borderRadius="md" boxShadow="xs">
                     <HStack gap={2}>
                       <FiMonitor size={18} color="#4b5563" />
                       <VStack align="start" gap={0}>
                         <Text fontSize="xs" fontWeight="bold">
-                          Entire Screen Share
+                          {isScreenShareSupported ? "Entire Screen Share" : "Screen & App Focus Monitoring"}
                         </Text>
                         <Text fontSize="10px" color="gray.500">
-                          Monitors tab switches & external application usage
+                          {isScreenShareSupported
+                            ? "Monitors tab switches & external application usage"
+                            : "Mobile OS: Real-time tab switch & app minimization detection"}
                         </Text>
                       </VStack>
                     </HStack>
                     <HStack gap={2}>
-                      <Badge
-                        size="xs"
-                        colorPalette={
-                          hasScreenAccess ? "green" : bypassedScreenShare ? "yellow" : screenError ? "red" : "gray"
-                        }
-                      >
-                        {hasScreenAccess
-                          ? "Shared"
-                          : bypassedScreenShare
-                          ? "Bypassed"
-                          : isScreenLoading
-                          ? "Requesting..."
-                          : screenError
-                          ? "Denied"
-                          : "Pending"}
-                      </Badge>
-                      {!hasScreenAccess && !bypassedScreenShare && (
-                        <Button
-                          size="xs"
-                          variant="outline"
-                          onClick={initializeScreenShare}
-                          loading={isScreenLoading}
-                        >
-                          Share
-                        </Button>
+                      {isScreenShareSupported ? (
+                        <>
+                          <Badge
+                            size="xs"
+                            colorPalette={
+                              hasScreenAccess ? "green" : bypassedScreenShare ? "yellow" : screenError ? "red" : "gray"
+                            }
+                          >
+                            {hasScreenAccess
+                              ? "Shared"
+                              : bypassedScreenShare
+                              ? "Webcam-Only"
+                              : isScreenLoading
+                              ? "Requesting..."
+                              : screenError
+                              ? "Denied"
+                              : "Pending"}
+                          </Badge>
+                          {!hasScreenAccess && !bypassedScreenShare && (
+                            <Button
+                              size="xs"
+                              variant="outline"
+                              onClick={initializeScreenShare}
+                              loading={isScreenLoading}
+                            >
+                              Share
+                            </Button>
+                          )}
+                        </>
+                      ) : (
+                        <Badge size="xs" colorPalette="blue" variant="subtle">
+                          Focus Monitored
+                        </Badge>
                       )}
                     </HStack>
                   </HStack>
                 </VStack>
 
-                <Alert.Root status="info" size="sm">
-                  <Alert.Indicator />
-                  <Alert.Description fontSize="xs">
-                    Please select <b>&quot;Entire Screen&quot;</b> when prompted by your browser to ensure full compliance.
-                  </Alert.Description>
-                </Alert.Root>
+                {isScreenShareSupported && !bypassedScreenShare ? (
+                  <Alert.Root status="info" size="sm">
+                    <Alert.Indicator />
+                    <Alert.Description fontSize="xs">
+                      Please select <b>&quot;Entire Screen&quot;</b> when prompted by your browser to ensure full compliance.
+                    </Alert.Description>
+                  </Alert.Root>
+                ) : (
+                  <Alert.Root status="info" size="sm">
+                    <Alert.Indicator />
+                    <Alert.Description fontSize="xs">
+                      <b>Mobile Proctoring Disclosure:</b> Front Camera and App/Tab Focus tracking are active. Mobile OS sandboxing does not support recording background applications.
+                    </Alert.Description>
+                  </Alert.Root>
+                )}
 
                 {(webcamError || screenError || audioError) && (
                   <Alert.Root status="error" size="sm">
@@ -618,9 +658,9 @@ const QuizAttempt = ({
               <Button variant="outline" onClick={onCancel}>
                 Cancel Quiz
               </Button>
-              {screenError && hasWebcamAccess && !bypassedScreenShare && (
+              {screenError && hasWebcamAccess && !bypassedScreenShare && isScreenShareSupported && (
                 <Button variant="surface" colorPalette="amber" onClick={proceedWithWebcamOnly}>
-                  Proceed with Webcam Only
+                  Proceed in Webcam & Focus Mode (Reduced Protection)
                 </Button>
               )}
               <Button
@@ -654,6 +694,7 @@ const QuizAttempt = ({
           bypassedScreenShare={bypassedScreenShare}
           initializeScreenShare={initializeScreenShare}
           proctorStatus={proctorStatus}
+          isScreenShareSupported={isScreenShareSupported}
         />
       )}
 

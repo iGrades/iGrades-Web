@@ -200,20 +200,21 @@ const Home = () => {
             as="main"
             display="flex"
             flexDirection="column"
-            minH="100vh"
-            maxH="100vh"
+            minH={{ base: "100dvh", md: "100vh" }}
+            h={{ base: "100dvh", md: "100vh" }}
+            maxH={{ base: "100dvh", md: "100vh" }}
             overflow="hidden"
             bg="textFieldColor"
           >
             <Navbar setShowLogoutModal={setShowLogoutModal} />
 
-            <Flex flex="1" overflow="hidden">
+            <Flex flex="1" minH="0" overflow="hidden">
               {/* Desktop & Tablet Sidebar */}
               <Box
                 position="relative"
                 flexShrink={0}
-                w={{ base: "0px", md: "76px", lg: "16%" }}
-                minW={{ md: "76px", lg: "190px" }}
+                w={{ base: "0px", md: "80px", lg: "16%" }}
+                minW={{ md: "80px", lg: "190px" }}
                 display={{ base: "none", md: "block" }}
                 overflow="visible"
                 zIndex={90}
@@ -223,8 +224,11 @@ const Home = () => {
 
               <Box
                 flex="1"
+                minH="0"
                 overflowY="auto"
+                overscrollBehavior="contain"
                 css={{
+                  WebkitOverflowScrolling: "touch",
                   "&::-webkit-scrollbar": {
                     display: "none",
                   },

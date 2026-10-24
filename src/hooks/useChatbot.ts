@@ -1,5 +1,3 @@
-"use client";
-
 import { useState, useRef, useCallback, useEffect } from "react";
 import { useAuthdStudentData } from "@/student-app/context/studentDataContext";
 import { useLocation } from "react-router-dom";
@@ -74,7 +72,6 @@ export const useChatbot = () => {
 
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [hasUnread, setHasUnread] = useState(false);
   const [tutoringState, setTutoringState] = useState<TutoringState>(() => {
     try {
       const stored = localStorage.getItem(`igrades_spark_tutor_state_${authdStudent?.id || "guest"}`);
@@ -137,6 +134,8 @@ export const useChatbot = () => {
   // Zustand Spark Store
   const isOpen = useSparkStore((s) => s.isOpen);
   const setIsOpen = useSparkStore((s) => s.setIsOpen);
+  const hasUnread = useSparkStore((s) => s.hasUnread);
+  const setHasUnread = useSparkStore((s) => s.setHasUnread);
   const toggleOpen = useSparkStore((s) => s.toggleSpark);
   const activeContext = useSparkStore((s) => s.activeContext);
   const clearContext = useSparkStore((s) => s.clearContext);
@@ -187,7 +186,7 @@ export const useChatbot = () => {
       setHasUnread(false);
       setTimeout(() => inputRef.current?.focus(), 50);
     }
-  }, [isOpen]);
+  }, [isOpen, setHasUnread]);
 
   const { intelligence } = useLearningIntelligence(authdStudent?.id, authdStudent?.class);
 
@@ -381,7 +380,7 @@ export const useChatbot = () => {
     } finally {
       setIsLoading(false);
     }
-  }, [isLoading, messages, authdStudent?.id, studentName, studentGradeLevel, activeContext, tutoringState, isOpen, intelligence, sparkUsageCount, sparkDailyLimit, effectivePlan]);
+  }, [isLoading, messages, authdStudent?.id, studentName, studentGradeLevel, activeContext, tutoringState, isOpen, intelligence, sparkUsageCount, sparkDailyLimit, effectivePlan, setHasUnread]);
 
   const sendMessage = useCallback(() => {
     executeSend(input);

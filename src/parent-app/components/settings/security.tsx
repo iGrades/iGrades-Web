@@ -148,12 +148,12 @@ const Security = () => {
             border="none"
             outline="none"
             boxShadow="none"
-            h="42px" 
+            h="44px" 
             borderRadius="xl"
-            fontSize="xs"
+            fontSize={{ base: "16px", sm: "16px", md: "sm" }}
             onChange={(e) => setCurrentPassword(e.target.value)}
             placeholder="Enter your current password"
-            _placeholder={{ fontSize: "11px", color: "gray.400" }}
+            _placeholder={{ fontSize: { base: "13px", md: "11px" }, color: "gray.400" }}
           />
         </Field.Root>
 
@@ -165,12 +165,12 @@ const Security = () => {
             border="none"
             outline="none"
             boxShadow="none"
-            h="42px" 
+            h="44px" 
             borderRadius="xl"
-            fontSize="xs"
+            fontSize={{ base: "16px", sm: "16px", md: "sm" }}
             onChange={(e) => setNewPassword(e.target.value)}
             placeholder="Enter your new password (min. 6 characters)"
-            _placeholder={{ fontSize: "11px", color: "gray.400" }}
+            _placeholder={{ fontSize: { base: "13px", md: "11px" }, color: "gray.400" }}
           />
         </Field.Root>
 

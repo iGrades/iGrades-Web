@@ -83,7 +83,7 @@ const Navbar = () => {
   const fullName = `${currentStudent?.firstname ?? ""} ${currentStudent?.lastname ?? ""}`.trim() || "Student";
 
   return (
-    <Box position="sticky" top="0" zIndex="1000" bg="white" shadow="xs" borderBottom="1px solid" borderColor="gray.100">
+    <Box position="sticky" top="0" zIndex="1000" bg="white" shadow="xs" borderBottom="1px solid" borderColor="gray.100" pt="env(safe-area-inset-top, 0px)">
       <Flex
         as="nav"
         align="center"

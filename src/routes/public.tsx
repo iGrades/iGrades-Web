@@ -1,12 +1,22 @@
+import { lazy, Suspense } from "react";
 import type { RouteObject } from "react-router-dom";
 import { Navigate } from "react-router-dom";
+import { Center } from "@chakra-ui/react";
+import { DancingLogoLoader } from "@/components/DancingLogoLoader";
 import MobileWelcomeExperience from "@/pages/MobileWelcomeExperience";
 import Login from "@/pages/Login";
 import SignUp from "@/pages/SignUp";
 import Verify from "@/parent-app/auth/Verify";
 import AuthCallback from "@/pages/AuthCallback";
-import PrivacyPolicy from "@/pages/PrivacyPolicyPage";
-import TermsOfService from "@/pages/TermsOfServicePage";
+
+const PrivacyPolicy = lazy(() => import("@/pages/PrivacyPolicyPage"));
+const TermsOfService = lazy(() => import("@/pages/TermsOfServicePage"));
+
+const LegalLoadingFallback = () => (
+  <Center minH="100vh" bg="#F4F7FB">
+    <DancingLogoLoader size="md" />
+  </Center>
+);
 
 const publicRoutes: RouteObject[] = [
   {
@@ -49,23 +59,43 @@ const publicRoutes: RouteObject[] = [
   // Mobile legal policies
   {
     path: "/privacy-policy",
-    element: <PrivacyPolicy />,
+    element: (
+      <Suspense fallback={<LegalLoadingFallback />}>
+        <PrivacyPolicy />
+      </Suspense>
+    ),
   },
   {
     path: "/privacy",
-    element: <PrivacyPolicy />,
+    element: (
+      <Suspense fallback={<LegalLoadingFallback />}>
+        <PrivacyPolicy />
+      </Suspense>
+    ),
   },
   {
     path: "/terms-of-service",
-    element: <TermsOfService />,
+    element: (
+      <Suspense fallback={<LegalLoadingFallback />}>
+        <TermsOfService />
+      </Suspense>
+    ),
   },
   {
     path: "/terms",
-    element: <TermsOfService />,
+    element: (
+      <Suspense fallback={<LegalLoadingFallback />}>
+        <TermsOfService />
+      </Suspense>
+    ),
   },
   {
     path: "/terms-of-use",
-    element: <TermsOfService />,
+    element: (
+      <Suspense fallback={<LegalLoadingFallback />}>
+        <TermsOfService />
+      </Suspense>
+    ),
   },
   // Core authentication and registration
   {

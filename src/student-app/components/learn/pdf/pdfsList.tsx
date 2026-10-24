@@ -19,17 +19,22 @@ import {
   LuFileText,
   LuCircleCheck,
   LuSparkles,
+  LuShare2,
 } from "react-icons/lu";
 import { PiShootingStarDuotone } from "react-icons/pi";
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, lazy, Suspense } from "react";
 import { supabase } from "@/lib/supabaseClient";
 import PdfCustomThumbnail from "./PdfCustomThumbnail";
 import { getCurriculumNote } from "./curriculumStudyNotes";
-import NativePdfCanvasViewer from "./NativePdfCanvasViewer";
+import { DancingLogoLoader } from "@/components/DancingLogoLoader";
+
+// Lazy-load heavy PDF.js and jsPDF canvas viewer on demand
+const NativePdfCanvasViewer = lazy(() => import("./NativePdfCanvasViewer"));
 import { useSubscriptionEntitlement } from "@/hooks/useSubscriptionEntitlement";
 import { UpgradePromptModal } from "@/components/subscription/UpgradePromptModal";
 import { LockedBadge } from "@/components/subscription/LockedBadge";
 import { toaster } from "@/components/ui/toaster";
+import { downloadOrSavePdf, sharePdf } from "@/services/pdfMobileService";
 
 interface PDFsResource {
   id: string;
@@ -59,6 +64,7 @@ const PdfList = ({ topic, pdf, onBack }: Props) => {
   const [activeTab, setActiveTab] = useState<"notes" | "pdf">("pdf");
   const [pdfBlobUrl, setPdfBlobUrl] = useState<string | null>(null);
   const [isDownloading, setIsDownloading] = useState(false);
+  const [isSharing, setIsSharing] = useState(false);
 
   const {
     effectivePlan,
@@ -150,26 +156,34 @@ const PdfList = ({ topic, pdf, onBack }: Props) => {
 
     try {
       const directUrl = getPdfUrl(pdfFile);
-      const res = await fetch(directUrl);
-      if (!res.ok) throw new Error("Could not fetch file");
-
-      const blob = await res.blob();
-      const cleanFileName = `${pdfFile.title.replace(/[^a-zA-Z0-9_-]/g, "_")}_Study_Guide.pdf`;
-      const tempUrl = URL.createObjectURL(new Blob([blob], { type: "application/pdf" }));
-
-      const link = document.createElement("a");
-      link.href = tempUrl;
-      link.download = cleanFileName;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      URL.revokeObjectURL(tempUrl);
-    } catch (err) {
+      await downloadOrSavePdf({
+        url: directUrl,
+        title: pdfFile.title,
+        description: pdfFile.description,
+      });
+    } catch (err: any) {
       console.error("Download error:", err);
       // Direct window open fallback
       window.open(getPdfUrl(pdfFile), "_blank");
     } finally {
       setIsDownloading(false);
+    }
+  };
+
+  const handleSharePdf = async (pdfFile: PDFsResource, e?: React.MouseEvent) => {
+    if (e) e.stopPropagation();
+    setIsSharing(true);
+    try {
+      const directUrl = getPdfUrl(pdfFile);
+      await sharePdf({
+        url: directUrl,
+        title: pdfFile.title,
+        description: pdfFile.description,
+      });
+    } catch (err: any) {
+      console.error("Share error:", err);
+    } finally {
+      setIsSharing(false);
     }
   };
 
@@ -369,6 +383,21 @@ const PdfList = ({ topic, pdf, onBack }: Props) => {
                   >
                     <LuDownload size={14} />
                   </Button>
+
+                  <Button
+                    size="sm"
+                    variant="subtle"
+                    colorScheme="gray"
+                    fontSize="xs"
+                    fontWeight="600"
+                    rounded="xl"
+                    px={3}
+                    title="Share study guide"
+                    onClick={(e) => handleSharePdf(pdfFile, e)}
+                    loading={isSharing}
+                  >
+                    <LuShare2 size={14} />
+                  </Button>
                 </Flex>
               </Flex>
             );
@@ -492,6 +521,24 @@ const PdfList = ({ topic, pdf, onBack }: Props) => {
 
                         <Button
                           size="xs"
+                          variant="outline"
+                          borderColor="gray.300"
+                          color="gray.700"
+                          _hover={{ bg: "gray.50" }}
+                          rounded="lg"
+                          h="28px"
+                          px={2}
+                          display="inline-flex"
+                          onClick={() => handleSharePdf(selectedPDF)}
+                          loading={isSharing}
+                          title="Share study guide"
+                        >
+                          <LuShare2 size={13} style={{ marginRight: "4px" }} />
+                          Share
+                        </Button>
+
+                        <Button
+                          size="xs"
                           bg="blue.600"
                           color="white"
                           _hover={{ bg: "blue.700" }}
@@ -501,6 +548,7 @@ const PdfList = ({ topic, pdf, onBack }: Props) => {
                           display="inline-flex"
                           onClick={() => handleDownloadPdf(selectedPDF)}
                           loading={isDownloading}
+                          title="Save study guide to device"
                         >
                           <LuDownload size={13} style={{ marginRight: "4px" }} />
                           Save
@@ -709,13 +757,23 @@ const PdfList = ({ topic, pdf, onBack }: Props) => {
 
                 {selectedPDF && activeTab === "pdf" && (
                   <Box w="100%" h="100%" position="relative">
-                    <NativePdfCanvasViewer
-                      url={getPdfUrl(selectedPDF)}
-                      title={selectedPDF.title}
-                      onDownload={() => handleDownloadPdf(selectedPDF)}
-                      onOpenNotes={() => setActiveTab("notes")}
-                      onClose={handleCloseDialog}
-                    />
+                    <Suspense
+                      fallback={
+                        <Flex justify="center" align="center" minH="340px" p={8}>
+                          <DancingLogoLoader size="md" text="Loading PDF Viewer..." />
+                        </Flex>
+                      }
+                    >
+                      <NativePdfCanvasViewer
+                        url={getPdfUrl(selectedPDF)}
+                        title={selectedPDF.title}
+                        description={selectedPDF.description}
+                        onDownload={() => handleDownloadPdf(selectedPDF)}
+                        onShare={() => handleSharePdf(selectedPDF)}
+                        onOpenNotes={() => setActiveTab("notes")}
+                        onClose={handleCloseDialog}
+                      />
+                    </Suspense>
                   </Box>
                 )}
               </Dialog.Body>

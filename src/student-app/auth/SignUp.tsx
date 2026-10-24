@@ -348,7 +348,7 @@ function StudentSignUp() {
                     borderColor="gray.200"
                     borderRadius="xl"
                     h="11"
-                    fontSize="sm"
+                    fontSize={{ base: "16px", md: "sm" }}
                     px={4}
                     _focus={{ borderColor: "primaryColor", boxShadow: "0 0 0 1px #206CE1" }}
                     _placeholder={{ color: "gray.400" }}
@@ -383,7 +383,7 @@ function StudentSignUp() {
                   outline="none"
                   bg="white"
                   cursor="pointer"
-                  fontSize="sm"
+                  fontSize={{ base: "16px", md: "sm" }}
                   border="1px solid"
                   borderColor="gray.200"
                   borderRadius="xl"
@@ -391,7 +391,7 @@ function StudentSignUp() {
                   px={4}
                   _focus={{ borderColor: "primaryColor", boxShadow: "0 0 0 1px #206CE1" }}
                 >
-                  <Select.ValueText placeholder="Select gender" fontSize="sm" />
+                  <Select.ValueText placeholder="Select gender" fontSize={{ base: "16px", md: "sm" }} />
                 </Select.Trigger>
                 <Select.IndicatorGroup>
                   <Select.Indicator />
@@ -437,7 +437,7 @@ function StudentSignUp() {
                   outline="none"
                   bg="white"
                   cursor="pointer"
-                  fontSize="sm"
+                  fontSize={{ base: "16px", md: "sm" }}
                   border="1px solid"
                   borderColor="gray.200"
                   borderRadius="xl"
@@ -447,7 +447,7 @@ function StudentSignUp() {
                 >
                   <Select.ValueText
                     placeholder="Select Basic Language"
-                    fontSize="sm"
+                    fontSize={{ base: "16px", md: "sm" }}
                   />
                 </Select.Trigger>
                 <Select.IndicatorGroup>
@@ -494,7 +494,7 @@ function StudentSignUp() {
                   outline="none"
                   cursor="pointer"
                   bg="white"
-                  fontSize="sm"
+                  fontSize={{ base: "16px", md: "sm" }}
                   border="1px solid"
                   borderColor="gray.200"
                   borderRadius="xl"
@@ -502,7 +502,7 @@ function StudentSignUp() {
                   px={4}
                   _focus={{ borderColor: "primaryColor", boxShadow: "0 0 0 1px #206CE1" }}
                 >
-                  <Select.ValueText placeholder="Select Class" fontSize="sm" />
+                  <Select.ValueText placeholder="Select Class" fontSize={{ base: "16px", md: "sm" }} />
                 </Select.Trigger>
                 <Select.IndicatorGroup>
                   <Select.Indicator />
@@ -561,7 +561,7 @@ function StudentSignUp() {
                   outline="none"
                   bg="white"
                   cursor="pointer"
-                  fontSize="sm"
+                  fontSize={{ base: "16px", md: "sm" }}
                   border="1px solid"
                   borderColor="gray.200"
                   borderRadius="xl"
@@ -569,7 +569,7 @@ function StudentSignUp() {
                   px={4}
                   _focus={{ borderColor: "primaryColor", boxShadow: "0 0 0 1px #206CE1" }}
                 >
-                  <Select.ValueText placeholder="Select State" fontSize="sm" />
+                  <Select.ValueText placeholder="Select State" fontSize={{ base: "16px", md: "sm" }} />
                 </Select.Trigger>
                 <Select.IndicatorGroup>
                   <Select.Indicator />
@@ -616,7 +616,7 @@ function StudentSignUp() {
                   outline="none"
                   bg="white"
                   cursor="pointer"
-                  fontSize="sm"
+                  fontSize={{ base: "16px", md: "sm" }}
                   border="1px solid"
                   borderColor="gray.200"
                   borderRadius="xl"
@@ -628,7 +628,7 @@ function StudentSignUp() {
                     placeholder={
                       formData.state ? "Select LGA" : "Select State first"
                     }
-                    fontSize="sm"
+                    fontSize={{ base: "16px", md: "sm" }}
                   />
                 </Select.Trigger>
                 <Select.IndicatorGroup>
@@ -676,7 +676,7 @@ function StudentSignUp() {
                   outline="none"
                   bg="white"
                   cursor="pointer"
-                  fontSize="sm"
+                  fontSize={{ base: "16px", md: "sm" }}
                   border="1px solid"
                   borderColor="gray.200"
                   borderRadius="xl"
@@ -688,7 +688,7 @@ function StudentSignUp() {
                     placeholder={
                       formData.state ? "Select City" : "Select State first"
                     }
-                    fontSize="sm"
+                    fontSize={{ base: "16px", md: "sm" }}
                   />
                 </Select.Trigger>
                 <Select.IndicatorGroup>
@@ -734,7 +734,7 @@ function StudentSignUp() {
                 borderColor="gray.200"
                 borderRadius="xl"
                 h="11"
-                fontSize="sm"
+                fontSize={{ base: "16px", md: "sm" }}
                 px={4}
                 _focus={{ borderColor: "primaryColor", boxShadow: "0 0 0 1px #206CE1" }}
                 _placeholder={{ color: "gray.400" }}
@@ -775,7 +775,7 @@ function StudentSignUp() {
                         fontWeight="700"
                         h={{ base: "42px", sm: "46px" }}
                         w={{ base: "38px", sm: "44px" }}
-                        fontSize={{ base: "md", sm: "lg" }}
+                        fontSize={{ base: "16px", sm: "18px" }}
                         _focus={{ borderColor: "primaryColor", boxShadow: "0 0 0 1px #206CE1" }}
                       />
                     ))}

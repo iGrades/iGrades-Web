@@ -207,17 +207,19 @@ export const ParentClassChangeModal = ({
       display="flex"
       alignItems="center"
       justifyContent="center"
-      p={4}
+      p={{ base: 3, sm: 4 }}
+      pt={{ base: "max(calc(env(safe-area-inset-top, 0px) + 12px), 12px)", md: 4 }}
+      pb={{ base: "max(calc(env(safe-area-inset-bottom, 0px) + 12px), 12px)", md: 4 }}
     >
       <Box
         bg="white"
         borderRadius="2xl"
         boxShadow="2xl"
-        p={{ base: 5, md: 7 }}
+        p={{ base: 4, sm: 5, md: 7 }}
         maxW="560px"
         w="full"
         position="relative"
-        maxH="90vh"
+        maxH={{ base: "94dvh", md: "90vh" }}
         overflowY="auto"
       >
         {/* Header */}
