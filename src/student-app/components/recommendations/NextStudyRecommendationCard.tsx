@@ -185,23 +185,24 @@ export const NextStudyRecommendationCard: React.FC<NextStudyRecommendationCardPr
       my={4}
     >
       {/* Mobile Header */}
-      <Flex justify="space-between" align="center" mb={3.5}>
-        <Box>
+      <Flex justify="space-between" align="center" mb={3.5} gap={2}>
+        <Box minW={0} flex={1}>
           <Heading
             as="h2"
-            fontSize={{ base: "15px", md: "16px" }}
+            fontSize={{ base: "13.5px", sm: "15px", md: "16px" }}
             fontWeight="700"
             color="#1E293B"
-            lineHeight="shorter"
+            lineHeight="1.2"
+            whiteSpace="nowrap"
           >
             What should I study next?
           </Heading>
-          <Text fontSize="11px" color="#64748B" mt={0.5}>
+          <Text fontSize="11px" color="#64748B" mt={0.5} whiteSpace="nowrap" overflow="hidden" textOverflow="ellipsis">
             Tailored recommendation for {targetExam}
           </Text>
         </Box>
 
-        <HStack gap={1.5}>
+        <HStack gap={1.5} flexShrink={0}>
           <Box
             bg={config.bg}
             color={config.color}
@@ -210,6 +211,7 @@ export const NextStudyRecommendationCard: React.FC<NextStudyRecommendationCardPr
             borderRadius="full"
             fontSize="10.5px"
             fontWeight="700"
+            whiteSpace="nowrap"
           >
             {config.label}
           </Box>
@@ -280,7 +282,7 @@ export const NextStudyRecommendationCard: React.FC<NextStudyRecommendationCardPr
               <Icon as={FiHelpCircle} boxSize="12px" />
             </Box>
             <Text fontSize="11px" color="#1E40AF" lineHeight="1.35">
-              <strong>Why this matters:</strong> {recommendation.reason}
+              <strong>Why:</strong> {recommendation.reason}
             </Text>
           </Flex>
         )}

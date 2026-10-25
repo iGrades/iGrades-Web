@@ -240,8 +240,8 @@ export function generateRecommendations(input: RecommendationInput): StudyRecomm
         ? `Start Practicing ${dormantSubject.subjectName}`
         : `Complete a Short ${dormantSubject.subjectName} Practice Session`,
       description: isUntouched
-        ? `You haven't practiced ${dormantSubject.subjectName} yet. Complete a short 10-minute diagnostic session to set your benchmark.`
-        : `You haven't practiced ${dormantSubject.subjectName} recently. Complete a short 10-minute session to maintain retention and exam speed.`,
+        ? `Take a quick diagnostic quiz in ${dormantSubject.subjectName} to set your benchmark.`
+        : `Take a quick quiz in ${dormantSubject.subjectName} to keep your exam speed sharp.`,
       actionText: `Practice ${dormantSubject.subjectName}`,
       subjectId: dormantSubject.subjectId,
       subjectName: dormantSubject.subjectName,
@@ -254,7 +254,7 @@ export function generateRecommendations(input: RecommendationInput): StudyRecomm
         subjectId: dormantSubject.subjectId,
         subjectName: dormantSubject.subjectName,
       },
-      reason: `Consistent subject rotation prevents memory decay and ensures balanced readiness across all ${targetExam} subjects.`,
+      reason: `Rotating subjects keeps your knowledge sharp across all ${targetExam} topics.`,
       parentSummary: `${dormantSubject.subjectName} needs recent attention. Encourage ${sName} to complete a short 10-minute practice session.`,
       sparkPromptHint: `The student is starting a practice session in ${dormantSubject.subjectName}. Help them test their recall on core concepts.`,
     });
@@ -348,7 +348,7 @@ export function generateRecommendations(input: RecommendationInput): StudyRecomm
       id: "rec-starter-quiz",
       type: "subject",
       title: `Start Your ${targetExam} Diagnostic Quiz`,
-      description: `Complete your first 10-question practice set in ${defaultSubject} to benchmark your baseline readiness.`,
+      description: `Take a quick 10-question quiz in ${defaultSubject} to benchmark your readiness.`,
       actionText: `Start ${defaultSubject} Quiz`,
       subjectName: defaultSubject,
       priority: "high",
@@ -358,7 +358,7 @@ export function generateRecommendations(input: RecommendationInput): StudyRecomm
       actionTarget: {
         page: "quiz",
       },
-      reason: `Completing your first practice set allows Spark and your learning dashboard to tailor your study plan.`,
+      reason: `This helps Spark personalize your study recommendations.`,
       parentSummary: `Encourage ${sName} to complete their first diagnostic quiz to establish their baseline study plan for ${targetExam}.`,
       sparkPromptHint: `This is a diagnostic quiz session. Welcome the student warmly and encourage them to try their best.`,
     });

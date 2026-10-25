@@ -68,25 +68,8 @@ export const isProductionWeb = (): boolean => {
   return !isNativeMobile() && !isWebDevelopment();
 };
 
-/**
- * Default production backend endpoint for iGrades.
- */
-export const DEFAULT_API_BASE_URL = "https://igrades-web.onrender.com";
-
 export const getApiBaseUrl = (): string => {
-  // Read API_BASE_URL without 'VITE' prefix as configured in secrets/environment
-  const envUrl = (
-    (typeof import.meta !== "undefined" && (import.meta.env as any)?.API_BASE_URL) ||
-    (typeof import.meta !== "undefined" && (import.meta.env as any)?.BASE_API_URL) ||
-    (typeof import.meta !== "undefined" && import.meta.env?.VITE_API_BASE_URL) ||
-    DEFAULT_API_BASE_URL
-  ).trim();
-
-  if (envUrl) {
-    return envUrl.replace(/\/+$/, "");
-  }
-
-  return DEFAULT_API_BASE_URL;
+  return "";
 };
 
 /**
@@ -94,7 +77,5 @@ export const getApiBaseUrl = (): string => {
  * @param path Relative path, e.g. "/api/spark-chat" or "api/award-points"
  */
 export const apiUrl = (path: string): string => {
-  const base = getApiBaseUrl();
-  const cleanPath = path.startsWith("/") ? path : `/${path}`;
-  return base ? `${base}${cleanPath}` : cleanPath;
+  return path.startsWith("/") ? path : `/${path}`;
 };

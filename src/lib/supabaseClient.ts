@@ -8,39 +8,19 @@ const supabaseUrl =
   "https://jmjballgaxelqhsvhlvl.supabase.co";
 const supabaseAnonKey =
   (typeof import.meta !== "undefined" && (import.meta.env?.SUPABASE_ANON_KEY as string)) ||
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.dummy_anon_key";
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImptamJhbGxnYXhlbHFoc3ZobHZsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg5NjA2NjAsImV4cCI6MjA2NDUzNjY2MH0.Roav4e8Yx7KXw5KtgZEFToi89HCHio9rRnEPWq-ngj4";
 
 /**
  * Determines whether Supabase queries should route through the same-origin Express proxy.
  *
- * Environment matrix:
- * 1. Capacitor Native Mobile (iOS / Android):
- *    - MUST NEVER use the development /api/supabase-proxy endpoint.
- *    - Connects directly to the configured Supabase HTTPS endpoint using the anon key.
- *    - Preserves native SSL, Auth, RLS, and avoids non-existent local or remote proxy latency.
- *    - Returns false.
- *
- * 2. Deployed Production Web (e.g. igrades.org, Vercel SPA):
- *    - Static hosting where server.ts does not run.
- *    - Connects directly to Supabase over HTTPS.
- *    - Returns false.
- *
- * 3. Local Web Development & Sandboxed Preview Environments:
- *    - Retained ONLY where the existing web architecture genuinely requires it:
- *      Local development with Express dev server or Cloud Run sandbox preview (*.run.app)
- *      to handle iframe cross-origin restrictions and preview headers.
- *    - Returns true (with automatic fallback to direct Supabase if proxy is not deployed).
+ * Capacitor Native Mobile (Android APK / iOS) must ALWAYS connect directly
+ * to the Supabase HTTPS endpoint. Only Cloud Run sandboxed previews (*.run.app)
+ * use the proxy.
  */
 export const shouldUseProxy = (): boolean => {
   if (typeof window === "undefined") return false;
-
-  // 1. Capacitor Native Mobile: Never use dev proxy
-  if (isNativeMobile()) {
-    return false;
-  }
-
-  // 2. Web development and sandboxed container previews only
-  return isWebDevelopment();
+  const hostname = window.location.hostname || "";
+  return hostname.endsWith(".run.app");
 };
 
 const customFetch: typeof fetch = async (input, init) => {

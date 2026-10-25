@@ -152,126 +152,121 @@ const MyClasses = () => {
   const displayActiveClasses = isLoading ? "..." : activeClassesCount;
 
   return (
-    <Flex w="full">
+    <Flex
+      w="full"
+      direction="row"
+      justify="space-between"
+      alignItems="stretch"
+      gap={{ base: 2.5, sm: 3.5, md: 4 }}
+      mt={{ base: 0.5, md: 1 }}
+      mb={{ base: 2, md: 2.5 }}
+    >
+      {/* Registered Courses Card */}
       <Box
+        display="flex"
+        flexDirection="row"
+        alignItems="center"
+        flex={1}
+        minW={0}
+        h={{ base: "116px", sm: "128px", md: "138px" }}
+        minH={{ base: "116px", sm: "128px", md: "138px" }}
         bg="white"
         border="1px solid"
         borderColor="gray.100"
         borderRadius="2xl"
         boxShadow="0 1px 3px rgba(0, 0, 0, 0.04)"
-        w="full"
-        my={4}
-        p={{ base: 4, sm: 5 }}
+        p={{ base: 3, sm: 4 }}
+        gap={{ base: 2.5, sm: 3.5 }}
       >
-        <Heading
-          as="h2"
-          fontSize={{ base: "15px", md: "16px" }}
-          fontWeight="700"
-          color="#1E293B"
-          mb={3.5}
-        >
-          {t("my_classes", "My Classes")}
-        </Heading>
-
-        <Flex
-          direction="row"
-          justify="space-between"
-          alignItems="stretch"
-          gap={{ base: 3, sm: 4 }}
-          w="full"
-        >
-          {/* Registered Courses Card */}
-          <Box
-            display="flex"
-            alignItems="center"
-            flex={1}
-            minW={0}
-            bg="#F4F7FB"
-            borderRadius="xl"
-            p={{ base: 3, sm: 4, md: 5 }}
+        <Image
+          src={childrenBox_ico}
+          boxSize={{ base: "44px", sm: "48px", md: "52px" }}
+          flexShrink={0}
+          alt="Registered courses"
+        />
+        <Box minW={0} flex={1}>
+          <Text
+            fontSize={{ base: "11.5px", sm: "12.5px", md: "13px" }}
+            color="#475569"
+            fontWeight="500"
+            lineHeight="1.2"
+            whiteSpace="nowrap"
+            overflow="hidden"
+            textOverflow="ellipsis"
           >
-            <Image
-              src={childrenBox_ico}
-              boxSize={{ base: "38px", sm: "44px", md: "50px" }}
-              flexShrink={0}
-              alt="Registered courses"
-            />
-            <Box ml={{ base: 2.5, sm: 3.5, md: 4 }} minW={0} flex={1}>
-              <Text
-                fontSize={{ base: "11px", sm: "12px", md: "13px" }}
-                color="#64748B"
-                fontWeight="500"
-                lineHeight="1.25"
-                whiteSpace="normal"
-                wordBreak="normal"
-              >
-                {t("registered_courses", "Registered courses")}
-              </Text>
-              <Heading
-                as="h3"
-                fontSize={{ base: "20px", sm: "24px", md: "26px" }}
-                fontWeight="800"
-                color="#1E293B"
-                lineHeight="1.1"
-                mt={0.5}
-              >
-                {coursesCount < 10 ? `0${coursesCount}` : coursesCount}
-              </Heading>
-            </Box>
-          </Box>
-
-          {/* Active Classes Card */}
-          <Tooltip
-            content={
-              recentActivity.length > 0
-                ? `Recently active: ${recentActivity.map((a) => a.subject).join(", ")}`
-                : "No recent activity in any courses"
-            }
+            {t("registered_courses", "Registered Courses")}
+          </Text>
+          <Heading
+            as="h3"
+            fontSize={{ base: "22px", sm: "25px", md: "28px" }}
+            fontWeight="800"
+            color="#1E293B"
+            lineHeight="1.1"
+            mt={1}
           >
-            <Box
-              display="flex"
-              alignItems="center"
-              flex={1}
-              minW={0}
-              bg="#F4F7FB"
-              borderRadius="xl"
-              p={{ base: 3, sm: 4, md: 5 }}
-              cursor="help"
-            >
-              <Image
-                src={activeChildrenBox_ico}
-                boxSize={{ base: "38px", sm: "44px", md: "50px" }}
-                flexShrink={0}
-                alt="Active classes"
-              />
-              <Box ml={{ base: 2.5, sm: 3.5, md: 4 }} minW={0} flex={1}>
-                <Text
-                  fontSize={{ base: "11px", sm: "12px", md: "13px" }}
-                  color="#64748B"
-                  fontWeight="500"
-                  lineHeight="1.25"
-                  whiteSpace="normal"
-                  wordBreak="normal"
-                >
-                  {t("active_classes", "Active classes")}
-                </Text>
-                <Heading
-                  as="h3"
-                  fontSize={{ base: "20px", sm: "24px", md: "26px" }}
-                  fontWeight="800"
-                  color="#1E293B"
-                  lineHeight="1.1"
-                  mt={0.5}
-                >
-                  {typeof displayActiveClasses === "number" && displayActiveClasses < 10
-                    ? `0${displayActiveClasses}`
-                    : displayActiveClasses}
-                </Heading>
-              </Box>
-            </Box>
-          </Tooltip>
-        </Flex>
+            {coursesCount < 10 ? `0${coursesCount}` : coursesCount}
+          </Heading>
+        </Box>
       </Box>
+
+      {/* Active Classes Card */}
+      <Tooltip
+        content={
+          recentActivity.length > 0
+            ? `Recently active: ${recentActivity.map((a) => a.subject).join(", ")}`
+            : "No recent activity in any courses"
+        }
+      >
+        <Box
+          display="flex"
+          flexDirection="row"
+          alignItems="center"
+          flex={1}
+          minW={0}
+          h={{ base: "116px", sm: "128px", md: "138px" }}
+          minH={{ base: "116px", sm: "128px", md: "138px" }}
+          bg="white"
+          border="1px solid"
+          borderColor="gray.100"
+          borderRadius="2xl"
+          boxShadow="0 1px 3px rgba(0, 0, 0, 0.04)"
+          p={{ base: 3, sm: 4 }}
+          gap={{ base: 2.5, sm: 3.5 }}
+          cursor="help"
+        >
+          <Image
+            src={activeChildrenBox_ico}
+            boxSize={{ base: "44px", sm: "48px", md: "52px" }}
+            flexShrink={0}
+            alt="Active classes"
+          />
+          <Box minW={0} flex={1}>
+            <Text
+              fontSize={{ base: "11.5px", sm: "12.5px", md: "13px" }}
+              color="#475569"
+              fontWeight="500"
+              lineHeight="1.2"
+              whiteSpace="nowrap"
+              overflow="hidden"
+              textOverflow="ellipsis"
+            >
+              {t("active_classes", "Active Classes")}
+            </Text>
+            <Heading
+              as="h3"
+              fontSize={{ base: "22px", sm: "25px", md: "28px" }}
+              fontWeight="800"
+              color="#1E293B"
+              lineHeight="1.1"
+              mt={1}
+            >
+              {typeof displayActiveClasses === "number" && displayActiveClasses < 10
+                ? `0${displayActiveClasses}`
+                : displayActiveClasses}
+            </Heading>
+          </Box>
+        </Box>
+      </Tooltip>
     </Flex>
   );
 };

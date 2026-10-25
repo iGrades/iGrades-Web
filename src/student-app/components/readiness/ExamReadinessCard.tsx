@@ -137,7 +137,7 @@ export const ExamReadinessCard = ({ readiness, loading }: Props) => {
             Not enough practice data yet
           </Heading>
           <Text fontSize="11px" color="#64748B" maxW="360px" mx="auto" mb={3}>
-            Take at least 1 practice quiz (10 questions) to compute your verified readiness score for {targetExam}.
+            Take 1 practice quiz to compute your {targetExam} readiness score.
           </Text>
           <Button
             size="sm"

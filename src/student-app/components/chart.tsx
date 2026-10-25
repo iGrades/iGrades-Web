@@ -51,6 +51,41 @@ const generateInitialMonths = (): QuizProgressData[] => {
   return result;
 };
 
+const renderXAxisTick = (props: any) => {
+  const { x, y, payload } = props;
+  const val = payload?.value ? String(payload.value).slice(0, 3) : "";
+  return (
+    <text
+      x={x}
+      y={y + 9}
+      textAnchor="middle"
+      fill="#94A3B8"
+      fontSize="8px"
+      fontWeight="500"
+      style={{ fontSize: "8px", fill: "#94A3B8" }}
+    >
+      {val}
+    </text>
+  );
+};
+
+const renderYAxisTick = (props: any) => {
+  const { x, y, payload } = props;
+  return (
+    <text
+      x={x}
+      y={y + 3}
+      textAnchor="end"
+      fill="#94A3B8"
+      fontSize="8px"
+      fontWeight="500"
+      style={{ fontSize: "8px", fill: "#94A3B8" }}
+    >
+      {payload?.value}%
+    </text>
+  );
+};
+
 const HomeChart = () => {
   const [quizProgress, setQuizProgress] = useState<QuizProgressData[]>(generateInitialMonths);
   const [subjects, setSubjects] = useState<SubjectData[]>([]);
@@ -333,7 +368,8 @@ const HomeChart = () => {
       w="full"
       my={4}
       minW="0"
-      p={{ base: 4, sm: 5 }}
+      p={{ base: 4, sm: 5, md: 6 }}
+      minH={{ base: "290px", sm: "320px", md: "350px" }}
       h="auto"
       display="flex"
       flexDirection="column"
@@ -369,11 +405,22 @@ const HomeChart = () => {
         )}
       </Flex>
 
-      <Box w="100%" h={{ base: "190px", sm: "210px", md: "240px" }} minH="180px" position="relative">
-        <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={180}>
+      <Box
+        w="100%"
+        h={{ base: "240px", sm: "270px", md: "300px" }}
+        minH="220px"
+        position="relative"
+        css={{
+          "& .recharts-surface": { overflow: "visible !important" },
+          "& .recharts-wrapper": { overflow: "visible !important" },
+          "& .recharts-cartesian-axis-tick text": { fontSize: "8px !important" },
+          "& text.recharts-text": { fontSize: "8px !important" },
+        }}
+      >
+        <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={220}>
           <AreaChart
             data={quizProgress}
-            margin={{ top: 10, right: 10, left: 0, bottom: 0 }}
+            margin={{ top: 14, right: 14, left: 6, bottom: 4 }}
           >
             <defs>
               <linearGradient id="studentQuizGradient" x1="0" y1="0" x2="0" y2="1">
@@ -384,18 +431,17 @@ const HomeChart = () => {
             <CartesianGrid strokeDasharray="3 3" stroke="#F1F5F9" vertical={false} />
             <XAxis
               dataKey="month"
-              tickFormatter={(v) => (v ? v.slice(0, 3) : "")}
               axisLine={false}
               tickLine={false}
-              tick={{ fill: "#94A3B8", fontSize: 7.5 }}
+              tick={renderXAxisTick}
+              interval={0}
             />
             <YAxis
               domain={[0, 100]}
               width={32}
-              tickFormatter={(v) => `${v}%`}
               axisLine={false}
               tickLine={false}
-              tick={{ fill: "#94A3B8", fontSize: 6.5 }}
+              tick={renderYAxisTick}
             />
             <Tooltip content={<CustomTooltip />} />
             <Area
@@ -433,12 +479,6 @@ const HomeChart = () => {
             </Flex>
           ))}
         </Flex>
-      )}
-
-      {totalAttempts === 0 && (
-        <Text fontSize="11px" color="gray.400" textAlign="left" mt={2} flexShrink={0}>
-          Take quizzes in your subjects to grow your monthly performance trend
-        </Text>
       )}
     </Box>
   );

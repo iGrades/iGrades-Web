@@ -256,40 +256,49 @@ const Analytics = () => {
 
         {/* First glance: SHOWS ONLY ONE SUBJECT (the course with the highest percentage) */}
         {topCourse ? (
-          <Box px={0} py={0}>
-            <Flex justify="space-between" align="center" mb={1}>
-              <HStack gap={2}>
+          <Box px={0} py={0.5}>
+            <Flex justify="space-between" align="center">
+              <HStack gap={2.5}>
                 <Flex
                   align="center"
                   justify="center"
                   bg={getCourseColor(topCourse.dbCourseName)}
                   color="white"
-                  h="25px"
-                  w="25px"
+                  h="26px"
+                  w="26px"
                   rounded="md"
                   flexShrink={0}
                 >
                   <RiCompassesLine size={14} />
                 </Flex>
-                <Box>
-                  <Text fontSize="12px" fontWeight="600" textTransform="capitalize" color="gray.800" lineHeight="1.15">
+                <Box minW={0}>
+                  <Text
+                    fontSize="12px"
+                    fontWeight="600"
+                    textTransform="capitalize"
+                    color="gray.800"
+                    lineHeight="1.2"
+                    mb={1}
+                  >
                     {topCourse.title}
                   </Text>
-                  <Text fontSize="10px" color="gray.400" lineHeight="1.15">
-                    {topCourse.watchedVideos} of {topCourse.totalVideos} lessons completed
-                  </Text>
+                  {/* Range bar matching length of subject title */}
+                  <Box w="100%" minW="85px" maxW="130px">
+                    <Progress.Root value={topCourse.progress} size="xs">
+                      <Progress.Track bg="gray.100" h="3.5px" borderRadius="full">
+                        <Progress.Range
+                          bg={getCourseColor(topCourse.dbCourseName)}
+                          borderRadius="full"
+                        />
+                      </Progress.Track>
+                    </Progress.Root>
+                  </Box>
                 </Box>
               </HStack>
               <Text fontSize="12px" fontWeight="700" color="gray.700">
                 {topCourse.progress}%
               </Text>
             </Flex>
-
-            <Progress.Root value={topCourse.progress} colorPalette="cyan" size="xs">
-              <Progress.Track flex="1" bg="gray.100" h="3.5px" borderRadius="full">
-                <Progress.Range bg="#288AE4" borderRadius="full" />
-              </Progress.Track>
-            </Progress.Root>
           </Box>
         ) : (
           <Text fontSize="xs" color="gray.400" py={1} textAlign="center">
@@ -398,7 +407,7 @@ const Analytics = () => {
                   _hover={{ bg: "gray.100/60" }}
                   transition="background 0.15s ease"
                 >
-                  <Flex justify="space-between" align="center" mb={2}>
+                  <Flex justify="space-between" align="center">
                     <HStack gap={3}>
                       <Flex
                         align="center"
@@ -412,30 +421,33 @@ const Analytics = () => {
                       >
                         <RiCompassesLine size={20} />
                       </Flex>
-                      <Box>
+                      <Box minW={0}>
                         <Text
                           fontSize="sm"
                           fontWeight="600"
                           textTransform="capitalize"
                           color="gray.800"
+                          mb={1.5}
                         >
                           {course.title}
                         </Text>
-                        <Text fontSize="2xs" color="gray.500">
-                          {course.watchedVideos} of {course.totalVideos} lessons completed
-                        </Text>
+                        {/* Range bar matching length of subject title */}
+                        <Box w="100%" minW="95px" maxW="150px">
+                          <Progress.Root value={course.progress} size="xs">
+                            <Progress.Track bg="gray.200" h="5px" borderRadius="full">
+                              <Progress.Range
+                                bg={getCourseColor(course.dbCourseName)}
+                                borderRadius="full"
+                              />
+                            </Progress.Track>
+                          </Progress.Root>
+                        </Box>
                       </Box>
                     </HStack>
                     <Text fontSize="sm" fontWeight="700" color="gray.800">
                       {course.progress}%
                     </Text>
                   </Flex>
-
-                  <Progress.Root value={course.progress} colorPalette="cyan" size="sm">
-                    <Progress.Track flex="1" bg="gray.200" h="7px" borderRadius="full">
-                      <Progress.Range bg="#288AE4" borderRadius="full" />
-                    </Progress.Track>
-                  </Progress.Root>
                 </Box>
               ))}
             </Box>

@@ -183,21 +183,30 @@ const ChildrenLogin = ({ setAlert }: Props) => {
               6 digits
             </Text>
           </Flex>
-          <HStack justify="center" gap={{ base: 1.5, sm: 2.5 }} mb={4} w="full">
+          <Box mb={4} w="full">
             <PinInput.Root
               size="md"
               value={passcode}
               onValueChange={handlePasscodeChange}
             >
               <PinInput.HiddenInput />
-              <PinInput.Control>
+              <PinInput.Control
+                style={{
+                  width: "100%",
+                  display: "flex",
+                  justifyContent: "space-between",
+                  gap: "8px",
+                }}
+              >
                 {Array.from({ length: 6 }, (_, index) => (
                   <PinInput.Input
                     key={index}
                     index={index}
                     fontSize={{ base: "16px", sm: "18px" }}
                     fontWeight="700"
-                    width={{ base: "38px", sm: "46px" }}
+                    flex={1}
+                    width="100%"
+                    maxW="56px"
                     height={{ base: "44px", sm: "48px" }}
                     borderRadius="xl"
                     bg="gray.50"
@@ -215,7 +224,7 @@ const ChildrenLogin = ({ setAlert }: Props) => {
                 ))}
               </PinInput.Control>
             </PinInput.Root>
-          </HStack>
+          </Box>
         </Box>
       </Grid>
       <Flex justify="center" my={4}>

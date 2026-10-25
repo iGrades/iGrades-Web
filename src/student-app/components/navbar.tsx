@@ -83,16 +83,16 @@ const Navbar = () => {
   const fullName = `${currentStudent?.firstname ?? ""} ${currentStudent?.lastname ?? ""}`.trim() || "Student";
 
   return (
-    <Box position="sticky" top="0" zIndex="1000" bg="white" shadow="xs" borderBottom="1px solid" borderColor="gray.100" pt="env(safe-area-inset-top, 0px)">
+    <Box position="sticky" top="0" zIndex="1000" bg="white" shadow="none" boxShadow="none" borderBottom="1px solid" borderColor="gray.100" pt="env(safe-area-inset-top, 0px)">
       <Flex
         as="nav"
         align="center"
         justify="space-between"
-        h={{ base: "56px", md: "64px" }}
+        h={{ base: "48px", md: "54px" }}
         px={{ base: 3, md: 6 }}
       >
         {/* Left Section: Profile Avatar & Greeting 'Hello {userfirstname}' */}
-        <HStack gap={{ base: 2.5, sm: 3 }} align="center">
+        <HStack gap={{ base: 3.5, sm: 4.5 }} align="center">
           {/* User Profile Avatar with Clickable Menu */}
           <Menu.Root positioning={{ placement: "bottom-start" }}>
             <Menu.Trigger asChild>
@@ -102,14 +102,15 @@ const Navbar = () => {
                 cursor="pointer"
                 _hover={{ ring: "2px solid", ringColor: "blue.300" }}
                 transition="all 0.15s ease"
-                minW="38px"
-                minH="38px"
+                boxSize="30px"
+                minW="30px"
+                minH="30px"
                 display="flex"
                 alignItems="center"
                 justifyContent="center"
                 aria-label="User profile and settings"
               >
-                <AvatarComp username={fullName} profileImage={currentStudent?.profile_image} />
+                <AvatarComp username={fullName} profileImage={currentStudent?.profile_image} size="sm" />
               </Box>
             </Menu.Trigger>
             <Portal>
@@ -249,20 +250,20 @@ const Navbar = () => {
                   variant="ghost"
                   borderRadius="full"
                   size="sm"
-                  h="38px"
-                  w="38px"
+                  h="32px"
+                  w="32px"
                   color="gray.600"
                   _hover={{ bg: "gray.100", color: "blue.600" }}
                 >
-                  <FiBell size={20} />
+                  <FiBell size={18} />
                 </IconButton>
                 {unreadCount > 0 && (
                   <Box
                     position="absolute"
-                    top="5px"
-                    right="5px"
-                    w="8px"
-                    h="8px"
+                    top="3px"
+                    right="3px"
+                    w="7px"
+                    h="7px"
                     bg="blue.500"
                     borderRadius="full"
                     border="2px solid white"

@@ -16,7 +16,7 @@ const Homepage = () => {
   );
 
   return (
-    <Box pt={2} pb={{ base: 28, md: 12 }}>
+    <Box pt={0} pb={{ base: 28, md: 12 }}>
       <Box w={{ base: "95%", xl: "92%" }} maxW="1200px" m="auto">
         {/* 1. Number of courses and registered courses */}
         <MyClasses />

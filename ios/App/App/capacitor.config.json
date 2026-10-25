@@ -41,6 +41,7 @@
 	"packageClassList": [
 		"KeepAwakePlugin",
 		"AppPlugin",
+		"CAPBrowserPlugin",
 		"HapticsPlugin",
 		"KeyboardPlugin",
 		"StatusBarPlugin"

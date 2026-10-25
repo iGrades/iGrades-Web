@@ -6,6 +6,7 @@ import { DancingLogoLoader } from "@/components/DancingLogoLoader";
 import { useAuthdStudentData } from "@/student-app/context/studentDataContext";
 import { useUser } from "@/parent-app/context/parentDataContext";
 import { recordActivity } from "@/lib/authSessionManager";
+import { isNativeMobile } from "@/lib/apiConfig";
 
 export default function AuthCallback() {
   const navigate = useNavigate();
@@ -142,6 +143,14 @@ export default function AuthCallback() {
       localStorage.setItem("authdStudent", JSON.stringify(student));
       recordActivity(true);
       const studentName = student.firstname || firstName || "Student";
+      if (!isNativeMobile() && /Android|iPhone|iPad/i.test(navigator?.userAgent || "")) {
+        const mobileTarget = `com.igrades.app://auth/callback${window.location.search}${window.location.hash}`;
+        try {
+          window.location.href = mobileTarget;
+        } catch {
+          // ignore
+        }
+      }
       navigate(studentName ? `/student-dashboard/${studentName}` : "/student-dashboard", { replace: true });
     };
 
@@ -174,6 +183,14 @@ export default function AuthCallback() {
         console.warn("Notice refreshing parent state:", pErr);
       }
       const parentName = parent.firstname || firstName || "Parent";
+      if (!isNativeMobile() && /Android|iPhone|iPad/i.test(navigator?.userAgent || "")) {
+        const mobileTarget = `com.igrades.app://auth/callback${window.location.search}${window.location.hash}`;
+        try {
+          window.location.href = mobileTarget;
+        } catch {
+          // ignore
+        }
+      }
       navigate(parentName ? `/parent-dashboard/${parentName}` : "/parent-dashboard", { replace: true });
     };
 

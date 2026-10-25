@@ -312,13 +312,14 @@ function StudentSignUp() {
       <Box as="section" bg="white" w="full" m="auto">
         <form onSubmit={handleSubmit}>
           <Grid
-            templateColumns={{ base: "repeat(1, 1fr)", md: "repeat(2, 1fr)" }}
+            templateColumns={{ base: "1fr", md: "repeat(2, minmax(0, 1fr))" }}
             gap="4"
             my="4"
+            w="full"
           >
             {["firstname", "lastname", "email", "date_of_birth"].map(
               (index, field) => (
-                <Field.Root key={field}>
+                <Field.Root key={field} minW="0" w="full">
                   <Field.Label
                     color="#334155"
                     fontSize="sm"
@@ -710,7 +711,7 @@ function StudentSignUp() {
             </Select.Root>
 
             {/* Street Address input */}
-            <Box>
+            <Box minW="0" w="full">
               <label
                 htmlFor="street_address"
                 style={{
@@ -734,6 +735,7 @@ function StudentSignUp() {
                 borderColor="gray.200"
                 borderRadius="xl"
                 h="11"
+                w="full"
                 fontSize={{ base: "16px", md: "sm" }}
                 px={4}
                 _focus={{ borderColor: "primaryColor", boxShadow: "0 0 0 1px #206CE1" }}
@@ -741,47 +743,59 @@ function StudentSignUp() {
               />
             </Box>
 
-            <Box gridColumn={{ base: "span 1", md: "span 2" }}>
-              <label
-                htmlFor="passcode"
-                style={{
-                  fontSize: "13px",
-                  fontWeight: "600",
-                  color: "#334155",
-                  marginBottom: "8px",
-                  display: "block",
-                  textAlign: "center",
-                }}
-              >
-                Passkey (6 digits)
-              </label>
-
-              <Flex justify="center" align="center" py={1}>
-                <PinInput.Root
-                  size="md"
-                  value={passkey}
-                  onValueChange={(e) => setPassKey(e.value)}
+            {/* Passkey (beside Street Address) */}
+            <Box minW="0" w="full">
+              <Flex justify="space-between" align="baseline" mb="6px">
+                <label
+                  htmlFor="passcode"
+                  style={{
+                    fontSize: "14px",
+                    fontWeight: "600",
+                    color: "#334155",
+                    display: "block",
+                  }}
                 >
-                  <PinInput.HiddenInput />
-                  <PinInput.Control style={{ gap: "6px", display: "flex", justifyContent: "center" }}>
-                    {[0, 1, 2, 3, 4, 5].map((idx) => (
-                      <PinInput.Input
-                        key={idx}
-                        index={idx}
-                        bg="gray.50"
-                        border="1px solid"
-                        borderColor="gray.200"
-                        borderRadius="xl"
-                        fontWeight="700"
-                        h={{ base: "42px", sm: "46px" }}
-                        w={{ base: "38px", sm: "44px" }}
-                        fontSize={{ base: "16px", sm: "18px" }}
-                        _focus={{ borderColor: "primaryColor", boxShadow: "0 0 0 1px #206CE1" }}
-                      />
-                    ))}
-                  </PinInput.Control>
-                </PinInput.Root>
+                  Passkey
+                </label>
+                <Text color="gray.400" fontSize="2xs">
+                  6 digits
+                </Text>
               </Flex>
+
+              <PinInput.Root
+                size="md"
+                value={passkey}
+                onValueChange={(e) => setPassKey(e.value)}
+              >
+                <PinInput.HiddenInput />
+                <PinInput.Control
+                  style={{
+                    width: "100%",
+                    display: "flex",
+                    justifyContent: "space-between",
+                    gap: "6px",
+                  }}
+                >
+                  {[0, 1, 2, 3, 4, 5].map((idx) => (
+                    <PinInput.Input
+                      key={idx}
+                      index={idx}
+                      flex={1}
+                      minW="0"
+                      width="100%"
+                      maxW="56px"
+                      h="11"
+                      bg="gray.50"
+                      border="1px solid"
+                      borderColor="gray.200"
+                      borderRadius="xl"
+                      fontWeight="700"
+                      fontSize={{ base: "14px", sm: "16px" }}
+                      _focus={{ borderColor: "primaryColor", boxShadow: "0 0 0 1px #206CE1" }}
+                    />
+                  ))}
+                </PinInput.Control>
+              </PinInput.Root>
             </Box>
           </Grid>
 

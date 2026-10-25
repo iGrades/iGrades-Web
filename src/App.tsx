@@ -12,6 +12,9 @@ import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
 import routes from "./routes";
 
+import { App as CapApp } from "@capacitor/app";
+import { Browser } from "@capacitor/browser";
+
 function App() {
   const element = useRoutes(routes);
   const location = useLocation();
@@ -26,9 +29,37 @@ function App() {
     const handleReopenIntro = () => setShowWalkthrough(true);
     window.addEventListener("open-walkthrough-screens", handleReopenIntro);
 
+    // Deep link listener for native OAuth returns (com.igrades.app://)
+    let removeListener: (() => void) | null = null;
+    const setupDeepLinks = async () => {
+      try {
+        const listener = await CapApp.addListener("appUrlOpen", async (event) => {
+          try {
+            await Browser.close();
+          } catch {
+            // ignore if browser was not open
+          }
+
+          const rawUrl = event.url;
+          if (!rawUrl) return;
+
+          if (rawUrl.includes("auth/callback") || rawUrl.includes("access_token") || rawUrl.includes("code=")) {
+            const dummy = new URL(rawUrl.replace(/^[a-z0-9.-]+:\/\/[^/]+/i, "https://dummy.local"));
+            const targetPath = `/auth/callback${dummy.search}${dummy.hash}`;
+            window.location.href = targetPath;
+          }
+        });
+        removeListener = () => listener.remove();
+      } catch (err) {
+        console.warn("Notice setting up deep link listener:", err);
+      }
+    };
+    setupDeepLinks();
+
     return () => {
       cleanupTracker();
       window.removeEventListener("open-walkthrough-screens", handleReopenIntro);
+      if (removeListener) removeListener();
     };
   }, []);
 
@@ -51,17 +82,6 @@ function App() {
 
   const handleSplashFinish = () => {
     setShowSplash(false);
-    const isAuthDashboard =
-      location.pathname.startsWith("/student-dashboard") ||
-      location.pathname.startsWith("/parent-dashboard") ||
-      location.pathname.startsWith("/admin");
-    const hasCompleted = localStorage.getItem("igrades_onboarding_completed") === "true";
-    const forceIntro = new URLSearchParams(window.location.search).get("intro") === "true";
-
-    // Show walkthrough if not already on authenticated dashboard, or if forced
-    if (!isAuthDashboard && (!hasCompleted || forceIntro)) {
-      setShowWalkthrough(true);
-    }
   };
 
   return (

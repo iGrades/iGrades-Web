@@ -17,6 +17,7 @@ import { FaApple } from "react-icons/fa";
 import ParentLogin from "@/parent-app/auth/Login";
 import StudentLogin from "@/student-app/auth/Login";
 import { supabase } from "@/lib/supabaseClient";
+import { initiateGoogleOAuth, initiateAppleOAuth } from "@/lib/oauthManager";
 import {
   isSessionExpired,
   clearAllLocalSessionData,
@@ -138,48 +139,20 @@ export default function Login({ initialType }: LoginProps) {
 
   const handleGoogleLogin = async () => {
     setIsGoogleLoading(true);
-    localStorage.setItem("oauth_role", loginState);
-    localStorage.setItem("oauth_intent", "login");
-    const redirectTo = `${window.location.origin}/auth/callback?role=${encodeURIComponent(loginState)}&intent=login`;
-
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider: "google",
-      options: {
-        redirectTo,
-        queryParams: {
-          access_type: "offline",
-          prompt: "select_account",
-        },
-        data: {
-          role: loginState,
-        },
-      },
-    });
-
-    if (error) {
-      setAlert({ type: "error", message: error.message });
+    try {
+      await initiateGoogleOAuth(loginState, "login");
+    } catch (error: any) {
+      setAlert({ type: "error", message: error.message || "Failed to start Google login." });
       setIsGoogleLoading(false);
     }
   };
 
   const handleAppleLogin = async () => {
     setIsAppleLoading(true);
-    localStorage.setItem("oauth_role", loginState);
-    localStorage.setItem("oauth_intent", "login");
-    const redirectTo = `${window.location.origin}/auth/callback?role=${encodeURIComponent(loginState)}&intent=login`;
-
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider: "apple",
-      options: {
-        redirectTo,
-        data: {
-          role: loginState,
-        },
-      },
-    });
-
-    if (error) {
-      setAlert({ type: "error", message: error.message });
+    try {
+      await initiateAppleOAuth(loginState, "login");
+    } catch (error: any) {
+      setAlert({ type: "error", message: error.message || "Failed to start Apple login." });
       setIsAppleLoading(false);
     }
   };
@@ -212,7 +185,7 @@ export default function Login({ initialType }: LoginProps) {
         <Flex
           w="full"
           maxW={{ base: "100%", sm: "440px", md: "480px" }}
-          minH={{ base: "100vh", sm: "auto" }}
+          minH={{ base: "100dvh", sm: "auto" }}
           my={{ base: 0, sm: 6 }}
           bg="white"
           borderRadius={{ base: "none", sm: "3xl" }}
@@ -222,12 +195,13 @@ export default function Login({ initialType }: LoginProps) {
           overflow="hidden"
           position="relative"
           flexDirection="column"
+          justifyContent="center"
           px={{ base: 5, sm: 8 }}
-          pt={{ base: 8, sm: 10 }}
-          pb={{ base: 8, sm: 10 }}
+          pt={{ base: "max(calc(env(safe-area-inset-top, 16px) + 12px), 20px)", sm: 10 }}
+          pb={{ base: "max(calc(env(safe-area-inset-bottom, 16px) + 12px), 24px)", sm: 10 }}
         >
           {/* Form Wrap */}
-          <Box w="full" maxW="420px" mx="auto">
+          <Box w="full" maxW="420px" mx="auto" my={{ base: "auto", sm: 0 }}>
             {/* Header Info */}
             <Box textAlign="center" mb={{ base: 5, sm: 6 }}>
               <Heading as="h1" fontSize={{ base: "22px", sm: "26px" }} fontWeight="800" color="#1E293B" mb={1.5} letterSpacing="-0.02em">
