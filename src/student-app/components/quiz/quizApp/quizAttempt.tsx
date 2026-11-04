@@ -94,6 +94,7 @@ const QuizAttempt = ({
     isScreenShareSupported,
     monitoringMode: _monitoringMode,
     bypassedScreenShare,
+    requestMediaPermissions,
     handleStartMonitoring,
     initializeWebcam,
     initializeAudio,
@@ -418,7 +419,7 @@ const QuizAttempt = ({
                   borderColor="gray.200"
                 >
                   {/* Camera Checklist Item */}
-                  <HStack justify="space-between" p={2} bg="white" borderRadius="md" boxShadow="xs">
+                  <HStack justify="space-between" p={2.5} bg="white" borderRadius="md" boxShadow="xs">
                     <HStack gap={2}>
                       <FiCamera size={18} color="#4b5563" />
                       <VStack align="start" gap={0}>
@@ -440,24 +441,25 @@ const QuizAttempt = ({
                           : isWebcamLoading
                           ? "Connecting..."
                           : webcamError
-                          ? "Error"
+                          ? "Denied / Error"
                           : "Pending"}
                       </Badge>
                       {!hasWebcamAccess && (
                         <Button
                           size="xs"
                           variant="outline"
+                          colorPalette={webcamError ? "red" : "blue"}
                           onClick={initializeWebcam}
                           loading={isWebcamLoading}
                         >
-                          Enable
+                          {webcamError ? "Retry Cam" : "Enable Cam"}
                         </Button>
                       )}
                     </HStack>
                   </HStack>
 
                   {/* Microphone Checklist Item */}
-                  <HStack justify="space-between" p={2} bg="white" borderRadius="md" boxShadow="xs">
+                  <HStack justify="space-between" p={2.5} bg="white" borderRadius="md" boxShadow="xs">
                     <HStack gap={2}>
                       <FiMic size={18} color="#4b5563" />
                       <VStack align="start" gap={0}>
@@ -479,24 +481,25 @@ const QuizAttempt = ({
                           : isAudioLoading
                           ? "Connecting..."
                           : audioError
-                          ? "Error"
+                          ? "Denied / Error"
                           : "Pending"}
                       </Badge>
                       {!hasAudioAccess && (
                         <Button
                           size="xs"
                           variant="outline"
+                          colorPalette={audioError ? "red" : "blue"}
                           onClick={initializeAudio}
                           loading={isAudioLoading}
                         >
-                          Enable
+                          {audioError ? "Retry Mic" : "Enable Mic"}
                         </Button>
                       )}
                     </HStack>
                   </HStack>
 
                   {/* Screen Share / Focus Checklist Item */}
-                  <HStack justify="space-between" p={2} bg="white" borderRadius="md" boxShadow="xs">
+                  <HStack justify="space-between" p={2.5} bg="white" borderRadius="md" boxShadow="xs">
                     <HStack gap={2}>
                       <FiMonitor size={18} color="#4b5563" />
                       <VStack align="start" gap={0}>
@@ -547,6 +550,20 @@ const QuizAttempt = ({
                       )}
                     </HStack>
                   </HStack>
+
+                  {/* Quick-Action: Trigger combined browser native popup for both Cam and Mic */}
+                  {(!hasWebcamAccess || !hasAudioAccess) && (
+                    <Button
+                      size="sm"
+                      variant="subtle"
+                      colorPalette="blue"
+                      w="full"
+                      onClick={requestMediaPermissions}
+                      loading={isWebcamLoading || isAudioLoading}
+                    >
+                      📷🎙️ Trigger Browser Popup for Camera & Mic
+                    </Button>
+                  )}
                 </VStack>
 
                 {isScreenShareSupported && !bypassedScreenShare ? (
@@ -565,14 +582,37 @@ const QuizAttempt = ({
                   </Alert.Root>
                 )}
 
-                {(webcamError || screenError || audioError) && (
-                  <Alert.Root status="error" size="sm">
+                {/* Browser Unblock Instruction Card if permissions were denied */}
+                {(webcamError || audioError) && (
+                  <Box p={3} bg="amber.50" borderRadius="md" border="1px solid" borderColor="amber.200">
+                    <Text fontSize="xs" fontWeight="bold" color="amber.900" mb={1}>
+                      🔒 Browser Permission Guide:
+                    </Text>
+                    <Text fontSize="11px" color="amber.800" lineHeight="1.5">
+                      If your browser says permission denied, it may have remembered a previous &quot;Block&quot; setting.<br />
+                      1. Click the <b>Lock icon (🔒)</b> or <b>Camera icon (📷)</b> in your browser&apos;s address bar at the top.<br />
+                      2. Change <b>Camera</b> and <b>Microphone</b> to <b>&quot;Allow&quot;</b>.<br />
+                      3. Click the button below to prompt the browser again.
+                    </Text>
+                    <Button
+                      size="xs"
+                      colorPalette="blue"
+                      variant="solid"
+                      mt={2}
+                      onClick={requestMediaPermissions}
+                      loading={isWebcamLoading || isAudioLoading}
+                    >
+                      🔄 Retry Browser Popup (Camera & Mic)
+                    </Button>
+                  </Box>
+                )}
+
+                {screenError && (
+                  <Alert.Root status="warning" size="sm">
                     <Alert.Indicator />
-                    <Alert.Title fontSize="xs">Access Error</Alert.Title>
+                    <Alert.Title fontSize="xs">Screen Share Notice</Alert.Title>
                     <Alert.Description fontSize="xs">
-                      {webcamError && `Webcam: ${webcamError}. `}
-                      {screenError && `Screen Share: ${screenError}. `}
-                      {audioError && `Audio: ${audioError}`}
+                      {screenError}
                     </Alert.Description>
                   </Alert.Root>
                 )}
@@ -587,13 +627,31 @@ const QuizAttempt = ({
                   Proceed in Webcam & Focus Mode (Reduced Protection)
                 </Button>
               )}
-              <Button
-                bg="primaryColor"
-                onClick={handleStartMonitoring}
-                loading={isWebcamLoading || isScreenLoading || isAudioLoading}
-              >
-                {allGranted ? "Start Examination" : "Grant All Permissions & Enter"}
-              </Button>
+              {!hasWebcamAccess || !hasAudioAccess ? (
+                <Button
+                  bg="primaryColor"
+                  onClick={requestMediaPermissions}
+                  loading={isWebcamLoading || isAudioLoading}
+                >
+                  Allow Camera & Microphone Access
+                </Button>
+              ) : isScreenShareSupported && !hasScreenAccess && !bypassedScreenShare ? (
+                <Button
+                  bg="primaryColor"
+                  onClick={initializeScreenShare}
+                  loading={isScreenLoading}
+                >
+                  Share Screen to Continue
+                </Button>
+              ) : (
+                <Button
+                  bg="primaryColor"
+                  onClick={handleStartMonitoring}
+                  loading={isWebcamLoading || isScreenLoading || isAudioLoading}
+                >
+                  {allGranted ? "Start Examination" : "Grant All Permissions & Enter"}
+                </Button>
+              )}
             </Dialog.Footer>
           </Dialog.Content>
         </Dialog.Positioner>

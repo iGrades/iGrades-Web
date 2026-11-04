@@ -105,19 +105,140 @@ export const useMonitoring = (options?: {
 
   // ── Stream initializers ────────────────────────────────────────────────────
 
+  // ── Unified Media Permission Request ─────────────────────────────────────────
+  // Requests Camera and Microphone together in ONE single native browser dialog
+  // so the user receives the native browser popup: "[Allow] Camera and Microphone"
+  const requestMediaPermissions = useCallback(async (): Promise<{ webcam: boolean; audio: boolean }> => {
+    if (typeof navigator === "undefined" || !navigator.mediaDevices?.getUserMedia) {
+      const msg = "Camera and microphone access is not supported by your current browser environment.";
+      setWebcamError(msg);
+      setAudioError(msg);
+      return { webcam: false, audio: false };
+    }
+
+    setIsWebcamLoading(true);
+    setIsAudioLoading(true);
+    setWebcamError(null);
+    setAudioError(null);
+
+    // 1. Primary Attempt: Request BOTH Camera and Microphone in ONE single native browser prompt
+    try {
+      const combinedStream = await navigator.mediaDevices.getUserMedia({
+        video: {
+          width: { ideal: 640 },
+          height: { ideal: 480 },
+          facingMode: "user",
+        },
+        audio: true,
+      });
+
+      const videoTracks = combinedStream.getVideoTracks();
+      const audioTracks = combinedStream.getAudioTracks();
+
+      let camOk = false;
+      let micOk = false;
+
+      if (videoTracks.length > 0) {
+        setWebcamStream(new MediaStream(videoTracks));
+        setHasWebcamAccess(true);
+        camOk = true;
+      }
+
+      if (audioTracks.length > 0) {
+        setAudioStream(new MediaStream(audioTracks));
+        setHasAudioAccess(true);
+        micOk = true;
+      }
+
+      setIsWebcamLoading(false);
+      setIsAudioLoading(false);
+      return { webcam: camOk, audio: micOk };
+    } catch (combinedErr: any) {
+      console.warn("Combined media prompt error, attempting sequential requests:", combinedErr);
+
+      // If combined prompt threw an error (e.g. device without microphone, or user clicked block),
+      // try camera with relaxed constraints, followed by microphone sequentially
+      let camOk = false;
+      let micOk = false;
+
+      // 1. Try Camera alone with resilient fallback
+      try {
+        let vStream: MediaStream;
+        try {
+          vStream = await navigator.mediaDevices.getUserMedia({
+            video: { width: { ideal: 640 }, height: { ideal: 480 }, facingMode: "user" },
+          });
+        } catch {
+          // Fallback to basic video constraint
+          vStream = await navigator.mediaDevices.getUserMedia({ video: true });
+        }
+        setWebcamStream(vStream);
+        setHasWebcamAccess(true);
+        setWebcamError(null);
+        camOk = true;
+      } catch (camErr: any) {
+        console.error("Camera access failed:", camErr);
+        const isDenied = camErr?.name === "NotAllowedError" || camErr?.name === "PermissionDeniedError";
+        setWebcamError(
+          isDenied
+            ? "Camera permission denied. Click the lock icon (🔒) or camera icon (📷) in your browser address bar to allow Camera."
+            : camErr?.message || "Camera not accessible."
+        );
+        setHasWebcamAccess(false);
+      } finally {
+        setIsWebcamLoading(false);
+      }
+
+      // 2. Try Microphone alone sequentially (never parallel Promise.all)
+      try {
+        const aStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        setAudioStream(aStream);
+        setHasAudioAccess(true);
+        setAudioError(null);
+        micOk = true;
+      } catch (micErr: any) {
+        console.error("Microphone access failed:", micErr);
+        const isDenied = micErr?.name === "NotAllowedError" || micErr?.name === "PermissionDeniedError";
+        setAudioError(
+          isDenied
+            ? "Microphone permission denied. Click the lock icon (🔒) in your browser address bar to allow Microphone."
+            : micErr?.message || "Microphone not accessible."
+        );
+        setHasAudioAccess(false);
+      } finally {
+        setIsAudioLoading(false);
+      }
+
+      return { webcam: camOk, audio: micOk };
+    }
+  }, []);
+
   const initializeWebcam = useCallback(async (): Promise<boolean> => {
+    if (typeof navigator === "undefined" || !navigator.mediaDevices?.getUserMedia) {
+      setWebcamError("Camera access not supported on this device/browser.");
+      return false;
+    }
     try {
       setIsWebcamLoading(true);
       setWebcamError(null);
-      const stream = await navigator.mediaDevices.getUserMedia({
-        video: { width: 640, height: 480, facingMode: "user" },
-        audio: false,
-      });
+      let stream: MediaStream;
+      try {
+        stream = await navigator.mediaDevices.getUserMedia({
+          video: { width: { ideal: 640 }, height: { ideal: 480 }, facingMode: "user" },
+        });
+      } catch {
+        stream = await navigator.mediaDevices.getUserMedia({ video: true });
+      }
       setWebcamStream(stream);
       setHasWebcamAccess(true);
       return true;
     } catch (err: any) {
-      setWebcamError(err.message);
+      const isDenied = err?.name === "NotAllowedError" || err?.name === "PermissionDeniedError";
+      setWebcamError(
+        isDenied
+          ? "Camera permission denied. Click the lock icon (🔒) in your browser address bar to allow Camera."
+          : err?.message || "Camera permission denied."
+      );
       setHasWebcamAccess(false);
       return false;
     } finally {
@@ -146,8 +267,6 @@ export const useMonitoring = (options?: {
       setBypassedScreenShare(false);
       setMonitoringMode("desktop_full");
 
-      // If the user stops screen share via the browser's built-in button,
-      // update state so the warning banner shows immediately
       stream.getVideoTracks()[0]?.addEventListener("ended", () => {
         setHasScreenAccess(false);
         setScreenStream(null);
@@ -180,6 +299,10 @@ export const useMonitoring = (options?: {
   }, []);
 
   const initializeAudio = useCallback(async (): Promise<boolean> => {
+    if (typeof navigator === "undefined" || !navigator.mediaDevices?.getUserMedia) {
+      setAudioError("Microphone access not supported on this device/browser.");
+      return false;
+    }
     try {
       setIsAudioLoading(true);
       setAudioError(null);
@@ -188,7 +311,12 @@ export const useMonitoring = (options?: {
       setHasAudioAccess(true);
       return true;
     } catch (err: any) {
-      setAudioError(err?.message || "Microphone access denied or not found.");
+      const isDenied = err?.name === "NotAllowedError" || err?.name === "PermissionDeniedError";
+      setAudioError(
+        isDenied
+          ? "Microphone permission denied. Click the lock icon (🔒) in your browser address bar to allow Microphone."
+          : err?.message || "Microphone access denied."
+      );
       setHasAudioAccess(false);
       return false;
     } finally {
@@ -196,25 +324,23 @@ export const useMonitoring = (options?: {
     }
   }, []);
 
-  // ── Start all monitoring (Webcam, Audio, and Screen Share) ───────────────────
+  // ── Start all monitoring (Triggers native browser prompt for Camera + Mic) ───
   const handleStartMonitoring = useCallback(async (): Promise<boolean> => {
-    // 1. Always start Webcam and Audio
-    const [webcamOk, audioOk] = await Promise.all([
-      initializeWebcam(),
-      initializeAudio(),
-    ]);
+    // 1. Request Camera and Microphone together via single native browser prompt
+    const { webcam, audio } = await requestMediaPermissions();
 
-    // 2. Only attempt desktop screen share if genuinely supported and not in mobile proctored mode
+    // 2. Only attempt desktop screen share if genuinely supported and not bypassed
     let screenOk = false;
     if (checkScreenShareSupport() && !bypassedScreenShare) {
-      screenOk = await initializeScreenShare();
+      if (webcam && audio) {
+        screenOk = await initializeScreenShare();
+      }
     } else {
-      // Mobile / camera-and-visibility path: screen share is omitted
       screenOk = true;
     }
 
-    return webcamOk && audioOk && screenOk;
-  }, [initializeWebcam, initializeAudio, initializeScreenShare, bypassedScreenShare]);
+    return webcam && audio && screenOk;
+  }, [requestMediaPermissions, initializeScreenShare, bypassedScreenShare]);
 
   // ── Stop all monitoring ───────────────────────────────────────────────────
 
@@ -267,6 +393,7 @@ export const useMonitoring = (options?: {
       !disabled &&
       !(hasWebcamAccess && hasAudioAccess && (hasScreenAccess || bypassedScreenShare || !isScreenShareSupported)),
 
+    requestMediaPermissions,
     handleStartMonitoring,
     initializeWebcam,
     initializeAudio,

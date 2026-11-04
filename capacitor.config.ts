@@ -20,9 +20,15 @@ const config: CapacitorConfig = {
   },
   plugins: {
     StatusBar: {
-      style: "DARK",
-      backgroundColor: "#206CE1",
+      style: "LIGHT",
+      backgroundColor: "#FFFFFF",
       overlaysWebView: false,
+    },
+    SystemBars: {
+      insetsHandling: "css",
+      style: "LIGHT",
+      hidden: false,
+      animation: "NONE",
     },
     Keyboard: {
       resize: "body",

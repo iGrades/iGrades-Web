@@ -1,4 +1,4 @@
-import { Capacitor } from "@capacitor/core";
+import { Capacitor, SystemBars, SystemBarsStyle } from "@capacitor/core";
 import { StatusBar, Style } from "@capacitor/status-bar";
 import { Keyboard } from "@capacitor/keyboard";
 
@@ -8,7 +8,7 @@ const FULLSCREEN_STORAGE_KEY = "igrades_fullscreen_mode";
 /**
  * Native Shell Service for Capacitor & Responsive Web.
  * 1. Phone native status bar is NEVER hidden by default; background color is determined by theme (#FFFFFF light, #000000 dark).
- * 2. Phone navigation bar is NOT hidden, with transparent background so it seamlessly adapts.
+ * 2. Phone navigation bar (at bottom) is synchronized with theme (#FFFFFF light, #000000 dark).
  * 3. Default theme on first launch is Light mode; user can set to Dark, Light, or System default.
  * 4. Supports optional full-screen mode toggle in settings.
  * 5. Manages keyboard and safe area CSS variables.
@@ -66,12 +66,22 @@ export const nativeShellService = {
       return;
     }
 
-    // 1. Phone status bar: DO NOT HIDE. Show and set background to theme color (#FFFFFF in light, #000000 in dark)
+    // 1. Phone system bars (Status bar & Navigation bar)
     try {
-      await StatusBar.show();
-      await StatusBar.setOverlaysWebView({ overlay: false });
-      await StatusBar.setBackgroundColor({ color: isDark ? "#000000" : "#FFFFFF" });
-      await StatusBar.setStyle({ style: isDark ? Style.Light : Style.Dark });
+      const barStyle = isDark ? SystemBarsStyle.Dark : SystemBarsStyle.Light;
+      await SystemBars.setStyle({ style: barStyle }).catch(() => {});
+      await SystemBars.show().catch(() => {});
+    } catch (_err) {
+      void _err;
+    }
+
+    // 2. Phone status bar: DO NOT HIDE. Show and set background to theme color (#FFFFFF in light, #000000 in dark)
+    try {
+      await StatusBar.show().catch(() => {});
+      await StatusBar.setOverlaysWebView({ overlay: false }).catch(() => {});
+      await StatusBar.setBackgroundColor({ color: isDark ? "#000000" : "#FFFFFF" }).catch(() => {});
+      // Style.Dark: light text for dark background; Style.Light: dark text for light background
+      await StatusBar.setStyle({ style: isDark ? Style.Dark : Style.Light }).catch(() => {});
     } catch (err) {
       console.warn("[NativeShell] StatusBar init warning:", err);
     }
@@ -171,10 +181,17 @@ export const nativeShellService = {
         if (Capacitor.isNativePlatform()) {
           const isDark = this.isDarkMode();
           try {
-            await StatusBar.show();
-            await StatusBar.setOverlaysWebView({ overlay: false });
-            await StatusBar.setBackgroundColor({ color: isDark ? "#000000" : "#FFFFFF" });
-            await StatusBar.setStyle({ style: isDark ? Style.Light : Style.Dark });
+            const barStyle = isDark ? SystemBarsStyle.Dark : SystemBarsStyle.Light;
+            await SystemBars.setStyle({ style: barStyle }).catch(() => {});
+            await SystemBars.show().catch(() => {});
+          } catch (_err) {
+            void _err;
+          }
+          try {
+            await StatusBar.show().catch(() => {});
+            await StatusBar.setOverlaysWebView({ overlay: false }).catch(() => {});
+            await StatusBar.setBackgroundColor({ color: isDark ? "#000000" : "#FFFFFF" }).catch(() => {});
+            await StatusBar.setStyle({ style: isDark ? Style.Dark : Style.Light }).catch(() => {});
           } catch (_err) {
             void _err;
           }
@@ -196,6 +213,8 @@ export const nativeShellService = {
 
   /**
    * Applies the theme across web DOM, meta tags, and native shell.
+   * - Light mode: Status bar is #FFFFFF, bottom navigation bar is #FFFFFF.
+   * - Dark mode: Status bar is #000000, bottom navigation bar is #000000.
    */
   async applyTheme(isDark: boolean): Promise<void> {
     if (typeof document === "undefined") return;
@@ -206,40 +225,61 @@ export const nativeShellService = {
     if (isDark) {
       document.documentElement.classList.add("dark");
       document.documentElement.setAttribute("data-theme", "dark");
+      document.documentElement.style.backgroundColor = "#000000";
+      document.documentElement.style.colorScheme = "dark";
       document.body.style.backgroundColor = "#000000";
       document.body.style.color = "#F5F5F5";
     } else {
       document.documentElement.classList.remove("dark");
       document.documentElement.setAttribute("data-theme", "light");
-      document.body.style.backgroundColor = "#F8FAFC";
+      document.documentElement.style.backgroundColor = "#FFFFFF";
+      document.documentElement.style.colorScheme = "light";
+      document.body.style.backgroundColor = "#FFFFFF";
       document.body.style.color = "#0F172A";
     }
 
-    // 2. Sync HTML meta theme-color (controls phone status/top bar fallback)
-    let metaTheme = document.querySelector('meta[name="theme-color"]');
-    if (!metaTheme) {
-      metaTheme = document.createElement("meta");
+    // 2. Sync HTML meta theme-color (controls phone status bar & bottom navigation bar across Android Chrome & PWAs)
+    const allThemeMetas = document.querySelectorAll('meta[name="theme-color"]');
+    if (allThemeMetas.length > 0) {
+      allThemeMetas.forEach((m) => m.setAttribute("content", statusBarColor));
+    } else {
+      const metaTheme = document.createElement("meta");
       metaTheme.setAttribute("name", "theme-color");
+      metaTheme.setAttribute("content", statusBarColor);
       document.head.appendChild(metaTheme);
     }
-    metaTheme.setAttribute("content", statusBarColor);
 
-    // 3. Dispatch global event for React components
+    // 3. iOS Safari status bar style
+    const appleMeta = document.querySelector('meta[name="apple-mobile-web-app-status-bar-style"]');
+    if (appleMeta) {
+      appleMeta.setAttribute("content", isDark ? "black" : "default");
+    }
+
+    // 4. Dispatch global event for React components
     window.dispatchEvent(
       new CustomEvent("igrades-theme-changed", { detail: { isDark } })
     );
 
-    // 4. Capacitor native status bar: keep VISIBLE (unless in active user-chosen fullscreen), background determined by theme
+    // 5. Capacitor native system bars (Top Status Bar + Bottom Navigation Bar)
     if (Capacitor.isNativePlatform()) {
+      try {
+        // SystemBars sets the style (icons/text) for both status bar AND bottom navigation bar
+        const barStyle = isDark ? SystemBarsStyle.Dark : SystemBarsStyle.Light;
+        await SystemBars.setStyle({ style: barStyle }).catch(() => {});
+      } catch (_err) {
+        void _err;
+      }
+
       try {
         const isFs = this.isFullscreen();
         if (isFs) {
-          await StatusBar.hide();
+          await StatusBar.hide().catch(() => {});
         } else {
-          await StatusBar.show();
-          await StatusBar.setOverlaysWebView({ overlay: false });
-          await StatusBar.setBackgroundColor({ color: statusBarColor });
-          await StatusBar.setStyle({ style: isDark ? Style.Light : Style.Dark });
+          await StatusBar.show().catch(() => {});
+          await StatusBar.setOverlaysWebView({ overlay: false }).catch(() => {});
+          await StatusBar.setBackgroundColor({ color: statusBarColor }).catch(() => {});
+          // Style.Dark: light text for dark background; Style.Light: dark text for light background
+          await StatusBar.setStyle({ style: isDark ? Style.Dark : Style.Light }).catch(() => {});
         }
       } catch (err) {
         console.warn("[NativeShell] StatusBar update notice:", err);

@@ -11,15 +11,41 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+    <meta name="theme-color" content="#FFFFFF" id="theme-color-meta" />
+    <meta name="theme-color" content="#FFFFFF" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" id="apple-status-bar-style" />
     <script>
       (function() {
         try {
           var saved = localStorage.getItem('igrades_theme_mode');
           var prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
-          if (saved === 'dark' || (!saved && prefersDark)) {
+          var isDark = saved === 'dark' || ((!saved || saved === 'system') && prefersDark);
+          var bg = isDark ? '#000000' : '#FFFFFF';
+          var text = isDark ? '#F5F5F5' : '#0F172A';
+
+          if (isDark) {
             document.documentElement.classList.add('dark');
             document.documentElement.setAttribute('data-theme', 'dark');
-            document.documentElement.style.backgroundColor = '#0A0E1A';
+            document.documentElement.style.colorScheme = 'dark';
+          } else {
+            document.documentElement.classList.remove('dark');
+            document.documentElement.setAttribute('data-theme', 'light');
+            document.documentElement.style.colorScheme = 'light';
+          }
+
+          document.documentElement.style.backgroundColor = bg;
+
+          var themeMetas = document.querySelectorAll('meta[name="theme-color"]');
+          themeMetas.forEach(function(m) {
+            m.setAttribute('content', bg);
+          });
+
+          var appleMeta = document.getElementById('apple-status-bar-style');
+          if (appleMeta) {
+            appleMeta.setAttribute('content', isDark ? 'black' : 'default');
           }
         } catch(e) {}
       })();
