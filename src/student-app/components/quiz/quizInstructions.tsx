@@ -84,6 +84,7 @@ const QuizInstructions = ({
     verifyExamModeTake,
     canTakeExamMode,
     examAttemptStatusText,
+    recordTimedQuizAttempt,
     modalState,
     promptUpgrade,
     closeUpgradeModal,
@@ -249,7 +250,7 @@ const QuizInstructions = ({
       };
 
       setQuizData(quizDataObj);
-      recordTimedQuizAttempt();
+      recordTimedQuizAttempt?.();
       setShowQuizAttempt(true);
     } catch (err) {
       console.error("Error in fetchQuizQuestions:", err);

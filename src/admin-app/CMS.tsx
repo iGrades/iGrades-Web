@@ -126,10 +126,14 @@ interface Quiz {
 interface QuizQuestion {
   question_text: string;
   option_a: string; option_b: string; option_c: string; option_d: string;
-  correct_option: "a" | "b" | "c" | "d" | "";
+  correct_option: "A" | "B" | "C" | "D" | "a" | "b" | "c" | "d" | "";
   answer_explanation?: string;
   subtopic_id?: string | null;
   subtopic_name?: string;
+  topic_name?: string;
+  resolved_topic_id?: string | null;
+  class_name?: string;
+  subject_name?: string;
   image_file?: File | null;
   image_preview?: string | null;
   csv_image_name?: string;
@@ -138,6 +142,7 @@ interface QuizQuestion {
 const emptyQuestion = (): QuizQuestion => ({
   question_text: "", option_a: "", option_b: "", option_c: "", option_d: "",
   correct_option: "", answer_explanation: "", subtopic_id: null, subtopic_name: "",
+  topic_name: "", resolved_topic_id: null, class_name: "", subject_name: "",
   image_file: null, image_preview: null, csv_image_name: "",
 });
 
@@ -2187,30 +2192,56 @@ const CMS = () => {
   const isQuestionValid = (q: QuizQuestion) =>
     q.question_text.trim() && q.option_a.trim() && q.option_b.trim() && q.option_c.trim() && q.option_d.trim() && q.correct_option;
 
-  const createOrGetQuiz = async (): Promise<string | null> => {
-    // 1. If a quiz container already exists for this topic, use it
-    if (quizzes.length > 0 && quizzes[0].id) {
-      return quizzes[0].id;
+  const createOrGetQuiz = async (
+    targetClassId?: string,
+    targetSubjectId?: string,
+    targetTopicId?: string
+  ): Promise<string | null> => {
+    const cId = targetClassId || quizSelectedClass[0] || selectedClass[0];
+    const sId = targetSubjectId || quizSelectedSubject[0] || selectedSubject[0];
+    const tId = targetTopicId || quizSelectedTopic[0] || selectedTopicId[0];
+
+    if (!cId || !sId || !tId) {
+      return null;
     }
 
-    // 2. Create quiz container for this topic
+    // 1. If a quiz container already exists in memory for this topic, use it
+    const memQuiz = quizzes.find((q) => q.topic_id === tId && q.id);
+    if (memQuiz?.id) {
+      return memQuiz.id;
+    }
+
+    // 2. Query database to see if a quiz container already exists
     try {
-      const selectedTopicObj = quizTopics.find((t) => t.id === quizSelectedTopic[0]);
+      const { data: dbQuizzes } = await supabase
+        .from("quizzes")
+        .select("id")
+        .eq("class_id", cId)
+        .eq("subject_id", sId)
+        .eq("topic_id", tId)
+        .limit(1);
+
+      if (dbQuizzes && dbQuizzes.length > 0 && dbQuizzes[0].id) {
+        return dbQuizzes[0].id;
+      }
+
+      // 3. Create quiz container for this topic
+      const selectedTopicObj = quizTopics.find((t) => t.id === tId) || topics.find((t) => t.id === tId);
       const topicTitle = selectedTopicObj ? selectedTopicObj.name : "Topic Quiz";
 
       const { data, error } = await supabase
         .from("quizzes")
         .insert({
-          class_id: quizSelectedClass[0],
-          subject_id: quizSelectedSubject[0],
-          topic_id: quizSelectedTopic[0],
+          class_id: cId,
+          subject_id: sId,
+          topic_id: tId,
           title: topicTitle,
         })
         .select("id")
         .single();
 
       if (!error && data) {
-        await fetchQuizzes(quizSelectedClass[0], quizSelectedSubject[0], quizSelectedTopic[0]);
+        await fetchQuizzes(cId, sId, tId);
         return data.id;
       }
 
@@ -2251,19 +2282,20 @@ const CMS = () => {
     return str.length > 0 && str !== "[object Object]" ? str : null;
   };
 
-  // Helper to resolve subtopic names or IDs to valid database subtopic UUIDs
-  // If a subtopic name from CSV or input doesn't exist in the database, it creates it automatically!
+  // Helper to resolve subtopic names or IDs against existing database subtopics.
+  // Note: Topics and subtopics CANNOT be created from quiz uploads (only in Create Course Topic section).
   const resolveSubtopicMap = async (
-    classId: string,
-    subjectId: string,
+    _classId: string,
+    _subjectId: string,
     topicId: string,
     namesOrIds: any[]
-  ): Promise<{ map: Map<string, string>; fallbackSubtopicId: string | null }> => {
+  ): Promise<{ map: Map<string, string>; fallbackSubtopicId: string | null; missingNames: string[] }> => {
     const map = new Map<string, string>(); // lowercase name or id -> db UUID
     let fallbackSubtopicId: string | null = null;
+    const missingNames: string[] = [];
 
     try {
-      // 1. Fetch current subtopics for this topic from DB
+      // 1. Fetch current existing subtopics for this topic from DB
       let currentSubtopics: { id: string; name: string }[] = [];
       const { data: dbSubtopics } = await supabase
         .from("sub_topics")
@@ -2307,23 +2339,24 @@ const CMS = () => {
         }
       });
 
-      // 2. Identify missing subtopic names that need to be created in the database
-      const missingNames: string[] = [];
+      // 2. Identify missing subtopic names that do not match existing subtopics
       namesOrIds.forEach((item) => {
         const normalized = safeNormalizeString(item);
         if (!normalized) return;
         if (isValidUUID(normalized)) {
-          map.set(normalized.toLowerCase(), normalized);
-          map.set(normalized, normalized);
-          if (!fallbackSubtopicId) fallbackSubtopicId = normalized;
-          return;
+          if (currentSubtopics.some((st) => st.id === normalized)) {
+            map.set(normalized.toLowerCase(), normalized);
+            map.set(normalized, normalized);
+            if (!fallbackSubtopicId) fallbackSubtopicId = normalized;
+            return;
+          }
         }
         const lowerNorm = normalized.toLowerCase();
         if (map.has(lowerNorm)) return;
 
-        // Try fuzzy/partial match on existing subtopics
+        // Try fuzzy match on existing subtopics
         const matched = currentSubtopics.find(
-          (st) => st.name && (st.name.toLowerCase().includes(lowerNorm) || lowerNorm.includes(st.name.toLowerCase()))
+          (st) => st.name && (st.name.toLowerCase() === lowerNorm || st.name.toLowerCase().includes(lowerNorm) || lowerNorm.includes(st.name.toLowerCase()))
         );
         if (matched && matched.id) {
           map.set(lowerNorm, matched.id);
@@ -2333,94 +2366,42 @@ const CMS = () => {
 
         missingNames.push(normalized);
       });
-
-      const uniqueMissing = Array.from(new Set(missingNames));
-
-      // 3. Auto-create any missing subtopic names into sub_topics table
-      if (uniqueMissing.length > 0) {
-        const newRecords = uniqueMissing.map((name, idx) => ({
-          name,
-          description: "Created via question upload",
-          topic_id: topicId,
-          class_id: classId,
-          subject_id: subjectId,
-          order_index: currentSubtopics.length + idx,
-        }));
-
-        const { data: inserted, error: insertErr } = await supabase
-          .from("sub_topics")
-          .insert(newRecords)
-          .select("id, name");
-
-        if (!insertErr && inserted) {
-          inserted.forEach((st: any) => {
-            const idStr = safeNormalizeString(st?.id);
-            const nameStr = safeNormalizeString(st?.name);
-            if (idStr) {
-              map.set(idStr.toLowerCase(), idStr);
-              map.set(idStr, idStr);
-              if (!fallbackSubtopicId) fallbackSubtopicId = idStr;
-            }
-            if (nameStr && idStr) {
-              map.set(nameStr.toLowerCase(), idStr);
-              map.set(nameStr.trim().toLowerCase(), idStr);
-            }
-          });
-          // Refresh quizSubTopics dropdown in CMS
-          await fetchQuizSubTopics(topicId);
-        }
-      }
-
-      // 4. If no subtopics existed at all for this topic, create a default "General" subtopic
-      if (!fallbackSubtopicId && currentSubtopics.length === 0) {
-        const selectedTopicObj = quizTopics.find((t) => t.id === topicId);
-        const defaultName = selectedTopicObj?.name ? `${selectedTopicObj.name} - General` : "General";
-        const { data: defaultSub, error: defErr } = await supabase
-          .from("sub_topics")
-          .insert({
-            name: defaultName,
-            description: "Default subtopic for questions",
-            topic_id: topicId,
-            class_id: classId,
-            subject_id: subjectId,
-            order_index: 0,
-          })
-          .select("id, name")
-          .single();
-
-        if (!defErr && defaultSub) {
-          const idStr = safeNormalizeString(defaultSub.id);
-          if (idStr) {
-            fallbackSubtopicId = idStr;
-            map.set(idStr.toLowerCase(), idStr);
-            map.set(idStr, idStr);
-            if (defaultSub.name) {
-              map.set(defaultSub.name.toLowerCase(), idStr);
-            }
-            await fetchQuizSubTopics(topicId);
-          }
-        }
-      }
     } catch (err) {
       console.warn("Subtopic resolution notice:", err);
     }
 
-    return { map, fallbackSubtopicId };
+    return { map, fallbackSubtopicId, missingNames };
   };
 
   const handleQuizUpload = async () => {
-    if (!quizSelectedClass[0] || !quizSelectedSubject[0] || !quizSelectedTopic[0]) {
-      setAlert({ type: "error", message: "Please ensure Class, Subject, and Topic parameters are selected." }); return;
+    const targetClassId = quizSelectedClass[0] || selectedClass[0];
+    const targetSubjectId = quizSelectedSubject[0] || selectedSubject[0];
+    const targetTopicId = quizSelectedTopic[0] || (selectedTopicId[0] && quizTopics.some((t) => t.id === selectedTopicId[0]) ? selectedTopicId[0] : null);
+
+    if (!quizSelectedClass[0] && targetClassId) setQuizSelectedClass([targetClassId]);
+    if (!quizSelectedSubject[0] && targetSubjectId) setQuizSelectedSubject([targetSubjectId]);
+    if (!quizSelectedTopic[0] && targetTopicId) setQuizSelectedTopic([targetTopicId]);
+
+    const missingParams: string[] = [];
+    if (!targetClassId) missingParams.push("Class");
+    if (!targetSubjectId) missingParams.push("Subject");
+    if (!targetTopicId) missingParams.push("Topic");
+
+    if (missingParams.length > 0) {
+      setAlert({ type: "error", message: `Please select ${missingParams.join(", ")} in the Quiz section above before uploading.` });
+      return;
     }
-    if (!quizSelectedSubtopics[0]) {
-      setAlert({ type: "error", message: "Please select a Subtopic for these quiz questions." }); return;
+    if (!quizSelectedSubtopics[0] && quizSubTopics.length > 0) {
+      setAlert({ type: "error", message: "Please select a Subtopic for these quiz questions." });
+      return;
     }
     if (questions.some((q) => !isQuestionValid(q))) {
-      setAlert({ type: "error", message: "Please fill in all required question text, choices (A-D), and correct answer keys." }); return;
+      setAlert({ type: "error", message: "Please fill in all required question text, choices (A-D), and correct answer keys." });
+      return;
     }
     setQuizLoading(true);
     try {
-      const quizId = await createOrGetQuiz();
+      const quizId = await createOrGetQuiz(targetClassId, targetSubjectId, targetTopicId);
       if (!quizId) { setQuizLoading(false); return; }
 
       // Gather subtopic candidates from questions and selected dropdown
@@ -2430,9 +2411,9 @@ const CMS = () => {
       ];
 
       const { map: subtopicMap, fallbackSubtopicId } = await resolveSubtopicMap(
-        quizSelectedClass[0],
-        quizSelectedSubject[0],
-        quizSelectedTopic[0],
+        targetClassId,
+        targetSubjectId,
+        targetTopicId,
         subtopicCandidates
       );
 
@@ -2452,11 +2433,7 @@ const CMS = () => {
             finalSubtopicId = subtopicMap.get(rawQSub.toLowerCase()) || subtopicMap.get(rawQSub) || (isValidUUID(rawQSub) ? rawQSub : null);
           }
           if (!finalSubtopicId) {
-            finalSubtopicId = defaultSubtopicId || fallbackSubtopicId;
-          }
-
-          if (!finalSubtopicId) {
-            throw new Error("Could not resolve a valid Subtopic UUID. Please ensure a subtopic is selected.");
+            finalSubtopicId = defaultSubtopicId || fallbackSubtopicId || null;
           }
 
           const rowData: Record<string, any> = {
@@ -2465,11 +2442,11 @@ const CMS = () => {
             option_b: q.option_b.trim(),
             option_c: q.option_c.trim(),
             option_d: q.option_d.trim(),
-            correct_option: q.correct_option,
+            correct_option: String(q.correct_option || "").trim().toUpperCase(),
             answer_explanation: q.answer_explanation?.trim() || null,
             image_url,
-            subject_id: quizSelectedSubject[0],
-            topic_id: quizSelectedTopic[0],
+            subject_id: targetSubjectId,
+            topic_id: targetTopicId,
             quiz_id: quizId,
             subtopic_id: finalSubtopicId,
           };
@@ -2484,140 +2461,280 @@ const CMS = () => {
 
       setAlert({ type: "success", message: `${rows.length} manual questions loaded into your database!` });
       setQuestions([emptyQuestion()]);
-      await fetchQuizzes(quizSelectedClass[0], quizSelectedSubject[0], quizSelectedTopic[0]);
+      await fetchQuizzes(targetClassId, targetSubjectId, targetTopicId);
     } catch (err) {
       setAlert({ type: "error", message: "Upload failed: " + (err as Error).message });
     } finally { setQuizLoading(false); }
   };
 
   // ── CSV Parsing ──
-  const REQUIRED_HEADERS = ["question_text", "option_a", "option_b", "option_c", "option_d", "correct_option"];
+  const normalizeColKey = (k: string) => k.trim().toLowerCase().replace(/[\s\-_]+/g, "_");
+
   const parseImportFile = (file: File) => {
     setImportError(null); setImportedQuestions([]); setImportFileName(file.name);
     const reader = new FileReader();
-    reader.onload = (e) => {
+    reader.onload = async (e) => {
       try {
         const data = new Uint8Array(e.target?.result as ArrayBuffer);
         const wb = XLSX.read(data, { type: "array" });
         const ws = wb.Sheets[wb.SheetNames[0]];
         const rows: Record<string, any>[] = XLSX.utils.sheet_to_json(ws, { defval: "" });
-        if (!rows.length) { setImportError("File contains no row lines."); return; }
-        
-        // Find missing headers with case-insensitive check
-        const firstRowKeys = Object.keys(rows[0]).map((k) => k.trim().toLowerCase());
-        const missing = REQUIRED_HEADERS.filter((h) => !firstRowKeys.includes(h.toLowerCase()));
-        if (missing.length) { setImportError(`Missing columns: ${missing.join(", ")}. Use the template.`); return; }
-        
-        const parsed: QuizQuestion[] = []; const errs: string[] = [];
-        
-        // Lookup helpers for subtopics
-        const subtopicMapByName = new Map<string, SubTopic>();
-        const subtopicMapById = new Map<string, SubTopic>();
+        if (!rows.length) { setImportError("The spreadsheet file contains no rows."); return; }
+
+        const firstRowKeys = Object.keys(rows[0]).map(normalizeColKey);
+        const hasTopic = firstRowKeys.some((k) => ["topic_name", "topic", "topic_title"].includes(k));
+        const hasSubtopic = firstRowKeys.some((k) => ["subtopic_name", "subtopic", "sub_topic", "subtopic_id"].includes(k));
+        const hasQuestion = firstRowKeys.some((k) => ["question_text", "question", "questiontext", "prompt"].includes(k));
+        const hasA = firstRowKeys.some((k) => ["option_a", "optiona", "choice_a", "a"].includes(k));
+        const hasB = firstRowKeys.some((k) => ["option_b", "optionb", "choice_b", "b"].includes(k));
+        const hasC = firstRowKeys.some((k) => ["option_c", "optionc", "choice_c", "c"].includes(k));
+        const hasD = firstRowKeys.some((k) => ["option_d", "optiond", "choice_d", "d"].includes(k));
+        const hasCo = firstRowKeys.some((k) => ["correct_option", "correctoption", "correct_answer", "answer", "correct"].includes(k));
+
+        const missingCols: string[] = [];
+        if (!hasTopic) missingCols.push("topic_name");
+        if (!hasSubtopic) missingCols.push("subtopic_name");
+        if (!hasQuestion) missingCols.push("question_text");
+        if (!hasA) missingCols.push("option_a");
+        if (!hasB) missingCols.push("option_b");
+        if (!hasC) missingCols.push("option_c");
+        if (!hasD) missingCols.push("option_d");
+        if (!hasCo) missingCols.push("correct_option");
+
+        if (missingCols.length) {
+          setImportError(`Missing required column${missingCols.length > 1 ? "s" : ""}: ${missingCols.join(", ")}. Please use the template with topic_name and subtopic_name columns.`);
+          return;
+        }
+
+        const targetClassId = quizSelectedClass[0] || selectedClass[0];
+        const targetSubjectId = quizSelectedSubject[0] || selectedSubject[0];
+
+        if (!targetClassId || !targetSubjectId) {
+          setImportError("Please select Class and Subject above before importing questions so topics and subtopics can be verified.");
+          return;
+        }
+
+        // Fetch existing topics for this class & subject from database
+        const { data: dbTopics } = await supabase
+          .from("topics")
+          .select("id, name, class_id, subject_id")
+          .eq("class_id", targetClassId)
+          .eq("subject_id", targetSubjectId);
+
+        const availableTopics = (dbTopics && dbTopics.length > 0) ? dbTopics : quizTopics;
+        if (!availableTopics.length) {
+          setImportError("No course topics found for the selected Class and Subject. Topics cannot be created from quiz uploads; please create topics in the Create Course Topic section first.");
+          return;
+        }
+
+        const topicIds = availableTopics.map((t) => t.id);
+
+        // Fetch existing subtopics for these topics
+        let dbSubtopics: { id: string; name: string; topic_id: string }[] = [];
+        const { data: subData } = await supabase
+          .from("sub_topics")
+          .select("id, name, topic_id")
+          .in("topic_id", topicIds);
+
+        if (subData && subData.length > 0) {
+          dbSubtopics = subData as any;
+        } else {
+          const { data: altSubData } = await supabase
+            .from("subtopics")
+            .select("id, name, topic_id")
+            .in("topic_id", topicIds);
+          if (altSubData && altSubData.length > 0) {
+            dbSubtopics = altSubData as any;
+          }
+        }
+
+        // Merge in any active quizSubTopics from state
         quizSubTopics.forEach((st) => {
-          subtopicMapByName.set(st.name.trim().toLowerCase(), st);
-          subtopicMapById.set(st.id, st);
+          if (st && st.id && !dbSubtopics.some((s) => s.id === st.id)) {
+            dbSubtopics.push({ id: st.id, name: st.name, topic_id: st.topic_id || quizSelectedTopic[0] });
+          }
         });
 
+        const parsed: QuizQuestion[] = [];
+        const errs: string[] = [];
+
         rows.forEach((rawRow, i) => {
-          // Normalize row keys to lowercase
           const row: Record<string, any> = {};
           Object.keys(rawRow).forEach((k) => {
-            row[k.trim().toLowerCase()] = rawRow[k];
+            row[normalizeColKey(k)] = rawRow[k];
           });
 
-          const co = String(row.correct_option || "").toLowerCase().trim();
-          if (!["a", "b", "c", "d"].includes(co)) { errs.push(`Row ${i + 2}: correct_option must be a–d`); return; }
-          if (!row.question_text?.toString().trim()) { errs.push(`Row ${i + 2}: question_text is empty`); return; }
-          
-          const rawSubtopic = String(row.subtopic_name || row.subtopic || row.sub_topic || row.subtopic_id || "").trim();
-          let matchedSubtopic: SubTopic | undefined = undefined;
+          const qText = String(row.question_text || row.question || row.questiontext || row.prompt || "").trim();
+          const optA = String(row.option_a || row.optiona || row.choice_a || row.a || "").trim();
+          const optB = String(row.option_b || row.optionb || row.choice_b || row.b || "").trim();
+          const optC = String(row.option_c || row.optionc || row.choice_c || row.c || "").trim();
+          const optD = String(row.option_d || row.optiond || row.choice_d || row.d || "").trim();
 
-          if (rawSubtopic) {
-            matchedSubtopic = subtopicMapById.get(rawSubtopic) || subtopicMapByName.get(rawSubtopic.toLowerCase());
-            if (!matchedSubtopic) {
-              matchedSubtopic = quizSubTopics.find((st) =>
-                st.name.toLowerCase().includes(rawSubtopic.toLowerCase()) ||
-                rawSubtopic.toLowerCase().includes(st.name.toLowerCase())
-              );
-            }
+          let coRaw = String(row.correct_option || row.correctoption || row.correct_answer || row.answer || row.correct || "").toLowerCase().trim();
+          if (coRaw.startsWith("option")) coRaw = coRaw.replace(/^option\s*/, "").trim();
+          if (coRaw.startsWith("choice")) coRaw = coRaw.replace(/^choice\s*/, "").trim();
+          if (coRaw.endsWith(".")) coRaw = coRaw.slice(0, -1).trim();
+          if (coRaw === "1") coRaw = "a";
+          if (coRaw === "2") coRaw = "b";
+          if (coRaw === "3") coRaw = "c";
+          if (coRaw === "4") coRaw = "d";
+
+          if (!["a", "b", "c", "d"].includes(coRaw)) {
+            errs.push(`Row ${i + 2}: correct_option "${row.correct_option || ""}" must be A, B, C, or D`);
+            return;
+          }
+          const finalCorrectOption = coRaw.toUpperCase() as "A" | "B" | "C" | "D";
+          if (!qText) {
+            errs.push(`Row ${i + 2}: question prompt is empty`);
+            return;
           }
 
-          let resolvedSubtopicId: string | null = matchedSubtopic ? matchedSubtopic.id : null;
-          let resolvedSubtopicName: string = matchedSubtopic ? matchedSubtopic.name : rawSubtopic;
+          // 1. Topic Verification (CANNOT BE CREATED - MUST ALREADY EXIST)
+          const rawTopic = String(row.topic_name || row.topic || row.topic_title || "").trim();
+          if (!rawTopic) {
+            errs.push(`Row ${i + 2}: Missing topic_name in CSV row.`);
+            return;
+          }
 
-          // If no specific subtopic specified in CSV row, but 1 subtopic is selected in dropdown, default to it
-          if (!resolvedSubtopicId && quizSelectedSubtopics.length === 1) {
-            const singleSelected = quizSubTopics.find((s) => s.id === quizSelectedSubtopics[0]);
-            if (singleSelected) {
-              resolvedSubtopicId = singleSelected.id;
-              resolvedSubtopicName = singleSelected.name;
+          const matchedTopic = availableTopics.find(
+            (t) => t.name.trim().toLowerCase() === rawTopic.toLowerCase() || t.id === rawTopic
+          );
+
+          if (!matchedTopic) {
+            errs.push(
+              `Row ${i + 2}: Topic "${rawTopic}" does not exist in this course. Topics cannot be created from quiz uploads; please create it in the Create Course Topic section first.`
+            );
+            return;
+          }
+
+          // 2. Subtopic Verification (CANNOT BE CREATED - MUST ALREADY EXIST)
+          const rawSubtopic = String(row.subtopic_name || row.subtopic || row.sub_topic || row.subtopic_id || "").trim();
+          const topicSubtopics = dbSubtopics.filter((st) => st.topic_id === matchedTopic.id);
+
+          let resolvedSubtopicId: string | null = null;
+          let resolvedSubtopicName: string = rawSubtopic;
+
+          if (topicSubtopics.length > 0) {
+            if (!rawSubtopic) {
+              errs.push(
+                `Row ${i + 2}: Missing subtopic_name for topic "${matchedTopic.name}". Existing subtopics: ${topicSubtopics.map((s) => s.name).join(", ")}`
+              );
+              return;
             }
+
+            const matchedSub = topicSubtopics.find(
+              (st) =>
+                st.name.trim().toLowerCase() === rawSubtopic.toLowerCase() ||
+                st.id === rawSubtopic ||
+                st.name.toLowerCase().includes(rawSubtopic.toLowerCase()) ||
+                rawSubtopic.toLowerCase().includes(st.name.toLowerCase())
+            );
+
+            if (!matchedSub) {
+              errs.push(
+                `Row ${i + 2}: Subtopic "${rawSubtopic}" does not exist under topic "${matchedTopic.name}". Subtopics cannot be created from quiz uploads; please create it in the Create Course Topic section first.`
+              );
+              return;
+            }
+
+            resolvedSubtopicId = matchedSub.id;
+            resolvedSubtopicName = matchedSub.name;
+          } else {
+            // Topic has no subtopics created in Course Topics
+            if (rawSubtopic) {
+              errs.push(
+                `Row ${i + 2}: Topic "${matchedTopic.name}" has no subtopics created in Course Topics. Subtopics cannot be created from quiz uploads; please create it in the Create Course Topic section first, or leave subtopic blank.`
+              );
+              return;
+            }
+            resolvedSubtopicId = null;
+            resolvedSubtopicName = "";
           }
 
           const explanation = String(row.answer_explanation || row.explanation || row.explanation_to_answer || row.solution || "").trim();
-          const imgName = String(row.image_file_name || row.image_name || row.image || "").trim();
+          const imgName = String(row.image_file_name || row.image_name || row.image || row.diagram || "").trim();
 
           parsed.push({
-            question_text: String(row.question_text).trim(),
-            option_a: String(row.option_a).trim(),
-            option_b: String(row.option_b).trim(),
-            option_c: String(row.option_c).trim(),
-            option_d: String(row.option_d).trim(),
-            correct_option: co as any,
+            question_text: qText,
+            option_a: optA,
+            option_b: optB,
+            option_c: optC,
+            option_d: optD,
+            correct_option: finalCorrectOption,
             answer_explanation: explanation,
             subtopic_id: resolvedSubtopicId,
             subtopic_name: resolvedSubtopicName,
+            topic_name: matchedTopic.name,
+            resolved_topic_id: matchedTopic.id,
             csv_image_name: imgName,
           });
         });
 
-        if (errs.length) { setImportError(errs.slice(0, 3).join(" · ")); return; }
+        if (errs.length) {
+          setImportError(errs.slice(0, 4).join(" · ") + (errs.length > 4 ? ` (and ${errs.length - 4} more errors)` : ""));
+          return;
+        }
+
+        // Auto-select topic if all questions belong to a single topic
+        const uniqueTopicIds = Array.from(new Set(parsed.map((q) => q.resolved_topic_id).filter(Boolean)));
+        if (uniqueTopicIds.length === 1 && uniqueTopicIds[0]) {
+          setQuizSelectedTopic([uniqueTopicIds[0] as string]);
+        }
+
         setImportedQuestions(parsed);
-      } catch { setImportError("Could not parse spreadsheet accurately."); }
+      } catch (err: any) {
+        setImportError("Could not parse spreadsheet: " + (err?.message || "format error"));
+      }
     };
     reader.readAsArrayBuffer(file);
   };
 
   const downloadCsvTemplate = () => {
     const headers = [
+      "topic_name",
+      "subtopic_name",
       "question_text",
       "option_a",
       "option_b",
       "option_c",
       "option_d",
       "correct_option",
-      "subtopic_name",
       "answer_explanation",
       "image_file_name",
     ];
 
-    // Determine sample subtopics based on current selection or all topic subtopics
+    // Determine sample topic and subtopic based on current selections or course topics
+    const activeTopic = quizTopics.find((t) => t.id === quizSelectedTopic[0]) || quizTopics[0];
+    const topicName = activeTopic?.name || "Topic Name (must match Course Topic)";
+
     const selectedSubObjs = quizSubTopics.filter((s) => quizSelectedSubtopics.includes(s.id));
     const activeSubList = selectedSubObjs.length > 0 ? selectedSubObjs : quizSubTopics;
     
-    const subName1 = activeSubList[0]?.name || "Sample Subtopic A";
+    const subName1 = activeSubList[0]?.name || "Subtopic Name (must match Course Subtopic)";
     const subName2 = activeSubList[1]?.name || subName1;
 
     const examples = [
       [
+        topicName,
+        subName1,
         "What is the derivative of sin(x)?",
         "cos(x)",
         "-cos(x)",
         "tan(x)",
         "sec(x)",
         "A",
-        subName1,
         "By differentiation rules, d/dx [sin(x)] = cos(x).",
         "diagram_1.png",
       ],
       [
+        topicName,
+        subName2,
         "Which law states that for every action, there is an equal and opposite reaction?",
         "Newton's First Law",
         "Newton's Second Law",
         "Newton's Third Law",
         "Law of Universal Gravitation",
         "C",
-        subName2,
         "Newton's third law of motion explains action-reaction force pairs.",
         "",
       ],
@@ -2637,83 +2754,105 @@ const CMS = () => {
   };
 
   const handleFileImportUpload = async () => {
-    if (!quizSelectedClass[0] || !quizSelectedSubject[0] || !quizSelectedTopic[0]) {
-      setAlert({ type: "error", message: "Ensure all parameters align." }); return;
+    const targetClassId = quizSelectedClass[0] || selectedClass[0];
+    const targetSubjectId = quizSelectedSubject[0] || selectedSubject[0];
+
+    if (!targetClassId || !targetSubjectId) {
+      setAlert({
+        type: "error",
+        message: "Please select Class and Subject in the Quiz Questions section above before importing.",
+      });
+      return;
     }
+
+    if (!importedQuestions.length) {
+      setAlert({
+        type: "error",
+        message: "No questions to import. Please upload and parse a valid CSV or Excel spreadsheet first.",
+      });
+      return;
+    }
+
+    // Auto-sync UI state if it was empty so user sees their selection
+    if (!quizSelectedClass[0] && targetClassId) setQuizSelectedClass([targetClassId]);
+    if (!quizSelectedSubject[0] && targetSubjectId) setQuizSelectedSubject([targetSubjectId]);
+
     setQuizLoading(true);
     try {
-      const quizId = await createOrGetQuiz();
-      if (!quizId) { setQuizLoading(false); return; }
-
       const nameToUrlMap: Record<string, string> = {};
       for (const imgFile of bulkImageFiles) {
         const publicUrl = await uploadQuestionImage(imgFile);
         if (publicUrl) nameToUrlMap[imgFile.name] = publicUrl;
       }
 
-      // Gather subtopic candidates across all imported questions and dropdown
-      const subtopicCandidates = [
-        ...(Array.isArray(quizSelectedSubtopics) ? quizSelectedSubtopics : []),
-        ...importedQuestions.map((q) => q.subtopic_name || q.subtopic_id),
-      ];
+      // Group questions by resolved topic_id
+      const questionsByTopic = new Map<string, QuizQuestion[]>();
+      for (const q of importedQuestions) {
+        const tId = q.resolved_topic_id || quizSelectedTopic[0];
+        if (!tId) continue;
+        if (!questionsByTopic.has(tId)) questionsByTopic.set(tId, []);
+        questionsByTopic.get(tId)!.push(q);
+      }
 
-      const { map: subtopicMap, fallbackSubtopicId } = await resolveSubtopicMap(
-        quizSelectedClass[0],
-        quizSelectedSubject[0],
-        quizSelectedTopic[0],
-        subtopicCandidates
-      );
+      if (questionsByTopic.size === 0) {
+        throw new Error("No valid topics identified for questions. Topics must exist in the Course Topics section.");
+      }
 
-      const rawDefaultSub = safeNormalizeString(quizSelectedSubtopics?.[0]);
-      const defaultSubtopicId = rawDefaultSub
-        ? (subtopicMap.get(rawDefaultSub.toLowerCase()) || subtopicMap.get(rawDefaultSub) || (isValidUUID(rawDefaultSub) ? rawDefaultSub : fallbackSubtopicId))
-        : fallbackSubtopicId;
+      let totalInserted = 0;
+      const touchedTopicIds: string[] = [];
 
-      const rows = importedQuestions.map((q) => {
-        let matchedUrl = null;
-        if (q.csv_image_name && nameToUrlMap[q.csv_image_name]) matchedUrl = nameToUrlMap[q.csv_image_name];
-
-        const rawSubtopic = safeNormalizeString(q.subtopic_name || q.subtopic_id);
-        let finalSubtopicId: string | null = null;
-        if (rawSubtopic) {
-          finalSubtopicId = subtopicMap.get(rawSubtopic.toLowerCase()) || subtopicMap.get(rawSubtopic) || (isValidUUID(rawSubtopic) ? rawSubtopic : null);
-        }
-        if (!finalSubtopicId) {
-          finalSubtopicId = defaultSubtopicId || fallbackSubtopicId;
+      for (const [topicId, topicQuestions] of questionsByTopic.entries()) {
+        const quizId = await createOrGetQuiz(targetClassId, targetSubjectId, topicId);
+        if (!quizId) {
+          throw new Error(`Failed to find or create quiz test container for topic: ${topicQuestions[0]?.topic_name || topicId}`);
         }
 
-        if (!finalSubtopicId) {
-          throw new Error("Could not resolve a valid Subtopic UUID for imported questions. Please ensure a subtopic is selected.");
-        }
+        const rows = topicQuestions.map((q) => {
+          let matchedUrl = null;
+          if (q.csv_image_name && nameToUrlMap[q.csv_image_name]) matchedUrl = nameToUrlMap[q.csv_image_name];
 
-        const rowData: Record<string, any> = {
-          question_text: q.question_text.trim(),
-          option_a: q.option_a.trim(),
-          option_b: q.option_b.trim(),
-          option_c: q.option_c.trim(),
-          option_d: q.option_d.trim(),
-          correct_option: q.correct_option,
-          answer_explanation: q.answer_explanation || null,
-          image_url: matchedUrl,
-          subject_id: quizSelectedSubject[0],
-          topic_id: quizSelectedTopic[0],
-          quiz_id: quizId,
-          subtopic_id: finalSubtopicId,
-        };
+          return {
+            question_text: q.question_text.trim(),
+            option_a: q.option_a.trim(),
+            option_b: q.option_b.trim(),
+            option_c: q.option_c.trim(),
+            option_d: q.option_d.trim(),
+            correct_option: String(q.correct_option || "").trim().toUpperCase(),
+            answer_explanation: q.answer_explanation || null,
+            image_url: matchedUrl,
+            subject_id: targetSubjectId,
+            topic_id: topicId,
+            quiz_id: quizId,
+            subtopic_id: q.subtopic_id || null,
+          };
+        });
 
-        return rowData;
+        const { error } = await supabase.from("questions").insert(rows);
+        if (error) throw error;
+
+        totalInserted += rows.length;
+        touchedTopicIds.push(topicId);
+      }
+
+      setAlert({
+        type: "success",
+        message: `Successfully uploaded ${totalInserted} question${totalInserted !== 1 ? "s" : ""} across ${questionsByTopic.size} topic${questionsByTopic.size !== 1 ? "s" : ""}!`,
       });
+      setImportedQuestions([]);
+      setImportFileName(null);
+      setBulkImageFiles([]);
 
-      // Direct insert into questions table
-      const { error } = await supabase.from("questions").insert(rows);
-      if (error) throw error;
-
-      setAlert({ type: "success", message: `${rows.length} CSV questions processed successfully with subtopics!` });
-      setImportedQuestions([]); setImportFileName(null); setBulkImageFiles([]);
-      await fetchQuizzes(quizSelectedClass[0], quizSelectedSubject[0], quizSelectedTopic[0]);
+      if (quizSelectedTopic[0]) {
+        await fetchQuizzes(targetClassId, targetSubjectId, quizSelectedTopic[0]);
+      } else if (touchedTopicIds[0]) {
+        setQuizSelectedTopic([touchedTopicIds[0]]);
+        await fetchQuizzes(targetClassId, targetSubjectId, touchedTopicIds[0]);
+      }
     } catch (err) {
       setAlert({ type: "error", message: "Upload failed: " + (err as Error).message });
-    } finally { setQuizLoading(false); }
+    } finally {
+      setQuizLoading(false);
+    }
   };
 
   // ── Memoized Collections for Chakra UI v3 ──
@@ -2730,11 +2869,18 @@ const CMS = () => {
   const subTopicCollection = useMemo(() => createListCollection<SelectItem>({ items: resourceSubTopics.map((st) => ({ label: st.name + (st.description || st.desc ? ` — ${st.description || st.desc}` : ""), value: st.id })) }), [resourceSubTopics]);
 
   const isMultipleSubtopicsSelected = quizSelectedSubtopics.length > 1;
+  const effectiveQuizClass = quizSelectedClass[0] || selectedClass[0];
+  const effectiveQuizSubject = quizSelectedSubject[0] || selectedSubject[0];
+  const effectiveQuizTopic = quizSelectedTopic[0] || (selectedTopicId[0] && quizTopics.some((t) => t.id === selectedTopicId[0]) ? selectedTopicId[0] : null);
+  const effectiveQuizClassObj = classes.find((c) => c.id === effectiveQuizClass);
+  const effectiveQuizSubjectObj = subjects.find((s) => s.id === effectiveQuizSubject);
+  const effectiveQuizTopicObj = quizTopics.find((t) => t.id === (quizSelectedTopic[0] || effectiveQuizTopic));
+
   const quizUploadDisabled =
-    !quizSelectedClass[0] ||
-    !quizSelectedSubject[0] ||
-    !quizSelectedTopic[0] ||
-    !quizSelectedSubtopics[0] ||
+    !effectiveQuizClass ||
+    !effectiveQuizSubject ||
+    !effectiveQuizTopic ||
+    (!quizSelectedSubtopics[0] && quizSubTopics.length > 0) ||
     isMultipleSubtopicsSelected ||
     questions.some((q) => !isQuestionValid(q)) ||
     quizLoading;
@@ -4474,10 +4620,75 @@ const CMS = () => {
 
                   <Tabs.Content value="import" pt={4}>
                     <VStack gap={4} align="stretch">
+                      {/* Target Quiz Context Alert / Confirmation Banner */}
+                      {(!effectiveQuizClass || !effectiveQuizSubject || !effectiveQuizTopic) ? (
+                        <Box p={3} bg="orange.50" border="1px solid" borderColor="orange.200" borderRadius="xl">
+                          <HStack justify="space-between" align="start" gap={2}>
+                            <HStack align="start" gap={2}>
+                              <Icon as={FiAlertCircle} color="orange.600" mt={0.5} />
+                              <VStack align="start" gap={0.5}>
+                                <Text fontSize="xs" fontWeight="700" color="orange.800">
+                                  Target Parameters Incomplete
+                                </Text>
+                                <Text fontSize="11px" color="orange.700">
+                                  Please select {!effectiveQuizClass && "Class"}{!effectiveQuizClass && (!effectiveQuizSubject || !effectiveQuizTopic) && ", "}{!effectiveQuizSubject && "Subject"}{!effectiveQuizSubject && !effectiveQuizTopic && ", "}{!effectiveQuizTopic && "Topic"} in the selectors above before importing questions.
+                                </Text>
+                              </VStack>
+                            </HStack>
+                            {(selectedClass[0] || selectedSubject[0]) && (!quizSelectedClass[0] || !quizSelectedSubject[0]) && (
+                              <Button
+                                size="xs"
+                                variant="outline"
+                                colorPalette="orange"
+                                fontSize="10px"
+                                onClick={() => {
+                                  if (selectedClass[0]) setQuizSelectedClass(selectedClass);
+                                  if (selectedSubject[0]) setQuizSelectedSubject(selectedSubject);
+                                }}
+                              >
+                                Sync Curriculum
+                              </Button>
+                            )}
+                          </HStack>
+                        </Box>
+                      ) : (
+                        <Box p={2.5} bg="blue.50/60" border="1px solid" borderColor="blue.100" borderRadius="xl">
+                          <HStack justify="space-between" wrap="wrap" gap={2} align="center">
+                            <HStack gap={1.5} wrap="wrap" align="center">
+                              <Text fontSize="10px" fontWeight="700" color="blue.700" textTransform="uppercase">Target Quiz Bank:</Text>
+                              <Badge colorPalette="blue" size="sm" variant="subtle">
+                                {effectiveQuizClassObj?.name || "Class"}
+                              </Badge>
+                              <Text fontSize="10px" color="blue.300">•</Text>
+                              <Badge colorPalette="teal" size="sm" variant="subtle">
+                                {effectiveQuizSubjectObj?.name || "Subject"}
+                              </Badge>
+                              <Text fontSize="10px" color="blue.300">•</Text>
+                              <Badge colorPalette="purple" size="sm" variant="subtle">
+                                {effectiveQuizTopicObj?.name || "Topic"}
+                              </Badge>
+                            </HStack>
+                            <Badge colorPalette="green" size="sm" variant="surface">
+                              Ready for Upload
+                            </Badge>
+                          </HStack>
+                        </Box>
+                      )}
+
+                      <Alert.Root status="info" variant="subtle" borderRadius="xl">
+                        <Alert.Indicator />
+                        <Alert.Content>
+                          <Alert.Title fontSize="xs" fontWeight="700">Course Hierarchy Requirement</Alert.Title>
+                          <Alert.Description fontSize="xs">
+                            Topics and subtopics <strong>cannot</strong> be created from uploaded quiz questions. They must already exist in the database (created in the <strong>Create Course Topic</strong> section). Ensure the <Code fontSize="10px">topic_name</Code> and <Code fontSize="10px">subtopic_name</Code> in your CSV match existing course topics and subtopics.
+                          </Alert.Description>
+                        </Alert.Content>
+                      </Alert.Root>
+
                       <HStack bg="blue.50" p={3} borderRadius="xl" justify="space-between">
                         <Box>
                           <Text fontSize="xs" fontWeight="700" color="blue.800">Download Spreadsheet Template</Text>
-                          <Text fontSize="10px" color="blue.500">Includes columns: subtopic_name, answer_explanation, image_file_name</Text>
+                          <Text fontSize="10px" color="blue.500">Includes columns: topic_name, subtopic_name, question_text, option_a, option_b, option_c, option_d, correct_option, answer_explanation, image_file_name</Text>
                         </Box>
                         <Button onClick={downloadCsvTemplate} size="sm" bg="blue.500" color="white"><Icon as={FiDownload} /> Get Template</Button>
                       </HStack>
@@ -4507,7 +4718,7 @@ const CMS = () => {
                             })}
                           </HStack>
                           <Text fontSize="10px" color="gray.500">
-                            Type any of these subtopic names into the <Code fontSize="10px" color="blue.600">subtopic_name</Code> column in your CSV to assign questions directly.
+                            Enter existing subtopic names into the <Code fontSize="10px" color="blue.600">subtopic_name</Code> column in your CSV.
                           </Text>
                         </Box>
                       )}
@@ -4541,8 +4752,8 @@ const CMS = () => {
 
                       {importedQuestions.length > 0 && (
                         <Box>
-                          <Text {...fieldLabelProps}>Import Preview Breakdown</Text>
-                          <VStack gap={2} align="stretch" maxH="220px" overflowY="auto">
+                          <Text {...fieldLabelProps}>Import Preview Breakdown ({importedQuestions.length} Questions Verified)</Text>
+                          <VStack gap={2} align="stretch" maxH="240px" overflowY="auto">
                             {importedQuestions.map((q, i) => (
                               <HStack key={i} p={2.5} bg="white" border="1px solid" borderColor="gray.100" borderRadius="md" align="start">
                                 <Badge bg="blue.500" color="white" fontSize="9px">Q{i + 1}</Badge>
@@ -4552,18 +4763,23 @@ const CMS = () => {
                                     <Badge bg="blue.50" color="blue.700" fontSize="9px">
                                       Option: {q.correct_option.toUpperCase()}
                                     </Badge>
-                                    {q.subtopic_name ? (
-                                      <Badge bg="blue.50" color="blue.700" fontSize="9px">
-                                        Subtopic: {q.subtopic_name} {q.subtopic_id ? "✓" : "⚡ (Auto-link)"}
-                                      </Badge>
-                                    ) : quizSelectedSubtopics.length > 0 ? (
-                                      <Badge bg="green.50" color="green.700" fontSize="9px">
-                                        Subtopic: {quizSubTopics.find(s => s.id === quizSelectedSubtopics[0])?.name || "Selected"} (Default)
-                                      </Badge>
-                                    ) : null}
-                                    {q.answer_explanation && (
+                                    {q.topic_name && (
                                       <Badge bg="purple.50" color="purple.700" fontSize="9px">
-                                        📝 Explanation Added
+                                        Topic: {q.topic_name}
+                                      </Badge>
+                                    )}
+                                    {q.subtopic_name ? (
+                                      <Badge bg="teal.50" color="teal.700" fontSize="9px">
+                                        Subtopic: {q.subtopic_name}
+                                      </Badge>
+                                    ) : (
+                                      <Badge bg="gray.100" color="gray.600" fontSize="9px">
+                                        Subtopic: None
+                                      </Badge>
+                                    )}
+                                    {q.answer_explanation && (
+                                      <Badge bg="indigo.50" color="indigo.700" fontSize="9px">
+                                        📝 Explanation
                                       </Badge>
                                     )}
                                     {q.csv_image_name && (
@@ -4584,8 +4800,26 @@ const CMS = () => {
                         </Box>
                       )}
 
-                      <Button bg="blue.500" color="white" rounded="xl" h={11} onClick={handleFileImportUpload} disabled={!importedQuestions.length || quizLoading} loading={quizLoading}>
-                        Upload {importedQuestions.length} Checked CSV Items
+                      <Button
+                        bg="blue.500"
+                        color="white"
+                        rounded="xl"
+                        h={11}
+                        onClick={handleFileImportUpload}
+                        disabled={
+                          !importedQuestions.length ||
+                          quizLoading ||
+                          !effectiveQuizClass ||
+                          !effectiveQuizSubject ||
+                          (!effectiveQuizTopic && !importedQuestions.every((q) => q.resolved_topic_id))
+                        }
+                        loading={quizLoading}
+                      >
+                        {importedQuestions.length > 0
+                          ? effectiveQuizTopicObj
+                            ? `Upload ${importedQuestions.length} Validated CSV Questions to "${effectiveQuizTopicObj.name}"`
+                            : `Upload ${importedQuestions.length} Validated CSV Questions`
+                          : `Upload ${importedQuestions.length || 0} Checked CSV Items`}
                       </Button>
                     </VStack>
                   </Tabs.Content>
