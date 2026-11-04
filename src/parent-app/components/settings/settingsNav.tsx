@@ -8,7 +8,7 @@ type Props = {
 
 const SettingsNav = ({ settingsState, setSettingsState }: Props) => {
   const navItems = [
-    { text: "My Profile", state: "igrade" },
+    { text: "My Profile", state: "profile" },
     { text: "Language", state: "language" },
     { text: "Subscription", state: "subscription" },
     { text: "Security", state: "security" },
@@ -25,8 +25,8 @@ const SettingsNav = ({ settingsState, setSettingsState }: Props) => {
       p={1.5}
       shadow="xs"
       border="1px solid"
-      borderColor="gray.100"
-      bg="white"
+      borderColor={{ base: "gray.100", _dark: "#262626" }}
+      bg={{ base: "white", _dark: "#121212" }}
       rounded="xl"
       w="full"
       overflowX="auto"
@@ -45,7 +45,7 @@ const SettingsNav = ({ settingsState, setSettingsState }: Props) => {
         return (
           <Box
             key={idx}
-            bg={isActive ? "blue.50" : "transparent"}
+            bg={isActive ? { base: "blue.50", _dark: "rgba(37, 99, 235, 0.25)" } : "transparent"}
             py={2}
             px={3.5} 
             rounded="lg"
@@ -57,7 +57,7 @@ const SettingsNav = ({ settingsState, setSettingsState }: Props) => {
             onClick={() => setSettingsState(item.state)}
           >
             <Text
-              color={isActive ? "#206CE1" : "gray.600"} 
+              color={isActive ? { base: "#206CE1", _dark: "#60A5FA" } : { base: "gray.600", _dark: "gray.400" }} 
               fontSize="xs"
               fontWeight={isActive ? 700 : 500}
             >

@@ -145,7 +145,7 @@ const HelpFaqs = () => {
     <Box w="100%" py={1} mb={10}>
       {/* Header Banner */}
       <Box
-        bg="white"
+        bg={{ base: "white", _dark: "#121212" }}
         p={{ base: 4, sm: 6 }}
         border="none"
         outline="none"
@@ -177,10 +177,10 @@ const HelpFaqs = () => {
                 Student Help Center
               </Badge>
             </HStack>
-            <Heading fontSize={{ base: "13px", sm: "14px" }} color="gray.800" fontWeight="bold">
+            <Heading fontSize={{ base: "13px", sm: "14px" }} color={{ base: "gray.800", _dark: "#F5F5F5" }} fontWeight="bold">
               Help & Frequently Asked Questions
             </Heading>
-            <Text fontSize="11px" color="gray.500" mt={0.5} maxW="600px">
+            <Text fontSize="11px" color={{ base: "gray.500", _dark: "#A1A1AA" }} mt={0.5} maxW="600px">
               Need assistance? Explore quick answers below or send a message directly to our student support team.
             </Text>
           </Box>
@@ -215,11 +215,11 @@ const HelpFaqs = () => {
               h="26px"
               px={2}
               fontSize="11px"
-              bg="#F4F7FB"
-              color="gray.700"
-              _hover={{ bg: "#EDF2F7" }}
+              bg={{ base: "#F4F7FB", _dark: "#1A1A1A" }}
+              color={{ base: "gray.700", _dark: "#E5E5E5" }}
+              _hover={{ bg: { base: "#EDF2F7", _dark: "#262626" } }}
               rounded="md"
-              border="none"
+              border={{ base: "none", _dark: "1px solid #262626" }}
               outline="none"
               boxShadow="none"
               gap={1}
@@ -234,8 +234,8 @@ const HelpFaqs = () => {
         <Box mt={4} position="relative" w="100%">
           <Flex
             align="center"
-            bg="#F4F7FB"
-            border="none"
+            bg={{ base: "#F4F7FB", _dark: "#1A1A1A" }}
+            border={{ base: "none", _dark: "1px solid #262626" }}
             outline="none"
             boxShadow="none"
             rounded="xl"
@@ -251,7 +251,7 @@ const HelpFaqs = () => {
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               fontSize="11px"
-              color="gray.800"
+              color={{ base: "gray.800", _dark: "#F5F5F5" }}
               border="none"
               outline="none"
             />
@@ -283,12 +283,12 @@ const HelpFaqs = () => {
                 py={1}
                 fontSize="10px"
                 rounded="full"
-                border="none"
+                border={{ base: "none", _dark: isSelected ? "none" : "1px solid #262626" }}
                 outline="none"
                 boxShadow="none"
-                bg={isSelected ? "#206CE1" : "#F4F7FB"}
-                color={isSelected ? "white" : "gray.600"}
-                _hover={{ bg: isSelected ? "#1a5bc0" : "#EDF2F7" }}
+                bg={isSelected ? "#206CE1" : { base: "#F4F7FB", _dark: "#1A1A1A" }}
+                color={isSelected ? "white" : { base: "gray.600", _dark: "#D4D4D8" }}
+                _hover={{ bg: isSelected ? "#1a5bc0" : { base: "#EDF2F7", _dark: "#262626" } }}
                 onClick={() => setSelectedCategory(cat.id)}
                 whiteSpace="nowrap"
                 gap={1}
@@ -362,9 +362,9 @@ const HelpFaqs = () => {
               return (
                 <Box
                   key={index}
-                  bg="#F4F7FB"
+                  bg={{ base: "#F4F7FB", _dark: "#1A1A1A" }}
                   rounded="xl"
-                  border="none"
+                  border={{ base: "none", _dark: "1px solid #262626" }}
                   outline="none"
                   boxShadow="none"
                   transition="all 0.15s"
@@ -377,7 +377,7 @@ const HelpFaqs = () => {
                     align="center"
                     cursor="pointer"
                     onClick={() => setExpandedFaq(isOpen ? null : index)}
-                    _hover={{ bg: "#EDF2F7" }}
+                    _hover={{ bg: { base: "#EDF2F7", _dark: "#222222" } }}
                     gap={2}
                   >
                     <HStack gap={2} align="center" flex="1">
@@ -385,8 +385,8 @@ const HelpFaqs = () => {
                         w={4.5}
                         h={4.5}
                         rounded="full"
-                        bg={isOpen ? "blue.50" : "white"}
-                        color={isOpen ? "#206CE1" : "gray.500"}
+                        bg={isOpen ? "blue.50" : { base: "white", _dark: "#262626" }}
+                        color={isOpen ? "#206CE1" : { base: "gray.500", _dark: "#A1A1AA" }}
                         display="flex"
                         alignItems="center"
                         justifyContent="center"
@@ -396,7 +396,7 @@ const HelpFaqs = () => {
                           ?
                         </Text>
                       </Box>
-                      <Text fontSize={{ base: "11px", sm: "12px" }} fontWeight="600" color="gray.800" lineHeight="short">
+                      <Text fontSize={{ base: "11px", sm: "12px" }} fontWeight="600" color={{ base: "gray.800", _dark: "#F5F5F5" }} lineHeight="short">
                         {faq.q}
                       </Text>
                     </HStack>
@@ -406,8 +406,8 @@ const HelpFaqs = () => {
                   </Flex>
 
                   {isOpen && (
-                    <Box px={3} pb={3} pt={0.5} borderTop="1px solid" borderColor="gray.50">
-                      <Text fontSize="11px" color="gray.600" lineHeight="1.5">
+                    <Box px={3} pb={3} pt={0.5} borderTop="1px solid" borderColor={{ base: "gray.50", _dark: "#262626" }}>
+                      <Text fontSize="11px" color={{ base: "gray.600", _dark: "#D4D4D8" }} lineHeight="1.5">
                         {faq.a}
                       </Text>
                     </Box>
@@ -419,8 +419,8 @@ const HelpFaqs = () => {
 
           {/* Quick AI Tutor Reminder Banner */}
           <Box
-            bg="#EFF6FF"
-            border="none"
+            bg={{ base: "#EFF6FF", _dark: "#1A1A1A" }}
+            border={{ base: "none", _dark: "1px solid #262626" }}
             outline="none"
             boxShadow="none"
             p={3}
@@ -432,10 +432,10 @@ const HelpFaqs = () => {
                 <FiCpu size={13} />
               </Box>
               <Box>
-                <Text fontSize="11px" fontWeight="bold" color="gray.800">
+                <Text fontSize="11px" fontWeight="bold" color={{ base: "gray.800", _dark: "#F5F5F5" }}>
                   Have an academic question right now?
                 </Text>
-                <Text fontSize="10.5px" color="gray.600" mt={0.5} lineHeight="short">
+                <Text fontSize="10.5px" color={{ base: "gray.600", _dark: "#A1A1AA" }} mt={0.5} lineHeight="short">
                   Use the 24/7 AI Study Assistant in the bottom right corner of your screen for instant explanations, formulas, and hints.
                 </Text>
               </Box>
@@ -445,10 +445,10 @@ const HelpFaqs = () => {
 
         {/* Contact / Inquiry Form Column */}
         <Box
-          bg="#F4F7FB"
+          bg={{ base: "#F4F7FB", _dark: "#1A1A1A" }}
           p={{ base: 3.5, md: 4 }}
           rounded="xl"
-          border="none"
+          border={{ base: "none", _dark: "1px solid #262626" }}
           outline="none"
           boxShadow="none"
           height="fit-content"
@@ -456,80 +456,82 @@ const HelpFaqs = () => {
         >
           <HStack gap={1.5} mb={1}>
             <FiSend color="#206CE1" size={13} />
-            <Text fontSize="12px" fontWeight="bold" color="gray.800">
+            <Text fontSize="12px" fontWeight="bold" color={{ base: "gray.800", _dark: "#F5F5F5" }}>
               Ask Student Support
             </Text>
           </HStack>
-          <Text fontSize="10.5px" color="gray.500" mb={3} lineHeight="short">
+          <Text fontSize="10.5px" color={{ base: "gray.500", _dark: "#A1A1AA" }} mb={3} lineHeight="short">
             Can't find your answer? Drop your question below and our academic support desk will assist you.
           </Text>
 
           <form onSubmit={handleSupportSubmit}>
             <VStack gap={2.5} align="stretch">
               <Box>
-                <Text fontSize="10.5px" fontWeight="600" color="gray.700" mb={1}>
+                <Text fontSize="10.5px" fontWeight="600" color={{ base: "gray.700", _dark: "#D4D4D8" }} mb={1}>
                   Your Name
                 </Text>
                 <Input
                   fontSize="11px"
-                  bg="white"
-                  border="none"
+                  bg={{ base: "white", _dark: "#121212" }}
+                  border={{ base: "none", _dark: "1px solid #262626" }}
                   outline="none"
                   rounded="lg"
                   h="32px"
                   value={studentName || "Student"}
                   disabled
-                  color="gray.600"
+                  color={{ base: "gray.600", _dark: "#A1A1AA" }}
                 />
               </Box>
 
               <Box>
-                <Text fontSize="10.5px" fontWeight="600" color="gray.700" mb={1}>
+                <Text fontSize="10.5px" fontWeight="600" color={{ base: "gray.700", _dark: "#D4D4D8" }} mb={1}>
                   Email Address
                 </Text>
                 <Input
                   fontSize="11px"
-                  bg="white"
-                  border="none"
+                  bg={{ base: "white", _dark: "#121212" }}
+                  border={{ base: "none", _dark: "1px solid #262626" }}
                   outline="none"
                   rounded="lg"
                   h="32px"
                   value={studentEmail || "student@example.com"}
                   disabled
-                  color="gray.600"
+                  color={{ base: "gray.600", _dark: "#A1A1AA" }}
                 />
               </Box>
 
               <Box>
-                <Text fontSize="10.5px" fontWeight="600" color="gray.700" mb={1}>
+                <Text fontSize="10.5px" fontWeight="600" color={{ base: "gray.700", _dark: "#D4D4D8" }} mb={1}>
                   Topic Category
                 </Text>
                 <Input
                   fontSize="11px"
-                  bg="white"
-                  border="none"
+                  bg={{ base: "white", _dark: "#121212" }}
+                  border={{ base: "none", _dark: "1px solid #262626" }}
                   outline="none"
                   rounded="lg"
                   h="32px"
                   value={formSubject}
                   onChange={(e) => setFormSubject(e.target.value)}
+                  color={{ base: "inherit", _dark: "#F5F5F5" }}
                 />
               </Box>
 
               <Box>
-                <Text fontSize="10.5px" fontWeight="600" color="gray.700" mb={1}>
+                <Text fontSize="10.5px" fontWeight="600" color={{ base: "gray.700", _dark: "#D4D4D8" }} mb={1}>
                   Describe Your Question
                 </Text>
                 <Textarea
                   fontSize="11px"
-                  bg="white"
-                  border="none"
+                  bg={{ base: "white", _dark: "#121212" }}
+                  border={{ base: "none", _dark: "1px solid #262626" }}
                   outline="none"
                   rounded="lg"
                   rows={3}
                   placeholder="Type your question or issue in detail..."
                   value={formMessage}
                   onChange={(e) => setFormMessage(e.target.value)}
+                  color={{ base: "inherit", _dark: "#F5F5F5" }}
                 />
               </Box>
 

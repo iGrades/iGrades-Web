@@ -1,7 +1,7 @@
 import { useState, useRef, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/lib/supabaseClient";
-import { usePassKey } from "@/parent-app/context/passkeyContext";
+import { usePassKey, decrypt } from "@/parent-app/context/passkeyContext";
 import { useAuthdStudentData } from "../context/studentDataContext";
 import { recordActivity } from "@/lib/authSessionManager";
 import {
@@ -14,7 +14,6 @@ import {
   Text,
   PinInput,
   Grid,
-  HStack,
 } from "@chakra-ui/react";
 import { FiMail } from "react-icons/fi";
 import type { Dispatch, SetStateAction } from "react";
@@ -36,7 +35,10 @@ const ChildrenLogin = ({ setAlert }: Props) => {
 
   const passcodeRef = useRef<string[]>([]);
 
-  const encKey = (import.meta.env.ENC_KEY as string) || "";
+  const encKey =
+    (import.meta.env.ENC_KEY as string) ||
+    (import.meta.env.VITE_ENC_KEY as string) ||
+    "783921";
 
   const handlePasscodeChange = useCallback((e: any) => {
     const val = Array.isArray(e) ? e : (e?.value || []);
@@ -58,14 +60,16 @@ const ChildrenLogin = ({ setAlert }: Props) => {
 
       setIsLoading(true);
 
-      const encrypted = encrypt(currentPasscode, encKey);
+      const encryptedDefault = encrypt(currentPasscode, "783921");
+      const encryptedEnv = encrypt(currentPasscode, encKey);
 
       let student: any = null;
 
+      // Tier 1: RPC get_student_by_credentials with default 783921 key
       try {
         const { data, error } = await supabase.rpc("get_student_by_credentials", {
           p_email: cleanEmail,
-          p_enc_passcode: encrypted,
+          p_enc_passcode: encryptedDefault,
         });
 
         if (!error && data) {
@@ -79,29 +83,72 @@ const ChildrenLogin = ({ setAlert }: Props) => {
         console.warn("RPC get_student_by_credentials warning:", err);
       }
 
-      // Fallback 1: Direct query by email + encrypted passcode
+      // Tier 2: RPC get_student_by_credentials with plain passcode
       if (!student) {
-        const { data: directData, error: directError } = await supabase
+        try {
+          const { data, error } = await supabase.rpc("get_student_by_credentials", {
+            p_email: cleanEmail,
+            p_enc_passcode: currentPasscode,
+          });
+
+          if (!error && data) {
+            if (Array.isArray(data) && data.length > 0) {
+              student = data[0];
+            } else if (!Array.isArray(data) && typeof data === "object" && (data as any)?.id) {
+              student = data;
+            }
+          }
+        } catch (_err) {
+          // Fall through to direct query tiers
+        }
+      }
+
+      // Tier 3: Direct table query by email + encryptedDefault
+      if (!student) {
+        const { data: directData } = await supabase
           .from("students")
           .select("*")
           .ilike("email", cleanEmail)
-          .eq("passcode", encrypted);
+          .eq("passcode", encryptedDefault);
 
-        if (!directError && directData && Array.isArray(directData) && directData.length > 0) {
+        if (directData && Array.isArray(directData) && directData.length > 0) {
           student = directData[0];
         }
       }
 
-      // Fallback 2: Direct query by email + plain passcode
-      if (!student && currentPasscode !== encrypted) {
-        const { data: plainData, error: plainError } = await supabase
+      // Tier 4: Direct table query by email + plain passcode
+      if (!student) {
+        const { data: plainData } = await supabase
           .from("students")
           .select("*")
           .ilike("email", cleanEmail)
           .eq("passcode", currentPasscode);
 
-        if (!plainError && plainData && Array.isArray(plainData) && plainData.length > 0) {
+        if (plainData && Array.isArray(plainData) && plainData.length > 0) {
           student = plainData[0];
+        }
+      }
+
+      // Tier 5: Direct query by email with decrypted passcode match
+      if (!student) {
+        const { data: emailData } = await supabase
+          .from("students")
+          .select("*")
+          .ilike("email", cleanEmail);
+
+        if (emailData && Array.isArray(emailData) && emailData.length > 0) {
+          const matched = emailData.find((cand: any) => {
+            const candPass = (cand.passcode || "").trim();
+            if (!candPass) return false;
+            if (candPass === encryptedDefault) return true;
+            if (candPass === currentPasscode) return true;
+            if (candPass === encryptedEnv) return true;
+            const dec = decrypt(candPass, "783921");
+            return dec === currentPasscode;
+          });
+          if (matched) {
+            student = matched;
+          }
         }
       }
 

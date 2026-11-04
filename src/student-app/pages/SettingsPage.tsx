@@ -21,10 +21,13 @@ import {
   FiCreditCard,
   FiHelpCircle,
   FiChevronRight,
-  FiArrowLeft,
   FiEdit2,
   FiAward,
   FiLogOut,
+  FiMoon,
+  FiSun,
+  FiMaximize,
+  FiTv,
 } from "react-icons/fi";
 import { useAuthdStudentData } from "../context/studentDataContext";
 import { useNavigationStore } from "@/store/usenavigationStore";
@@ -32,6 +35,9 @@ import { usePointsSystem } from "../hooks/usePointsSystem";
 import { useTranslation } from "react-i18next";
 import { supabase } from "@/lib/supabaseClient";
 import { toaster } from "@/components/ui/toaster";
+import { useAppTheme } from "@/hooks/useAppTheme";
+import { useBackButton } from "@/hooks/useBackButton";
+import { StudentLogoutModal } from "../components/StudentLogoutModal";
 
 import Profile from "../components/settings/profile/profile";
 import Security from "../components/settings/security";
@@ -50,6 +56,21 @@ const SettingsPage: React.FC = () => {
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isUploadingPhoto, setIsUploadingPhoto] = useState(false);
+  const [showLogoutModal, setShowLogoutModal] = useState(false);
+
+  // Hook native back button to return to Settings menu if on subpage
+  useBackButton(
+    "student-settings-subpage",
+    70,
+    () => {
+      if (studentSettingsTab && studentSettingsTab !== "menu") {
+        setStudentSettingsTab("menu");
+        return true;
+      }
+      return false;
+    },
+    Boolean(studentSettingsTab && studentSettingsTab !== "menu")
+  );
 
   // Master notification toggle (turns on/off all forms of notifications)
   const [notificationsEnabled, setNotificationsEnabled] = useState<boolean>(() => {
@@ -96,6 +117,34 @@ const SettingsPage: React.FC = () => {
       description: checked
         ? "All app notifications and study reminders are now active."
         : "All notifications have been turned off.",
+      type: "info",
+      duration: 2500,
+    });
+  };
+
+  const { theme, isDark, setTheme, isFullscreen, setFullscreen } = useAppTheme();
+
+  const handleSelectThemeMode = async (mode: "light" | "dark" | "system") => {
+    await setTheme(mode);
+    toaster.create({
+      title: mode === "system" ? "System Default Theme" : mode === "dark" ? "Dark Mode Enabled" : "Light Mode Enabled",
+      description: mode === "system"
+        ? "Theme will match your device system settings."
+        : mode === "dark"
+        ? "iGrades is now set to dark theme."
+        : "iGrades is now set to light theme.",
+      type: "info",
+      duration: 2500,
+    });
+  };
+
+  const handleToggleFullscreen = async (checked: boolean) => {
+    await setFullscreen(checked);
+    toaster.create({
+      title: checked ? "Full-Screen Mode Enabled" : "Full-Screen Mode Disabled",
+      description: checked
+        ? "Application expanded to full screen."
+        : "Standard display mode restored.",
       type: "info",
       duration: 2500,
     });
@@ -193,34 +242,12 @@ const SettingsPage: React.FC = () => {
 
     return (
       <Box w="100%" m={0} p={0} pt={3} pb={16}>
-        {/* Mobile Header with Back Button (No background, border, or box shadow) */}
-        <Flex
-          align="center"
-          gap={3}
-          mb={4}
-          px={{ base: 4, sm: 6 }}
-          cursor="pointer"
-          onClick={() => setStudentSettingsTab("menu")}
-          role="button"
-          aria-label="Back to Settings"
-          w="fit-content"
-          bg="transparent"
-          border="none"
-          outline="none"
-          boxShadow="none"
-          _hover={{ opacity: 0.8 }}
-          transition="opacity 0.15s"
-        >
-          <Icon as={FiArrowLeft} color="#1E293B" boxSize="20px" flexShrink={0} />
-          <Box>
-            <Heading fontSize={{ base: "16px", md: "18px" }} fontWeight="700" color="#1E293B">
-              {subpageTitle}
-            </Heading>
-            <Text fontSize="11px" color="#64748B">
-              Back to Settings & Profile
-            </Text>
-          </Box>
-        </Flex>
+        {/* Subpage Header (left arrow removed; native phone back button handles return) */}
+        <Box mb={4} px={{ base: 4, sm: 6 }}>
+          <Heading fontSize={{ base: "18px", md: "20px" }} fontWeight="700" color={{ base: "#1E293B", _dark: "#F8FAFC" }}>
+            {subpageTitle}
+          </Heading>
+        </Box>
 
         <Box w="100%" m={0} p={0}>
           {subpageContent}
@@ -322,7 +349,7 @@ const SettingsPage: React.FC = () => {
           as="h1"
           fontSize={{ base: "18px", sm: "20px" }}
           fontWeight="800"
-          color="#1E293B"
+          color={{ base: "#1E293B", _dark: "#F8FAFC" }}
           mt={3}
           textAlign="center"
         >
@@ -330,7 +357,7 @@ const SettingsPage: React.FC = () => {
         </Heading>
 
         {authdStudent?.class && (
-          <Text fontSize="12px" color="#64748B" fontWeight="500" mt={0.5}>
+          <Text fontSize="12px" color={{ base: "#64748B", _dark: "#94A3B8" }} fontWeight="500" mt={0.5}>
             {authdStudent.class} {authdStudent.school ? `· ${authdStudent.school}` : ""}
           </Text>
         )}
@@ -338,7 +365,7 @@ const SettingsPage: React.FC = () => {
         {/* IGG Points Section below Name with Award Icon */}
         <HStack
           gap={2}
-          bg="#FFFBEB"
+          bg={{ base: "#FFFBEB", _dark: "rgba(245, 158, 11, 0.15)" }}
           border="none"
           outline="none"
           boxShadow="none"
@@ -347,8 +374,8 @@ const SettingsPage: React.FC = () => {
           borderRadius="full"
           mt={2.5}
         >
-          <Icon as={FiAward} color="#D97706" boxSize="16px" />
-          <Text fontSize="13px" fontWeight="700" color="#92400E">
+          <Icon as={FiAward} color={{ base: "#D97706", _dark: "#F59E0B" }} boxSize="16px" />
+          <Text fontSize="13px" fontWeight="700" color={{ base: "#92400E", _dark: "#FCD34D" }}>
             {pointsBalance.toLocaleString()} IGG Points
           </Text>
         </HStack>
@@ -368,15 +395,15 @@ const SettingsPage: React.FC = () => {
           align="center"
           justify="space-between"
           w="100%"
-          bg="#F4F7FB"
+          bg={{ base: "#F4F7FB", _dark: "#1A1A1A" }}
           px={{ base: 4, sm: 6 }}
           py={4}
           border="none"
           outline="none"
           boxShadow="none"
           cursor="pointer"
-          _hover={{ bg: "#EDF2F7" }}
-          _active={{ bg: "#E2E8F0" }}
+          _hover={{ bg: { base: "#EDF2F7", _dark: "#242424" } }}
+          _active={{ bg: { base: "#E2E8F0", _dark: "#2E2E2E" } }}
           transition="background 0.15s"
           onClick={() => setStudentSettingsTab("profile")}
           role="button"
@@ -386,7 +413,7 @@ const SettingsPage: React.FC = () => {
               w="38px"
               h="38px"
               borderRadius="xl"
-              bg="#EFF6FF"
+              bg={{ base: "#EFF6FF", _dark: "rgba(37, 99, 235, 0.2)" }}
               color="#2563EB"
               align="center"
               justify="center"
@@ -395,15 +422,15 @@ const SettingsPage: React.FC = () => {
               <Icon as={FiUser} boxSize="18px" />
             </Flex>
             <Box>
-              <Text fontSize="14px" fontWeight="600" color="#1E293B">
+              <Text fontSize="14px" fontWeight="600" color={{ base: "#1E293B", _dark: "#F8FAFC" }}>
                 Profile
               </Text>
-              <Text fontSize="11px" color="#64748B">
+              <Text fontSize="11px" color={{ base: "#64748B", _dark: "#94A3B8" }}>
                 Personal info & class level
               </Text>
             </Box>
           </HStack>
-          <Icon as={FiChevronRight} color="#94A3B8" boxSize="18px" />
+          <Icon as={FiChevronRight} color={{ base: "#94A3B8", _dark: "#64748B" }} boxSize="18px" />
         </Flex>
 
         {/* 2. Language */}
@@ -411,15 +438,15 @@ const SettingsPage: React.FC = () => {
           align="center"
           justify="space-between"
           w="100%"
-          bg="#F4F7FB"
+          bg={{ base: "#F4F7FB", _dark: "#1A1A1A" }}
           px={{ base: 4, sm: 6 }}
           py={4}
           border="none"
           outline="none"
           boxShadow="none"
           cursor="pointer"
-          _hover={{ bg: "#EDF2F7" }}
-          _active={{ bg: "#E2E8F0" }}
+          _hover={{ bg: { base: "#EDF2F7", _dark: "#242424" } }}
+          _active={{ bg: { base: "#E2E8F0", _dark: "#2E2E2E" } }}
           transition="background 0.15s"
           onClick={() => setStudentSettingsTab("language")}
           role="button"
@@ -429,7 +456,7 @@ const SettingsPage: React.FC = () => {
               w="38px"
               h="38px"
               borderRadius="xl"
-              bg="#F0FDFA"
+              bg={{ base: "#F0FDFA", _dark: "rgba(13, 148, 136, 0.2)" }}
               color="#0D9488"
               align="center"
               justify="center"
@@ -438,15 +465,15 @@ const SettingsPage: React.FC = () => {
               <Icon as={FiGlobe} boxSize="18px" />
             </Flex>
             <Box>
-              <Text fontSize="14px" fontWeight="600" color="#1E293B">
+              <Text fontSize="14px" fontWeight="600" color={{ base: "#1E293B", _dark: "#F8FAFC" }}>
                 Language
               </Text>
-              <Text fontSize="11px" color="#64748B">
+              <Text fontSize="11px" color={{ base: "#64748B", _dark: "#94A3B8" }}>
                 {i18n.language ? i18n.language.toUpperCase() : "English"}
               </Text>
             </Box>
           </HStack>
-          <Icon as={FiChevronRight} color="#94A3B8" boxSize="18px" />
+          <Icon as={FiChevronRight} color={{ base: "#94A3B8", _dark: "#64748B" }} boxSize="18px" />
         </Flex>
 
         {/* 3. Security */}
@@ -454,15 +481,15 @@ const SettingsPage: React.FC = () => {
           align="center"
           justify="space-between"
           w="100%"
-          bg="#F4F7FB"
+          bg={{ base: "#F4F7FB", _dark: "#1A1A1A" }}
           px={{ base: 4, sm: 6 }}
           py={4}
           border="none"
           outline="none"
           boxShadow="none"
           cursor="pointer"
-          _hover={{ bg: "#EDF2F7" }}
-          _active={{ bg: "#E2E8F0" }}
+          _hover={{ bg: { base: "#EDF2F7", _dark: "#242424" } }}
+          _active={{ bg: { base: "#E2E8F0", _dark: "#2E2E2E" } }}
           transition="background 0.15s"
           onClick={() => setStudentSettingsTab("security")}
           role="button"
@@ -472,7 +499,7 @@ const SettingsPage: React.FC = () => {
               w="38px"
               h="38px"
               borderRadius="xl"
-              bg="#FAF5FF"
+              bg={{ base: "#FAF5FF", _dark: "rgba(147, 51, 234, 0.2)" }}
               color="#9333EA"
               align="center"
               justify="center"
@@ -481,15 +508,15 @@ const SettingsPage: React.FC = () => {
               <Icon as={FiShield} boxSize="18px" />
             </Flex>
             <Box>
-              <Text fontSize="14px" fontWeight="600" color="#1E293B">
+              <Text fontSize="14px" fontWeight="600" color={{ base: "#1E293B", _dark: "#F8FAFC" }}>
                 Security
               </Text>
-              <Text fontSize="11px" color="#64748B">
+              <Text fontSize="11px" color={{ base: "#64748B", _dark: "#94A3B8" }}>
                 Password & passkey security
               </Text>
             </Box>
           </HStack>
-          <Icon as={FiChevronRight} color="#94A3B8" boxSize="18px" />
+          <Icon as={FiChevronRight} color={{ base: "#94A3B8", _dark: "#64748B" }} boxSize="18px" />
         </Flex>
 
         {/* 4. Notifications (Toggle Switch) */}
@@ -497,7 +524,7 @@ const SettingsPage: React.FC = () => {
           align="center"
           justify="space-between"
           w="100%"
-          bg="#F4F7FB"
+          bg={{ base: "#F4F7FB", _dark: "#1A1A1A" }}
           px={{ base: 4, sm: 6 }}
           py={4}
           border="none"
@@ -509,7 +536,7 @@ const SettingsPage: React.FC = () => {
               w="38px"
               h="38px"
               borderRadius="xl"
-              bg="#FFFBEB"
+              bg={{ base: "#FFFBEB", _dark: "rgba(217, 119, 6, 0.2)" }}
               color="#D97706"
               align="center"
               justify="center"
@@ -518,10 +545,10 @@ const SettingsPage: React.FC = () => {
               <Icon as={FiBell} boxSize="18px" />
             </Flex>
             <Box>
-              <Text fontSize="14px" fontWeight="600" color="#1E293B">
+              <Text fontSize="14px" fontWeight="600" color={{ base: "#1E293B", _dark: "#F8FAFC" }}>
                 Notifications
               </Text>
-              <Text fontSize="11px" color="#64748B">
+              <Text fontSize="11px" color={{ base: "#64748B", _dark: "#94A3B8" }}>
                 {notificationsEnabled ? "All notifications active" : "Notifications muted"}
               </Text>
             </Box>
@@ -541,20 +568,180 @@ const SettingsPage: React.FC = () => {
           </Switch.Root>
         </Flex>
 
-        {/* 5. Subscription */}
+        {/* 5. Theme Mode Selection (Light / Dark / System Default) */}
+        <Box
+          w="100%"
+          bg={{ base: "#F4F7FB", _dark: "#1A1A1A" }}
+          px={{ base: 4, sm: 6 }}
+          py={4}
+          border="none"
+          outline="none"
+          boxShadow="none"
+        >
+          <Flex align="center" justify="space-between" mb={3}>
+            <HStack gap={3.5}>
+              <Flex
+                w="38px"
+                h="38px"
+                borderRadius="xl"
+                bg={{ base: "#FAF5FF", _dark: "rgba(147, 51, 234, 0.2)" }}
+                color={isDark ? "#F59E0B" : "#9333EA"}
+                align="center"
+                justify="center"
+                flexShrink={0}
+              >
+                <Icon as={isDark ? FiMoon : FiSun} boxSize="18px" />
+              </Flex>
+              <Box>
+                <Text fontSize="14px" fontWeight="600" color={{ base: "#1E293B", _dark: "#F8FAFC" }}>
+                  Appearance & Theme
+                </Text>
+                <Text fontSize="11px" color={{ base: "#64748B", _dark: "#94A3B8" }}>
+                  {theme === "system"
+                    ? "Matching device system theme"
+                    : theme === "dark"
+                    ? "Dark theme active"
+                    : "Light theme active"}
+                </Text>
+              </Box>
+            </HStack>
+          </Flex>
+
+          {/* Segmented Theme Buttons: Light / Dark / System */}
+          <Flex
+            bg={{ base: "#E2E8F0", _dark: "#121212" }}
+            p="3px"
+            borderRadius="xl"
+            gap={1}
+            w="100%"
+          >
+            <Flex
+              flex="1"
+              py={2}
+              px={2}
+              align="center"
+              justify="center"
+              gap={1.5}
+              borderRadius="lg"
+              cursor="pointer"
+              bg={theme === "light" ? { base: "#FFFFFF", _dark: "#262626" } : "transparent"}
+              color={theme === "light" ? { base: "#2563EB", _dark: "#60A5FA" } : { base: "#64748B", _dark: "#A1A1AA" }}
+              fontWeight={theme === "light" ? "700" : "500"}
+              boxShadow={theme === "light" ? "0 1px 3px rgba(0,0,0,0.1)" : "none"}
+              onClick={() => handleSelectThemeMode("light")}
+              transition="all 0.15s"
+              role="button"
+            >
+              <Icon as={FiSun} boxSize="14px" />
+              <Text fontSize="12px">Light</Text>
+            </Flex>
+
+            <Flex
+              flex="1"
+              py={2}
+              px={2}
+              align="center"
+              justify="center"
+              gap={1.5}
+              borderRadius="lg"
+              cursor="pointer"
+              bg={theme === "dark" ? { base: "#FFFFFF", _dark: "#262626" } : "transparent"}
+              color={theme === "dark" ? { base: "#2563EB", _dark: "#60A5FA" } : { base: "#64748B", _dark: "#A1A1AA" }}
+              fontWeight={theme === "dark" ? "700" : "500"}
+              boxShadow={theme === "dark" ? "0 1px 3px rgba(0,0,0,0.1)" : "none"}
+              onClick={() => handleSelectThemeMode("dark")}
+              transition="all 0.15s"
+              role="button"
+            >
+              <Icon as={FiMoon} boxSize="14px" />
+              <Text fontSize="12px">Dark</Text>
+            </Flex>
+
+            <Flex
+              flex="1"
+              py={2}
+              px={2}
+              align="center"
+              justify="center"
+              gap={1.5}
+              borderRadius="lg"
+              cursor="pointer"
+              bg={theme === "system" ? { base: "#FFFFFF", _dark: "#262626" } : "transparent"}
+              color={theme === "system" ? { base: "#2563EB", _dark: "#60A5FA" } : { base: "#64748B", _dark: "#A1A1AA" }}
+              fontWeight={theme === "system" ? "700" : "500"}
+              boxShadow={theme === "system" ? "0 1px 3px rgba(0,0,0,0.1)" : "none"}
+              onClick={() => handleSelectThemeMode("system")}
+              transition="all 0.15s"
+              role="button"
+            >
+              <Icon as={FiTv} boxSize="14px" />
+              <Text fontSize="12px">System</Text>
+            </Flex>
+          </Flex>
+        </Box>
+
+        {/* 6. Full-Screen Mode Toggle */}
         <Flex
           align="center"
           justify="space-between"
           w="100%"
-          bg="#F4F7FB"
+          bg={{ base: "#F4F7FB", _dark: "#1A1A1A" }}
+          px={{ base: 4, sm: 6 }}
+          py={4}
+          border="none"
+          outline="none"
+          boxShadow="none"
+        >
+          <HStack gap={3.5}>
+            <Flex
+              w="38px"
+              h="38px"
+              borderRadius="xl"
+              bg={{ base: "#F0FDF4", _dark: "rgba(22, 163, 74, 0.2)" }}
+              color="#16A34A"
+              align="center"
+              justify="center"
+              flexShrink={0}
+            >
+              <Icon as={FiMaximize} boxSize="18px" />
+            </Flex>
+            <Box>
+              <Text fontSize="14px" fontWeight="600" color={{ base: "#1E293B", _dark: "#F8FAFC" }}>
+                Full-Screen Mode
+              </Text>
+              <Text fontSize="11px" color={{ base: "#64748B", _dark: "#94A3B8" }}>
+                {isFullscreen ? "App expanded across full screen" : "Standard screen view"}
+              </Text>
+            </Box>
+          </HStack>
+
+          <Switch.Root
+            checked={isFullscreen}
+            onCheckedChange={(e) => handleToggleFullscreen(e.checked)}
+            colorPalette="green"
+            size="md"
+          >
+            <Switch.HiddenInput />
+            <Switch.Control>
+              <Switch.Thumb />
+            </Switch.Control>
+          </Switch.Root>
+        </Flex>
+
+        {/* 6. Subscription */}
+        <Flex
+          align="center"
+          justify="space-between"
+          w="100%"
+          bg={{ base: "#F4F7FB", _dark: "#1A1A1A" }}
           px={{ base: 4, sm: 6 }}
           py={4}
           border="none"
           outline="none"
           boxShadow="none"
           cursor="pointer"
-          _hover={{ bg: "#EDF2F7" }}
-          _active={{ bg: "#E2E8F0" }}
+          _hover={{ bg: { base: "#EDF2F7", _dark: "#242424" } }}
+          _active={{ bg: { base: "#E2E8F0", _dark: "#2E2E2E" } }}
           transition="background 0.15s"
           onClick={() => setStudentSettingsTab("subscription")}
           role="button"
@@ -564,7 +751,7 @@ const SettingsPage: React.FC = () => {
               w="38px"
               h="38px"
               borderRadius="xl"
-              bg="#EEF2FF"
+              bg={{ base: "#EEF2FF", _dark: "rgba(79, 70, 229, 0.2)" }}
               color="#4F46E5"
               align="center"
               justify="center"
@@ -573,31 +760,31 @@ const SettingsPage: React.FC = () => {
               <Icon as={FiCreditCard} boxSize="18px" />
             </Flex>
             <Box>
-              <Text fontSize="14px" fontWeight="600" color="#1E293B">
+              <Text fontSize="14px" fontWeight="600" color={{ base: "#1E293B", _dark: "#F8FAFC" }}>
                 Subscription
               </Text>
-              <Text fontSize="11px" color="#64748B">
+              <Text fontSize="11px" color={{ base: "#64748B", _dark: "#94A3B8" }}>
                 Manage academic plan & billing
               </Text>
             </Box>
           </HStack>
-          <Icon as={FiChevronRight} color="#94A3B8" boxSize="18px" />
+          <Icon as={FiChevronRight} color={{ base: "#94A3B8", _dark: "#64748B" }} boxSize="18px" />
         </Flex>
 
-        {/* 6. Help & FAQs */}
+        {/* 7. Help & FAQs */}
         <Flex
           align="center"
           justify="space-between"
           w="100%"
-          bg="#F4F7FB"
+          bg={{ base: "#F4F7FB", _dark: "#1A1A1A" }}
           px={{ base: 4, sm: 6 }}
           py={4}
           border="none"
           outline="none"
           boxShadow="none"
           cursor="pointer"
-          _hover={{ bg: "#EDF2F7" }}
-          _active={{ bg: "#E2E8F0" }}
+          _hover={{ bg: { base: "#EDF2F7", _dark: "#242424" } }}
+          _active={{ bg: { base: "#E2E8F0", _dark: "#2E2E2E" } }}
           transition="background 0.15s"
           onClick={() => setStudentSettingsTab("help")}
           role="button"
@@ -607,8 +794,8 @@ const SettingsPage: React.FC = () => {
               w="38px"
               h="38px"
               borderRadius="xl"
-              bg="#F1F5F9"
-              color="#475569"
+              bg={{ base: "#F1F5F9", _dark: "rgba(100, 116, 139, 0.2)" }}
+              color={{ base: "#475569", _dark: "#94A3B8" }}
               align="center"
               justify="center"
               flexShrink={0}
@@ -616,33 +803,33 @@ const SettingsPage: React.FC = () => {
               <Icon as={FiHelpCircle} boxSize="18px" />
             </Flex>
             <Box>
-              <Text fontSize="14px" fontWeight="600" color="#1E293B">
+              <Text fontSize="14px" fontWeight="600" color={{ base: "#1E293B", _dark: "#F8FAFC" }}>
                 Help & FAQs
               </Text>
-              <Text fontSize="11px" color="#64748B">
+              <Text fontSize="11px" color={{ base: "#64748B", _dark: "#94A3B8" }}>
                 Guides, quizzes & support
               </Text>
             </Box>
           </HStack>
-          <Icon as={FiChevronRight} color="#94A3B8" boxSize="18px" />
+          <Icon as={FiChevronRight} color={{ base: "#94A3B8", _dark: "#64748B" }} boxSize="18px" />
         </Flex>
 
-        {/* 7. Log Out */}
+        {/* 8. Log Out */}
         <Flex
           align="center"
           justify="space-between"
           w="100%"
-          bg="#F4F7FB"
+          bg={{ base: "#F4F7FB", _dark: "#1A1A1A" }}
           px={{ base: 4, sm: 6 }}
           py={4}
           border="none"
           outline="none"
           boxShadow="none"
           cursor="pointer"
-          _hover={{ bg: "#FEE2E2" }}
-          _active={{ bg: "#FECACA" }}
+          _hover={{ bg: { base: "#FEE2E2", _dark: "rgba(239, 68, 68, 0.2)" } }}
+          _active={{ bg: { base: "#FECACA", _dark: "rgba(239, 68, 68, 0.3)" } }}
           transition="background 0.15s"
-          onClick={() => logoutFunc()}
+          onClick={() => setShowLogoutModal(true)}
           role="button"
         >
           <HStack gap={3.5}>
@@ -650,7 +837,7 @@ const SettingsPage: React.FC = () => {
               w="38px"
               h="38px"
               borderRadius="xl"
-              bg="#FEF2F2"
+              bg={{ base: "#FEF2F2", _dark: "rgba(220, 38, 38, 0.2)" }}
               color="#DC2626"
               align="center"
               justify="center"
@@ -670,6 +857,12 @@ const SettingsPage: React.FC = () => {
           <Icon as={FiChevronRight} color="#EF4444" boxSize="18px" />
         </Flex>
       </VStack>
+
+      {/* Student Logout Confirmation Modal */}
+      <StudentLogoutModal
+        isOpen={showLogoutModal}
+        onClose={() => setShowLogoutModal(false)}
+      />
     </Box>
   );
 };

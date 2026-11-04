@@ -29,6 +29,7 @@ import {
 import { useChatbot, type Message } from "@/hooks/useChatbot";
 import { useAuthdStudentData } from "@/student-app/context/studentDataContext";
 import { useNavigationStore } from "@/store/usenavigationStore";
+import { useBackButton } from "@/hooks/useBackButton";
 import logo from "@/assets/logo.png";
 
 // Waveform bar heights array matching Messages-10.png
@@ -68,6 +69,20 @@ export const SparkChatPage = () => {
   const { setCurrentStudentPage } = useNavigationStore();
 
   const studentFirstName = authdStudent?.firstname || "Adeeyo";
+
+  // Native phone back button navigates back to 'home'
+  useBackButton("spark-chat-page", 60, () => {
+    if (isClearModalOpen) {
+      setIsClearModalOpen(false);
+      return true;
+    }
+    if (isEmojiPickerOpen) {
+      setIsEmojiPickerOpen(false);
+      return true;
+    }
+    setCurrentStudentPage("home");
+    return true;
+  });
 
   // UI state
   const [isClearModalOpen, setIsClearModalOpen] = useState(false);
@@ -189,7 +204,7 @@ export const SparkChatPage = () => {
       mx="auto"
       display="flex"
       flexDirection="column"
-      bg="white"
+      bg={{ base: "white", _dark: "#000000" }}
       position="relative"
       overflow="hidden"
     >
@@ -198,8 +213,8 @@ export const SparkChatPage = () => {
         px={3}
         pt="calc(env(safe-area-inset-top, 0px) + 8px)"
         pb={2.5}
-        bg="white"
-        borderBottom={isSearchOpen ? "1px solid #F1F5F9" : "none"}
+        bg={{ base: "white", _dark: "#121212" }}
+        borderBottom={isSearchOpen ? { base: "1px solid #F1F5F9", _dark: "1px solid #262626" } : "none"}
         flexShrink={0}
         zIndex={100}
       >
@@ -212,8 +227,8 @@ export const SparkChatPage = () => {
             minW="38px"
             h="38px"
             borderRadius="full"
-            color="#1E293B"
-            _hover={{ bg: "gray.100" }}
+            color={{ base: "#1E293B", _dark: "#F5F5F5" }}
+            _hover={{ bg: { base: "gray.100", _dark: "#1F1F1F" } }}
             _active={{ transform: "scale(0.92)" }}
             onClick={() => setCurrentStudentPage("home")}
           >
@@ -224,7 +239,7 @@ export const SparkChatPage = () => {
           <Flex
             align="center"
             gap={2.5}
-            bg="#EDF5FE"
+            bg={{ base: "#EDF5FE", _dark: "#1A1A1A" }}
             borderRadius="full"
             py={1}
             px={3.5}
@@ -273,7 +288,7 @@ export const SparkChatPage = () => {
               <Text
                 fontSize="13.5px"
                 fontWeight="700"
-                color="#0F172A"
+                color={{ base: "#0F172A", _dark: "#F5F5F5" }}
                 lineHeight="1.2"
                 truncate
               >
@@ -282,7 +297,7 @@ export const SparkChatPage = () => {
               <Text
                 fontSize="10px"
                 fontWeight="400"
-                color="#94A3B8"
+                color={{ base: "#94A3B8", _dark: "#A1A1AA" }}
                 lineHeight="1.2"
                 truncate
               >
@@ -300,8 +315,8 @@ export const SparkChatPage = () => {
               minW="36px"
               h="36px"
               borderRadius="full"
-              color="#1E293B"
-              _hover={{ bg: "gray.100" }}
+              color={{ base: "#1E293B", _dark: "#F5F5F5" }}
+              _hover={{ bg: { base: "gray.100", _dark: "#1F1F1F" } }}
               _active={{ transform: "scale(0.92)" }}
               onClick={() => {
                 setIsSearchOpen((prev) => !prev);
@@ -319,8 +334,8 @@ export const SparkChatPage = () => {
                 minW="36px"
                 h="36px"
                 borderRadius="full"
-                color="#1E293B"
-                _hover={{ bg: "gray.100" }}
+                color={{ base: "#1E293B", _dark: "#F5F5F5" }}
+                _hover={{ bg: { base: "gray.100", _dark: "#1F1F1F" } }}
                 _active={{ transform: "scale(0.92)" }}
                 onClick={() => setIsMoreMenuOpen((prev) => !prev)}
               >
@@ -334,10 +349,10 @@ export const SparkChatPage = () => {
                   top="44px"
                   right="0"
                   w="190px"
-                  bg="white"
+                  bg={{ base: "white", _dark: "#121212" }}
                   borderRadius="16px"
-                  boxShadow="0 10px 30px rgba(0, 0, 0, 0.12), 0 2px 8px rgba(0, 0, 0, 0.06)"
-                  border="1px solid #E2E8F0"
+                  boxShadow="0 10px 30px rgba(0, 0, 0, 0.4), 0 2px 8px rgba(0, 0, 0, 0.2)"
+                  border={{ base: "1px solid #E2E8F0", _dark: "1px solid #262626" }}
                   py={1.5}
                   zIndex={200}
                 >
@@ -349,11 +364,11 @@ export const SparkChatPage = () => {
                     py={2.5}
                     fontSize="13.5px"
                     fontWeight="500"
-                    color="#DC2626"
+                    color="#EF4444"
                     display="flex"
                     alignItems="center"
                     gap={2}
-                    _hover={{ bg: "red.50" }}
+                    _hover={{ bg: { base: "red.50", _dark: "#2D1515" } }}
                     onClick={() => {
                       setIsMoreMenuOpen(false);
                       setIsClearModalOpen(true);
@@ -369,8 +384,8 @@ export const SparkChatPage = () => {
                     py={2.5}
                     fontSize="13.5px"
                     fontWeight="500"
-                    color="#1E293B"
-                    _hover={{ bg: "gray.50" }}
+                    color={{ base: "#1E293B", _dark: "#E5E5E5" }}
+                    _hover={{ bg: { base: "gray.50", _dark: "#1A1A1A" } }}
                     onClick={() => {
                       setIsMoreMenuOpen(false);
                       sendCustomMessage("Can you give me a small hint for my latest curriculum topic?");
@@ -386,8 +401,8 @@ export const SparkChatPage = () => {
                     py={2.5}
                     fontSize="13.5px"
                     fontWeight="500"
-                    color="#1E293B"
-                    _hover={{ bg: "gray.50" }}
+                    color={{ base: "#1E293B", _dark: "#E5E5E5" }}
+                    _hover={{ bg: { base: "gray.50", _dark: "#1A1A1A" } }}
                     onClick={() => {
                       setIsMoreMenuOpen(false);
                       setCurrentStudentPage("rewards");
@@ -406,11 +421,11 @@ export const SparkChatPage = () => {
           <Flex align="center" gap={2} mt={2} px={1}>
             <Box
               flex={1}
-              bg="#F8FAFC"
+              bg={{ base: "#F8FAFC", _dark: "#181818" }}
               borderRadius="full"
               px={3}
               py={1.5}
-              border="1px solid #E2E8F0"
+              border={{ base: "1px solid #E2E8F0", _dark: "1px solid #262626" }}
               display="flex"
               alignItems="center"
               gap={2}
@@ -427,7 +442,7 @@ export const SparkChatPage = () => {
                   outline: "none",
                   background: "transparent",
                   fontSize: "13px",
-                  color: "#0F172A",
+                  color: "inherit",
                 }}
               />
               {searchQuery && (
@@ -447,7 +462,7 @@ export const SparkChatPage = () => {
             <Button
               size="xs"
               variant="ghost"
-              color="#64748B"
+              color={{ base: "#64748B", _dark: "#A1A1AA" }}
               onClick={() => {
                 setIsSearchOpen(false);
                 setSearchQuery("");
@@ -466,7 +481,7 @@ export const SparkChatPage = () => {
         display="flex"
         flexDirection="column"
         position="relative"
-        bg="white"
+        bg={{ base: "white", _dark: "#000000" }}
         px={4}
         py={2}
         css={{
@@ -565,12 +580,12 @@ export const SparkChatPage = () => {
                   px={3.5}
                   py={1.5}
                   borderRadius="full"
-                  bg="#F8FAFC"
-                  border="1px solid #E2E8F0"
+                  bg={{ base: "#F8FAFC", _dark: "#181818" }}
+                  border={{ base: "1px solid #E2E8F0", _dark: "1px solid #262626" }}
                   fontSize="12px"
                   fontWeight="500"
-                  color="#475569"
-                  _hover={{ bg: "#EDF5FE", color: "#2563EB", borderColor: "#BFDBFE" }}
+                  color={{ base: "#475569", _dark: "#A1A1AA" }}
+                  _hover={{ bg: { base: "#EDF5FE", _dark: "#242424" }, color: "#3B82F6", borderColor: "#3B82F6" }}
                   _active={{ transform: "scale(0.96)" }}
                   transition="all 0.15s ease"
                   onClick={() => sendCustomMessage(chip)}
@@ -585,14 +600,14 @@ export const SparkChatPage = () => {
           <Flex direction="column" gap={4} py={2}>
             {/* Date Separator */}
             <Flex align="center" justify="center" my={2} position="relative">
-              <Box position="absolute" left="0" right="0" height="1px" bg="#E5E7EB" />
+              <Box position="absolute" left="0" right="0" height="1px" bg={{ base: "#E5E7EB", _dark: "#262626" }} />
               <Box
                 position="relative"
-                bg="white"
+                bg={{ base: "white", _dark: "#000000" }}
                 px={3}
                 fontSize="11.5px"
                 fontWeight="400"
-                color="#94A3B8"
+                color={{ base: "#94A3B8", _dark: "#71717A" }}
               >
                 {formatChatDate()}
               </Box>
@@ -690,10 +705,11 @@ export const SparkChatPage = () => {
                       maxW="82%"
                       p="13px 17px"
                       borderRadius="22px"
-                      bg={isUser ? "#2563EB" : "#F1F5F9"}
-                      color={isUser ? "white" : "#1E293B"}
+                      bg={isUser ? "#2563EB" : { base: "#F1F5F9", _dark: "#1A1A1A" }}
+                      color={isUser ? "white" : { base: "#1E293B", _dark: "#F5F5F5" }}
                       fontSize="14px"
                       lineHeight="1.55"
+                      border={isUser ? "none" : { base: "none", _dark: "1px solid #262626" }}
                       boxShadow={
                         isUser
                           ? "0 4px 14px rgba(37, 99, 235, 0.2)"
@@ -714,7 +730,7 @@ export const SparkChatPage = () => {
                               </p>
                             ),
                             strong: ({ children }) => (
-                              <strong style={{ fontWeight: 700, color: "#0F172A" }}>
+                              <strong style={{ fontWeight: 700, color: "inherit" }}>
                                 {children}
                               </strong>
                             ),
@@ -735,7 +751,7 @@ export const SparkChatPage = () => {
                               inline ? (
                                 <code
                                   style={{
-                                    background: "#E2E8F0",
+                                    background: "rgba(128, 128, 128, 0.2)",
                                     padding: "1px 5px",
                                     borderRadius: "4px",
                                     fontSize: "12px",
@@ -747,8 +763,9 @@ export const SparkChatPage = () => {
                               ) : (
                                 <pre
                                   style={{
-                                    background: "#0F172A",
+                                    background: "#121212",
                                     color: "#F8FAFC",
+                                    border: "1px solid #262626",
                                     padding: "8px 12px",
                                     borderRadius: "8px",
                                     overflowX: "auto",
@@ -773,7 +790,7 @@ export const SparkChatPage = () => {
                   <Text
                     fontSize="11px"
                     fontWeight="400"
-                    color="#94A3B8"
+                    color={{ base: "#94A3B8", _dark: "#71717A" }}
                     mt="4px"
                     px="4px"
                     letterSpacing="-0.01em"
@@ -788,7 +805,8 @@ export const SparkChatPage = () => {
             {isLoading && (
               <Box display="flex" flexDirection="column" alignItems="flex-start" w="full">
                 <Box
-                  bg="#F1F5F9"
+                  bg={{ base: "#F1F5F9", _dark: "#1A1A1A" }}
+                  border={{ base: "none", _dark: "1px solid #262626" }}
                   borderRadius="20px"
                   py="12px"
                   px="18px"
@@ -841,8 +859,8 @@ export const SparkChatPage = () => {
       {/* ──────────────── Emoji & Shortcuts Palette Drawer ──────────────── */}
       {isEmojiPickerOpen && (
         <Box
-          bg="#F8FAFC"
-          borderTop="1px solid #E2E8F0"
+          bg={{ base: "#F8FAFC", _dark: "#121212" }}
+          borderTop={{ base: "1px solid #E2E8F0", _dark: "1px solid #262626" }}
           p={3}
           flexShrink={0}
         >
@@ -862,13 +880,13 @@ export const SparkChatPage = () => {
                 as="button"
                 px={3}
                 py={1.5}
-                bg="white"
-                border="1px solid #E2E8F0"
+                bg={{ base: "white", _dark: "#1A1A1A" }}
+                border={{ base: "1px solid #E2E8F0", _dark: "1px solid #262626" }}
                 borderRadius="full"
                 fontSize="12px"
                 fontWeight="500"
-                color="#334155"
-                _hover={{ bg: "#EDF5FE", color: "#2563EB", borderColor: "#BFDBFE" }}
+                color={{ base: "#334155", _dark: "#E5E5E5" }}
+                _hover={{ bg: { base: "#EDF5FE", _dark: "#242424" }, color: "#3B82F6", borderColor: "#3B82F6" }}
                 _active={{ transform: "scale(0.95)" }}
                 onClick={() => {
                   setIsEmojiPickerOpen(false);
@@ -887,7 +905,8 @@ export const SparkChatPage = () => {
         px={{ base: 3.5, sm: 4 }}
         pt={2}
         pb="max(calc(env(safe-area-inset-bottom, 0px) + 12px), 12px)"
-        bg="white"
+        bg={{ base: "white", _dark: "#121212" }}
+        borderTop={{ base: "none", _dark: "1px solid #262626" }}
         flexShrink={0}
       >
         {isRecordingVoice ? (
@@ -895,8 +914,8 @@ export const SparkChatPage = () => {
           <Flex
             align="center"
             justify="space-between"
-            bg="#EFF6FF"
-            border="1.5px solid #BFDBFE"
+            bg={{ base: "#EFF6FF", _dark: "#1A1A1A" }}
+            border={{ base: "1.5px solid #BFDBFE", _dark: "1.5px solid #262626" }}
             borderRadius="28px"
             h="52px"
             px={4}
@@ -909,7 +928,7 @@ export const SparkChatPage = () => {
                 bg="#EF4444"
                 animation="ping 1s cubic-bezier(0, 0, 0.2, 1) infinite"
               />
-              <Text fontSize="13.5px" fontWeight="600" color="#1E40AF">
+              <Text fontSize="13.5px" fontWeight="600" color={{ base: "#1E40AF", _dark: "#93C5FD" }}>
                 Recording audio question… 00:{recordingSeconds < 10 ? `0${recordingSeconds}` : recordingSeconds}
               </Text>
             </HStack>
@@ -918,7 +937,7 @@ export const SparkChatPage = () => {
               <Button
                 size="xs"
                 variant="ghost"
-                color="#64748B"
+                color={{ base: "#64748B", _dark: "#A1A1AA" }}
                 onClick={handleCancelVoice}
               >
                 Cancel
@@ -942,15 +961,15 @@ export const SparkChatPage = () => {
             <Flex
               flex={1}
               align="center"
-              bg="#F8FAFC"
-              border="1px solid #E2E8F0"
+              bg={{ base: "#F8FAFC", _dark: "#181818" }}
+              border={{ base: "1px solid #E2E8F0", _dark: "1px solid #262626" }}
               borderRadius="full"
               h={{ base: "46px", sm: "48px" }}
               px={{ base: 3, sm: 3.5 }}
               gap={{ base: 1.5, sm: 2 }}
               _focusWithin={{
-                borderColor: "#93C5FD",
-                bg: "#FFFFFF",
+                borderColor: "#3B82F6",
+                bg: { base: "#FFFFFF", _dark: "#1E1E1E" },
                 boxShadow: "0 0 0 2px rgba(59, 130, 246, 0.12)",
               }}
               transition="all 0.18s ease"
@@ -983,7 +1002,7 @@ export const SparkChatPage = () => {
                   outline: "none",
                   background: "transparent",
                   fontSize: "14px",
-                  color: "#0F172A",
+                  color: "inherit",
                   lineHeight: "1.5",
                   letterSpacing: "-0.01em",
                 }}
@@ -1041,8 +1060,8 @@ export const SparkChatPage = () => {
               w={{ base: "46px", sm: "48px" }}
               h={{ base: "46px", sm: "48px" }}
               borderRadius="full"
-              bg={input.trim() && !isLoading ? "#206CE1" : "#E2E8F0"}
-              color={input.trim() && !isLoading ? "white" : "#94A3B8"}
+              bg={input.trim() && !isLoading ? "#206CE1" : { base: "#E2E8F0", _dark: "#262626" }}
+              color={input.trim() && !isLoading ? "white" : { base: "#94A3B8", _dark: "#71717A" }}
               display="flex"
               alignItems="center"
               justifyContent="center"
@@ -1089,7 +1108,7 @@ export const SparkChatPage = () => {
           <Box
             position="fixed"
             inset="0"
-            bg="rgba(15, 23, 42, 0.45)"
+            bg="rgba(0, 0, 0, 0.7)"
             backdropFilter="blur(2px)"
             zIndex={2000}
             onClick={() => setIsClearModalOpen(false)}
@@ -1103,13 +1122,14 @@ export const SparkChatPage = () => {
             right="0"
             maxW="480px"
             mx="auto"
-            bg="white"
+            bg={{ base: "white", _dark: "#121212" }}
+            borderTop={{ base: "none", _dark: "1px solid #262626" }}
             borderTopRadius="36px"
             zIndex={2001}
             px={{ base: 6, sm: 8 }}
             pb="max(calc(env(safe-area-inset-bottom, 0px) + 24px), 32px)"
             pt={3}
-            boxShadow="0 -10px 40px rgba(0, 0, 0, 0.15)"
+            boxShadow="0 -10px 40px rgba(0, 0, 0, 0.4)"
           >
             {/* Iconic Circular Exclamation Badge in Cutout */}
             <Box position="relative" mt="-48px" mb={3} display="flex" justifyContent="center">
@@ -1119,11 +1139,11 @@ export const SparkChatPage = () => {
                 h="86px"
                 borderRadius="full"
                 bg="#FEE2E2"
-                border="6px solid white"
+                border={{ base: "6px solid white", _dark: "6px solid #121212" }}
                 display="flex"
                 alignItems="center"
                 justifyContent="center"
-                boxShadow="0 4px 14px rgba(0, 0, 0, 0.08)"
+                boxShadow="0 4px 14px rgba(0, 0, 0, 0.15)"
               >
                 {/* Inner Bright Red Circle Outline */}
                 <Box
@@ -1153,7 +1173,7 @@ export const SparkChatPage = () => {
             <Text
               fontSize="21px"
               fontWeight="800"
-              color="#0F172A"
+              color={{ base: "#0F172A", _dark: "#F5F5F5" }}
               textAlign="center"
               letterSpacing="-0.02em"
               mt={1}
@@ -1165,7 +1185,7 @@ export const SparkChatPage = () => {
             <Text
               fontSize="14px"
               fontWeight="400"
-              color="#475569"
+              color={{ base: "#475569", _dark: "#A1A1AA" }}
               textAlign="center"
               mt={1.5}
               mb={7}
@@ -1181,13 +1201,13 @@ export const SparkChatPage = () => {
                 flex={1}
                 h="50px"
                 borderRadius="full"
-                bg="white"
+                bg={{ base: "white", _dark: "#1A1A1A" }}
                 border="1.5px solid #2563EB"
-                color="#2563EB"
+                color="#3B82F6"
                 fontSize="15px"
                 fontWeight="700"
                 letterSpacing="-0.01em"
-                _hover={{ bg: "#EFF6FF" }}
+                _hover={{ bg: { base: "#EFF6FF", _dark: "#222222" } }}
                 _active={{ transform: "scale(0.97)" }}
                 onClick={() => setIsClearModalOpen(false)}
               >

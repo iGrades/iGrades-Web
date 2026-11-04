@@ -34,7 +34,7 @@ export const initiateGoogleOAuth = async (role: string, intent: "login" | "signu
 
   // On native mobile, open Chrome Custom Tabs / SFSafariViewController
   if (native && data?.url) {
-    await Browser.open({ url: data.url, windowName: "_system" });
+    await Browser.open({ url: data.url });
   }
 
   return data;
@@ -66,7 +66,7 @@ export const initiateAppleOAuth = async (role: string, intent: "login" | "signup
   }
 
   if (native && data?.url) {
-    await Browser.open({ url: data.url, windowName: "_system" });
+    await Browser.open({ url: data.url });
   }
 
   return data;

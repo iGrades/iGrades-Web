@@ -16,7 +16,7 @@ import {
   Badge,
 } from "@chakra-ui/react";
 import { HiOutlineMail, HiShieldCheck } from "react-icons/hi";
-import { PiCheckCircleFill, PiArrowLeftBold } from "react-icons/pi";
+import { PiCheckCircleFill } from "react-icons/pi";
 import logo from "@/assets/landing-page/logo.png";
 import verifyIllustration from "@/assets/verify-image.png";
 
@@ -188,7 +188,7 @@ export default function StudentVerify() {
   return (
     <Flex
       minH="100vh"
-      bg="#F8FAFC"
+      bg={{ base: "#F8FAFC", _dark: "#000000" }}
       align="center"
       justify="center"
       p={{ base: 0, sm: 4, md: 8 }}
@@ -198,11 +198,13 @@ export default function StudentVerify() {
         w="full"
         maxW="1100px"
         minH={{ base: "100vh", md: "720px" }}
-        bg="white"
+        bg={{ base: "white", _dark: "#121212" }}
         borderRadius={{ base: "none", md: "3xl" }}
+        border={{ base: "none", md: "1px solid" }}
+        borderColor={{ base: "rgba(226, 232, 240, 0.8)", _dark: "#262626" }}
         boxShadow={{
           base: "none",
-          md: "0 20px 40px -15px rgba(15, 23, 42, 0.07), 0 0 0 1px rgba(226, 232, 240, 0.8)",
+          md: "0 20px 40px -15px rgba(15, 23, 42, 0.07)",
         }}
         overflow="hidden"
         position="relative"
@@ -211,7 +213,10 @@ export default function StudentVerify() {
         {/* ── LEFT PANEL: High-Fidelity Illustration Showcase ── */}
         <Box
           w={{ base: "100%", lg: "48%" }}
-          bg="linear-gradient(150deg, #F0F6FF 0%, #E2EEFF 50%, #F5F9FF 100%)"
+          bg={{
+            base: "linear-gradient(150deg, #F0F6FF 0%, #E2EEFF 50%, #F5F9FF 100%)",
+            _dark: "linear-gradient(150deg, #161616 0%, #1A1A1A 50%, #141414 100%)",
+          }}
           p={{ base: 4, sm: 6, md: 10 }}
           display="flex"
           flexDirection="column"
@@ -227,7 +232,7 @@ export default function StudentVerify() {
             w="280px"
             h="280px"
             borderRadius="full"
-            bg="rgba(32, 108, 225, 0.08)"
+            bg={{ base: "rgba(32, 108, 225, 0.08)", _dark: "rgba(32, 108, 225, 0.04)" }}
             filter="blur(40px)"
             pointerEvents="none"
           />
@@ -265,12 +270,12 @@ export default function StudentVerify() {
                 as="h2"
                 fontSize={{ base: "xl", md: "2xl" }}
                 fontWeight="800"
-                color="#0F172A"
+                color={{ base: "#0F172A", _dark: "#F5F5F5" }}
                 lineHeight="1.3"
               >
                 Ready to excel in your studies?
               </Heading>
-              <Text fontSize="xs" color="#475569" mt={1.5} maxW="340px" lineHeight="1.5">
+              <Text fontSize="xs" color={{ base: "#475569", _dark: "#A1A1AA" }} mt={1.5} maxW="340px" lineHeight="1.5">
                 Confirm your student email to activate Spark AI tutoring, personalized past questions, and practice tests.
               </Text>
             </Box>
@@ -303,24 +308,24 @@ export default function StudentVerify() {
             wrap="wrap"
             pt={3}
             borderTop="1px solid"
-            borderColor="rgba(32, 108, 225, 0.15)"
+            borderColor={{ base: "rgba(32, 108, 225, 0.15)", _dark: "#262626" }}
             zIndex={2}
           >
             <HStack gap={1.5}>
               <Icon as={PiCheckCircleFill} color="#206CE1" fontSize="14px" />
-              <Text fontSize="11px" fontWeight="600" color="#334155">
+              <Text fontSize="11px" fontWeight="600" color={{ base: "#334155", _dark: "#D4D4D8" }}>
                 Encrypted OTP
               </Text>
             </HStack>
             <HStack gap={1.5}>
               <Icon as={PiCheckCircleFill} color="#206CE1" fontSize="14px" />
-              <Text fontSize="11px" fontWeight="600" color="#334155">
+              <Text fontSize="11px" fontWeight="600" color={{ base: "#334155", _dark: "#D4D4D8" }}>
                 10-Minute Expiry
               </Text>
             </HStack>
             <HStack gap={1.5}>
               <Icon as={PiCheckCircleFill} color="#206CE1" fontSize="14px" />
-              <Text fontSize="11px" fontWeight="600" color="#334155">
+              <Text fontSize="11px" fontWeight="600" color={{ base: "#334155", _dark: "#D4D4D8" }}>
                 Instant Activation
               </Text>
             </HStack>
@@ -334,7 +339,7 @@ export default function StudentVerify() {
           display="flex"
           flexDirection="column"
           justifyContent="center"
-          bg="white"
+          bg={{ base: "white", _dark: "#121212" }}
         >
           <Box maxW="420px" mx="auto" w="full">
             {/* Top Mail Badge */}
@@ -342,8 +347,9 @@ export default function StudentVerify() {
               w="54px"
               h="54px"
               borderRadius="2xl"
-              bg="#EBF3FF"
+              bg={{ base: "#EBF3FF", _dark: "#1A1A1A" }}
               color="#206CE1"
+              border={{ base: "none", _dark: "1px solid #262626" }}
               align="center"
               justify="center"
               mb={5}
@@ -356,16 +362,17 @@ export default function StudentVerify() {
               as="h1"
               fontSize={{ base: "2xl", sm: "3xl" }}
               fontWeight="800"
-              color="#0F172A"
+              color={{ base: "#0F172A", _dark: "#F5F5F5" }}
               mb={2}
             >
               Check your inbox
             </Heading>
-            <Text fontSize="sm" color="#64748B" mb={1} lineHeight="1.5">
+            <Text fontSize="sm" color={{ base: "#64748B", _dark: "#A1A1AA" }} mb={1} lineHeight="1.5">
               Enter the 6-digit confirmation code sent to
             </Text>
             <HStack
-              bg="#F1F5F9"
+              bg={{ base: "#F1F5F9", _dark: "#1A1A1A" }}
+              border={{ base: "none", _dark: "1px solid #262626" }}
               py={1.5}
               px={3}
               borderRadius="lg"
@@ -373,7 +380,7 @@ export default function StudentVerify() {
               mb={6}
             >
               <Icon as={HiShieldCheck} color="#206CE1" fontSize="16px" />
-              <Text fontSize="xs" fontWeight="700" color="#0F172A">
+              <Text fontSize="xs" fontWeight="700" color={{ base: "#0F172A", _dark: "#F5F5F5" }}>
                 {email || "your registered email"}
               </Text>
             </HStack>
@@ -404,10 +411,10 @@ export default function StudentVerify() {
 
             {/* 6-Digit PIN Input */}
             <Box mb={6}>
-              <Text
+                <Text
                 fontSize="xs"
                 fontWeight="700"
-                color="#475569"
+                color={{ base: "#475569", _dark: "#A1A1AA" }}
                 textTransform="uppercase"
                 letterSpacing="0.05em"
                 mb={3}
@@ -434,16 +441,16 @@ export default function StudentVerify() {
                         textAlign="center"
                         borderRadius="xl"
                         border="2px solid"
-                        borderColor="gray.200"
-                        bg="gray.50"
-                        color="#0F172A"
+                        borderColor={{ base: "gray.200", _dark: "#262626" }}
+                        bg={{ base: "gray.50", _dark: "#181818" }}
+                        color={{ base: "#0F172A", _dark: "#F5F5F5" }}
                         _focus={{
                           borderColor: "#206CE1",
-                          bg: "white",
+                          bg: { base: "white", _dark: "#1E1E1E" },
                           boxShadow: "0 0 0 4px rgba(32, 108, 225, 0.15)",
                         }}
                         _hover={{
-                          borderColor: "gray.300",
+                          borderColor: { base: "gray.300", _dark: "#3F3F46" },
                         }}
                       />
                     ))}
@@ -484,9 +491,9 @@ export default function StudentVerify() {
               justify="space-between"
               pt={2}
               borderTop="1px solid"
-              borderColor="gray.100"
+              borderColor={{ base: "gray.100", _dark: "#262626" }}
             >
-              <Text fontSize="xs" color="#64748B">
+              <Text fontSize="xs" color={{ base: "#64748B", _dark: "#A1A1AA" }}>
                 Didn't get the email?
               </Text>
               {canResend ? (
@@ -502,7 +509,7 @@ export default function StudentVerify() {
                   Resend Code
                 </Button>
               ) : (
-                <Text fontSize="xs" color="#94A3B8" fontWeight="500">
+                <Text fontSize="xs" color={{ base: "#94A3B8", _dark: "#71717A" }} fontWeight="500">
                   Resend in {resendCooldown}s
                 </Text>
               )}
@@ -517,12 +524,11 @@ export default function StudentVerify() {
                   alignItems: "center",
                   gap: "6px",
                   fontSize: "12px",
-                  color: "#64748B",
+                  color: "#94A3B8",
                   textDecoration: "none",
                   fontWeight: 600,
                 }}
               >
-                <Icon as={PiArrowLeftBold} fontSize="12px" />
                 Wrong email address? Return to Sign Up
               </RouterLink>
             </Box>

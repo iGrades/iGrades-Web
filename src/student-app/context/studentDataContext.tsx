@@ -19,6 +19,7 @@ interface Student {
   subscription: string;           // add this
   subscription_status: string;    // add this
   last_payment_ref: string | null; // add this
+  basic_language?: string;
   state?: string;
   lga?: string;
   ctiy?: string;
@@ -115,6 +116,9 @@ export const AuthdStudentDataProvider = ({
     if (authdStudent) {
       localStorage.setItem("authdStudent", JSON.stringify(authdStudent));
       recordActivity();
+      if (authdStudent.basic_language && !localStorage.getItem("appLanguage")) {
+        localStorage.setItem("appLanguage", authdStudent.basic_language);
+      }
     }
   }, [authdStudent]);
 

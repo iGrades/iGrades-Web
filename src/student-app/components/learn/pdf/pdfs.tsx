@@ -35,10 +35,15 @@ interface PDFsResource {
 
 interface PdfsProps {
   selectedSubject?: string;
+  onSelectSubject?: (subject: string) => void;
   onOpenSubjectModal?: () => void;
 }
 
-const Pdfs: React.FC<PdfsProps> = ({ selectedSubject, onOpenSubjectModal: _onOpenSubjectModal }) => {
+const Pdfs: React.FC<PdfsProps> = ({
+  selectedSubject,
+  onSelectSubject,
+  onOpenSubjectModal: _onOpenSubjectModal,
+}) => {
   const { authdStudent } = useAuthdStudentData();
   const [topicList, setTopicList] = useState(false);
   const [selectedCourse, setSelectedCourse] = useState<string>("");
@@ -91,6 +96,7 @@ const Pdfs: React.FC<PdfsProps> = ({ selectedSubject, onOpenSubjectModal: _onOpe
     }
 
     setSelectedCourse(courseName);
+    onSelectSubject?.(courseName);
 
     try {
       const studentClass = authdStudent?.class || "SSS 1";
@@ -138,11 +144,12 @@ const Pdfs: React.FC<PdfsProps> = ({ selectedSubject, onOpenSubjectModal: _onOpe
     }
   };
 
+  // Only synchronize topics if the user is already viewing topics (not on the main pdf subject list)
   useEffect(() => {
-    if (selectedSubject) {
+    if (topicList && selectedSubject && selectedSubject !== selectedCourse) {
       handleCourseClick(selectedSubject, selectedSubject, 0);
     }
-  }, [selectedSubject]);
+  }, [selectedSubject, topicList, selectedCourse]);
 
   // 3. MAP COURSES USING THE CENTRAL CONFIG
   const registeredCoursesArray = getStudentCoursesArray();

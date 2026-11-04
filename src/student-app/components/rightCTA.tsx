@@ -36,8 +36,8 @@ const RightCTA = () => {
         {/* Top Header */}
         <Flex justify="space-between" align="center" w="full">
           <Text
-            fontSize={{ base: "13px", sm: "14px", md: "15px" }}
-            fontWeight="700"
+            fontSize={{ base: "14px", sm: "16px", md: "17px" }}
+            fontWeight="800"
             color="white"
             lineHeight="shorter"
           >
@@ -45,17 +45,17 @@ const RightCTA = () => {
           </Text>
           <Flex
             borderRadius="full"
-            boxSize={{ base: "22px", sm: "24px" }}
+            boxSize={{ base: "26px", sm: "28px" }}
             bg="white"
             align="center"
             justify="center"
             flexShrink={0}
-            boxShadow="0 1px 2px rgba(0,0,0,0.08)"
+            boxShadow="0 1px 3px rgba(0,0,0,0.1)"
           >
             <Image
               src={quizIcon}
               alt="Quiz icon"
-              boxSize={{ base: "12px", sm: "13px" }}
+              boxSize={{ base: "14px", sm: "15px" }}
               objectFit="contain"
             />
           </Flex>
@@ -66,8 +66,8 @@ const RightCTA = () => {
           direction="column"
           align="center"
           justify="center"
-          w={{ base: "66px", sm: "74px", md: "80px" }}
-          h={{ base: "66px", sm: "74px", md: "80px" }}
+          w={{ base: "70px", sm: "78px", md: "84px" }}
+          h={{ base: "70px", sm: "78px", md: "84px" }}
           borderRadius="full"
           border={{ base: "3.5px solid", md: "4px solid" }}
           borderColor="#185BA9"
@@ -77,7 +77,7 @@ const RightCTA = () => {
           textAlign="center"
         >
           <Text
-            fontSize={{ base: "15px", sm: "17px", md: "19px" }}
+            fontSize={{ base: "17px", sm: "20px", md: "22px" }}
             fontWeight="800"
             color="white"
             lineHeight="1"
@@ -85,10 +85,10 @@ const RightCTA = () => {
             0%
           </Text>
           <Text
-            fontSize={{ base: "8.5px", sm: "9px", md: "9.5px" }}
-            fontWeight="500"
+            fontSize={{ base: "10px", sm: "10.5px" }}
+            fontWeight="600"
             color="white"
-            opacity={0.92}
+            opacity={0.95}
             lineHeight="1.1"
             mt="2px"
             letterSpacing="tight"
@@ -99,10 +99,10 @@ const RightCTA = () => {
 
         {/* Bottom Description Text */}
         <Text
-          fontSize={{ base: "9.5px", sm: "10.5px", md: "11px" }}
+          fontSize={{ base: "11px", sm: "12px", md: "12.5px" }}
           color="white"
-          opacity={0.92}
-          lineHeight="1.3"
+          opacity={0.95}
+          lineHeight="1.35"
         >
           Access your results and evaluate your performance instantly.
         </Text>
@@ -110,9 +110,9 @@ const RightCTA = () => {
 
       {/* 2. Get a Tutor Box */}
       <Flex
-        bg="#FFF8EE"
+        bg={{ base: "#FFF8EE", _dark: "rgba(234, 88, 12, 0.12)" }}
         border="1px solid"
-        borderColor="#FED7AA"
+        borderColor={{ base: "#FED7AA", _dark: "rgba(234, 88, 12, 0.3)" }}
         direction="column"
         justify="space-between"
         p={{ base: 3.5, sm: 4, md: 5 }}
@@ -120,33 +120,34 @@ const RightCTA = () => {
         cursor="pointer"
         transition="all 0.2s"
         minH={{ base: "155px", sm: "170px", md: "185px" }}
-        boxShadow="0 1px 4px rgba(254, 215, 170, 0.2)"
-        _hover={{ transform: "translateY(-2px)", boxShadow: "0 4px 12px rgba(234, 88, 12, 0.12)" }}
+        boxShadow={{ base: "0 1px 4px rgba(254, 215, 170, 0.2)", _dark: "0 2px 8px rgba(0, 0, 0, 0.3)" }}
+        _hover={{ transform: "translateY(-2px)", boxShadow: "0 4px 12px rgba(234, 88, 12, 0.2)" }}
         onClick={() => setCurrentStudentPage("learn")}
       >
         {/* Top Header */}
         <Flex justify="space-between" align="center" w="full">
           <Text
-            fontSize={{ base: "13px", sm: "14px", md: "15px" }}
-            fontWeight="700"
-            color="#1E293B"
+            fontSize={{ base: "14px", sm: "16px", md: "17px" }}
+            fontWeight="800"
+            color={{ base: "#1E293B", _dark: "#F8FAFC" }}
             lineHeight="shorter"
           >
             Get a Tutor
           </Text>
           <Flex
             borderRadius="full"
-            boxSize={{ base: "22px", sm: "24px" }}
-            bg="white"
+            boxSize={{ base: "26px", sm: "28px" }}
+            bg={{ base: "white", _dark: "#1A1A1A" }}
+            border={{ base: "none", _dark: "1px solid #262626" }}
             align="center"
             justify="center"
             flexShrink={0}
-            boxShadow="0 1px 3px rgba(0,0,0,0.06)"
+            boxShadow="0 1px 3px rgba(0,0,0,0.08)"
           >
             <Image
               src={tutorIcon}
               alt="Tutor icon"
-              boxSize={{ base: "12px", sm: "13px" }}
+              boxSize={{ base: "14px", sm: "15px" }}
               objectFit="contain"
             />
           </Flex>
@@ -156,9 +157,9 @@ const RightCTA = () => {
         <Flex justify="center" align="center" my={{ base: 1.5, sm: 2 }}>
           <Image
             src={tutorImg}
-            height={{ base: "48px", sm: "54px", md: "58px" }}
+            height={{ base: "52px", sm: "58px", md: "64px" }}
             width="auto"
-            maxW="70px"
+            maxW="80px"
             objectFit="contain"
             alt="Tutor"
           />
@@ -166,9 +167,9 @@ const RightCTA = () => {
 
         {/* Bottom Description Text */}
         <Text
-          fontSize={{ base: "9.5px", sm: "10.5px", md: "11px" }}
-          color="#475569"
-          lineHeight="1.3"
+          fontSize={{ base: "11px", sm: "12px", md: "12.5px" }}
+          color={{ base: "#475569", _dark: "#CBD5E1" }}
+          lineHeight="1.35"
         >
           Connect with a qualified tutor and start learning immediately.
         </Text>

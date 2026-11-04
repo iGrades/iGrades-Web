@@ -84,27 +84,27 @@ export const ExamReadinessCard = ({ readiness, loading }: Props) => {
 
   return (
     <Box
-      bg="white"
+      bg={{ base: "white", _dark: "#121212" }}
       borderRadius="2xl"
       border="1px solid"
-      borderColor="gray.100"
+      borderColor={{ base: "gray.100", _dark: "#262626" }}
       boxShadow="0 1px 3px rgba(0, 0, 0, 0.04)"
       p={{ base: 4, sm: 5 }}
       my={4}
     >
       {/* Mobile-Native Section Header */}
-      <Flex justify="space-between" align="center" mb={3.5}>
+      <Flex justify="space-between" align="center" mb={4}>
         <Box>
           <Heading
             as="h2"
-            fontSize={{ base: "15px", md: "16px" }}
-            fontWeight="700"
-            color="#1E293B"
+            fontSize={{ base: "16px", md: "18px" }}
+            fontWeight="800"
+            color={{ base: "#1E293B", _dark: "#F5F5F5" }}
             lineHeight="shorter"
           >
             Exam Readiness
           </Heading>
-          <Text fontSize="11px" color="#64748B" mt={0.5}>
+          <Text fontSize="12.5px" color={{ base: "#64748B", _dark: "#94A3B8" }} mt={0.5}>
             Target: {targetExam} {hasSufficientData ? `· ${confidenceLevel} confidence` : ""}
           </Text>
         </Box>
@@ -113,9 +113,9 @@ export const ExamReadinessCard = ({ readiness, loading }: Props) => {
           variant="solid"
           size="sm"
           borderRadius="full"
-          px={2.5}
-          py={0.5}
-          fontSize="11px"
+          px={3}
+          py={0.8}
+          fontSize="12px"
           fontWeight="700"
         >
           {readinessBand}
@@ -125,18 +125,18 @@ export const ExamReadinessCard = ({ readiness, loading }: Props) => {
       {/* Insufficient Data State */}
       {!hasSufficientData ? (
         <Box
-          bg="#F8FAFC"
+          bg={{ base: "#F8FAFC", _dark: "#1A1A1A" }}
           border="1px dashed"
-          borderColor="#CBD5E1"
+          borderColor={{ base: "#CBD5E1", _dark: "#333333" }}
           borderRadius="xl"
-          p={4}
+          p={5}
           textAlign="center"
         >
-          <Icon as={FiInfo} color="#288AE4" boxSize="20px" mb={1.5} />
-          <Heading fontSize="13px" fontWeight="700" color="#1E293B" mb={1}>
+          <Icon as={FiInfo} color="#288AE4" boxSize="24px" mb={2} />
+          <Heading fontSize="15px" fontWeight="800" color={{ base: "#1E293B", _dark: "#F5F5F5" }} mb={1}>
             Not enough practice data yet
           </Heading>
-          <Text fontSize="11px" color="#64748B" maxW="360px" mx="auto" mb={3}>
+          <Text fontSize="12.5px" color={{ base: "#64748B", _dark: "#A1A1AA" }} maxW="380px" mx="auto" mb={3.5}>
             Take 1 practice quiz to compute your {targetExam} readiness score.
           </Text>
           <Button
@@ -146,7 +146,8 @@ export const ExamReadinessCard = ({ readiness, loading }: Props) => {
             color="white"
             borderRadius="xl"
             fontWeight="700"
-            fontSize="12px"
+            fontSize="13px"
+            h="40px"
             _hover={{ bg: "#1D75C7" }}
             onClick={() => setCurrentStudentPage("quiz")}
           >
@@ -157,23 +158,23 @@ export const ExamReadinessCard = ({ readiness, loading }: Props) => {
         <>
           {/* Mobile Hero Score Card */}
           <Box
-            bg="#F8FAFC"
+            bg={{ base: "#F8FAFC", _dark: "#1A1A1A" }}
             borderRadius="xl"
             border="1px solid"
-            borderColor="#E2E8F0"
-            p={3.5}
-            mb={3}
+            borderColor={{ base: "#E2E8F0", _dark: "#262626" }}
+            p={{ base: 4, sm: 4.5 }}
+            mb={3.5}
           >
-            <Flex align="center" gap={3.5}>
+            <Flex align="center" gap={4}>
               {/* Score circle badge */}
               <Flex
                 direction="column"
                 align="center"
                 justify="center"
-                w={{ base: "64px", sm: "70px" }}
-                h={{ base: "64px", sm: "70px" }}
+                w={{ base: "72px", sm: "78px" }}
+                h={{ base: "72px", sm: "78px" }}
                 borderRadius="full"
-                border="3.5px solid"
+                border="4px solid"
                 borderColor={
                   overallReadiness >= 75
                     ? "#10B981"
@@ -183,23 +184,23 @@ export const ExamReadinessCard = ({ readiness, loading }: Props) => {
                     ? "#F59E0B"
                     : "#EF4444"
                 }
-                bg="white"
+                bg={{ base: "white", _dark: "#121212" }}
                 flexShrink={0}
               >
-                <Text fontSize="18px" fontWeight="800" color="#1E293B" lineHeight="1">
+                <Text fontSize="21px" fontWeight="800" color={{ base: "#1E293B", _dark: "#F5F5F5" }} lineHeight="1">
                   {overallReadiness}%
                 </Text>
-                <Text fontSize="8.5px" fontWeight="600" color="#64748B" mt="1px">
+                <Text fontSize="9.5px" fontWeight="700" color={{ base: "#64748B", _dark: "#A1A1AA" }} mt="2px">
                   READY
                 </Text>
               </Flex>
 
               {/* Score description & coverage details */}
               <Box flex={1} minW={0}>
-                <Text fontSize="10px" fontWeight="700" color="#64748B" textTransform="uppercase" letterSpacing="wider">
+                <Text fontSize="11px" fontWeight="700" color={{ base: "#64748B", _dark: "#94A3B8" }} textTransform="uppercase" letterSpacing="wider">
                   Overall Preparation
                 </Text>
-                <Text fontSize="13px" fontWeight="700" color="#1E293B" lineHeight="1.3" mt={0.5}>
+                <Text fontSize="14px" fontWeight="800" color={{ base: "#1E293B", _dark: "#F8FAFC" }} lineHeight="1.3" mt={0.5}>
                   {readinessBand === "Exam Ready"
                     ? "Excellent performance for " + targetExam
                     : readinessBand === "On Track"
@@ -208,7 +209,7 @@ export const ExamReadinessCard = ({ readiness, loading }: Props) => {
                     ? "Building foundational knowledge"
                     : "Focused revision recommended"}
                 </Text>
-                <Text fontSize="10.5px" color="#64748B" mt={1}>
+                <Text fontSize="12px" color={{ base: "#64748B", _dark: "#94A3B8" }} mt={1}>
                   {readiness.subjectsEvaluatedCount} subjects evaluated · {readiness.totalQuestionsAnswered} Qs solved
                 </Text>
               </Box>
@@ -218,57 +219,57 @@ export const ExamReadinessCard = ({ readiness, loading }: Props) => {
           {/* 4 Diagnostics Quick Metric Tiles (2x2 Mobile Grid) */}
           <Grid templateColumns="repeat(2, 1fr)" gap={2} mb={3.5}>
             {/* Strongest */}
-            <Box p={2.5} borderRadius="xl" bg="#F0FDF4" border="1px solid" borderColor="#DCFCE7">
-              <HStack gap={1} color="#15803D" fontSize="10px" fontWeight="700" mb={0.5}>
+            <Box p={2.5} borderRadius="xl" bg={{ base: "#F0FDF4", _dark: "rgba(16, 185, 129, 0.12)" }} border="1px solid" borderColor={{ base: "#DCFCE7", _dark: "rgba(16, 185, 129, 0.25)" }}>
+              <HStack gap={1} color={{ base: "#15803D", _dark: "#4ADE80" }} fontSize="10px" fontWeight="700" mb={0.5}>
                 <Icon as={FiAward} boxSize="11px" />
                 <Text>Strongest</Text>
               </HStack>
-              <Text fontSize="12px" fontWeight="700" color="#1E293B" truncate>
+              <Text fontSize="12px" fontWeight="700" color={{ base: "#1E293B", _dark: "#F8FAFC" }} truncate>
                 {strongestSubjects.length > 0 ? strongestSubjects[0].subjectName : "In progress"}
               </Text>
-              <Text fontSize="10px" color="#15803D" mt={0.5}>
+              <Text fontSize="10px" color={{ base: "#15803D", _dark: "#4ADE80" }} mt={0.5}>
                 {strongestSubjects.length > 0 ? `${strongestSubjects[0].readinessScore}% ready` : "Practice more"}
               </Text>
             </Box>
 
             {/* Needs Focus */}
-            <Box p={2.5} borderRadius="xl" bg="#FFF7ED" border="1px solid" borderColor="#FFEDD5">
-              <HStack gap={1} color="#C2410C" fontSize="10px" fontWeight="700" mb={0.5}>
+            <Box p={2.5} borderRadius="xl" bg={{ base: "#FFF7ED", _dark: "rgba(249, 115, 22, 0.12)" }} border="1px solid" borderColor={{ base: "#FFEDD5", _dark: "rgba(249, 115, 22, 0.25)" }}>
+              <HStack gap={1} color={{ base: "#C2410C", _dark: "#FB923C" }} fontSize="10px" fontWeight="700" mb={0.5}>
                 <Icon as={FiAlertCircle} boxSize="11px" />
                 <Text>Needs Focus</Text>
               </HStack>
-              <Text fontSize="12px" fontWeight="700" color="#1E293B" truncate>
+              <Text fontSize="12px" fontWeight="700" color={{ base: "#1E293B", _dark: "#F8FAFC" }} truncate>
                 {weakestSubjects.length > 0 ? weakestSubjects[0].subjectName : "None"}
               </Text>
-              <Text fontSize="10px" color="#C2410C" mt={0.5}>
+              <Text fontSize="10px" color={{ base: "#C2410C", _dark: "#FB923C" }} mt={0.5}>
                 {weakestSubjects.length > 0 ? `${weakestSubjects[0].readinessScore}% ready` : "All on track"}
               </Text>
             </Box>
 
             {/* Improving */}
-            <Box p={2.5} borderRadius="xl" bg="#EFF6FF" border="1px solid" borderColor="#DBEAFE">
-              <HStack gap={1} color="#1D4ED8" fontSize="10px" fontWeight="700" mb={0.5}>
+            <Box p={2.5} borderRadius="xl" bg={{ base: "#EFF6FF", _dark: "rgba(59, 130, 246, 0.12)" }} border="1px solid" borderColor={{ base: "#DBEAFE", _dark: "rgba(59, 130, 246, 0.25)" }}>
+              <HStack gap={1} color={{ base: "#1D4ED8", _dark: "#60A5FA" }} fontSize="10px" fontWeight="700" mb={0.5}>
                 <Icon as={FiTrendingUp} boxSize="11px" />
                 <Text>Improving</Text>
               </HStack>
-              <Text fontSize="12px" fontWeight="700" color="#1E293B" truncate>
+              <Text fontSize="12px" fontWeight="700" color={{ base: "#1E293B", _dark: "#F8FAFC" }} truncate>
                 {improvingSubjects.length > 0 ? improvingSubjects[0].subjectName : "Steady"}
               </Text>
-              <Text fontSize="10px" color="#1D4ED8" mt={0.5}>
+              <Text fontSize="10px" color={{ base: "#1D4ED8", _dark: "#60A5FA" }} mt={0.5}>
                 {improvingSubjects.length > 0 ? `+${improvingSubjects[0].trendDiff}% trend` : "Consistent"}
               </Text>
             </Box>
 
             {/* Review */}
-            <Box p={2.5} borderRadius="xl" bg="#FAF5FF" border="1px solid" borderColor="#F3E8FF">
-              <HStack gap={1} color="#7E22CE" fontSize="10px" fontWeight="700" mb={0.5}>
+            <Box p={2.5} borderRadius="xl" bg={{ base: "#FAF5FF", _dark: "rgba(168, 85, 247, 0.12)" }} border="1px solid" borderColor={{ base: "#F3E8FF", _dark: "rgba(168, 85, 247, 0.25)" }}>
+              <HStack gap={1} color={{ base: "#7E22CE", _dark: "#C084FC" }} fontSize="10px" fontWeight="700" mb={0.5}>
                 <Icon as={decliningSubjects.length > 0 ? FiTrendingDown : FiMinus} boxSize="11px" />
                 <Text>Review</Text>
               </HStack>
-              <Text fontSize="12px" fontWeight="700" color="#1E293B" truncate>
+              <Text fontSize="12px" fontWeight="700" color={{ base: "#1E293B", _dark: "#F8FAFC" }} truncate>
                 {decliningSubjects.length > 0 ? decliningSubjects[0].subjectName : "Stable"}
               </Text>
-              <Text fontSize="10px" color="#7E22CE" mt={0.5}>
+              <Text fontSize="10px" color={{ base: "#7E22CE", _dark: "#C084FC" }} mt={0.5}>
                 {decliningSubjects.length > 0 ? `${decliningSubjects[0].trendDiff}% down` : "No drops"}
               </Text>
             </Box>
@@ -277,10 +278,10 @@ export const ExamReadinessCard = ({ readiness, loading }: Props) => {
           {/* Subject-by-Subject Mobile List */}
           <Box mb={3.5}>
             <Flex justify="space-between" align="center" mb={2}>
-              <Text fontSize="11px" fontWeight="700" color="#64748B" textTransform="uppercase" letterSpacing="wider">
+              <Text fontSize="11px" fontWeight="700" color={{ base: "#64748B", _dark: "#A1A1AA" }} textTransform="uppercase" letterSpacing="wider">
                 Subject Breakdown
               </Text>
-              <Text fontSize="10.5px" color="#94A3B8">
+              <Text fontSize="10.5px" color={{ base: "#94A3B8", _dark: "#71717A" }}>
                 {subjectBreakdown.length} total
               </Text>
             </Flex>
@@ -314,10 +315,18 @@ export const ExamReadinessCard = ({ readiness, loading }: Props) => {
                     p={3}
                     borderRadius="xl"
                     border="1px solid"
-                    borderColor={!isSubjectAllowed ? "#FED7AA" : "#F1F5F9"}
-                    bg={!isSubjectAllowed ? "#FFF7ED" : "#F8FAFC"}
+                    borderColor={
+                      !isSubjectAllowed
+                        ? { base: "#FED7AA", _dark: "rgba(249, 115, 22, 0.3)" }
+                        : { base: "#F1F5F9", _dark: "#262626" }
+                    }
+                    bg={
+                      !isSubjectAllowed
+                        ? { base: "#FFF7ED", _dark: "rgba(249, 115, 22, 0.12)" }
+                        : { base: "#F8FAFC", _dark: "#1A1A1A" }
+                    }
                     cursor="pointer"
-                    _active={{ bg: "#EDF2F7" }}
+                    _active={{ bg: { base: "#EDF2F7", _dark: "#262626" } }}
                     transition="all 0.15s"
                     onClick={() => {
                       if (!isSubjectAllowed) {
@@ -333,7 +342,7 @@ export const ExamReadinessCard = ({ readiness, loading }: Props) => {
                   >
                     <Flex justify="space-between" align="center" mb={1.5}>
                       <HStack gap={1.5}>
-                        <Text fontSize="12px" fontWeight="700" color="#1E293B" textTransform="capitalize">
+                        <Text fontSize="12px" fontWeight="700" color={{ base: "#1E293B", _dark: "#F8FAFC" }} textTransform="capitalize">
                           {sub.subjectName}
                         </Text>
                         {!isSubjectAllowed && (

@@ -246,4 +246,371 @@ body::-webkit-scrollbar,
   animation: swipeUpExit 0.42s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
+/* ════════════════════════════════════════════════════════════════
+   COMPREHENSIVE TRUE-BLACK & NEUTRAL-GREY DARK MODE SYSTEM
+   ════════════════════════════════════════════════════════════════ */
+
+html.dark,
+[data-theme="dark"] {
+  color-scheme: dark;
+
+  /* Chakra Color Tokens Override (Strictly Neutral Greys & True Black, NO BLUE) */
+  --chakra-colors-white: #121212;
+  --chakra-colors-backgrondColor: #000000;
+  --chakra-colors-backgrondColor2: #000000;
+  --chakra-colors-on_backgroundColor: #F5F5F5;
+  --chakra-colors-on_containerColor: #D4D4D8;
+  --chakra-colors-textFieldColor: #000000;
+  --chakra-colors-lightGrey: #1A1A1A;
+  --chakra-colors-mediumGrey: #A1A1AA;
+  --chakra-colors-greyOthers: #71717A;
+  --chakra-colors-fieldTextColor: #71717A;
+
+  /* Neutral Greys: Pure monochromatic spectrum */
+  --chakra-colors-gray-50: #121212;
+  --chakra-colors-gray-100: #1A1A1A;
+  --chakra-colors-gray-200: #262626;
+  --chakra-colors-gray-300: #333333;
+  --chakra-colors-gray-400: #71717A;
+  --chakra-colors-gray-500: #A1A1AA;
+  --chakra-colors-gray-600: #D4D4D8;
+  --chakra-colors-gray-700: #E4E4E7;
+  --chakra-colors-gray-800: #F4F4F5;
+  --chakra-colors-gray-900: #FAFAFA;
+
+  /* Slate token overrides to pure neutrals */
+  --chakra-colors-slate-50: #121212;
+  --chakra-colors-slate-100: #1A1A1A;
+  --chakra-colors-slate-200: #262626;
+  --chakra-colors-slate-300: #333333;
+  --chakra-colors-slate-400: #71717A;
+  --chakra-colors-slate-500: #A1A1AA;
+  --chakra-colors-slate-600: #D4D4D8;
+  --chakra-colors-slate-700: #E4E4E7;
+  --chakra-colors-slate-800: #F4F4F5;
+  --chakra-colors-slate-900: #FAFAFA;
+
+  /* Global Theme Variables */
+  --app-bg: #000000;
+  --card-bg: #121212;
+  --card-bg-elevated: #1A1A1A;
+  --card-bg-hover: #222222;
+  --border-subtle: #262626;
+  --border-strong: #333333;
+  --text-main: #F5F5F5;
+  --text-sub: #D4D4D8;
+  --text-muted: #A1A1AA;
+  --input-bg: #181818;
+}
+
+html.dark body,
+html.dark #root,
+html.dark main {
+  background-color: #000000 !important;
+  color: #F5F5F5 !important;
+}
+
+/* Navbars & Top Headers */
+html.dark nav[position="sticky"],
+html.dark nav,
+html.dark header,
+html.dark [role="banner"],
+html.dark .chakra-flex nav {
+  background-color: #121212 !important;
+  border-color: #262626 !important;
+  color: #F5F5F5 !important;
+}
+
+/* Bottom Floating Bars & Tab Bars */
+html.dark nav[aria-label*="Bottom Navigation"],
+html.dark nav[aria-label*="Mobile Bottom Navigation"],
+html.dark nav[role="tablist"] {
+  background-color: rgba(18, 18, 18, 0.96) !important;
+  border-top-color: #262626 !important;
+  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.75) !important;
+}
+
+/* Desktop & Mobile Sidebars */
+html.dark aside,
+html.dark [as="aside"],
+html.dark [aria-label*="Navigation Rail"],
+html.dark [aria-label*="Sidebar"] {
+  background-color: #121212 !important;
+  border-color: #262626 !important;
+  color: #F5F5F5 !important;
+}
+
+/* All Cards, Containers, and Panels with hardcoded light styles */
+html.dark .bg-white,
+html.dark [bg="white"],
+html.dark [bg="#FFFFFF"],
+html.dark [bg="#ffffff"],
+html.dark [background="white"],
+html.dark [background="#FFFFFF"] {
+  background-color: #121212 !important;
+  border-color: #262626 !important;
+  color: #F5F5F5 !important;
+}
+
+/* Subtle rows, Settings lists, and Secondary Cards */
+html.dark [bg="#F4F7FB"],
+html.dark [bg="#F8FAFC"],
+html.dark [bg="#F9F9FB"],
+html.dark [bg="#F1F5F9"],
+html.dark [bg="gray.50"],
+html.dark [bg="gray.100"],
+html.dark [bg="slate.50"],
+html.dark [bg="slate.100"] {
+  background-color: #1A1A1A !important;
+  border-color: #262626 !important;
+  color: #F5F5F5 !important;
+}
+
+html.dark [bg="#F4F7FB"]:hover,
+html.dark [bg="#F8FAFC"]:hover,
+html.dark [bg="#F1F5F9"]:hover,
+html.dark [bg="gray.50"]:hover,
+html.dark [bg="gray.100"]:hover {
+  background-color: #242424 !important;
+}
+
+/* Settings navigation tabs */
+html.dark [data-settings-nav],
+html.dark nav.settings-nav {
+  background-color: #121212 !important;
+  border-color: #262626 !important;
+}
+
+/* Typography Overrides */
+html.dark h1,
+html.dark h2,
+html.dark h3,
+html.dark h4,
+html.dark h5,
+html.dark h6,
+html.dark .chakra-heading {
+  color: #F5F5F5 !important;
+}
+
+html.dark [color="#1E293B"],
+html.dark [color="#0F172A"],
+html.dark [color="#242E3E"],
+html.dark [color="#474256"],
+html.dark [color="#111827"],
+html.dark [color="gray.800"],
+html.dark [color="gray.900"],
+html.dark [color="#1E56B3"] {
+  color: #F5F5F5 !important;
+}
+
+html.dark [color="#475569"],
+html.dark [color="#64748B"],
+html.dark [color="#525071"],
+html.dark [color="gray.600"],
+html.dark [color="gray.500"] {
+  color: #A1A1AA !important;
+}
+
+/* Borders */
+html.dark [border-color="gray.100"],
+html.dark [border-color="gray.200"],
+html.dark [border-color="#E2E8F0"],
+html.dark [border-color="#E5E7EB"],
+html.dark [border-color="#F1F5F9"] {
+  border-color: #262626 !important;
+}
+
+/* Modals, Dialogs, Drawers & Popovers */
+html.dark [role="dialog"],
+html.dark [role="alertdialog"],
+html.dark .chakra-modal__content,
+html.dark .chakra-dialog__content,
+html.dark [data-scope="dialog"],
+html.dark [data-scope="menu"],
+html.dark [data-scope="popover"] {
+  background-color: #121212 !important;
+  border-color: #262626 !important;
+  color: #F5F5F5 !important;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.85) !important;
+}
+
+/* Dropdown Menu Items */
+html.dark [data-scope="menu"] [role="menuitem"],
+html.dark [data-scope="popover"] [role="menuitem"] {
+  background-color: transparent !important;
+  color: #F5F5F5 !important;
+}
+
+html.dark [data-scope="menu"] [role="menuitem"]:hover,
+html.dark [data-scope="menu"] [role="menuitem"][data-highlighted],
+html.dark [data-scope="popover"] [role="menuitem"]:hover {
+  background-color: #222222 !important;
+  color: #FFFFFF !important;
+}
+
+/* Form Controls & Inputs */
+html.dark input,
+html.dark select,
+html.dark textarea,
+html.dark .chakra-input {
+  background-color: #181818 !important;
+  border-color: #2E2E2E !important;
+  color: #F5F5F5 !important;
+}
+
+html.dark input::placeholder,
+html.dark textarea::placeholder {
+  color: #71717A !important;
+}
+
+html.dark input:focus,
+html.dark select:focus,
+html.dark textarea:focus {
+  border-color: #2563EB !important;
+  box-shadow: 0 0 0 1px #2563EB !important;
+}
+
+/* Tables in Admin and Parent Dashboard */
+html.dark table {
+  background-color: transparent !important;
+  border-color: #262626 !important;
+}
+
+html.dark table th,
+html.dark .chakra-table__column-header {
+  background-color: #161616 !important;
+  border-color: #262626 !important;
+  color: #D4D4D8 !important;
+}
+
+html.dark table td,
+html.dark .chakra-table__cell,
+html.dark table tr {
+  border-color: #262626 !important;
+  color: #F5F5F5 !important;
+}
+
+html.dark table tbody tr:hover {
+  background-color: #1A1A1A !important;
+}
+
+/* Tooltips */
+html.dark [data-scope="tooltip"] {
+  background-color: #1E1E1E !important;
+  color: #F5F5F5 !important;
+  border: 1px solid #333333 !important;
+}
+
+/* Recharts in Dark Mode */
+html.dark .recharts-cartesian-grid line {
+  stroke: #262626 !important;
+}
+
+html.dark .recharts-text {
+  fill: #A1A1AA !important;
+}
+
+html.dark .recharts-default-tooltip {
+  background-color: #121212 !important;
+  border: 1px solid #262626 !important;
+  color: #F5F5F5 !important;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.7) !important;
+}
+
+/* Progress Bars */
+html.dark [data-scope="progress-track"],
+html.dark .chakra-progress-track {
+  background-color: #262626 !important;
+}
+
+/* Badges & Soft Colored Chips in Dark Mode */
+html.dark .soft-badge-blue,
+html.dark [bg="#EFF6FF"],
+html.dark [bg="#DBEAFE"] {
+  background-color: rgba(37, 99, 235, 0.16) !important;
+  color: #93C5FD !important;
+  border-color: rgba(37, 99, 235, 0.3) !important;
+}
+
+html.dark .soft-badge-green,
+html.dark [bg="#ECFDF5"],
+html.dark [bg="#D1FAE5"] {
+  background-color: rgba(16, 185, 129, 0.16) !important;
+  color: #6EE7B7 !important;
+  border-color: rgba(16, 185, 129, 0.3) !important;
+}
+
+html.dark .soft-badge-amber,
+html.dark [bg="#FFFBEB"],
+html.dark [bg="#FEF3C7"],
+html.dark [bg="#FDE68A"] {
+  background-color: rgba(245, 158, 11, 0.16) !important;
+  color: #FCD34D !important;
+  border-color: rgba(245, 158, 11, 0.3) !important;
+}
+
+html.dark .soft-badge-purple,
+html.dark [bg="#FAF5FF"],
+html.dark [bg="#F3E8FF"] {
+  background-color: rgba(168, 85, 247, 0.16) !important;
+  color: #D8B4FE !important;
+  border-color: rgba(168, 85, 247, 0.3) !important;
+}
+
+html.dark .soft-badge-red,
+html.dark [bg="#FEF2F2"],
+html.dark [bg="#FEE2E2"] {
+  background-color: rgba(239, 68, 68, 0.16) !important;
+  color: #FCA5A5 !important;
+  border-color: rgba(239, 68, 68, 0.3) !important;
+}
+
+/* PDF Viewer and Document Controls in Dark Mode */
+html.dark .react-pdf__Document,
+html.dark .pdf-container {
+  background-color: #121212 !important;
+  border-color: #262626 !important;
+}
+
+html.dark .pdf-toolbar {
+  background-color: #1A1A1A !important;
+  border-color: #262626 !important;
+  color: #F5F5F5 !important;
+}
+
+/* Catch-all for inline styles matching light backgrounds */
+html.dark [style*="background-color: white"],
+html.dark [style*="background-color: #fff"],
+html.dark [style*="background-color: #FFF"],
+html.dark [style*="background-color: #ffffff"],
+html.dark [style*="background-color: #FFFFFF"],
+html.dark [style*="background: white"],
+html.dark [style*="background: #fff"],
+html.dark [style*="background: #ffffff"],
+html.dark [style*="background-color: rgb(255, 255, 255)"],
+html.dark [style*="background: rgb(255, 255, 255)"] {
+  background-color: #121212 !important;
+  border-color: #262626 !important;
+  color: #F5F5F5 !important;
+}
+
+html.dark [style*="background-color: #F8FAFC"],
+html.dark [style*="background-color: #f8fafc"],
+html.dark [style*="background: #F8FAFC"],
+html.dark [style*="background-color: #F4F7FB"],
+html.dark [style*="background-color: #f4f7fb"],
+html.dark [style*="background: #F4F7FB"],
+html.dark [style*="background-color: #F1F5F9"],
+html.dark [style*="background-color: #f1f5f9"],
+html.dark [style*="background: #F1F5F9"],
+html.dark [style*="background-color: rgb(248, 250, 252)"],
+html.dark [style*="background-color: rgb(244, 247, 251)"],
+html.dark [style*="background-color: rgb(241, 245, 249)"] {
+  background-color: #1A1A1A !important;
+  border-color: #262626 !important;
+  color: #F5F5F5 !important;
+}
+
+
+
 

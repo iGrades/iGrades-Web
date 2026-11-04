@@ -18,13 +18,13 @@ import {
   Badge
 } from "@chakra-ui/react";
 import {
-  FaArrowLeft,
   FaLightbulb,
   FaCheckCircle,
   FaExclamationTriangle,
   FaChartLine,
   FaLock,
 } from "react-icons/fa";
+import { useBackButton } from "@/hooks/useBackButton";
 import { PiShootingStarDuotone } from "react-icons/pi";
 import logo from "../../../../assets/logo.png"; 
 import { LuBookOpen } from "react-icons/lu";
@@ -92,6 +92,12 @@ export const QuizReportPage = ({
     );
   };
 
+  // Native phone back button closes the report
+  useBackButton("quiz-report-view", 80, () => {
+    onClose();
+    return true;
+  });
+
   return (
     <Box
       position="fixed"
@@ -107,8 +113,7 @@ export const QuizReportPage = ({
       {/* Action Header (Not in PDF) */}
       <Flex p={4} maxW="1000px" m="auto" justify="space-between" align="center">
         <Button variant="ghost" onClick={onClose}>
-          {" "}
-          <FaArrowLeft /> Back
+          Close Report
         </Button>
         {/*<Button
           bg="primaryColor"

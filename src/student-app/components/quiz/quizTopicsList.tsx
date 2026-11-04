@@ -17,12 +17,13 @@ import {
 } from "@chakra-ui/react";
 import { useState, useEffect } from "react";
 import { GoArrowRight } from "react-icons/go";
-import { LuArrowLeft, LuChevronDown, LuChevronUp, LuLayers, LuBookOpen } from "react-icons/lu";
+import { LuChevronDown, LuChevronUp, LuLayers, LuBookOpen } from "react-icons/lu";
 import { useStudentData, useSubjects } from "@/student-app/context/dataContext";
 import { canonicalizeSubject } from "@/utils/subjectMatching";
 import Slider from "react-slick";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
+import { useBackButton } from "@/hooks/useBackButton";
 import quickTestIcon from "@/assets/quickTest_ico.png";
 import examTestIcon from "@/assets/examText_ico.png";
 import QuizInstructions from "./quizInstructions";
@@ -83,6 +84,16 @@ const QuizTopicsList = ({
   const [availableTopics, setAvailableTopics] = useState<TopicWithQuizStatus[]>([]);
   const [loadingAvailableTopics, setLoadingAvailableTopics] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Native phone back button returns to instructions or subject selection
+  useBackButton("quiz-topic-list", 60, () => {
+    if (showInstructPage) {
+      setShowInstructPage(false);
+      return true;
+    }
+    setShowTopicList(false);
+    return true;
+  });
 
   const {
     effectivePlan,
@@ -476,7 +487,6 @@ const QuizTopicsList = ({
               boxShadow="2xs"
               title="Return to subject selection"
             >
-              <Icon as={LuArrowLeft} boxSize={4} color="gray.500" />
               <Text as="span">Back to Subjects</Text>
             </Button>
 
@@ -653,10 +663,6 @@ const QuizTopicsList = ({
             mb={2}
           >
             <HStack gap={2}>
-              <LuArrowLeft
-                style={{ cursor: "pointer", fontSize: "18px" }}
-                onClick={() => setShowTopicList(false)}
-              />
               <Box>
                 <Heading size="sm">
                   {selectedMode === "quick test"
@@ -665,8 +671,8 @@ const QuizTopicsList = ({
                 </Heading>
                 <Text fontSize="11px" color="gray.500">
                   {selectedMode === "quick test"
-                    ? "Choose specific topics and their subtopics to focus your test practice."
-                    : "Choose topics. In Exam Mode, questions are drawn broadly across all subtopics."}
+                    ? "Select topics to practice."
+                    : "Select topics for your exam."}
                 </Text>
               </Box>
             </HStack>
@@ -961,7 +967,6 @@ const QuizTopicsList = ({
                 cursor="pointer"
                 title="Return to subject selection"
               >
-                <Icon as={LuArrowLeft} boxSize={4} color="gray.500" />
                 <Text as="span">Back to Subjects</Text>
               </Button>
 

@@ -77,6 +77,7 @@ const SENIOR_EXAMS: ExamOption[] = [
 
 interface PQsProps {
   selectedSubject?: string;
+  onSelectSubject?: (subject: string) => void;
   onOpenSubjectModal?: (onSelectSubject?: (subject: string) => void) => void;
   selectedExam?: string | null;
   onSelectExam?: (exam: string | null) => void;
@@ -84,6 +85,7 @@ interface PQsProps {
 
 const PQs: React.FC<PQsProps> = ({
   selectedSubject = "General Mathematics",
+  onSelectSubject,
   onOpenSubjectModal,
   selectedExam: controlledSelectedExam,
   onSelectExam,
@@ -138,7 +140,7 @@ const PQs: React.FC<PQsProps> = ({
   const handleExamClick = (examType: string) => {
     setSelectedExam(examType);
     if (onOpenSubjectModal) {
-      onOpenSubjectModal();
+      onOpenSubjectModal(onSelectSubject);
     }
   };
 

@@ -10,7 +10,7 @@ import type { IconType } from "react-icons";
 import type { ParentPage } from "../../store/usenavigationStore";
 
 const Sidebar = () => {
-  const { currentParentPage, setCurrentParentPage } = useNavigationStore();
+  const { currentParentPage, setCurrentParentPage, setParentSettingsTab } = useNavigationStore();
   const { t } = useTranslation();
   const [hoveredItem, setHoveredItem] = useState<ParentPage | null>(null);
 
@@ -34,7 +34,9 @@ const Sidebar = () => {
         width="full"
         h="full"
         overflow="visible"
-        bg="white"
+        bg={{ base: "white", _dark: "#121212" }}
+        borderRight="1px solid"
+        borderColor={{ base: "gray.100", _dark: "#262626" }}
         px={{ base: 4, md: 2, lg: 4 }}
         py={{ base: 10, md: 6, lg: 10 }}
         shadow={"xs"}
@@ -70,6 +72,9 @@ const Sidebar = () => {
               onMouseEnter={() => setHoveredItem(item.value)}
               onMouseLeave={() => setHoveredItem(null)}
               onClick={() => {
+                if (item.value === "settings") {
+                  setParentSettingsTab("menu");
+                }
                 setCurrentParentPage(item.value);
               }}
             >

@@ -149,7 +149,7 @@ const Security = () => {
   };
 
   return (
-    <Box bg="white" border="none" outline="none" boxShadow="none" p={{ base: 4, sm: 6 }} mb={20} w="100%" h="auto">
+    <Box bg={{ base: "white", _dark: "#121212" }} border="none" outline="none" boxShadow="none" p={{ base: 4, sm: 6 }} mb={20} w="100%" h="auto">
       {/* Header with back button */}
       <Heading
         as="h3"
@@ -157,6 +157,7 @@ const Security = () => {
         alignItems="center"
         justifyContent="flex-start"
         fontSize="md"
+        color={{ base: "gray.800", _dark: "#F5F5F5" }}
         gap={3}
         mt={3}
         mb={5}

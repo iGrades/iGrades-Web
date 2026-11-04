@@ -69,6 +69,13 @@ export const isProductionWeb = (): boolean => {
 };
 
 export const getApiBaseUrl = (): string => {
+  const envUrl = (typeof import.meta !== "undefined" && import.meta.env?.VITE_API_BASE_URL) || "";
+  if (envUrl) {
+    return envUrl.replace(/\/+$/, "");
+  }
+  if (isNativeMobile()) {
+    return "https://ais-dev-tluwfphn4tvwsuomsa362j-544188797831.europe-west2.run.app";
+  }
   return "";
 };
 
@@ -77,5 +84,7 @@ export const getApiBaseUrl = (): string => {
  * @param path Relative path, e.g. "/api/spark-chat" or "api/award-points"
  */
 export const apiUrl = (path: string): string => {
-  return path.startsWith("/") ? path : `/${path}`;
+  const base = getApiBaseUrl();
+  const normalizedPath = path.startsWith("/") ? path : `/${path}`;
+  return base ? `${base}${normalizedPath}` : normalizedPath;
 };

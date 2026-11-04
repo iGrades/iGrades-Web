@@ -163,7 +163,7 @@ const Subscription: React.FC = () => {
 
   return (
     <Box
-      bg="white"
+      bg={{ base: "white", _dark: "#121212" }}
       rounded="2xl"
       border="none"
       outline="none"
@@ -184,7 +184,7 @@ const Subscription: React.FC = () => {
       >
         <Box>
           <HStack gap={2.5} mb={1}>
-            <Heading size={{ base: "md", md: "lg" }} color="gray.900" fontWeight="800">
+            <Heading size={{ base: "md", md: "lg" }} color={{ base: "gray.900", _dark: "#F5F5F5" }} fontWeight="800">
               Student Subscription
             </Heading>
             <Badge
@@ -198,7 +198,7 @@ const Subscription: React.FC = () => {
               Current: {effectivePlan === "premium" ? "Premium" : effectivePlan === "standard" ? "Standard" : "Basic (Free)"}
             </Badge>
           </HStack>
-          <Text fontSize="xs" color="gray.500">
+          <Text fontSize="xs" color={{ base: "gray.500", _dark: "#A1A1AA" }}>
             {isExpired
               ? "Your subscription has expired and access has reverted to Basic tier."
               : effectivePlan === "basic"
@@ -230,8 +230,8 @@ const Subscription: React.FC = () => {
       <Box
         p={4}
         borderRadius="xl"
-        bg="#FFFBEB"
-        border="none"
+        bg={{ base: "#FFFBEB", _dark: "#1A1A1A" }}
+        border={{ base: "none", _dark: "1px solid #78350F" }}
         outline="none"
         boxShadow="none"
         mb={6}
@@ -248,16 +248,16 @@ const Subscription: React.FC = () => {
             </Box>
             <Box>
               <HStack gap={2} flexWrap="wrap">
-                <Heading size="sm" color="gray.900" fontWeight="extrabold">
+                <Heading size="sm" color={{ base: "gray.900", _dark: "#FEF3C7" }} fontWeight="extrabold">
                   iGrades Rewards Store Credit
                 </Heading>
                 <Badge colorPalette="amber" variant="subtle" bg="amber.200" color="amber.900" border="none" px={2} fontSize="10px" fontWeight="bold">
                   {pointsBalance.toLocaleString()} IGG Pts Available
                 </Badge>
               </HStack>
-              <Text fontSize="xs" color="gray.600" mt={0.5}>
+              <Text fontSize="xs" color={{ base: "gray.600", _dark: "#FDE68A" }} mt={0.5}>
                 Available Subscription Store Credit:{" "}
-                <Text as="span" fontWeight="bold" fontSize="sm" color="emerald.700">
+                <Text as="span" fontWeight="bold" fontSize="sm" color={{ base: "emerald.700", _dark: "#4ADE80" }}>
                   ₦{creditBalance.toLocaleString()}
                 </Text>
               </Text>
@@ -299,12 +299,12 @@ const Subscription: React.FC = () => {
           return (
             <Box
               key={plan.id}
-              border="none"
+              border={{ base: "none", _dark: isCurrentPlan ? "1.5px solid #206CE1" : "1px solid #262626" }}
               outline="none"
               boxShadow="none"
               p={{ base: 5, md: 6 }}
               rounded="2xl"
-              bg={isCurrentPlan ? "#EFF6FF" : "#F4F7FB"}
+              bg={{ base: isCurrentPlan ? "#EFF6FF" : "#F4F7FB", _dark: isCurrentPlan ? "#1E1E1E" : "#1A1A1A" }}
               textAlign="left"
               flex={{ base: "none", xl: 1 }}
               w={{ base: "100%", md: "100%", xl: "32%" }}
@@ -314,7 +314,7 @@ const Subscription: React.FC = () => {
               flexDirection="column"
               justifyContent="space-between"
               transition="all 0.15s ease"
-              _hover={{ bg: isCurrentPlan ? "#DBEAFE" : "#EDF2F7" }}
+              _hover={{ bg: { base: isCurrentPlan ? "#DBEAFE" : "#EDF2F7", _dark: isCurrentPlan ? "#262626" : "#222222" } }}
             >
               <Box>
                 {isCurrentPlan && (
@@ -335,15 +335,15 @@ const Subscription: React.FC = () => {
                   </Badge>
                 )}
 
-                <Heading size="md" color="gray.900" fontWeight="800" my={1} textAlign="left">
+                <Heading size="md" color={{ base: "gray.900", _dark: "#F5F5F5" }} fontWeight="800" my={1} textAlign="left">
                   {plan.name}
                 </Heading>
-                <Text fontSize="xs" color="gray.500" textAlign="left" minH="32px">
+                <Text fontSize="xs" color={{ base: "gray.500", _dark: "#A1A1AA" }} textAlign="left" minH="32px">
                   {plan.text}
                 </Text>
 
                 <Box my={3} textAlign="left">
-                  <Heading fontSize="2xl" color="gray.900" fontWeight="900" textAlign="left">
+                  <Heading fontSize="2xl" color={{ base: "gray.900", _dark: "#F5F5F5" }} fontWeight="900" textAlign="left">
                     {plan.price}
                   </Heading>
                   {creditBalance > 0 && plan.amount > 0 && (
@@ -359,8 +359,8 @@ const Subscription: React.FC = () => {
                   w="full"
                   my={3}
                   h="42px"
-                  bg={isCurrentPlan ? "gray.100" : "#206CE1"}
-                  color={isCurrentPlan ? "gray.600" : "white"}
+                  bg={isCurrentPlan ? { base: "gray.100", _dark: "#2A2A2A" } : "#206CE1"}
+                  color={isCurrentPlan ? { base: "gray.600", _dark: "#A1A1AA" } : "white"}
                   rounded="xl"
                   fontWeight="bold"
                   fontSize="xs"
@@ -385,12 +385,12 @@ const Subscription: React.FC = () => {
                   {getButtonLabel(plan)}
                 </Button>
 
-                <Box borderTop="1px solid" borderColor="gray.100" pt={4} mt={3}>
+                <Box borderTop="1px solid" borderColor={{ base: "gray.100", _dark: "#262626" }} pt={4} mt={3}>
                   <Text
                     textAlign="left"
                     fontSize="11px"
                     fontWeight="800"
-                    color="gray.400"
+                    color={{ base: "gray.400", _dark: "#71717A" }}
                     textTransform="uppercase"
                     letterSpacing="0.05em"
                     mb={3}
@@ -416,7 +416,7 @@ const Subscription: React.FC = () => {
                         />
                         <Text
                           fontSize="xs"
-                          color="gray.700"
+                          color={{ base: "gray.700", _dark: "#D4D4D8" }}
                           textAlign="left"
                           lineHeight="1.3"
                           whiteSpace={{ base: "normal", md: "nowrap" }}

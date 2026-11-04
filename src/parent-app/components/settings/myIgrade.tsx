@@ -10,7 +10,7 @@ import {
 import { GiNotebook } from "react-icons/gi";
 import { HiUserGroup } from "react-icons/hi";
 import { FaLink } from "react-icons/fa6";
-import { LuArrowLeft } from "react-icons/lu";
+import { useBackButton } from "@/hooks/useBackButton";
 import manikin from "../../../assets/manikin.png";
 import EditParent from "../parent/editParent";
 import Children from "./children";
@@ -46,6 +46,14 @@ const MyIgrade = () => {
   } | null>(null);
 
   const handleBack = () => setProfileState("igrade");
+
+  useBackButton("parent-my-igrade-subpage", 40, () => {
+    if (profileState !== "igrade") {
+      setProfileState("igrade");
+      return true;
+    }
+    return false;
+  });
 
   const renderView = () => {
     switch (profileState) {
@@ -204,14 +212,8 @@ const MyIgrade = () => {
         justifyContent="flex-start"
         gap={3}
         mb={6}
-        cursor="pointer"
         fontSize="lg"
       >
-        {profileState !== "igrade" && (
-          <Box p={1} onClick={handleBack} cursor="pointer">
-            <LuArrowLeft />
-          </Box>
-        )}
         {profileState === "igrade" ? "Settings" : profileState}
       </Heading>
 

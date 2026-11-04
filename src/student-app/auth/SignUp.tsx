@@ -21,6 +21,7 @@ import { useNavigate, Link as RouterLink } from "react-router-dom";
 import { useAuthdStudentData } from "../context/studentDataContext";
 
 import { NIGERIA_STATES_DATA } from "@/lib/nigeriaGeoData";
+import { setGlobalLanguage } from "@/services/autoTranslation";
 
 function StudentSignUp() {
   const { setAuthdStudent } = useAuthdStudentData();
@@ -49,7 +50,10 @@ function StudentSignUp() {
   } | null>(null);
   const navigate = useNavigate();
   const { encrypt } = usePassKey();
-  const encKey = (import.meta.env.ENC_KEY as string) || "";
+  const encKey =
+    (import.meta.env.ENC_KEY as string) ||
+    (import.meta.env.VITE_ENC_KEY as string) ||
+    "783921";
 
   const selectCollections = {
     genders: createListCollection({
@@ -268,6 +272,10 @@ function StudentSignUp() {
       // Always authenticate immediately into session
       try {
         localStorage.setItem("authdStudent", JSON.stringify(student));
+        if (formData.basic_language) {
+          localStorage.setItem("appLanguage", formData.basic_language);
+          setGlobalLanguage(formData.basic_language);
+        }
       } catch (err) {
         console.warn("Storage warning:", err);
       }
@@ -416,9 +424,13 @@ function StudentSignUp() {
             <Select.Root
               collection={selectCollections.languages}
               size="md"
-              onValueChange={(e) =>
-                setFormData({ ...formData, basic_language: e.value[0] })
-              }
+              onValueChange={(e) => {
+                const chosenLang = e.value[0];
+                setFormData({ ...formData, basic_language: chosenLang });
+                if (chosenLang) {
+                  setGlobalLanguage(chosenLang);
+                }
+              }}
             >
               <label
                 htmlFor="language"

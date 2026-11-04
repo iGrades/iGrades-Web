@@ -1,7 +1,7 @@
 import { Grid, Box, Text, Center, Heading, Icon } from "@chakra-ui/react";
 import { useAuthdStudentData } from "@/student-app/context/studentDataContext";
 import { useState, useEffect } from "react";
-import { LuArrowLeft, LuLock } from "react-icons/lu";
+import { LuLock } from "react-icons/lu";
 import YearsList from "./yearsList";
 import { useStudentData, useSubjects } from "@/student-app/context/dataContext";
 import { courseConfig } from "@/student-app/utils/courseConstants";
@@ -9,6 +9,7 @@ import { getCourseThumbnail } from "@/student-app/utils/courseImages";
 import { useSubscriptionEntitlement } from "@/hooks/useSubscriptionEntitlement";
 import { UpgradePromptModal } from "@/components/subscription/UpgradePromptModal";
 import { LockedBadge } from "@/components/subscription/LockedBadge";
+import { useBackButton } from "@/hooks/useBackButton";
 
 type Props = {
   onBack: () => void;
@@ -22,6 +23,17 @@ const SubjectsList = ({ onBack, selectedExam, defaultSelectedSubject }: Props) =
   const [selectedCourse, setSelectedCourse] = useState<string>("");
   const [subjectId, setSubjectId] = useState<string>("");
   const [showYearsList, setShowYearsList] = useState(false);
+
+  // Native phone back button navigates back to exams list
+  useBackButton(
+    "learn-pqs-subject-list",
+    55,
+    () => {
+      onBack();
+      return true;
+    },
+    !showYearsList
+  );
 
   // Entitlement hook
   const {
@@ -131,7 +143,6 @@ const SubjectsList = ({ onBack, selectedExam, defaultSelectedSubject }: Props) =
             mb={5}
             mx={2}
           >
-            <LuArrowLeft onClick={onBack} style={{ cursor: "pointer" }} />
             Select Subject {selectedExam ? `• ${selectedExam}` : ""}
           </Heading>
           <Grid

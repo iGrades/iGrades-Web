@@ -24,7 +24,7 @@ import { HiClipboardList } from "react-icons/hi";
 import { LuArrowDownToLine } from "react-icons/lu";
 import { FiUpload } from "react-icons/fi";
 import { TbClipboardList } from "react-icons/tb";
-import { IoArrowBack } from "react-icons/io5";
+import { useBackButton } from "@/hooks/useBackButton";
 import type { ResultsPageProps } from "./types";
 import { useNavigationStore } from "@/store/usenavigationStore";
 import { useAuthdStudentData } from "@/student-app/context/studentDataContext";
@@ -188,6 +188,19 @@ export const ResultsPage = ({
     setShowSideBar(true);
     setShowNavBar(true);
   };
+
+  useBackButton("quiz-results-dashboard", 60, () => {
+    if (showShareModal) {
+      setShowShareModal(false);
+      return true;
+    }
+    if (showSummaryPage || showQuizReport) {
+      // Sub-modals handle their own back buttons
+      return false;
+    }
+    backToDashboard();
+    return true;
+  });
 
   return (
     <>
@@ -409,7 +422,7 @@ export const ResultsPage = ({
             size="sm"
             onClick={backToDashboard}
           >
-            <IoArrowBack /> Go to Dashboard
+            Go to Dashboard
           </Button>
         </Flex>
       </Box>

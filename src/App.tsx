@@ -10,10 +10,12 @@ import { initGlobalActivityTracker, checkAndEnforceSessionExpiry, STORAGE_KEYS }
 import { supabase } from "@/lib/supabaseClient";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
+import { GlobalPopupModal } from "@/components/GlobalPopupModal";
 import routes from "./routes";
 
 import { App as CapApp } from "@capacitor/app";
 import { Browser } from "@capacitor/browser";
+import { backButtonService } from "@/services/backButtonService";
 
 function App() {
   const element = useRoutes(routes);
@@ -22,6 +24,7 @@ function App() {
   const [showWalkthrough, setShowWalkthrough] = useState(false);
 
   useEffect(() => {
+    backButtonService.init();
     autoTranslator.init();
     const cleanupTracker = initGlobalActivityTracker();
     checkAndEnforceSessionExpiry(supabase);
@@ -69,8 +72,7 @@ function App() {
     if (
       p.startsWith("/student-dashboard") ||
       p.startsWith("/parent-dashboard") ||
-      p.startsWith("/course-selection") ||
-      (p.startsWith("/admin") && !p.includes("/login"))
+      p.startsWith("/course-selection")
     ) {
       try {
         localStorage.setItem(STORAGE_KEYS.LAST_ACTIVE_PATH, p + location.search);
@@ -93,6 +95,7 @@ function App() {
         )}
         {element}
         <PointsCelebrationModal />
+        <GlobalPopupModal />
       </StudentsDataProvider>
     </UserProvider>
   );

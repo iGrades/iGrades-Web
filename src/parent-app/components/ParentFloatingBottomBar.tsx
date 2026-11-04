@@ -63,11 +63,11 @@ export const ParentFloatingBottomBar = () => {
       left="0"
       right="0"
       w="full"
-      bg="rgba(255, 255, 255, 0.98)"
+      bg={{ base: "rgba(255, 255, 255, 0.98)", _dark: "rgba(18, 18, 18, 0.96)" }}
       backdropFilter="blur(20px)"
       borderTop="1px solid"
-      borderColor="gray.200"
-      boxShadow="0 -2px 12px rgba(0, 0, 0, 0.06)"
+      borderColor={{ base: "gray.200", _dark: "#262626" }}
+      boxShadow={{ base: "0 -2px 12px rgba(0, 0, 0, 0.06)", _dark: "0 -4px 16px rgba(0, 0, 0, 0.7)" }}
       px={1}
       pt={1.5}
       pb="max(calc(env(safe-area-inset-bottom, 0px) + 8px), 8px)"
@@ -79,15 +79,11 @@ export const ParentFloatingBottomBar = () => {
           const isReports = item.value === "weekly_report";
 
           // Dynamic colors per tab
-          let activeBg = "blue.50";
-          let activeColor = "#206CE1";
-          let activeDotBg = "#206CE1";
-
-          if (isReports) {
-            activeBg = "purple.50";
-            activeColor = "purple.600";
-            activeDotBg = "purple.600";
-          }
+          const activeBg = isReports
+            ? { base: "purple.50", _dark: "rgba(168, 85, 247, 0.15)" }
+            : { base: "blue.50", _dark: "rgba(59, 130, 246, 0.15)" };
+          const activeColor = isReports ? { base: "purple.600", _dark: "purple.300" } : { base: "#206CE1", _dark: "#60A5FA" };
+          const activeDotBg = isReports ? { base: "purple.600", _dark: "purple.400" } : { base: "#206CE1", _dark: "#3B82F6" };
 
           return (
             <Flex
@@ -132,7 +128,7 @@ export const ParentFloatingBottomBar = () => {
                 <Icon
                   as={item.icon}
                   boxSize="20px"
-                  color={isActive ? activeColor : "gray.500"}
+                  color={isActive ? activeColor : { base: "gray.500", _dark: "gray.400" }}
                   transition="color 0.15s ease"
                 />
 
@@ -161,7 +157,7 @@ export const ParentFloatingBottomBar = () => {
                 fontSize="11px"
                 fontWeight={isActive ? "700" : "500"}
                 letterSpacing="-0.01em"
-                color={isActive ? activeColor : "gray.500"}
+                color={isActive ? activeColor : { base: "gray.500", _dark: "gray.400" }}
                 mt={0.5}
                 lineHeight="1.2"
                 transition="color 0.15s ease"

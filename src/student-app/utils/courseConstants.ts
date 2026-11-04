@@ -1,7 +1,7 @@
 export const courseConfig: Record<string, { displayName: string; color: string }> = {
   // Mathematics
   "mathematics": { displayName: "Mathematics", color: "#F26946" },
-  "general mathematics": { displayName: "Mathematics", color: "#F26946" },
+  "general mathematics": { displayName: "General Mathematics", color: "#F26946" },
   "maths": { displayName: "Mathematics", color: "#F26946" },
   "math": { displayName: "Mathematics", color: "#F26946" },
   "further mathematics": { displayName: "Further Mathematics", color: "#FF922B" },
@@ -10,7 +10,7 @@ export const courseConfig: Record<string, { displayName: string; color: string }
 
   // English
   "english": { displayName: "English", color: "#4ECDC4" },
-  "english language": { displayName: "English", color: "#4ECDC4" },
+  "english language": { displayName: "English Language", color: "#4ECDC4" },
 
   // Sciences
   "basic science": { displayName: "Basic Science", color: "#45B7D1" },
@@ -38,7 +38,7 @@ export const courseConfig: Record<string, { displayName: string; color: string }
   "agric": { displayName: "Agricultural Science", color: "#2A9D8F" },
   "economics": { displayName: "Economics", color: "#CC5DE8" },
   "accounting": { displayName: "Accounting", color: "#20C997" },
-  "financial accounting": { displayName: "Accounting", color: "#20C997" },
+  "financial accounting": { displayName: "Financial Accounting", color: "#20C997" },
   "commerce": { displayName: "Commerce", color: "#FDA7DF" },
   "government": { displayName: "Government", color: "#D980FA" },
   "geography": { displayName: "Geography", color: "#A3CB38" },
@@ -61,7 +61,7 @@ export const courseConfig: Record<string, { displayName: string; color: string }
   "visual arts": { displayName: "Fine Arts", color: "#FFC312" },
   "music": { displayName: "Music", color: "#FB5607" },
   "literature": { displayName: "Literature", color: "#B53471" },
-  "literature in english": { displayName: "Literature", color: "#B53471" },
+  "literature in english": { displayName: "Literature in English", color: "#B53471" },
   "history": { displayName: "History", color: "#EE5A24" },
   "french": { displayName: "French", color: "#6F1E51" },
   "french language": { displayName: "French", color: "#6F1E51" },

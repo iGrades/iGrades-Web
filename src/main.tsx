@@ -1,5 +1,6 @@
 import { createRoot } from 'react-dom/client'
 import { ChakraProvider } from '@chakra-ui/react';
+import { ColorModeProvider } from './components/ui/color-mode.tsx';
 import { Toaster } from './components/ui/toaster.tsx';
 import system  from './theme'
 import '@fontsource-variable/space-grotesk';
@@ -20,18 +21,20 @@ nativeShellService.initialize();
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <ChakraProvider value={system}>
-      <ErrorBoundary>
-        <PasskeyProvider>
-          <AuthdStudentDataProvider>
-            <DataProvider>
-              <Toaster />
-              <BrowserRouter>
-                <App />
-              </BrowserRouter>
-            </DataProvider>
-          </AuthdStudentDataProvider>
-        </PasskeyProvider>
-      </ErrorBoundary>
+      <ColorModeProvider>
+        <ErrorBoundary>
+          <PasskeyProvider>
+            <AuthdStudentDataProvider>
+              <DataProvider>
+                <Toaster />
+                <BrowserRouter>
+                  <App />
+                </BrowserRouter>
+              </DataProvider>
+            </AuthdStudentDataProvider>
+          </PasskeyProvider>
+        </ErrorBoundary>
+      </ColorModeProvider>
     </ChakraProvider>
   </StrictMode>
 );

@@ -1,7 +1,7 @@
 import { Heading, Box, Text, Flex } from "@chakra-ui/react";
-import { LuArrowLeft } from "react-icons/lu";
 import { useState } from "react";
 import PdfList from "./pdfsList";
+import { useBackButton } from "@/hooks/useBackButton";
 
 interface Topic {
   id: string;
@@ -36,6 +36,16 @@ const TopicsList = ({
 }: Props) => {
   const [pdfList, setPdfList] = useState(false);
   const [selectedTopic, setSelectedTopic] = useState<Topic | null>(null);
+
+  useBackButton("pdf-topics-list", 30, () => {
+    if (pdfList) {
+      setPdfList(false);
+      setSelectedTopic(null);
+      return true;
+    }
+    setTopicList(false);
+    return true;
+  });
 
   // Handle topic click
   const handleTopicClick = (topic: Topic) => {

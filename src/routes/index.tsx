@@ -3,13 +3,11 @@ import { Navigate } from "react-router-dom";
 import publicRoutes from "./public";
 import studentRoutes from "./student";
 import parentRoutes from "./parent";
-import adminRoutes from "./admin";
 
 const routes: RouteObject[] = [
   ...publicRoutes,
   ...studentRoutes,
   ...parentRoutes,
-  ...adminRoutes,
   // Fallbacks for common aliases and catch-all to avoid blank screen
   {
     path: "/dashboard",

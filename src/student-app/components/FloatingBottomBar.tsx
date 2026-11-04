@@ -1,13 +1,11 @@
 import { Box, Flex, Icon, Text } from "@chakra-ui/react";
 import { TbHomeFilled } from "react-icons/tb";
-import { IoNewspaper } from "react-icons/io5";
+import { IoNewspaper, IoSettingsSharp } from "react-icons/io5";
 import { TbBrandYoutubeFilled } from "react-icons/tb";
 import { PiSparkleFill } from "react-icons/pi";
-import { FiAward } from "react-icons/fi";
 import { useNavigationStore, type StudentPage } from "@/store/usenavigationStore";
 import { useSparkStore } from "@/store/useSparkStore";
 import { useTranslation } from "react-i18next";
-import { usePointsSystem } from "../hooks/usePointsSystem";
 import type { IconType } from "react-icons";
 import { hapticsService } from "@/services/hapticsService";
 
@@ -19,16 +17,12 @@ interface NavItem {
 }
 
 export const FloatingBottomBar = () => {
-  const { currentStudentPage, setCurrentStudentPage } = useNavigationStore();
+  const { currentStudentPage, setCurrentStudentPage, setStudentSettingsTab } = useNavigationStore();
   const hasUnread = useSparkStore((s) => s.hasUnread);
   const { t } = useTranslation();
-  const { pointsBalance } = usePointsSystem();
-
-  const formattedPoints =
-    pointsBalance > 999 ? `${(pointsBalance / 1000).toFixed(1)}k` : pointsBalance;
 
   // The 5 primary destinations in exact requested order:
-  // 1. Home, 2. Quiz, 3. Learn, 4. Chat, 5. IGG Points
+  // 1. Home, 2. Quiz, 3. Learn, 4. Chat, 5. Settings
   const navItems: NavItem[] = [
     {
       icon: TbHomeFilled,
@@ -51,10 +45,9 @@ export const FloatingBottomBar = () => {
       value: "chat",
     },
     {
-      icon: FiAward,
-      label: "IGG Points",
-      value: "rewards",
-      badge: formattedPoints,
+      icon: IoSettingsSharp,
+      label: t("nav_settings") || "Settings",
+      value: "settings",
     },
   ];
 
@@ -69,11 +62,11 @@ export const FloatingBottomBar = () => {
       left="0"
       right="0"
       w="full"
-      bg="rgba(255, 255, 255, 0.98)"
+      bg={{ base: "rgba(255, 255, 255, 0.98)", _dark: "rgba(18, 18, 18, 0.96)" }}
       backdropFilter="blur(20px)"
       borderTop="1px solid"
-      borderColor="gray.200"
-      boxShadow="0 -2px 10px rgba(0, 0, 0, 0.05)"
+      borderColor={{ base: "gray.200", _dark: "#262626" }}
+      boxShadow={{ base: "0 -2px 10px rgba(0, 0, 0, 0.05)", _dark: "0 -4px 16px rgba(0, 0, 0, 0.7)" }}
       px={1}
       pt={1.5}
       pb="max(calc(env(safe-area-inset-bottom, 0px) + 8px), 8px)"
@@ -126,6 +119,9 @@ export const FloatingBottomBar = () => {
                 hapticsService.triggerNavigationTap();
                 if (item.value === "chat") {
                   useSparkStore.getState().setHasUnread(false);
+                }
+                if (item.value === "settings") {
+                  setStudentSettingsTab("menu");
                 }
                 setCurrentStudentPage(item.value);
               }}

@@ -14,12 +14,13 @@ import {
   HStack,
 } from "@chakra-ui/react";
 import { useAuthdStudentData } from "@/student-app/context/studentDataContext";
-import { LuArrowLeft, LuPlay, LuLock } from "react-icons/lu";
+import { LuPlay, LuLock } from "react-icons/lu";
 import { useState, useRef } from "react";
 import { supabase } from "@/lib/supabaseClient";
 import { useSubscriptionEntitlement } from "@/hooks/useSubscriptionEntitlement";
 import { UpgradePromptModal } from "@/components/subscription/UpgradePromptModal";
 import { LockedBadge } from "@/components/subscription/LockedBadge";
+import { useBackButton } from "@/hooks/useBackButton";
 
 interface VideoResource {
   id: string;
@@ -49,6 +50,12 @@ const VideosList = ({ topic, videos, onBack }: Props) => {
     null
   );
   const videoRef = useRef<HTMLVideoElement>(null);
+
+  // Native phone back button navigates back to topics list
+  useBackButton("learn-videos-list", 60, () => {
+    onBack();
+    return true;
+  });
 
   const {
     effectivePlan,
@@ -172,7 +179,6 @@ const VideosList = ({ topic, videos, onBack }: Props) => {
         mx={1}
         color="#0F172A"
       >
-        <LuArrowLeft onClick={onBack} style={{ cursor: "pointer", flexShrink: 0 }} size={17} />
         <Text as="span" noOfLines={1} truncate>
           {topic.name} Videos
         </Text>

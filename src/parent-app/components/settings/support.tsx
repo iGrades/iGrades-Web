@@ -83,9 +83,9 @@ const Support = () => {
       <Box
         p={{ base: 4, md: 5 }}
         borderRadius="xl"
-        bg="white"
+        bg={{ base: "white", _dark: "#121212" }}
         border="1px solid"
-        borderColor="gray.100"
+        borderColor={{ base: "gray.100", _dark: "#262626" }}
         shadow="sm"
         mb={6}
       >
@@ -109,13 +109,13 @@ const Support = () => {
               </Badge>
               <HStack gap={1}>
                 <Box w={1.5} h={1.5} rounded="full" bg="green.500" />
-                <Text fontSize="10.5px" color="gray.500" fontWeight="medium">Team Online</Text>
+                <Text fontSize="10.5px" color={{ base: "gray.500", _dark: "#A1A1AA" }} fontWeight="medium">Team Online</Text>
               </HStack>
             </HStack>
-            <Heading fontSize={{ base: "13px", sm: "14px" }} color="gray.800" fontWeight="bold">
+            <Heading fontSize={{ base: "13px", sm: "14px" }} color={{ base: "gray.800", _dark: "#F5F5F5" }} fontWeight="bold">
               How can we help your family today?
             </Heading>
-            <Text fontSize="11px" color="gray.600" mt={1} lineHeight="normal">
+            <Text fontSize="11px" color={{ base: "gray.600", _dark: "#A1A1AA" }} mt={1} lineHeight="normal">
               Whether you need help with your child's curriculum, subscription, analytics, or login credentials, our academic support specialists are ready to assist.
             </Text>
           </Box>
@@ -147,10 +147,10 @@ const Support = () => {
       <Grid templateColumns={{ base: "1fr", md: "repeat(3, 1fr)" }} gap={4} mb={6}>
         <Box
           p={4}
-          bg="white"
+          bg={{ base: "white", _dark: "#121212" }}
           borderRadius="xl"
           border="1px"
-          borderColor="gray.100"
+          borderColor={{ base: "gray.100", _dark: "#262626" }}
           shadow="sm"
           transition="all 0.2s"
           _hover={{ transform: "translateY(-1px)", shadow: "md" }}
@@ -160,21 +160,21 @@ const Support = () => {
               <MdEmail size={16} />
             </Icon>
             <Box>
-              <Text fontSize="10.5px" color="gray.500" fontWeight="semibold">Email Support</Text>
-              <Text fontSize="12px" fontWeight="bold" color="gray.800">info@igrades.org</Text>
+              <Text fontSize="10.5px" color={{ base: "gray.500", _dark: "#A1A1AA" }} fontWeight="semibold">Email Support</Text>
+              <Text fontSize="12px" fontWeight="bold" color={{ base: "gray.800", _dark: "#F5F5F5" }}>info@igrades.org</Text>
             </Box>
           </Flex>
-          <Text fontSize="10.5px" color="gray.600" lineHeight="short">
+          <Text fontSize="10.5px" color={{ base: "gray.600", _dark: "#A1A1AA" }} lineHeight="short">
             For general inquiries, billing, and progress certificate queries. Average response: under 24 hours.
           </Text>
         </Box>
 
         <Box
           p={4}
-          bg="white"
+          bg={{ base: "white", _dark: "#121212" }}
           borderRadius="xl"
           border="1px"
-          borderColor="gray.100"
+          borderColor={{ base: "gray.100", _dark: "#262626" }}
           shadow="sm"
           transition="all 0.2s"
           _hover={{ transform: "translateY(-1px)", shadow: "md" }}
@@ -184,21 +184,21 @@ const Support = () => {
               <MdPhone size={16} />
             </Icon>
             <Box>
-              <Text fontSize="10.5px" color="gray.500" fontWeight="semibold">Direct Line & WhatsApp</Text>
-              <Text fontSize="12px" fontWeight="bold" color="gray.800">+234 704 542 2933</Text>
+              <Text fontSize="10.5px" color={{ base: "gray.500", _dark: "#A1A1AA" }} fontWeight="semibold">Direct Line & WhatsApp</Text>
+              <Text fontSize="12px" fontWeight="bold" color={{ base: "gray.800", _dark: "#F5F5F5" }}>+234 704 542 2933</Text>
             </Box>
           </Flex>
-          <Text fontSize="10.5px" color="gray.600" lineHeight="short">
+          <Text fontSize="10.5px" color={{ base: "gray.600", _dark: "#A1A1AA" }} lineHeight="short">
             Available Monday – Saturday, 8:00 AM – 8:00 PM for urgent student access assistance.
           </Text>
         </Box>
 
         <Box
           p={4}
-          bg="white"
+          bg={{ base: "white", _dark: "#121212" }}
           borderRadius="xl"
           border="1px"
-          borderColor="gray.100"
+          borderColor={{ base: "gray.100", _dark: "#262626" }}
           shadow="sm"
           transition="all 0.2s"
           _hover={{ transform: "translateY(-1px)", shadow: "md" }}
@@ -208,11 +208,11 @@ const Support = () => {
               <MdLocationOn size={16} />
             </Icon>
             <Box>
-              <Text fontSize="10.5px" color="gray.500" fontWeight="semibold">Head Office</Text>
-              <Text fontSize="12px" fontWeight="bold" color="gray.800">Ibadan, Nigeria</Text>
+              <Text fontSize="10.5px" color={{ base: "gray.500", _dark: "#A1A1AA" }} fontWeight="semibold">Head Office</Text>
+              <Text fontSize="12px" fontWeight="bold" color={{ base: "gray.800", _dark: "#F5F5F5" }}>Ibadan, Nigeria</Text>
             </Box>
           </Flex>
-          <Text fontSize="10.5px" color="gray.600" lineHeight="short">
+          <Text fontSize="10.5px" color={{ base: "gray.600", _dark: "#A1A1AA" }} lineHeight="short">
             No. 80, Road C, Alagbayun road, Akobo, Oyo State. Certified Nigerian Curriculum Hub.
           </Text>
         </Box>
@@ -221,14 +221,14 @@ const Support = () => {
       {/* FAQs and Contact Form Dual Layout */}
       <Grid templateColumns={{ base: "1fr", lg: "1.2fr 0.8fr" }} gap={6}>
         {/* FAQs */}
-        <Box bg="white" p={{ base: 4, md: 5 }} borderRadius="xl" shadow="sm" border="1px" borderColor="gray.100">
+        <Box bg={{ base: "white", _dark: "#121212" }} p={{ base: 4, md: 5 }} borderRadius="xl" shadow="sm" border="1px" borderColor={{ base: "gray.100", _dark: "#262626" }}>
           <HStack gap={2} mb={2}>
             <Icon as={MdHelpOutline} color="primaryColor" boxSize={4} />
-            <Heading fontSize={{ base: "13px", sm: "14px" }} fontWeight="bold" color="gray.800">
+            <Heading fontSize={{ base: "13px", sm: "14px" }} fontWeight="bold" color={{ base: "gray.800", _dark: "#F5F5F5" }}>
               Frequently Asked Questions for Parents
             </Heading>
           </HStack>
-          <Text fontSize="11px" color="gray.500" mb={4}>
+          <Text fontSize="11px" color={{ base: "gray.500", _dark: "#A1A1AA" }} mb={4}>
             Answers to common questions regarding student management, quiz grading, and account controls.
           </Text>
 
@@ -240,15 +240,15 @@ const Support = () => {
                   key={idx}
                   p={3}
                   borderRadius="lg"
-                  bg={isOpen ? "blue.50/50" : "textFieldColor"}
+                  bg={isOpen ? { base: "blue.50/50", _dark: "#1E1E1E" } : { base: "textFieldColor", _dark: "#1A1A1A" }}
                   border="1px"
-                  borderColor={isOpen ? "blue.200" : "transparent"}
+                  borderColor={isOpen ? "#206CE1" : { base: "transparent", _dark: "#262626" }}
                   cursor="pointer"
                   transition="all 0.2s"
                   onClick={() => setActiveFaq(isOpen ? null : idx)}
                 >
                   <Flex justify="space-between" align="center" gap={2}>
-                    <Text fontSize="11px" fontWeight="600" color={isOpen ? "primaryColor" : "gray.800"}>
+                    <Text fontSize="11px" fontWeight="600" color={isOpen ? "primaryColor" : { base: "gray.800", _dark: "#F5F5F5" }}>
                       {faq.q}
                     </Text>
                     <Text fontSize="13px" fontWeight="bold" color="gray.400" flexShrink={0}>
@@ -256,7 +256,7 @@ const Support = () => {
                     </Text>
                   </Flex>
                   {isOpen && (
-                    <Text fontSize="11px" color="gray.600" mt={1.5} lineHeight="relaxed">
+                    <Text fontSize="11px" color={{ base: "gray.600", _dark: "#D4D4D8" }} mt={1.5} lineHeight="relaxed">
                       {faq.a}
                     </Text>
                   )}
@@ -267,21 +267,21 @@ const Support = () => {
         </Box>
 
         {/* Contact Form */}
-        <Box bg="white" p={{ base: 4, md: 5 }} borderRadius="xl" shadow="sm" border="1px" borderColor="gray.100">
+        <Box bg={{ base: "white", _dark: "#121212" }} p={{ base: 4, md: 5 }} borderRadius="xl" shadow="sm" border="1px" borderColor={{ base: "gray.100", _dark: "#262626" }}>
           <HStack gap={2} mb={2}>
             <Icon as={BsShieldCheck} color="green.500" boxSize={4} />
-            <Heading fontSize={{ base: "13px", sm: "14px" }} fontWeight="bold" color="gray.800">
+            <Heading fontSize={{ base: "13px", sm: "14px" }} fontWeight="bold" color={{ base: "gray.800", _dark: "#F5F5F5" }}>
               Send Support Message
             </Heading>
           </HStack>
-          <Text fontSize="11px" color="gray.500" mb={4}>
+          <Text fontSize="11px" color={{ base: "gray.500", _dark: "#A1A1AA" }} mb={4}>
             Have an issue with your account? Fill out the details below and our team will get right on it.
           </Text>
 
           <form onSubmit={handleSubmit}>
             <VStack gap={3}>
               <Box w="full">
-                <Text fontSize="10.5px" fontWeight="semibold" color="gray.700" mb={1}>
+                <Text fontSize="10.5px" fontWeight="semibold" color={{ base: "gray.700", _dark: "#D4D4D8" }} mb={1}>
                   Your Full Name
                 </Text>
                 <Input
@@ -289,17 +289,18 @@ const Support = () => {
                   fontSize="11px"
                   h="36px"
                   px={3}
-                  bg="textFieldColor"
+                  bg={{ base: "textFieldColor", _dark: "#181818" }}
                   borderRadius="lg"
                   border="1px"
-                  borderColor="gray.200"
+                  borderColor={{ base: "gray.200", _dark: "#262626" }}
+                  color={{ base: "inherit", _dark: "#F5F5F5" }}
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                 />
               </Box>
 
               <Box w="full">
-                <Text fontSize="10.5px" fontWeight="semibold" color="gray.700" mb={1}>
+                <Text fontSize="10.5px" fontWeight="semibold" color={{ base: "gray.700", _dark: "#D4D4D8" }} mb={1}>
                   Email Address
                 </Text>
                 <Input
@@ -308,17 +309,18 @@ const Support = () => {
                   fontSize="11px"
                   h="36px"
                   px={3}
-                  bg="textFieldColor"
+                  bg={{ base: "textFieldColor", _dark: "#181818" }}
                   borderRadius="lg"
                   border="1px"
-                  borderColor="gray.200"
+                  borderColor={{ base: "gray.200", _dark: "#262626" }}
+                  color={{ base: "inherit", _dark: "#F5F5F5" }}
                   value={formData.email}
                   onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                 />
               </Box>
 
               <Box w="full">
-                <Text fontSize="10.5px" fontWeight="semibold" color="gray.700" mb={1}>
+                <Text fontSize="10.5px" fontWeight="semibold" color={{ base: "gray.700", _dark: "#D4D4D8" }} mb={1}>
                   Message / Issue Description
                 </Text>
                 <Textarea
@@ -327,10 +329,11 @@ const Support = () => {
                   px={3}
                   py={2}
                   rows={3}
-                  bg="textFieldColor"
+                  bg={{ base: "textFieldColor", _dark: "#181818" }}
                   borderRadius="lg"
                   border="1px"
-                  borderColor="gray.200"
+                  borderColor={{ base: "gray.200", _dark: "#262626" }}
+                  color={{ base: "inherit", _dark: "#F5F5F5" }}
                   value={formData.message}
                   onChange={(e) => setFormData({ ...formData, message: e.target.value })}
                 />

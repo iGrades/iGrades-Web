@@ -221,30 +221,31 @@ const Analytics = () => {
     <>
       <Box
         ref={cardRef}
-        bg="white"
+        bg={{ base: "white", _dark: "#121212" }}
         boxShadow="sm"
-        borderRadius="xl"
+        borderRadius="2xl"
+        border="1px solid"
+        borderColor={{ base: "gray.100", _dark: "#262626" }}
         w="full"
-        my={{ base: 1, md: 1.5 }}
-        px={{ base: 3, md: 3.5 }}
-        py={{ base: 1.5, md: 2 }}
+        my={{ base: 3, md: 4 }}
+        p={{ base: 4, sm: 5 }}
       >
         {/* Header: Title on left, 'See more' button on right */}
-        <Flex justify="space-between" align="center" mb={1}>
-          <Heading as="h2" fontSize={{ base: "12px", sm: "13px" }} color="gray.800" fontWeight="700">
+        <Flex justify="space-between" align="center" mb={3}>
+          <Heading as="h2" fontSize={{ base: "15px", sm: "16px" }} color={{ base: "gray.800", _dark: "#F5F5F5" }} fontWeight="700">
             Learning Analytics
           </Heading>
 
           {courses.length > 0 && (
             <Button
               variant="ghost"
-              size="xs"
+              size="sm"
               color="#206CE1"
               fontWeight="600"
-              fontSize="11px"
-              h="20px"
+              fontSize="13px"
+              h="26px"
               py={0}
-              px={1}
+              px={2}
               _hover={{ bg: "blue.50", textDecoration: "none" }}
               onClick={handleOpenPopup}
             >
@@ -256,36 +257,38 @@ const Analytics = () => {
 
         {/* First glance: SHOWS ONLY ONE SUBJECT (the course with the highest percentage) */}
         {topCourse ? (
-          <Box px={0} py={0.5}>
-            <Flex justify="space-between" align="center">
-              <HStack gap={2.5}>
+          <Box px={0} py={1}>
+            <Flex justify="space-between" align="center" gap={3}>
+              <HStack gap={3.5} flex={1} minW={0}>
                 <Flex
                   align="center"
                   justify="center"
                   bg={getCourseColor(topCourse.dbCourseName)}
                   color="white"
-                  h="26px"
-                  w="26px"
-                  rounded="md"
+                  h="36px"
+                  w="36px"
+                  rounded="xl"
                   flexShrink={0}
+                  boxShadow="0 2px 6px rgba(0,0,0,0.1)"
                 >
-                  <RiCompassesLine size={14} />
+                  <RiCompassesLine size={18} />
                 </Flex>
-                <Box minW={0}>
+                <Box minW={0} flex={1}>
                   <Text
-                    fontSize="12px"
-                    fontWeight="600"
+                    fontSize={{ base: "13.5px", sm: "14px" }}
+                    fontWeight="700"
                     textTransform="capitalize"
                     color="gray.800"
                     lineHeight="1.2"
-                    mb={1}
+                    mb={1.5}
+                    truncate
                   >
                     {topCourse.title}
                   </Text>
-                  {/* Range bar matching length of subject title */}
-                  <Box w="100%" minW="85px" maxW="130px">
-                    <Progress.Root value={topCourse.progress} size="xs">
-                      <Progress.Track bg="gray.100" h="3.5px" borderRadius="full">
+                  {/* Range bar: exactly 50% of the container width */}
+                  <Box w="50%" minW="50%" maxW="50%">
+                    <Progress.Root value={topCourse.progress} size="sm">
+                      <Progress.Track bg="gray.100" h="5px" borderRadius="full">
                         <Progress.Range
                           bg={getCourseColor(topCourse.dbCourseName)}
                           borderRadius="full"
@@ -295,7 +298,7 @@ const Analytics = () => {
                   </Box>
                 </Box>
               </HStack>
-              <Text fontSize="12px" fontWeight="700" color="gray.700">
+              <Text fontSize={{ base: "14px", sm: "15px" }} fontWeight="800" color="gray.800" flexShrink={0}>
                 {topCourse.progress}%
               </Text>
             </Flex>
@@ -332,10 +335,12 @@ const Analytics = () => {
             right={0}
             maxW={{ base: "100%", md: "780px" }}
             mx="auto"
-            bg="white"
+            bg={{ base: "white", _dark: "#121212" }}
             zIndex={1201}
             borderTopRadius="2xl"
-            boxShadow="0 -10px 40px rgba(0, 0, 0, 0.25)"
+            boxShadow="0 -10px 40px rgba(0, 0, 0, 0.7)"
+            border="1px solid"
+            borderColor={{ base: "transparent", _dark: "#262626" }}
             display="flex"
             flexDirection="column"
             overflow="hidden"
@@ -402,9 +407,9 @@ const Analytics = () => {
                   mb={3}
                   borderRadius="xl"
                   border="1px solid"
-                  borderColor="gray.100"
-                  bg="gray.50"
-                  _hover={{ bg: "gray.100/60" }}
+                  borderColor={{ base: "gray.100", _dark: "#262626" }}
+                  bg={{ base: "gray.50", _dark: "#1A1A1A" }}
+                  _hover={{ bg: { base: "gray.100/60", _dark: "#242424" } }}
                   transition="background 0.15s ease"
                 >
                   <Flex justify="space-between" align="center">

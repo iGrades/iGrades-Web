@@ -244,18 +244,18 @@ export const ProgressTrendsSection = ({ intelligence }: Props) => {
   return (
     <Box
       bg="white"
-      p={{ base: 4, md: 6 }}
+      p={{ base: 5, md: 7 }}
       borderRadius="2xl"
       border="1px solid"
       borderColor="gray.100"
-      boxShadow="0 2px 8px rgba(0, 0, 0, 0.04)"
+      boxShadow="0 2px 10px rgba(0, 0, 0, 0.05)"
       mb={6}
     >
       {/* Header with Title and Global Trajectory */}
       <Flex justify="space-between" align={{ base: "flex-start", sm: "center" }} mb={4} wrap="wrap" gap={3}>
-        <HStack gap={2} align="center">
-          <Icon as={PiChartLineUpFill} color="#0D9488" boxSize="20px" flexShrink={0} />
-          <Heading size={{ base: "sm", md: "md" }} color="gray.900" fontWeight="800">
+        <HStack gap={2.5} align="center">
+          <Icon as={PiChartLineUpFill} color="#0D9488" boxSize="24px" flexShrink={0} />
+          <Heading size={{ base: "md", md: "lg" }} color="gray.900" fontWeight="800">
             {t("Score Progress Over Time")}
           </Heading>
         </HStack>
@@ -483,7 +483,7 @@ export const ProgressTrendsSection = ({ intelligence }: Props) => {
       {/* Score Trajectory Area Chart */}
       {chartData.length > 0 ? (
         <Box position="relative">
-          <Box w="100%" h={{ base: "260px", md: "300px" }} position="relative" mb={3}>
+          <Box w="100%" h={{ base: "320px", sm: "360px", md: "400px" }} position="relative" mb={3}>
             <ResponsiveContainer width="100%" height="100%">
               <AreaChart data={chartData} margin={{ top: 15, right: 15, left: -15, bottom: 5 }}>
                 <defs>

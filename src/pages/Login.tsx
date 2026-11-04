@@ -159,7 +159,7 @@ export default function Login({ initialType }: LoginProps) {
 
   return (
     <>
-      <Flex minH="100vh" bg="#F8FAFC" align="center" justify="center" p={{ base: 0, md: 6 }}>
+      <Flex minH="100vh" bg={{ base: "#F8FAFC", _dark: "#000000" }} align="center" justify="center" p={{ base: 0, md: 6 }}>
         {/* Alert */}
         {alert && (
           <Box
@@ -187,11 +187,11 @@ export default function Login({ initialType }: LoginProps) {
           maxW={{ base: "100%", sm: "440px", md: "480px" }}
           minH={{ base: "100dvh", sm: "auto" }}
           my={{ base: 0, sm: 6 }}
-          bg="white"
+          bg={{ base: "white", _dark: "#121212" }}
           borderRadius={{ base: "none", sm: "3xl" }}
-          boxShadow={{ base: "none", sm: "0 20px 45px rgba(32, 108, 225, 0.08), 0 4px 14px rgba(15, 23, 42, 0.04)" }}
+          boxShadow={{ base: "none", sm: "0 20px 45px rgba(0, 0, 0, 0.25), 0 4px 14px rgba(0, 0, 0, 0.15)" }}
           border={{ base: "none", sm: "1px solid" }}
-          borderColor="slate.100"
+          borderColor={{ base: "slate.100", _dark: "#262626" }}
           overflow="hidden"
           position="relative"
           flexDirection="column"
@@ -204,23 +204,23 @@ export default function Login({ initialType }: LoginProps) {
           <Box w="full" maxW="420px" mx="auto" my={{ base: "auto", sm: 0 }}>
             {/* Header Info */}
             <Box textAlign="center" mb={{ base: 5, sm: 6 }}>
-              <Heading as="h1" fontSize={{ base: "22px", sm: "26px" }} fontWeight="800" color="#1E293B" mb={1.5} letterSpacing="-0.02em">
+              <Heading as="h1" fontSize={{ base: "22px", sm: "26px" }} fontWeight="800" color={{ base: "#1E293B", _dark: "#F5F5F5" }} mb={1.5} letterSpacing="-0.02em">
                 Welcome Back
               </Heading>
-              <Text fontSize={{ base: "xs", sm: "sm" }} fontWeight="500" color="#64748B">
+              <Text fontSize={{ base: "xs", sm: "sm" }} fontWeight="500" color={{ base: "#64748B", _dark: "#A1A1AA" }}>
                 Sign in to continue to your account
               </Text>
             </Box>
 
               {/* Segmented Tab Switcher (Parent vs Student) */}
               <Flex
-                bg="#F1F5F9"
+                bg={{ base: "#F1F5F9", _dark: "#1A1A1A" }}
                 p="1"
                 borderRadius="full"
                 mb={5}
                 gap={1}
                 border="1px solid"
-                borderColor="gray.200"
+                borderColor={{ base: "gray.200", _dark: "#262626" }}
               >
                 {userType.map((user) => {
                   const active = loginState === user.state;
@@ -234,10 +234,10 @@ export default function Login({ initialType }: LoginProps) {
                       h="38px"
                       fontSize={{ base: "xs", sm: "sm" }}
                       fontWeight="700"
-                      color={active ? "#1E293B" : "#64748B"}
-                      bg={active ? "white" : "transparent"}
-                      boxShadow={active ? "0px 2px 4px rgba(0, 0, 0, 0.06)" : "none"}
-                      _hover={{ bg: active ? "white" : "rgba(0,0,0,0.03)" }}
+                      color={active ? { base: "#1E293B", _dark: "#F5F5F5" } : { base: "#64748B", _dark: "#A1A1AA" }}
+                      bg={active ? { base: "white", _dark: "#262626" } : "transparent"}
+                      boxShadow={active ? "0px 2px 4px rgba(0, 0, 0, 0.2)" : "none"}
+                      _hover={{ bg: active ? { base: "white", _dark: "#262626" } : "rgba(255,255,255,0.05)" }}
                       transition="all 0.2s"
                     >
                       {user.type}
@@ -274,11 +274,11 @@ export default function Login({ initialType }: LoginProps) {
 
               {/* Divider */}
               <HStack my={5} gap={3} width="full" align="center">
-                <Box flex={1} h="1px" bg="gray.100" />
-                <Text fontSize="2xs" textTransform="uppercase" letterSpacing="0.05em" fontWeight="600" color="gray.400" whiteSpace="nowrap">
+                <Box flex={1} h="1px" bg={{ base: "gray.100", _dark: "#262626" }} />
+                <Text fontSize="2xs" textTransform="uppercase" letterSpacing="0.05em" fontWeight="600" color={{ base: "gray.400", _dark: "#71717A" }} whiteSpace="nowrap">
                   or continue with
                 </Text>
-                <Box flex={1} h="1px" bg="gray.100" />
+                <Box flex={1} h="1px" bg={{ base: "gray.100", _dark: "#262626" }} />
               </HStack>
 
               {/* Social Logins */}
@@ -289,13 +289,13 @@ export default function Login({ initialType }: LoginProps) {
                   loadingText="Connecting..."
                   variant="outline"
                   borderRadius="xl"
-                  borderColor="gray.200"
-                  bg="white"
-                  color="#1E293B"
+                  borderColor={{ base: "gray.200", _dark: "#262626" }}
+                  bg={{ base: "white", _dark: "#1A1A1A" }}
+                  color={{ base: "#1E293B", _dark: "#F5F5F5" }}
                   h="11"
                   fontSize="xs"
                   fontWeight="600"
-                  _hover={{ bg: "gray.50", borderColor: "gray.300" }}
+                  _hover={{ bg: { base: "gray.50", _dark: "#222222" }, borderColor: { base: "gray.300", _dark: "#333333" } }}
                   display="flex"
                   alignItems="center"
                   justifyContent="center"
@@ -310,13 +310,13 @@ export default function Login({ initialType }: LoginProps) {
                   loadingText="Connecting..."
                   variant="outline"
                   borderRadius="xl"
-                  borderColor="gray.200"
-                  bg="white"
-                  color="#1E293B"
+                  borderColor={{ base: "gray.200", _dark: "#262626" }}
+                  bg={{ base: "white", _dark: "#1A1A1A" }}
+                  color={{ base: "#1E293B", _dark: "#F5F5F5" }}
                   h="11"
                   fontSize="xs"
                   fontWeight="600"
-                  _hover={{ bg: "gray.50", borderColor: "gray.300" }}
+                  _hover={{ bg: { base: "gray.50", _dark: "#222222" }, borderColor: { base: "gray.300", _dark: "#333333" } }}
                   display="flex"
                   alignItems="center"
                   justifyContent="center"
@@ -328,7 +328,7 @@ export default function Login({ initialType }: LoginProps) {
               </SimpleGrid>
 
               {/* Toggle to Signup */}
-              <Text fontSize="xs" fontWeight="500" color="#64748B" textAlign="center" mt={3}>
+              <Text fontSize="xs" fontWeight="500" color={{ base: "#64748B", _dark: "#A1A1AA" }} textAlign="center" mt={3}>
                 Don't have an account?{" "}
                 <Link
                   onClick={() => navigate("/signup")}

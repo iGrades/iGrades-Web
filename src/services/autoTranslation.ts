@@ -4,6 +4,7 @@
  */
 
 import { apiUrl } from "../lib/apiConfig";
+import i18n from "../i18n";
 
 export interface LanguageOption {
   code: string;
@@ -1125,20 +1126,52 @@ class UniversalAutoTranslator {
 
     // Check built-in dictionary
     const dict = BUILTIN_DICTIONARY[this.currentLang];
-    if (dict && dict[text]) {
+    if (!dict) return null;
+
+    // 1. Direct exact match for whole phrase/sentence
+    if (dict[text]) {
       this.memoryCache.set(cacheKey, dict[text]);
       return dict[text];
     }
 
-    // Case-insensitive check on built-in dictionary
-    if (dict) {
-      const lower = text.toLowerCase();
+    // 2. Case-insensitive exact match for whole phrase
+    const lower = text.toLowerCase();
+    for (const [k, v] of Object.entries(dict)) {
+      if (k.toLowerCase() === lower) {
+        this.memoryCache.set(cacheKey, v);
+        return v;
+      }
+    }
+
+    // 3. Word-by-word token translation: translate every single word that exists in the language dictionary
+    const tokens = text.split(/(\s+|[.,!?:;()\[\]{}""'«»/\\-]+)/);
+    let anyWordTranslated = false;
+    const translatedTokens = tokens.map((token) => {
+      if (!token || !token.trim() || /^[\d\s.,:;%\-+*\/=()#@!$&'"—–]+$/.test(token)) {
+        return token;
+      }
+      if (dict[token]) {
+        anyWordTranslated = true;
+        return dict[token];
+      }
+      const tokenLower = token.toLowerCase();
       for (const [k, v] of Object.entries(dict)) {
-        if (k.toLowerCase() === lower) {
-          this.memoryCache.set(cacheKey, v);
+        if (k.toLowerCase() === tokenLower) {
+          anyWordTranslated = true;
+          if (token[0] === token[0].toUpperCase() && token[0] !== token[0].toLowerCase() && v.length > 0) {
+            return v.charAt(0).toUpperCase() + v.slice(1);
+          }
           return v;
         }
       }
+      // Word does not exist in the language: preserve as is
+      return token;
+    });
+
+    if (anyWordTranslated) {
+      const result = translatedTokens.join("");
+      this.memoryCache.set(cacheKey, result);
+      return result;
     }
 
     return null;
@@ -1210,5 +1243,10 @@ export function setGlobalLanguage(newLang: string) {
   if (typeof window !== "undefined") {
     localStorage.setItem("appLanguage", newLang);
     window.dispatchEvent(new CustomEvent("appLanguageChanged", { detail: { lang: newLang } }));
+  }
+  try {
+    i18n.changeLanguage(newLang).catch(() => {});
+  } catch {
+    // ignore
   }
 }

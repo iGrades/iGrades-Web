@@ -31,6 +31,7 @@ import { classChangeService, type ClassChangeRequest } from "@/services/classCha
 import { ClassChangeNotificationModal } from "./grader/ClassChangeNotificationModal";
 import AddGraderPopup from "./grader/addGraderPopover";
 import { SwipeUpNavGreeting } from "@/components/SwipeUpNavGreeting";
+import { NotificationsModal } from "@/components/NotificationsModal";
 
 type Props = {
   setShowLogoutModal: Dispatch<SetStateAction<boolean>>;
@@ -51,6 +52,8 @@ const Navbar = ({ setShowLogoutModal }: Props) => {
   const { currentParentPage, setCurrentParentPage, setParentSettingsTab } = useNavigationStore();
   const { t } = useTranslation();
 
+  const [isNotifModalOpen, setIsNotifModalOpen] = useState(false);
+
 
 
   const pageTitleMap: Record<string, string> = {
@@ -58,6 +61,7 @@ const Navbar = ({ setShowLogoutModal }: Props) => {
     student: t("Students") || "Students",
     weekly_report: t("Learning Reports") || "Reports",
     settings: t("Settings") || "Settings",
+    notifications: t("Notifications") || "Notifications",
   };
 
   const currentPageTitle = pageTitleMap[currentParentPage] || "Home";
@@ -213,7 +217,7 @@ const Navbar = ({ setShowLogoutModal }: Props) => {
   const fullName = `${currentParent.firstname ?? ""} ${currentParent.lastname ?? ""}`.trim() || user?.user_metadata?.name || "Parent User";
 
   return (
-    <Box position="sticky" top="0" zIndex="1000" bg="white" shadow="xs" borderBottom="1px solid" borderColor="gray.100" pt="env(safe-area-inset-top, 0px)">
+    <Box position="sticky" top="0" zIndex="1000" bg={{ base: "white", _dark: "#121212" }} shadow="xs" borderBottom="1px solid" borderColor={{ base: "gray.100", _dark: "#262626" }} pt="env(safe-area-inset-top, 0px)">
       <Flex
         as="nav"
         align="center"
@@ -222,182 +226,27 @@ const Navbar = ({ setShowLogoutModal }: Props) => {
         px={{ base: 3, md: 6 }}
       >
         {/* Left Section: User Profile Avatar with Clickable Menu & Greeting (Matches Student App) */}
-        <HStack gap={{ base: 2.5, sm: 3 }} align="center">
-          {/* User Profile Avatar with Clickable Dropdown Menu */}
-          <Menu.Root positioning={{ placement: "bottom-start" }}>
-            <Menu.Trigger asChild>
-              <Box
-                p={0.5}
-                borderRadius="full"
-                cursor="pointer"
-                _hover={{ ring: "2px solid", ringColor: "blue.300" }}
-                transition="all 0.15s ease"
-                minW="38px"
-                minH="38px"
-                display="flex"
-                alignItems="center"
-                justifyContent="center"
-                aria-label="Parent profile and settings"
-              >
-                <AvatarComp username={fullName} profileImage={currentParent?.profile_image} />
-              </Box>
-            </Menu.Trigger>
-            <Portal>
-              <Menu.Positioner zIndex={1500}>
-                <Menu.Content bg="white" shadow="xl" borderRadius="xl" border="1px solid" borderColor="gray.100" minW="230px" p={2}>
-                  {/* User Profile Summary inside Dropdown */}
-                  <Box px={3} py={2} borderBottom="1px solid" borderColor="gray.100" mb={1}>
-                    <Text fontSize="sm" fontWeight="bold" color="gray.800" truncate>
-                      {fullName}
-                    </Text>
-                    <HStack justify="space-between" align="center" mt={0.5}>
-                      <Badge colorPalette="purple" variant="subtle" size="xs" borderRadius="md">
-                        Parent / Guardian
-                      </Badge>
-                      <Text fontSize="11px" color="gray.500" fontWeight="medium">
-                        {studentsData?.length || 0} {studentsData?.length === 1 ? "child" : "children"}
-                      </Text>
-                    </HStack>
-                    {currentParent?.email && (
-                      <Text fontSize="10.5px" color="gray.400" truncate mt={0.5}>
-                        {currentParent.email}
-                      </Text>
-                    )}
-                  </Box>
-
-                  {/* Profile Account Actions */}
-                  <Menu.Item
-                    value="settings"
-                    onClick={() => {
-                      setCurrentParentPage("settings");
-                      setParentSettingsTab("menu");
-                    }}
-                    borderRadius="lg"
-                    py={2}
-                    px={3}
-                    cursor="pointer"
-                    _hover={{ bg: "blue.50", color: "blue.600" }}
-                  >
-                    <HStack gap={2.5}>
-                      <FiUser size={16} />
-                      <Text fontSize="sm" fontWeight="500">Settings & Profile</Text>
-                    </HStack>
-                  </Menu.Item>
-
-                  <Menu.Item
-                    value="children"
-                    onClick={() => {
-                      setCurrentParentPage("settings");
-                      setParentSettingsTab("children");
-                    }}
-                    borderRadius="lg"
-                    py={2}
-                    px={3}
-                    cursor="pointer"
-                    _hover={{ bg: "blue.50", color: "blue.600" }}
-                  >
-                    <HStack gap={2.5}>
-                      <FiUsers size={16} />
-                      <Text fontSize="sm">Connected Children</Text>
-                    </HStack>
-                  </Menu.Item>
-
-                  <Menu.Item
-                    value="language"
-                    onClick={() => {
-                      setCurrentParentPage("settings");
-                      setParentSettingsTab("language");
-                    }}
-                    borderRadius="lg"
-                    py={2}
-                    px={3}
-                    cursor="pointer"
-                    _hover={{ bg: "blue.50", color: "blue.600" }}
-                  >
-                    <HStack gap={2.5}>
-                      <FiGlobe size={16} />
-                      <Text fontSize="sm">Language Preferences</Text>
-                    </HStack>
-                  </Menu.Item>
-
-                  <Menu.Item
-                    value="subscription"
-                    onClick={() => {
-                      setCurrentParentPage("settings");
-                      setParentSettingsTab("subscription");
-                    }}
-                    borderRadius="lg"
-                    py={2}
-                    px={3}
-                    cursor="pointer"
-                    _hover={{ bg: "blue.50", color: "blue.600" }}
-                  >
-                    <HStack gap={2.5}>
-                      <FiCreditCard size={16} />
-                      <Text fontSize="sm">Subscription & Plan</Text>
-                    </HStack>
-                  </Menu.Item>
-
-                  <Menu.Item
-                    value="security"
-                    onClick={() => {
-                      setCurrentParentPage("settings");
-                      setParentSettingsTab("security");
-                    }}
-                    borderRadius="lg"
-                    py={2}
-                    px={3}
-                    cursor="pointer"
-                    _hover={{ bg: "blue.50", color: "blue.600" }}
-                  >
-                    <HStack gap={2.5}>
-                      <FiShield size={16} />
-                      <Text fontSize="sm">Security & Password</Text>
-                    </HStack>
-                  </Menu.Item>
-
-                  <Menu.Item
-                    value="help"
-                    onClick={() => {
-                      setCurrentParentPage("settings");
-                      setParentSettingsTab("support");
-                    }}
-                    borderRadius="lg"
-                    py={2}
-                    px={3}
-                    cursor="pointer"
-                    _hover={{ bg: "blue.50", color: "blue.600" }}
-                  >
-                    <HStack gap={2.5}>
-                      <FiHelpCircle size={16} />
-                      <Text fontSize="sm">Help & FAQs</Text>
-                    </HStack>
-                  </Menu.Item>
-
-                  <Box my={1} borderBottom="1px solid" borderColor="gray.100" />
-
-                  {/* Logout Action */}
-                  <Menu.Item
-                    value="logout"
-                    onClick={() => setShowLogoutModal(true)}
-                    borderRadius="lg"
-                    py={2}
-                    px={3}
-                    cursor="pointer"
-                    color="red.600"
-                    _hover={{ bg: "red.50" }}
-                  >
-                    <HStack gap={2.5}>
-                      <FiLogOut size={16} />
-                      <Text fontSize="sm" fontWeight="medium">
-                        Logout
-                      </Text>
-                    </HStack>
-                  </Menu.Item>
-                </Menu.Content>
-              </Menu.Positioner>
-            </Portal>
-          </Menu.Root>
+        <HStack gap={{ base: 4, sm: 5 }} align="center">
+          {/* User Profile Avatar with Direct Click to Settings & Profile */}
+          <Box
+            p={0.5}
+            borderRadius="full"
+            cursor="pointer"
+            _hover={{ ring: "2px solid", ringColor: "purple.300", transform: "scale(1.05)" }}
+            transition="all 0.15s ease"
+            minW="38px"
+            minH="38px"
+            display="flex"
+            alignItems="center"
+            justifyContent="center"
+            aria-label="Parent profile and settings"
+            onClick={() => {
+              setCurrentParentPage("settings");
+              setParentSettingsTab("profile");
+            }}
+          >
+            <AvatarComp username={fullName} profileImage={currentParent?.profile_image} />
+          </Box>
 
           {/* Greeting: 'Hello {firstName} 👋' and Current Page Name Swipe-Up Sequence */}
           <SwipeUpNavGreeting
@@ -408,131 +257,36 @@ const Navbar = ({ setShowLogoutModal }: Props) => {
           />
         </HStack>
 
-        {/* Right Section: Notifications Popover & Student Profile Select Dropdown */}
-        <HStack gap={{ base: 2, sm: 2.5 }} align="center">
-          {/* 1. Notifications Popover (in place of language icon) */}
-          <Popover.Root positioning={{ placement: "bottom-end" }}>
-            <Popover.Trigger asChild>
-              <Box position="relative">
-                <IconButton
-                  aria-label="Notifications"
-                  variant="ghost"
-                  borderRadius="full"
-                  size="sm"
-                  h="38px"
-                  w="38px"
-                  color="gray.600"
-                  _hover={{ bg: "gray.100", color: "blue.600" }}
-                >
-                  <FiBell size={19} />
-                </IconButton>
-                {unreadCount > 0 && (
-                  <Box
-                    position="absolute"
-                    top="5px"
-                    right="5px"
-                    w="8px"
-                    h="8px"
-                    bg="blue.500"
-                    borderRadius="full"
-                    border="2px solid white"
-                  />
-                )}
-              </Box>
-            </Popover.Trigger>
-            <Portal>
-              <Popover.Positioner zIndex={1500}>
-                <Popover.Content
-                  width={{ base: "290px", sm: "340px" }}
-                  bg="white"
-                  shadow="xl"
-                  borderRadius="xl"
-                  border="1px solid"
-                  borderColor="gray.100"
-                  p={0}
-                  overflow="hidden"
-                >
-                  <Popover.Arrow />
-                  <Box p={3} borderBottom="1px solid" borderColor="gray.100" bg="gray.50">
-                    <Flex align="center" justify="space-between">
-                      <HStack gap={2}>
-                        <Heading size="xs" fontWeight="bold" color="gray.800">
-                          Parent Notifications
-                        </Heading>
-                        {unreadCount > 0 && (
-                          <Badge colorPalette="blue" variant="solid" borderRadius="full" px={2} fontSize="10px">
-                            {unreadCount} new
-                          </Badge>
-                        )}
-                      </HStack>
-                      {unreadCount > 0 && (
-                        <Text
-                          fontSize="xs"
-                          color="blue.600"
-                          fontWeight="medium"
-                          cursor="pointer"
-                          _hover={{ textDecoration: "underline" }}
-                          onClick={markAllRead}
-                        >
-                          Mark all read
-                        </Text>
-                      )}
-                    </Flex>
-                  </Box>
-                  <Stack p={2} gap={1} maxH="320px" overflowY="auto">
-                    {notifications.map((item) => (
-                      <Box
-                        key={item.id}
-                        p={2.5}
-                        borderRadius="lg"
-                        bg={item.read ? "transparent" : "blue.50/60"}
-                        _hover={{ bg: "gray.50" }}
-                        transition="background 0.15s ease"
-                        cursor={item.request ? "pointer" : "default"}
-                        onClick={() => handleNotificationItemClick(item)}
-                      >
-                        <Flex justify="space-between" align="baseline" mb={0.5}>
-                          <HStack gap={1.5} maxW="75%">
-                            {item.request && (
-                              <Badge
-                                size="xs"
-                                colorPalette={
-                                  item.request.status === "approved"
-                                    ? "green"
-                                    : item.request.status === "rejected"
-                                    ? "red"
-                                    : "yellow"
-                                }
-                                variant="solid"
-                                fontSize="9px"
-                                px={1}
-                              >
-                                {item.request.status.toUpperCase()}
-                              </Badge>
-                            )}
-                            <Text fontSize="xs" fontWeight="bold" color="gray.800" truncate>
-                              {item.title}
-                            </Text>
-                          </HStack>
-                          <Text fontSize="10px" color="gray.400">
-                            {item.time}
-                          </Text>
-                        </Flex>
-                        <Text fontSize="xs" color="gray.600" lineHeight="1.3">
-                          {item.desc}
-                        </Text>
-                        {item.request && (
-                          <Text fontSize="10px" color="blue.600" fontWeight="600" mt={1}>
-                            Click to view decision details & history →
-                          </Text>
-                        )}
-                      </Box>
-                    ))}
-                  </Stack>
-                </Popover.Content>
-              </Popover.Positioner>
-            </Portal>
-          </Popover.Root>
+        {/* Right Section: Notifications Bell Icon */}
+        <HStack gap={{ base: 1.5, sm: 2 }} align="center">
+          <Box position="relative">
+            <IconButton
+              aria-label="Open notifications"
+              variant="ghost"
+              borderRadius="full"
+              size="sm"
+              h="38px"
+              w="38px"
+              bg={currentParentPage === "notifications" ? { base: "#F3E8FF", _dark: "rgba(124, 58, 237, 0.2)" } : "transparent"}
+              color={currentParentPage === "notifications" ? "#7C3AED" : { base: "gray.600", _dark: "gray.300" }}
+              _hover={{ bg: { base: "gray.100", _dark: "gray.800" }, color: "purple.400" }}
+              onClick={() => setCurrentParentPage("notifications")}
+            >
+              <FiBell size={20} />
+            </IconButton>
+            {unreadCount > 0 && (
+              <Box
+                position="absolute"
+                top="5px"
+                right="5px"
+                w="8px"
+                h="8px"
+                bg="#7C3AED"
+                borderRadius="full"
+                border="2px solid white"
+              />
+            )}
+          </Box>
         </HStack>
       </Flex>
 

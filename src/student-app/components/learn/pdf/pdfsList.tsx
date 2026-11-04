@@ -12,7 +12,6 @@ import {
   Badge,
 } from "@chakra-ui/react";
 import {
-  LuArrowLeft,
   LuDownload,
   LuExternalLink,
   LuBookOpen,
@@ -27,6 +26,7 @@ import { supabase } from "@/lib/supabaseClient";
 import PdfCustomThumbnail from "./PdfCustomThumbnail";
 import { getCurriculumNote } from "./curriculumStudyNotes";
 import { DancingLogoLoader } from "@/components/DancingLogoLoader";
+import { useBackButton } from "@/hooks/useBackButton";
 
 // Lazy-load heavy PDF.js and jsPDF canvas viewer on demand
 const NativePdfCanvasViewer = lazy(() => import("./NativePdfCanvasViewer"));
@@ -65,6 +65,16 @@ const PdfList = ({ topic, pdf, onBack }: Props) => {
   const [pdfBlobUrl, setPdfBlobUrl] = useState<string | null>(null);
   const [isDownloading, setIsDownloading] = useState(false);
   const [isSharing, setIsSharing] = useState(false);
+
+  // Native phone back button closes PDF dialog or navigates back to topics
+  useBackButton("learn-pdf-list", 60, () => {
+    if (isDialogOpen) {
+      setIsDialogOpen(false);
+      return true;
+    }
+    onBack();
+    return true;
+  });
 
   const {
     effectivePlan,
@@ -205,7 +215,6 @@ const PdfList = ({ topic, pdf, onBack }: Props) => {
         mx={1}
         color="#0F172A"
       >
-        <LuArrowLeft onClick={onBack} style={{ cursor: "pointer", flexShrink: 0 }} size={17} />
         <Text as="span" noOfLines={1} truncate>
           {topic.name} — Study Guides & PDFs
         </Text>

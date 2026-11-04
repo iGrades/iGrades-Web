@@ -33,10 +33,15 @@ interface VideoResource {
 
 interface SubjectsProps {
   selectedSubject?: string;
+  onSelectSubject?: (subject: string) => void;
   onOpenSubjectModal?: () => void;
 }
 
-const Subjects: React.FC<SubjectsProps> = ({ selectedSubject, onOpenSubjectModal: _onOpenSubjectModal }) => {
+const Subjects: React.FC<SubjectsProps> = ({
+  selectedSubject,
+  onSelectSubject,
+  onOpenSubjectModal: _onOpenSubjectModal,
+}) => {
   const { authdStudent } = useAuthdStudentData();
   const [loading, setLoading] = useState(false);
   const [topicList, setTopicList] = useState(false);
@@ -92,6 +97,7 @@ const Subjects: React.FC<SubjectsProps> = ({ selectedSubject, onOpenSubjectModal
 
     setLoading(true);
     setSelectedCourse(courseName);
+    onSelectSubject?.(courseName);
 
     try {
       // 1. Get class ID with fallback
@@ -140,19 +146,24 @@ const Subjects: React.FC<SubjectsProps> = ({ selectedSubject, onOpenSubjectModal
     }
   };
 
+  // Only synchronize topics if the user is already viewing topics (not on the main subject list)
   useEffect(() => {
-    if (selectedSubject) {
+    if (topicList && selectedSubject && selectedSubject !== selectedCourse) {
       handleCourseClick(selectedSubject, selectedSubject, 0);
     }
-  }, [selectedSubject]);
+  }, [selectedSubject, topicList, selectedCourse]);
 
   const registeredCoursesArray = getStudentCoursesArray();
+  const rawCoursesToDisplay =
+    registeredCoursesArray.length > 0
+      ? registeredCoursesArray
+      : ["mathematics", "english", "physics", "chemistry", "biology"];
 
   // Map courses using the centralized config
-  const studentCourses = registeredCoursesArray.map((id) => {
+  const studentCourses = rawCoursesToDisplay.map((id) => {
     // Normalize ID to lowercase to match the config keys
     const config = courseConfig[id.toLowerCase()] || {
-      displayName: id,
+      displayName: id.charAt(0).toUpperCase() + id.slice(1),
       color: "#718096",
     };
 

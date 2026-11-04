@@ -94,7 +94,7 @@ const Notification = () => {
 
   return (
     <Box
-      bg="white"
+      bg={{ base: "white", _dark: "#121212" }}
       border="none"
       outline="none"
       boxShadow="none"
@@ -105,10 +105,10 @@ const Notification = () => {
     >
       <Flex justify="space-between" align={{ base: "flex-start", sm: "center" }} mb={5} direction={{ base: "column", sm: "row" }} gap={2}>
         <Box>
-          <Heading as="h3" fontSize={{ base: "14px", md: "16px" }} fontWeight="700" color="gray.800">
+          <Heading as="h3" fontSize={{ base: "14px", md: "16px" }} fontWeight="700" color={{ base: "gray.800", _dark: "#F5F5F5" }}>
             Parent Notification Settings
           </Heading>
-          <Text fontSize="11px" color="gray.500" mt={0.5}>
+          <Text fontSize="11px" color={{ base: "gray.500", _dark: "#A1A1AA" }} mt={0.5}>
             Manage how and when you receive monitoring updates and academic reports for your children.
           </Text>
         </Box>
@@ -126,9 +126,9 @@ const Notification = () => {
               justify="space-between"
               align="center"
               p={{ base: 3.5, md: 4 }}
-              bg="#F4F7FB"
+              bg={{ base: "#F4F7FB", _dark: "#1A1A1A" }}
               rounded="xl"
-              border="none"
+              border={{ base: "none", _dark: "1px solid #262626" }}
               outline="none"
               boxShadow="none"
               transition="all 0.15s"
@@ -145,10 +145,10 @@ const Notification = () => {
                   <item.icon size={18} />
                 </Icon>
                 <Box>
-                  <Heading as="h4" fontSize={{ base: "12px", sm: "13px" }} fontWeight="600" color="gray.800">
+                  <Heading as="h4" fontSize={{ base: "12px", sm: "13px" }} fontWeight="600" color={{ base: "gray.800", _dark: "#F5F5F5" }}>
                     {item.title}
                   </Heading>
-                  <Text fontSize="11px" color="gray.500" mt={0.5} lineHeight="short">
+                  <Text fontSize="11px" color={{ base: "gray.500", _dark: "#A1A1AA" }} mt={0.5} lineHeight="short">
                     {item.desc}
                   </Text>
                 </Box>

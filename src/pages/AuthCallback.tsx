@@ -13,6 +13,12 @@ export default function AuthCallback() {
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [isRetrying, setIsRetrying] = useState<boolean>(false);
   const [providerName, setProviderName] = useState<string>("Authentication");
+  const [mobileReturnInfo, setMobileReturnInfo] = useState<{
+    targetAppUrl: string;
+    intentUrl: string;
+    fallbackPath: string;
+    name: string;
+  } | null>(null);
   const { setAuthdStudent } = useAuthdStudentData();
   const { getParentData } = useUser();
 
@@ -143,15 +149,33 @@ export default function AuthCallback() {
       localStorage.setItem("authdStudent", JSON.stringify(student));
       recordActivity(true);
       const studentName = student.firstname || firstName || "Student";
+      const fallbackPath = studentName ? `/student-dashboard/${studentName}` : "/student-dashboard";
+
       if (!isNativeMobile() && /Android|iPhone|iPad/i.test(navigator?.userAgent || "")) {
-        const mobileTarget = `com.igrades.app://auth/callback${window.location.search}${window.location.hash}`;
+        const params = `${window.location.search}${window.location.hash}`;
+        const customScheme = `com.igrades.app://auth/callback${params}`;
+        const intentUrl = `intent://auth/callback${params}#Intent;scheme=com.igrades.app;package=com.igrades.app;end`;
+
+        setMobileReturnInfo({
+          targetAppUrl: customScheme,
+          intentUrl,
+          fallbackPath,
+          name: studentName,
+        });
+
         try {
-          window.location.href = mobileTarget;
+          window.location.href = intentUrl;
         } catch {
-          // ignore
+          try {
+            window.location.href = customScheme;
+          } catch {
+            // ignore
+          }
         }
+        return;
       }
-      navigate(studentName ? `/student-dashboard/${studentName}` : "/student-dashboard", { replace: true });
+
+      navigate(fallbackPath, { replace: true });
     };
 
     // Helper: complete parent login, link user_id & avatar, store in session
@@ -183,15 +207,33 @@ export default function AuthCallback() {
         console.warn("Notice refreshing parent state:", pErr);
       }
       const parentName = parent.firstname || firstName || "Parent";
+      const fallbackPath = parentName ? `/parent-dashboard/${parentName}` : "/parent-dashboard";
+
       if (!isNativeMobile() && /Android|iPhone|iPad/i.test(navigator?.userAgent || "")) {
-        const mobileTarget = `com.igrades.app://auth/callback${window.location.search}${window.location.hash}`;
+        const params = `${window.location.search}${window.location.hash}`;
+        const customScheme = `com.igrades.app://auth/callback${params}`;
+        const intentUrl = `intent://auth/callback${params}#Intent;scheme=com.igrades.app;package=com.igrades.app;end`;
+
+        setMobileReturnInfo({
+          targetAppUrl: customScheme,
+          intentUrl,
+          fallbackPath,
+          name: parentName,
+        });
+
         try {
-          window.location.href = mobileTarget;
+          window.location.href = intentUrl;
         } catch {
-          // ignore
+          try {
+            window.location.href = customScheme;
+          } catch {
+            // ignore
+          }
         }
+        return;
       }
-      navigate(parentName ? `/parent-dashboard/${parentName}` : "/parent-dashboard", { replace: true });
+
+      navigate(fallbackPath, { replace: true });
     };
 
     // Helper: find student by ID or email
@@ -533,6 +575,60 @@ export default function AuthCallback() {
                 Return to Login
               </Button>
             </Flex>
+          </VStack>
+        ) : mobileReturnInfo ? (
+          <VStack gap={4}>
+            <Box
+              w="54px"
+              h="54px"
+              borderRadius="full"
+              bg="green.50"
+              color="green.600"
+              display="flex"
+              alignItems="center"
+              justifyContent="center"
+              fontSize="28px"
+            >
+              ✓
+            </Box>
+            <Box>
+              <Text fontSize="lg" fontWeight="800" color="#0F172A">
+                Signed in Successfully!
+              </Text>
+              <Text fontSize="xs" color="#64748B" mt={1}>
+                Welcome, <strong>{mobileReturnInfo.name}</strong>. Returning you to the iGrades app.
+              </Text>
+            </Box>
+
+            <Button
+              w="full"
+              h="48px"
+              bg="#206CE1"
+              color="white"
+              borderRadius="xl"
+              fontWeight="700"
+              fontSize="sm"
+              shadow="md"
+              _hover={{ bg: "#1852B2" }}
+              onClick={() => {
+                try {
+                  window.location.href = mobileReturnInfo.intentUrl;
+                } catch {
+                  window.location.href = mobileReturnInfo.targetAppUrl;
+                }
+              }}
+            >
+              Tap to Open iGrades App
+            </Button>
+
+            <Button
+              variant="ghost"
+              size="xs"
+              color="#64748B"
+              onClick={() => navigate(mobileReturnInfo.fallbackPath, { replace: true })}
+            >
+              Continue in mobile browser instead
+            </Button>
           </VStack>
         ) : (
           <VStack gap={3}>

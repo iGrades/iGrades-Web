@@ -12,17 +12,18 @@ import {
   Badge,
   Icon,
 } from "@chakra-ui/react";
-import { LuArrowLeft, LuArrowRight, LuLayers } from "react-icons/lu";
 import { useState, useEffect } from "react";
 import { useStudentData } from "@/student-app/context/dataContext";
 import { supabase } from "@/lib/supabaseClient";
 import { useAuthdStudentData } from "@/student-app/context/studentDataContext";
 import { GoArrowRight } from "react-icons/go";
 import { IoIosCheckmarkCircle } from "react-icons/io";
+import { LuArrowLeft, LuArrowRight } from "react-icons/lu";
 import Slider from "react-slick";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
 import timerImage from "@/assets/timer.png";
+import { useBackButton } from "@/hooks/useBackButton";
 import QuizAttempt from "./quizApp/quizAttempt";
 import type { SubTopic } from "./quizTopicsList";
 import { useSubscriptionEntitlement } from "@/hooks/useSubscriptionEntitlement";
@@ -79,11 +80,24 @@ const QuizInstructions = ({
   const [timePerSubject, setTimePerSubject] = useState(0);
   const [error, setError] = useState<string | null>(null);
 
+  // Native phone back button returns to topic selection
+  useBackButton(
+    "quiz-instructions",
+    65,
+    () => {
+      if (showQuizAttempt) return false;
+      onBack();
+      return true;
+    },
+    !showQuizAttempt
+  );
+
   const {
     effectivePlan,
     verifyExamModeTake,
     canTakeExamMode,
     examAttemptStatusText,
+    recordTimedQuizAttempt,
     modalState,
     promptUpgrade,
     closeUpgradeModal,
@@ -459,8 +473,7 @@ const QuizInstructions = ({
               mx={2}
             >
               <Flex align="center">
-                <LuArrowLeft onClick={onBack} style={{ cursor: "pointer" }} />
-                <Text ml={3}>
+                <Text>
                   {examMode === "examination" ? "Examination Mode" : "Quick Test Mode"}
                 </Text>
               </Flex>

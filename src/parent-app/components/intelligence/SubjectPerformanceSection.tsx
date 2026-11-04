@@ -65,20 +65,20 @@ export const SubjectPerformanceSection = ({ subjects, onSelectSubject, registere
 
   return (
     <Box
-      bg="white"
-      p={{ base: 2.5, md: 3 }}
-      borderRadius="xl"
+      bg={{ base: "white", _dark: "#121212" }}
+      p={{ base: 4.5, md: 6 }}
+      borderRadius="2xl"
       border="1px solid"
-      borderColor="gray.100"
-      boxShadow="0 1px 4px rgba(0, 0, 0, 0.03)"
-      mb={4}
+      borderColor={{ base: "gray.100", _dark: "#262626" }}
+      boxShadow="0 2px 10px rgba(0, 0, 0, 0.04)"
+      mb={6}
     >
-      {/* Compact Header: Subject Performance text on same line, small subjects count tag */}
-      <Flex justify="space-between" align="center" mb={2} wrap="nowrap" gap={2}>
-        <HStack gap={1.5} flexShrink={0} minW={0} align="center">
-          <Icon as={PiBookOpenTextFill} color="#206CE1" boxSize="18px" flexShrink={0} />
+      {/* Header: Subject Performance text and subjects count tag */}
+      <Flex justify="space-between" align="center" mb={3.5} wrap="nowrap" gap={2}>
+        <HStack gap={2} flexShrink={0} minW={0} align="center">
+          <Icon as={PiBookOpenTextFill} color="#206CE1" boxSize="24px" flexShrink={0} />
           <Heading
-            size="xs"
+            size={{ base: "md", md: "lg" }}
             color="gray.900"
             fontWeight="800"
             whiteSpace="nowrap"
@@ -90,13 +90,13 @@ export const SubjectPerformanceSection = ({ subjects, onSelectSubject, registere
         <Badge
           colorPalette="gray"
           variant="surface"
-          size="2xs"
-          fontSize="9px"
-          h="15px"
+          size="sm"
+          fontSize="11px"
+          h="20px"
           lineHeight="1"
           borderRadius="full"
-          px={1.5}
-          py={0}
+          px={2.5}
+          py={0.5}
           flexShrink={0}
           whiteSpace="nowrap"
         >
@@ -105,15 +105,15 @@ export const SubjectPerformanceSection = ({ subjects, onSelectSubject, registere
       </Flex>
 
       {displayedSubjects.length === 0 ? (
-        <Box p={3} textAlign="center" bg="gray.50" borderRadius="lg">
-          <Text fontSize="xs" color="gray.500">
+        <Box p={5} textAlign="center" bg="gray.50" borderRadius="xl">
+          <Text fontSize="sm" color="gray.500">
             {t("No subjects registered yet. Add subjects to view detailed scores and progress.")}
           </Text>
         </Box>
       ) : (
         <>
-          {/* One Subject Per Line - Vertically Shrunk & Ultra-Compact */}
-          <VStack gap={1.5} align="stretch" w="full">
+          {/* One Subject Per Line - Expanded and Highly Legible */}
+          <VStack gap={2.5} align="stretch" w="full">
             {visibleSubjects.map((sub) => {
               const trendIcon = sub.trend === "up" ? PiChartLineUpFill : sub.trend === "down" ? PiTrendDownBold : FiMinus;
               const trendColor = sub.trend === "up" ? "green.600" : sub.trend === "down" ? "red.600" : "gray.500";
@@ -131,12 +131,12 @@ export const SubjectPerformanceSection = ({ subjects, onSelectSubject, registere
                   key={sub.subjectId}
                   align="center"
                   justify="space-between"
-                  px={{ base: 2.5, md: 3 }}
-                  py={1.5}
-                  bg="gray.50/50"
-                  borderRadius="lg"
+                  px={{ base: 3.5, md: 4 }}
+                  py={3}
+                  bg={{ base: "gray.50/50", _dark: "#1A1A1A" }}
+                  borderRadius="xl"
                   border="1px solid"
-                  borderColor="gray.100"
+                  borderColor={{ base: "gray.100", _dark: "#262626" }}
                   onClick={() => onSelectSubject?.(sub.subjectId)}
                   cursor={onSelectSubject ? "pointer" : "default"}
                   _hover={
@@ -145,19 +145,19 @@ export const SubjectPerformanceSection = ({ subjects, onSelectSubject, registere
                           borderColor: "blue.300",
                           bg: "blue.50/20",
                           transform: "translateY(-1px)",
-                          boxShadow: "0 2px 6px rgba(32, 108, 225, 0.06)",
+                          boxShadow: "0 2px 8px rgba(32, 108, 225, 0.08)",
                         }
                       : {}
                   }
                   transition="all 0.15s ease"
                   wrap="nowrap"
-                  gap={{ base: 2, md: 3 }}
-                  minH="36px"
+                  gap={{ base: 2.5, md: 3.5 }}
+                  minH="46px"
                 >
                   {/* Left: Subject Name & Status Badge */}
-                  <HStack gap={1.5} minW={0} flex={{ base: "1 1 auto", sm: "0 0 180px", md: "0 0 220px" }}>
+                  <HStack gap={2} minW={0} flex={{ base: "1 1 auto", sm: "0 0 190px", md: "0 0 230px" }}>
                     <Text
-                      fontSize="xs"
+                      fontSize="14px"
                       fontWeight="700"
                       color="gray.900"
                       textTransform="capitalize"
@@ -170,13 +170,13 @@ export const SubjectPerformanceSection = ({ subjects, onSelectSubject, registere
                     <Box flexShrink={0}>{getStatusBadge(sub.status)}</Box>
                   </HStack>
 
-                  {/* Mid-Left: Tests & Questions count (compact) */}
+                  {/* Mid-Left: Tests & Questions count */}
                   <Text
-                    fontSize="10px"
-                    color="gray.400"
+                    fontSize="12px"
+                    color="gray.500"
                     flexShrink={0}
                     display={{ base: "none", sm: "block" }}
-                    w={{ sm: "75px", md: "90px" }}
+                    w={{ sm: "85px", md: "105px" }}
                     truncate
                   >
                     {sub.sessionsCount} {t("tests")} • {sub.questionsAttempted} {t("Qs")}
@@ -185,10 +185,10 @@ export const SubjectPerformanceSection = ({ subjects, onSelectSubject, registere
                   {/* Center: Slim Progress Bar */}
                   <Box
                     flex="1"
-                    maxW={{ base: "60px", sm: "100px", md: "160px" }}
-                    minW={{ base: "40px", sm: "60px" }}
+                    maxW={{ base: "70px", sm: "120px", md: "180px" }}
+                    minW={{ base: "45px", sm: "70px" }}
                     bg="gray.200/80"
-                    h="4px"
+                    h="6px"
                     borderRadius="full"
                     overflow="hidden"
                     flexShrink={1}
@@ -202,8 +202,8 @@ export const SubjectPerformanceSection = ({ subjects, onSelectSubject, registere
                   </Box>
 
                   {/* Score & Grade Badge */}
-                  <HStack gap={1.5} align="center" flexShrink={0} minW="55px" justify="flex-end">
-                    <Text fontSize="xs" fontWeight="800" color="gray.900">
+                  <HStack gap={1.5} align="center" flexShrink={0} minW="60px" justify="flex-end">
+                    <Text fontSize="14px" fontWeight="800" color="gray.900">
                       {sub.sessionsCount > 0 ? `${sub.accuracy}%` : "—"}
                     </Text>
                     {sub.sessionsCount > 0 && (
@@ -217,11 +217,11 @@ export const SubjectPerformanceSection = ({ subjects, onSelectSubject, registere
                             ? "yellow"
                             : "orange"
                         }
-                        size="2xs"
+                        size="xs"
                         variant="solid"
                         borderRadius="sm"
-                        px={1}
-                        fontSize="9px"
+                        px={1.5}
+                        fontSize="10px"
                         fontWeight="700"
                       >
                         {sub.grade || (sub.accuracy >= 75 ? "A" : sub.accuracy >= 60 ? "B" : sub.accuracy >= 45 ? "C" : "D")}
@@ -234,9 +234,9 @@ export const SubjectPerformanceSection = ({ subjects, onSelectSubject, registere
                     gap={1}
                     color={trendColor}
                     fontWeight="700"
-                    fontSize="10px"
+                    fontSize="11.5px"
                     flexShrink={0}
-                    minW={{ base: "45px", md: "55px" }}
+                    minW={{ base: "48px", md: "58px" }}
                     justify="flex-end"
                   >
                     <Icon as={trendIcon} boxSize="10px" />

@@ -168,27 +168,26 @@ const MyClasses = () => {
         alignItems="center"
         flex={1}
         minW={0}
-        h={{ base: "116px", sm: "128px", md: "138px" }}
-        minH={{ base: "116px", sm: "128px", md: "138px" }}
-        bg="white"
+        h={{ base: "155px", sm: "170px", md: "185px" }}
+        bg={{ base: "white", _dark: "#121212" }}
         border="1px solid"
-        borderColor="gray.100"
+        borderColor={{ base: "gray.100", _dark: "#262626" }}
         borderRadius="2xl"
-        boxShadow="0 1px 3px rgba(0, 0, 0, 0.04)"
-        p={{ base: 3, sm: 4 }}
-        gap={{ base: 2.5, sm: 3.5 }}
+        boxShadow="0 2px 8px rgba(0, 0, 0, 0.04)"
+        p={{ base: 4, sm: 5 }}
+        gap={{ base: 3, sm: 4 }}
       >
         <Image
           src={childrenBox_ico}
-          boxSize={{ base: "44px", sm: "48px", md: "52px" }}
+          boxSize={{ base: "52px", sm: "58px", md: "64px" }}
           flexShrink={0}
           alt="Registered courses"
         />
         <Box minW={0} flex={1}>
           <Text
-            fontSize={{ base: "11.5px", sm: "12.5px", md: "13px" }}
-            color="#475569"
-            fontWeight="500"
+            fontSize={{ base: "13px", sm: "14px", md: "15px" }}
+            color={{ base: "#475569", _dark: "#A1A1AA" }}
+            fontWeight="600"
             lineHeight="1.2"
             whiteSpace="nowrap"
             overflow="hidden"
@@ -198,11 +197,11 @@ const MyClasses = () => {
           </Text>
           <Heading
             as="h3"
-            fontSize={{ base: "22px", sm: "25px", md: "28px" }}
+            fontSize={{ base: "28px", sm: "34px", md: "38px" }}
             fontWeight="800"
-            color="#1E293B"
+            color={{ base: "#1E293B", _dark: "#F5F5F5" }}
             lineHeight="1.1"
-            mt={1}
+            mt={1.5}
           >
             {coursesCount < 10 ? `0${coursesCount}` : coursesCount}
           </Heading>
@@ -223,28 +222,28 @@ const MyClasses = () => {
           alignItems="center"
           flex={1}
           minW={0}
-          h={{ base: "116px", sm: "128px", md: "138px" }}
-          minH={{ base: "116px", sm: "128px", md: "138px" }}
-          bg="white"
+          h={{ base: "155px", sm: "170px", md: "185px" }}
+          minH={{ base: "155px", sm: "170px", md: "185px" }}
+          bg={{ base: "white", _dark: "#121212" }}
           border="1px solid"
-          borderColor="gray.100"
+          borderColor={{ base: "gray.100", _dark: "#262626" }}
           borderRadius="2xl"
-          boxShadow="0 1px 3px rgba(0, 0, 0, 0.04)"
-          p={{ base: 3, sm: 4 }}
-          gap={{ base: 2.5, sm: 3.5 }}
+          boxShadow="0 2px 8px rgba(0, 0, 0, 0.04)"
+          p={{ base: 4, sm: 5 }}
+          gap={{ base: 3, sm: 4 }}
           cursor="help"
         >
           <Image
             src={activeChildrenBox_ico}
-            boxSize={{ base: "44px", sm: "48px", md: "52px" }}
+            boxSize={{ base: "52px", sm: "58px", md: "64px" }}
             flexShrink={0}
             alt="Active classes"
           />
           <Box minW={0} flex={1}>
             <Text
-              fontSize={{ base: "11.5px", sm: "12.5px", md: "13px" }}
-              color="#475569"
-              fontWeight="500"
+              fontSize={{ base: "13px", sm: "14px", md: "15px" }}
+              color={{ base: "#475569", _dark: "#94A3B8" }}
+              fontWeight="600"
               lineHeight="1.2"
               whiteSpace="nowrap"
               overflow="hidden"
@@ -254,11 +253,11 @@ const MyClasses = () => {
             </Text>
             <Heading
               as="h3"
-              fontSize={{ base: "22px", sm: "25px", md: "28px" }}
+              fontSize={{ base: "28px", sm: "34px", md: "38px" }}
               fontWeight="800"
-              color="#1E293B"
+              color={{ base: "#1E293B", _dark: "#F8FAFC" }}
               lineHeight="1.1"
-              mt={1}
+              mt={1.5}
             >
               {typeof displayActiveClasses === "number" && displayActiveClasses < 10
                 ? `0${displayActiveClasses}`

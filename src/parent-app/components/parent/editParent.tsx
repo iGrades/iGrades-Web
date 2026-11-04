@@ -128,10 +128,11 @@ const EditParent = () => {
         mb={16}
         p={{ base: 4, sm: 6 }}
         w="100%"
-        border="none"
         outline="none"
-        boxShadow="none"
-        bg="white"
+        bg={{ base: "white", _dark: "#121212" }}
+        border="1px solid"
+        borderColor={{ base: "transparent", _dark: "#262626" }}
+        borderRadius="2xl"
       >
         {/* Photo Section with Rounded Square and Pencil Badge */}
         <Box
@@ -226,7 +227,7 @@ const EditParent = () => {
                   <Field.Label
                     fontSize="xs"
                     fontWeight="600"
-                    color="#64748B"
+                    color={{ base: "#64748B", _dark: "#94A3B8" }}
                     mb={1.5}
                   >
                     {getLabel(key)}
@@ -241,7 +242,8 @@ const EditParent = () => {
                     fontSize="xs"
                     p={5}
                     h="46px"
-                    bg="#F4F7FB"
+                    bg={{ base: "#F4F7FB", _dark: "#181818" }}
+                    color={{ base: "#1E293B", _dark: "#F5F5F5" }}
                     outline="none"
                     border="none"
                     boxShadow="none"

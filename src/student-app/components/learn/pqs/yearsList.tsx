@@ -7,12 +7,13 @@ import {
   VStack,
   Link,
 } from "@chakra-ui/react";
-import { LuArrowLeft, LuDownload, LuEye } from "react-icons/lu";
+import { LuDownload, LuEye } from "react-icons/lu";
 import { supabase } from "@/lib/supabaseClient";
 import { useState } from "react";
 import { useSubscriptionEntitlement } from "@/hooks/useSubscriptionEntitlement";
 import { UpgradePromptModal } from "@/components/subscription/UpgradePromptModal";
 import { LockedBadge } from "@/components/subscription/LockedBadge";
+import { useBackButton } from "@/hooks/useBackButton";
 
 type Props = {
   onBack: () => void;
@@ -51,6 +52,16 @@ const YearsList = ({
     promptUpgrade,
     closeUpgradeModal,
   } = useSubscriptionEntitlement();
+
+  // Native phone back button navigates back to years or examinations
+  useBackButton("learn-pqs-years", 60, () => {
+    if (selectedYear) {
+      handleBackToYears();
+      return true;
+    }
+    onBack();
+    return true;
+  });
 
   const pqYears = [
     "2026",
@@ -178,10 +189,6 @@ const YearsList = ({
         mx={2}
         fontSize={{ base: "lg", md: "xl" }}
       >
-        <LuArrowLeft
-          onClick={selectedYear ? handleBackToYears : onBack}
-          style={{ cursor: "pointer" }}
-        />
         {selectedYear
           ? `${selectedExam} ${selectedCourse} (${selectedYear})`
           : `${selectedExam} ${selectedCourse} Past Questions`}

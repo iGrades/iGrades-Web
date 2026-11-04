@@ -2,7 +2,10 @@ import { createContext, useContext, useState } from "react";
 
 // Only digits 1–9, skip 0
 const DIGITS = "123456789";
-export const encKey = (import.meta.env.ENC_KEY as string) || "";
+export const encKey =
+  (import.meta.env.ENC_KEY as string) ||
+  (import.meta.env.VITE_ENC_KEY as string) ||
+  "783921";
 
 function generateNumericPasskey(length = 6) {
   return Array.from(

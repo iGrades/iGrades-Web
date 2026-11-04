@@ -24,27 +24,27 @@ export const RecentActivitySection = ({ intelligence }: Props) => {
   const displayedActivities = isExpanded ? recentActivities : recentActivities.slice(0, 4);
 
   return (
-    <Box bg="white" py={{ base: 3, md: 4 }} px={{ base: 3.5, md: 5 }} borderRadius="2xl" border="1px solid" borderColor="gray.100" boxShadow="0 2px 8px rgba(0, 0, 0, 0.04)" mb={5}>
-      <Flex justify="space-between" align="center" mb={3} wrap="wrap" gap={2}>
-        <HStack gap={2} align="center">
-          <Icon as={PiClockCounterClockwiseFill} color="#206CE1" boxSize="20px" flexShrink={0} />
-          <Heading size={{ base: "sm", md: "md" }} color="gray.900" fontWeight="800">
+    <Box bg="white" py={{ base: 5, md: 6 }} px={{ base: 4.5, md: 6 }} borderRadius="2xl" border="1px solid" borderColor="gray.100" boxShadow="0 2px 10px rgba(0, 0, 0, 0.05)" mb={6}>
+      <Flex justify="space-between" align="center" mb={4} wrap="wrap" gap={3}>
+        <HStack gap={2.5} align="center">
+          <Icon as={PiClockCounterClockwiseFill} color="#206CE1" boxSize="24px" flexShrink={0} />
+          <Heading size={{ base: "md", md: "lg" }} color="gray.900" fontWeight="800">
             {t("Recent Activity")}
           </Heading>
         </HStack>
 
-        <HStack gap={2}>
+        <HStack gap={2} wrap="wrap">
           {lastActiveDate && (
-            <Badge colorPalette="gray" variant="surface" size="sm" borderRadius="full">
+            <Badge colorPalette="gray" variant="surface" size="sm" borderRadius="full" px={2.5} py={0.8}>
               <Icon as={PiCalendarDotsFill} mr={1} color="#206CE1" /> {t("Active")}: {lastActiveDate}
             </Badge>
           )}
-          <Badge colorPalette="orange" variant="subtle" size="sm" borderRadius="full">
+          <Badge colorPalette="orange" variant="subtle" size="sm" borderRadius="full" px={2.5} py={0.8}>
             <Icon as={PiFireFill} mr={1} color="orange.500" />
             {studyStreakDays} {t("Day Streak")}
           </Badge>
           {recentActivities.length > 4 && (
-            <Badge colorPalette="blue" variant="subtle" size="sm" borderRadius="full">
+            <Badge colorPalette="blue" variant="subtle" size="sm" borderRadius="full" px={2.5} py={0.8}>
               {isExpanded ? `${recentActivities.length} ${t("total")}` : `4 ${t("of")} ${recentActivities.length}`}
             </Badge>
           )}
@@ -52,14 +52,14 @@ export const RecentActivitySection = ({ intelligence }: Props) => {
       </Flex>
 
       {recentActivities.length === 0 ? (
-        <Box p={4} textAlign="center" bg="gray.50" borderRadius="xl">
-          <Text fontSize="xs" color="gray.500" fontStyle="italic">
+        <Box p={5} textAlign="center" bg="gray.50" borderRadius="xl">
+          <Text fontSize="sm" color="gray.500" fontStyle="italic">
             {t("No quizzes or video lessons recorded yet. Completed activities will show up here as your child studies.")}
           </Text>
         </Box>
       ) : (
         <>
-          <VStack align="stretch" gap={1.5}>
+          <VStack align="stretch" gap={2.5}>
             {displayedActivities.map((act) => {
               const isQuiz = act.type === "quiz";
               const icon = isQuiz ? PiExamFill : PiPlayCircleFill;
@@ -72,9 +72,9 @@ export const RecentActivitySection = ({ intelligence }: Props) => {
               return (
                 <Box
                   key={act.id}
-                  py={1}
-                  px={3}
-                  borderRadius="lg"
+                  py={2.5}
+                  px={{ base: 3.5, sm: 4 }}
+                  borderRadius="xl"
                   border="1px solid"
                   borderColor="gray.100"
                   bg="white"
@@ -82,13 +82,13 @@ export const RecentActivitySection = ({ intelligence }: Props) => {
                   transition="all 0.15s"
                 >
                   <Flex justify="space-between" align="center" gap={3}>
-                    <HStack gap={2} align="center">
-                      <Icon as={icon} color={iconColor} boxSize="16px" flexShrink={0} />
+                    <HStack gap={2.5} align="center">
+                      <Icon as={icon} color={iconColor} boxSize="20px" flexShrink={0} />
                       <Box>
-                        <Text fontSize="xs" fontWeight="700" color="gray.900" lineHeight="1.15">
+                        <Text fontSize="14px" fontWeight="700" color="gray.900" lineHeight="1.2">
                           {act.title}
                         </Text>
-                        <Text fontSize="10px" color="gray.500" mt="1px" lineHeight="1.15">
+                        <Text fontSize="12px" color="gray.500" mt="2px" lineHeight="1.2">
                           {act.subtitle}
                         </Text>
                       </Box>
@@ -99,14 +99,17 @@ export const RecentActivitySection = ({ intelligence }: Props) => {
                         <Badge
                           colorPalette={act.score >= 75 ? "green" : act.score >= 50 ? "blue" : "orange"}
                           variant="solid"
-                          size="xs"
+                          size="sm"
                           borderRadius="md"
+                          fontSize="12px"
+                          px={2}
+                          py={0.5}
                         >
                           {act.score}%
                         </Badge>
                       )}
                       {showDate && (
-                        <Text fontSize="10.5px" color="gray.400" fontWeight="600" whiteSpace="nowrap">
+                        <Text fontSize="12px" color="gray.400" fontWeight="600" whiteSpace="nowrap">
                           {act.formattedDate}
                         </Text>
                       )}

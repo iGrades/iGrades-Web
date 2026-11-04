@@ -11,6 +11,7 @@ import {
   checkSparkDailyUsageAccess,
 } from "@/services/subscriptionEntitlements";
 import { apiUrl } from "@/lib/apiConfig";
+import { generateClientTutorReply } from "@/services/clientSparkTutor";
 
 export interface Message {
   role: "user" | "assistant";
@@ -262,6 +263,7 @@ export const useChatbot = () => {
       };
 
       let response: Response | null = null;
+      const lastUserMsg = updatedMessages[updatedMessages.length - 1]?.content || "";
 
       // 1. Try application server /api/spark-chat (powered by Gemini API)
       try {
@@ -278,28 +280,50 @@ export const useChatbot = () => {
       }
 
       // 2. Fallback to Supabase edge function if local server route is unavailable
-      if (!response && import.meta.env.SUPABASE_URL) {
-        response = await fetch(
-          `${import.meta.env.SUPABASE_URL}/functions/v1/spark-chat`,
-          {
+      const sbUrl = import.meta.env.VITE_SUPABASE_URL || import.meta.env.SUPABASE_URL || "https://jmjballgaxelqhsvhlvl.supabase.co";
+      const sbKey = import.meta.env.VITE_SUPABASE_ANON_KEY || import.meta.env.SUPABASE_ANON_KEY;
+      if (!response && sbUrl && sbKey) {
+        try {
+          const edgeRes = await fetch(`${sbUrl}/functions/v1/spark-chat`, {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
-              Authorization: `Bearer ${import.meta.env.SUPABASE_ANON_KEY}`,
+              Authorization: `Bearer ${sbKey}`,
+              apikey: sbKey,
             },
             body: JSON.stringify(payload),
+          });
+          if (edgeRes.ok || edgeRes.status === 403) {
+            response = edgeRes;
           }
-        );
+        } catch {
+          // Fall through to client tutor engine
+        }
       }
 
-      if (!response) {
-        throw new Error("No chat service available");
+      let data: any = null;
+      if (response) {
+        try {
+          data = await response.json();
+        } catch {
+          data = null;
+        }
       }
 
-      const data = await response.json();
+      // If remote calls could not complete or returned an error, generate Socratic response client-side
+      if (!data || data.error && !data.reply) {
+        const fallback = generateClientTutorReply(studentName, lastUserMsg, mergedContext);
+        data = {
+          reply: fallback.reply,
+          guidanceLevel: fallback.guidanceLevel,
+          guidanceLevelName: fallback.guidanceLevelName,
+          misconceptionType: fallback.misconceptionType,
+          studentStatus: fallback.studentStatus,
+        };
+      }
 
       // Check if server indicated daily limit reached (HTTP 403)
-      if (response.status === 403 || data.limitReached) {
+      if (response?.status === 403 || data.limitReached) {
         if (typeof data.currentCount === "number") {
           setSparkUsageCount(data.currentCount);
           setTodaySparkCount(data.currentCount, authdStudent?.id);
@@ -322,29 +346,17 @@ export const useChatbot = () => {
         setTodaySparkCount(data.sparkUsage.count, authdStudent?.id);
       }
 
-      let reply =
+      const reply =
         data.reply ||
         data.content?.find((b: any) => b.type === "text")?.text ||
         data.candidates?.[0]?.content?.parts?.[0]?.text ||
-        data.text;
+        data.text ||
+        generateClientTutorReply(studentName, lastUserMsg, mergedContext).reply;
 
-      if (!reply) {
-        if (data.error) {
-          const errText = typeof data.error === "string" ? data.error : data.error?.message || "";
-          if (errText.includes("503") || errText.includes("demand") || errText.includes("UNAVAILABLE")) {
-            reply = "I'm experiencing a brief network surge, but I'm right here with you! Let's examine the core concept together: what fundamental formula or definition applies to this question?";
-          } else {
-            reply = "Let's review this step-by-step together. What key formula or term in the curriculum comes to mind first for this topic?";
-          }
-        } else {
-          reply = "I'm right here! Let's work through this question together: what's the first step or principle we should apply?";
-        }
-      }
-
-      const guidanceLevel = typeof data.guidanceLevel === "number" ? data.guidanceLevel : undefined;
-      const guidanceLevelName = data.guidanceLevelName || undefined;
+      const guidanceLevel = typeof data.guidanceLevel === "number" ? data.guidanceLevel : 2;
+      const guidanceLevelName = data.guidanceLevelName || "Small hint";
       const misconceptionType = data.misconceptionType || null;
-      const studentStatus = data.studentStatus || undefined;
+      const studentStatus = data.studentStatus || "attempting";
 
       const nowTime = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
       setMessages((prev) => [
@@ -373,9 +385,21 @@ export const useChatbot = () => {
 
       if (!isOpen) setHasUnread(true);
     } catch {
+      const lastUserMsg = updatedMessages[updatedMessages.length - 1]?.content || "";
+      const fallback = generateClientTutorReply(studentName, lastUserMsg, mergedContext);
+      const nowTime = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
       setMessages((prev) => [
         ...prev,
-        { role: "assistant", content: "Hmm, something went wrong on my end. Try asking again!" },
+        {
+          role: "assistant",
+          content: fallback.reply,
+          guidanceLevel: fallback.guidanceLevel,
+          guidanceLevelName: fallback.guidanceLevelName,
+          misconceptionType: fallback.misconceptionType,
+          studentStatus: fallback.studentStatus,
+          timestamp: nowTime,
+          type: "text",
+        },
       ]);
     } finally {
       setIsLoading(false);

@@ -127,24 +127,24 @@ export const StudentQuickProfileHeader = ({
   return (
     <Box w="full" mb={6}>
       {/* 1. Horizontal List of Student Profile Pictures (Right-Aligned, Max 4 at a go) */}
-      <Flex justify="flex-end" align="center" mb={2}>
-        <HStack gap={2} align="center">
+      <Flex justify="flex-end" align="center" mb={2.5}>
+        <HStack gap={2.5} align="center">
           {totalPages > 1 && (
             <IconButton
               aria-label="Previous children"
               variant="ghost"
               size="xs"
               borderRadius="full"
-              h="20px"
-              w="20px"
-              minW="20px"
+              h="26px"
+              w="26px"
+              minW="26px"
               p={0}
               color="gray.500"
               disabled={pageIndex === 0}
               onClick={() => setPageIndex((p) => Math.max(0, p - 1))}
               _hover={{ bg: "gray.100" }}
             >
-              <FiChevronLeft size={12} />
+              <FiChevronLeft size={14} />
             </IconButton>
           )}
 
@@ -160,38 +160,38 @@ export const StudentQuickProfileHeader = ({
                 onClick={() => setSelectedStudentId(student.id)}
                 cursor="pointer"
                 borderRadius="full"
-                p="1px"
+                p="2px"
                 position="relative"
                 transition="all 0.2s cubic-bezier(0.4, 0, 0.2, 1)"
-                transform={isSelected ? "scale(1.18)" : "scale(1)"}
+                transform={isSelected ? "scale(1.15)" : "scale(1)"}
                 opacity={1}
-                border="1.5px solid"
+                border="2px solid"
                 borderColor={isSelected ? "#206CE1" : "transparent"}
                 boxShadow={
                   isSelected
-                    ? "0 2px 8px rgba(32, 108, 225, 0.35)"
+                    ? "0 2px 10px rgba(32, 108, 225, 0.35)"
                     : "none"
                 }
                 zIndex={isSelected ? 3 : 1}
                 _hover={{
-                  transform: isSelected ? "scale(1.18)" : "scale(1.08)",
+                  transform: isSelected ? "scale(1.15)" : "scale(1.08)",
                 }}
                 title={fullName}
                 aria-label={`Select student ${fullName}`}
               >
                 <Box
-                  w="22px"
-                  h="22px"
+                  w="32px"
+                  h="32px"
                   borderRadius="full"
                   overflow="hidden"
                   display="flex"
                   alignItems="center"
                   justifyContent="center"
                   bg="gray.100"
-                  fontSize="10px"
+                  fontSize="12px"
                 >
                   <AvatarComp
-                    size="2xs"
+                    size="xs"
                     username={fullName}
                     profileImage={student.profile_image}
                   />
@@ -206,16 +206,16 @@ export const StudentQuickProfileHeader = ({
               variant="ghost"
               size="xs"
               borderRadius="full"
-              h="20px"
-              w="20px"
-              minW="20px"
+              h="26px"
+              w="26px"
+              minW="26px"
               p={0}
               color="gray.500"
               disabled={pageIndex >= totalPages - 1}
               onClick={() => setPageIndex((p) => Math.min(totalPages - 1, p + 1))}
               _hover={{ bg: "gray.100" }}
             >
-              <FiChevronRight size={12} />
+              <FiChevronRight size={14} />
             </IconButton>
           )}
         </HStack>
@@ -224,26 +224,27 @@ export const StudentQuickProfileHeader = ({
       {/* 2. Transparent Blue Container with Student Information */}
       <Box
         position="relative"
-        bg="rgba(32, 108, 225, 0.08)"
-        border="1px solid rgba(32, 108, 225, 0.18)"
+        bg={{ base: "rgba(32, 108, 225, 0.08)", _dark: "rgba(32, 108, 225, 0.16)" }}
+        border="1px solid"
+        borderColor={{ base: "rgba(32, 108, 225, 0.18)", _dark: "rgba(32, 108, 225, 0.3)" }}
         borderRadius="2xl"
-        p={{ base: 4, sm: 5, md: 5 }}
-        boxShadow="0 2px 12px rgba(32, 108, 225, 0.04)"
+        p={{ base: 5, sm: 6 }}
+        boxShadow="0 2px 12px rgba(32, 108, 225, 0.06)"
         backdropFilter="blur(6px)"
       >
         <Flex
           direction={{ base: "column", sm: "row" }}
           align={{ base: "flex-start", sm: "center" }}
           justify="space-between"
-          gap={{ base: 3.5, sm: 4 }}
+          gap={{ base: 4, sm: 5 }}
         >
           {/* Left Column: Student Full Name, Class, and Plan */}
           <Box flex="1" minW={0}>
             <Heading
               as="h2"
-              fontSize={{ base: "md", sm: "lg", md: "xl" }}
+              fontSize={{ base: "lg", sm: "xl", md: "2xl" }}
               fontWeight="800"
-              color="gray.900"
+              color={{ base: "gray.900", _dark: "white" }}
               letterSpacing="-0.01em"
               lineHeight="1.2"
               truncate
@@ -251,26 +252,26 @@ export const StudentQuickProfileHeader = ({
               {studentFullName}
             </Heading>
 
-            <HStack gap={2} mt={1.5} align="center" wrap="wrap">
+            <HStack gap={2.5} mt={2} align="center" wrap="wrap">
               <Text
-                fontSize={{ base: "xs", sm: "13px" }}
+                fontSize={{ base: "13px", sm: "14px" }}
                 fontWeight="700"
-                color="#1E56B3"
+                color={{ base: "#1E56B3", _dark: "#60A5FA" }}
               >
                 {studentClass}
               </Text>
 
-              <Box w="3px" h="3px" borderRadius="full" bg="gray.300" />
+              <Box w="4px" h="4px" borderRadius="full" bg={{ base: "gray.300", _dark: "gray.600" }} />
 
               <Badge
                 colorPalette={planBadgeColor}
                 variant="subtle"
-                size="xs"
+                size="sm"
                 borderRadius="md"
-                px={2}
-                py={0.5}
+                px={2.5}
+                py={0.8}
                 fontWeight="700"
-                fontSize="10px"
+                fontSize="11px"
               >
                 {planName} Plan
               </Badge>
@@ -279,38 +280,40 @@ export const StudentQuickProfileHeader = ({
 
           {/* Right Column: Attendance: Average times student watches video, looks at PDFs, etc. in a month */}
           <Box
-            w={{ base: "full", sm: "230px", md: "260px" }}
-            bg="rgba(255, 255, 255, 0.7)"
-            py={0.5}
-            px={{ base: 2.5, sm: 3 }}
-            borderRadius="lg"
-            border="1px solid rgba(32, 108, 225, 0.12)"
+            w={{ base: "full", sm: "240px", md: "270px" }}
+            bg={{ base: "rgba(255, 255, 255, 0.85)", _dark: "rgba(19, 26, 42, 0.85)" }}
+            py={2}
+            px={{ base: 3, sm: 3.5 }}
+            borderRadius="xl"
+            border="1px solid"
+            borderColor={{ base: "rgba(32, 108, 225, 0.15)", _dark: "rgba(59, 130, 246, 0.25)" }}
+            boxShadow="0 1px 4px rgba(32, 108, 225, 0.05)"
           >
-            <Flex justify="space-between" align="baseline" mb="2px">
+            <Flex justify="space-between" align="baseline" mb={1.5}>
               <Box>
                 <Text
-                  fontSize="10.5px"
+                  fontSize="12px"
                   fontWeight="700"
-                  color="gray.700"
+                  color={{ base: "gray.700", _dark: "gray.300" }}
                   letterSpacing="0.01em"
                   lineHeight="1.1"
                 >
-                  Attendance.
+                  Attendance
                 </Text>
               </Box>
               <HStack gap={1} align="baseline">
                 <Text
-                  fontSize="12px"
+                  fontSize="14px"
                   fontWeight="800"
-                  color="#1E56B3"
+                  color={{ base: "#1E56B3", _dark: "#60A5FA" }}
                   lineHeight="1"
                 >
                   {monthlyAttendanceStats.timesPerMonth}
                 </Text>
                 <Text
-                  fontSize="9.5px"
+                  fontSize="11px"
                   fontWeight="600"
-                  color="gray.500"
+                  color={{ base: "gray.500", _dark: "gray.400" }}
                   lineHeight="1"
                 >
                   times/mo
@@ -321,7 +324,7 @@ export const StudentQuickProfileHeader = ({
             {/* Range Pipe (Clean slim horizontal bar with rounded pill ends) */}
             <Box
               w="full"
-              h="2.5px"
+              h="4px"
               bg="rgba(32, 108, 225, 0.15)"
               borderRadius="full"
               overflow="hidden"

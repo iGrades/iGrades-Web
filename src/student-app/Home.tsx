@@ -6,6 +6,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { supabase } from "@/lib/supabaseClient";
 import { checkAndEnforceSessionExpiry, recordActivity } from "@/lib/authSessionManager";
 import { DancingLogoLoader } from "@/components/DancingLogoLoader";
+import { useBackButton } from "@/hooks/useBackButton";
 import Dashboard from "./layouts/dashboard";
 import Navbar from "./components/navbar";
 import Sidebar from "./components/sidebar";
@@ -16,6 +17,7 @@ import QuizPage from "./pages/QuizPage";
 import LearnPage from "./pages/LearnPage";
 import SettingsPage from "./pages/SettingsPage";
 import RewardsPage from "./pages/RewardsPage";
+import NotificationsPage from "./pages/NotificationsPage";
 import type { StudentPage } from "@/store/usenavigationStore";
 
 // Lazy load KaTeX and AI tutor components
@@ -38,6 +40,20 @@ const Home = () => {
   const { authdStudent, logoutFunc, isPopOver, setIsPopOver  } = useAuthdStudentData();
   const navigate = useNavigate();
   const location = useLocation();
+
+  // Native phone back button returns to 'home' when on secondary tabs
+  useBackButton(
+    "student-main-tab-navigation",
+    30,
+    () => {
+      if (currentPage !== "home") {
+        setCurrentPage("home");
+        return true;
+      }
+      return false;
+    },
+    currentPage !== "home"
+  );
 
   useEffect(() => {
     const verifyStudentSession = async () => {
@@ -101,6 +117,8 @@ const Home = () => {
       settings: "settings",
       help: "settings",
       faqs: "settings",
+      notifications: "notifications",
+      notification: "notifications",
     };
 
     const currentPath = location.pathname;
@@ -131,8 +149,10 @@ const Home = () => {
       setStudentSettingsTab("help");
     } else if (mappedPage === "settings") {
       const targetTab = urlSubpage || queryTab;
-      if (targetTab) {
+      if (targetTab && targetTab !== "menu") {
         setStudentSettingsTab(targetTab);
+      } else {
+        setStudentSettingsTab("menu");
       }
     }
     isInitializedRef.current = true;
@@ -163,7 +183,7 @@ const Home = () => {
 
         const pagePath = pageMap[currentPage] || "";
         let subPath = "";
-        if (currentPage === "settings" && studentSettingsTab) {
+        if (currentPage === "settings" && studentSettingsTab && studentSettingsTab !== "menu") {
           subPath = `/${studentSettingsTab}`;
         }
 
@@ -206,6 +226,8 @@ const Home = () => {
         return <RewardsPage />;
       case "settings":
         return <SettingsPage />;
+      case "notifications":
+        return <NotificationsPage />;
       default:
         return <Homepage />;
     }
@@ -221,7 +243,7 @@ const Home = () => {
     h={{ base: "100dvh", md: "100vh" }}
     maxH={{ base: "100dvh", md: "100vh" }}
     overflow="hidden"
-    bg="textFieldColor"
+    bg={{ base: "textFieldColor", _dark: "#000000" }}
   >
    {showNavBar && currentPage !== "chat" && <Navbar />}
     <Flex flex="1" minH="0" overflow="hidden">

@@ -1,7 +1,7 @@
 import { useState, useMemo, useEffect } from "react"
 import { supabase } from "../../../lib/supabaseClient"
 import { Box, Button, Flex, Heading, Text, VStack, HStack, Icon, Badge } from "@chakra-ui/react"
-import { LuArrowLeft } from "react-icons/lu"
+import { useBackButton } from "@/hooks/useBackButton"
 import { MdOutlineModeEditOutline, MdDelete, MdOutlineKeyboardArrowRight } from "react-icons/md"
 import { GiNotebook } from "react-icons/gi"
 import { FiSend, FiClock } from "react-icons/fi"
@@ -36,6 +36,19 @@ const EditGraderPopup = ({ student, setStudent, onClose, showEditBtn, showDelete
   const { handleGeneratePassKey, decrypt } = usePassKey()
   const { studentsData, fetchStudents } = useStudentsData()
   const encKey = (import.meta.env.ENC_KEY as string) || ""
+
+  useBackButton("grader-detail-popover", 50, () => {
+    if (view === "history") {
+      setView("info");
+      return true;
+    }
+    if (showEditBox) {
+      setShowEditBox(false);
+      return true;
+    }
+    onClose();
+    return true;
+  });
 
   const isHistory = view === "history";
 
@@ -105,7 +118,7 @@ const EditGraderPopup = ({ student, setStudent, onClose, showEditBtn, showDelete
                 <VStack align="stretch" gap={6}>
                   <Flex justify="space-between" align="center">
                     <Button variant="ghost" size="sm" onClick={onClose} px={2}> 
-                      <LuArrowLeft /> Back
+                      Back
                     </Button>
                     {showEditBtn && (
                       <Button variant="subtle" size="xs" colorScheme="blue" borderRadius="full" onClick={() => setShowEditBox(true)} > 
@@ -287,7 +300,7 @@ const EditGraderPopup = ({ student, setStudent, onClose, showEditBtn, showDelete
                 <Flex justify="space-between" align="center" direction={{ base: "column", sm: "row" }} gap={4}>
                   <HStack w={{ base: "full", sm: "auto" }} justify="space-between">
                     <Button variant="ghost" size="sm" onClick={() => setView("info")} px={1}> 
-                      <LuArrowLeft /> <Text display={{ base: "none", md: "inline" }}>Back to Profile</Text>
+                      <Text display={{ base: "none", md: "inline" }}>Back to Profile</Text>
                     </Button>
                     <Heading size="md" fontSize={{ base: "md", md: "lg" }}>Academic Dashboard</Heading>
                   </HStack>

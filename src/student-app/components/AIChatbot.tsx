@@ -6,6 +6,7 @@ import "katex/dist/katex.min.css";
 import { UpgradePromptModal } from "@/components/subscription/UpgradePromptModal";
 import { PiShootingStarDuotone } from "react-icons/pi";
 import { useChatbot } from "../../hooks/useChatbot";
+import { useBackButton } from "@/hooks/useBackButton";
 
 interface SparkMessageContentProps {
   content: string;
@@ -72,6 +73,20 @@ export const AIChatbot = () => {
     effectivePlan,
     setInput, sendMessage, sendCustomMessage, clearMessages, clearContext, toggleOpen, setLimitModalOpen, handleKeyDown,
   } = useChatbot();
+
+  // Native phone back button closes floating AI window
+  useBackButton(
+    "floating-ai-chatbot",
+    90,
+    () => {
+      if (isOpen) {
+        toggleOpen();
+        return true;
+      }
+      return false;
+    },
+    isOpen
+  );
 
   if (isExcluded) return null;
 

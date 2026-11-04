@@ -45,7 +45,7 @@ export const LanguageSettings = () => {
     SUPPORTED_LANGUAGES.find((l) => l.code === currentLang) || SUPPORTED_LANGUAGES[0];
 
   return (
-    <Box bg="white" border="none" outline="none" boxShadow="none" p={{ base: 4, sm: 6 }} mb={20} w="100%">
+    <Box bg={{ base: "white", _dark: "#121212" }} border="none" outline="none" boxShadow="none" p={{ base: 4, sm: 6 }} mb={20} w="100%">
       {/* Header */}
       <Box mb={6} pb={3}>
         <HStack gap={3} align="center" mb={1}>
@@ -53,10 +53,10 @@ export const LanguageSettings = () => {
             <Icon as={FiGlobe} boxSize={5} />
           </Box>
           <Box>
-            <Heading as="h3" fontSize={{ base: "lg", md: "xl" }} color="gray.800" fontWeight="bold">
+            <Heading as="h3" fontSize={{ base: "lg", md: "xl" }} color={{ base: "gray.800", _dark: "#F5F5F5" }} fontWeight="bold">
               {t("language") || "Language Preferences"}
             </Heading>
-            <Text fontSize="xs" color="gray.500">
+            <Text fontSize="xs" color={{ base: "gray.500", _dark: "#A1A1AA" }}>
               Select your preferred language for courses, quizzes, tutor responses, and navigation.
             </Text>
           </Box>
@@ -67,29 +67,29 @@ export const LanguageSettings = () => {
       <Box
         p={4}
         mb={6}
-        bg="blue.50/60"
-        border="none"
+        bg={{ base: "blue.50/60", _dark: "#1A1A1A" }}
+        border={{ base: "none", _dark: "1px solid #262626" }}
         outline="none"
         boxShadow="none"
         borderRadius="xl"
       >
         <HStack justify="space-between" align="center" flexWrap="wrap" gap={2}>
           <HStack gap={2}>
-            <Text fontSize="xs" fontWeight="600" color="blue.800">
+            <Text fontSize="xs" fontWeight="600" color={{ base: "blue.800", _dark: "#93C5FD" }}>
               Current Active Language:
             </Text>
             <Badge colorPalette="blue" variant="solid" px={2.5} py={0.5} borderRadius="full" fontSize="xs" border="none">
               {activeLangObj.name} ({activeLangObj.nativeName})
             </Badge>
           </HStack>
-          <Text fontSize="11px" color="blue.700">
+          <Text fontSize="11px" color={{ base: "blue.700", _dark: "#93C5FD" }}>
             Real-time multi-dialect translation enabled
           </Text>
         </HStack>
       </Box>
 
       {/* Language Selection Grid */}
-      <Text fontSize="xs" fontWeight="700" color="gray.700" mb={3} textTransform="uppercase" letterSpacing="wider">
+      <Text fontSize="xs" fontWeight="700" color={{ base: "gray.700", _dark: "#D4D4D8" }} mb={3} textTransform="uppercase" letterSpacing="wider">
         Choose Language
       </Text>
 
@@ -105,13 +105,13 @@ export const LanguageSettings = () => {
               textAlign="left"
               p={4}
               borderRadius="xl"
-              border="none"
+              border={{ base: "none", _dark: isSelected ? "1.5px solid #206CE1" : "1px solid #262626" }}
               outline="none"
               boxShadow="none"
-              bg={isSelected ? "#DBEAFE" : "#F4F7FB"}
+              bg={{ base: isSelected ? "#DBEAFE" : "#F4F7FB", _dark: isSelected ? "#1E1E1E" : "#1A1A1A" }}
               transition="all 0.15s ease"
               _hover={{
-                bg: isSelected ? "#BFDBFE" : "#EDF2F7",
+                bg: { base: isSelected ? "#BFDBFE" : "#EDF2F7", _dark: isSelected ? "#262626" : "#222222" },
               }}
               _active={{ transform: "scale(0.99)" }}
               cursor="pointer"
@@ -120,10 +120,10 @@ export const LanguageSettings = () => {
             >
               <HStack justify="space-between" align="center">
                 <Box>
-                  <Text fontSize="sm" fontWeight={isSelected ? "700" : "600"} color={isSelected ? "blue.700" : "gray.800"}>
+                  <Text fontSize="sm" fontWeight={isSelected ? "700" : "600"} color={{ base: isSelected ? "blue.700" : "gray.800", _dark: isSelected ? "#93C5FD" : "#F5F5F5" }}>
                     {lang.name}
                   </Text>
-                  <Text fontSize="xs" color={isSelected ? "blue.600" : "gray.500"}>
+                  <Text fontSize="xs" color={{ base: isSelected ? "blue.600" : "gray.500", _dark: isSelected ? "#60A5FA" : "#A1A1AA" }}>
                     {lang.nativeName}
                   </Text>
                 </Box>

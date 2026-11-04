@@ -1,7 +1,7 @@
 import { Heading, Text, Flex } from "@chakra-ui/react";
-import { LuArrowLeft } from "react-icons/lu";
 import { useState } from "react";
 import VideosList from "./videosList";
+import { useBackButton } from "@/hooks/useBackButton";
 
 interface Topic {
   id: string;
@@ -34,6 +34,16 @@ const TopicsList = ({
 }: Props) => {
   const [videoList, setVideoList] = useState(false);
   const [selectedTopic, setSelectedTopic] = useState<Topic | null>(null);
+
+  useBackButton("subject-topics-list", 30, () => {
+    if (videoList) {
+      setVideoList(false);
+      setSelectedTopic(null);
+      return true;
+    }
+    setTopicList(false);
+    return true;
+  });
 
   // Handle topic click
   const handleTopicClick = (topic: Topic) => {

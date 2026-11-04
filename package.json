@@ -60,6 +60,7 @@
     "slick-carousel": "^1.8.1",
     "tsx": "^4.23.13",
     "xlsx": "^0.18.5",
+    "yallist": "^4.0.0",
     "zustand": "^5.0.5"
   },
   "overrides": {

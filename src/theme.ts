@@ -100,6 +100,57 @@ const config = defineConfig({
         shakeX: { value: "shakeX 1s ease-in-out infinite" },
       },
     },
+    semanticTokens: {
+      colors: {
+        bg: {
+          DEFAULT: { value: { _light: "#FFFFFF", _dark: "#000000" } },
+          subtle: { value: { _light: "#F4F7FB", _dark: "#1A1A1A" } },
+          muted: { value: { _light: "#F8FAFC", _dark: "#121212" } },
+          panel: { value: { _light: "#FFFFFF", _dark: "#121212" } },
+          elevated: { value: { _light: "#FFFFFF", _dark: "#1E1E1E" } },
+        },
+        fg: {
+          DEFAULT: { value: { _light: "#0F172A", _dark: "#F5F5F5" } },
+          muted: { value: { _light: "#64748B", _dark: "#A1A1AA" } },
+          subtle: { value: { _light: "#94A3B8", _dark: "#71717A" } },
+        },
+        border: {
+          DEFAULT: { value: { _light: "#E2E8F0", _dark: "#262626" } },
+          subtle: { value: { _light: "#F1F5F9", _dark: "#1F1F1F" } },
+          muted: { value: { _light: "#CBD5E1", _dark: "#2A2A2A" } },
+        },
+        cardBg: {
+          value: { _light: "#FFFFFF", _dark: "#121212" },
+        },
+        cardBorder: {
+          value: { _light: "#F1F5F9", _dark: "#262626" },
+        },
+        navBg: {
+          value: { _light: "#FFFFFF", _dark: "#121212" },
+        },
+        inputBg: {
+          value: { _light: "#F9F9FB", _dark: "#181818" },
+        },
+        textFieldColor: {
+          value: { _light: "#F9F9FB", _dark: "#000000" },
+        },
+        backgrondColor: {
+          value: { _light: "#FFFFFF", _dark: "#000000" },
+        },
+        backgrondColor2: {
+          value: { _light: "#07052A", _dark: "#000000" },
+        },
+        on_backgroundColor: {
+          value: { _light: "#242E3E", _dark: "#F5F5F5" },
+        },
+        on_containerColor: {
+          value: { _light: "#474256", _dark: "#D4D4D8" },
+        },
+        lightGrey: {
+          value: { _light: "#EBEBF7", _dark: "#1A1A1A" },
+        },
+      },
+    },
     keyframes: {
       shakeX: {
         "0%, 100%": { transform: "translateX(-100%)" },

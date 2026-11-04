@@ -11,6 +11,7 @@ import Homepage from "./pages/HomePage";
 import Student from "./pages/StudentPage";
 import Settings from "./pages/SettingsPage";
 import WeeklyReportPage from "./pages/WeeklyReportPage";
+import ParentNotificationsPage from "./pages/NotificationsPage";
 import { WeeklyReportPopupBanner } from "./components/intelligence/weeklyReport/WeeklyReportPopupBanner";
 import DashboardLayout from "@/parent-app/dashboard";
 import Navbar from "@/parent-app/components/navbar";
@@ -95,6 +96,8 @@ const Home = () => {
       help: "settings",
       support: "settings",
       faqs: "settings",
+      notifications: "notifications",
+      notification: "notifications",
     };
     
     const currentPath = location.pathname;
@@ -125,8 +128,10 @@ const Home = () => {
       setParentSettingsTab("support");
     } else if (mappedPage === "settings") {
       const targetTab = urlSubpage || queryTab;
-      if (targetTab) {
-        setParentSettingsTab(targetTab === "profile" ? "igrade" : targetTab);
+      if (targetTab && targetTab !== "menu") {
+        setParentSettingsTab(targetTab === "igrade" ? "profile" : targetTab);
+      } else {
+        setParentSettingsTab("menu");
       }
     }
     isInitializedRef.current = true;
@@ -155,9 +160,9 @@ const Home = () => {
       
         const pagePath = pageMap[currentPage] || "";
         let subPath = "";
-        if (currentPage === "settings" && parentSettingsTab) {
+        if (currentPage === "settings" && parentSettingsTab && parentSettingsTab !== "menu") {
           const mappedTab =
-            parentSettingsTab === "igrade"
+            parentSettingsTab === "igrade" || parentSettingsTab === "profile"
               ? "profile"
               : parentSettingsTab === "support"
               ? "help"
@@ -188,6 +193,8 @@ const Home = () => {
         return <WeeklyReportPage />;
       case "settings":
         return <Settings setShowLogoutModal={setShowLogoutModal} />;
+      case "notifications":
+        return <ParentNotificationsPage />;
       default:
         return <Homepage />;
     }
@@ -204,7 +211,7 @@ const Home = () => {
             h={{ base: "100dvh", md: "100vh" }}
             maxH={{ base: "100dvh", md: "100vh" }}
             overflow="hidden"
-            bg="textFieldColor"
+            bg={{ base: "textFieldColor", _dark: "#000000" }}
           >
             <Navbar setShowLogoutModal={setShowLogoutModal} />
 

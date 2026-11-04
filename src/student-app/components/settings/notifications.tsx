@@ -94,13 +94,13 @@ const Notifications = () => {
   ];
 
   return (
-    <Box bg="white" border="none" outline="none" boxShadow="none" p={{ base: 4, sm: 6 }} mb={20} w="100%" h="auto">
+    <Box bg={{ base: "white", _dark: "#121212" }} border="none" outline="none" boxShadow="none" p={{ base: 4, sm: 6 }} mb={20} w="100%" h="auto">
       <Flex justify="space-between" align={{ base: "flex-start", sm: "center" }} mb={6} direction={{ base: "column", sm: "row" }} gap={2}>
         <Box>
-          <Heading as="h3" fontSize={{ base: "lg", md: "xl" }} color="gray.800">
+          <Heading as="h3" fontSize={{ base: "lg", md: "xl" }} color={{ base: "gray.800", _dark: "#F5F5F5" }}>
             Notification Preferences
           </Heading>
-          <Text fontSize="xs" color="gray.500" mt={1}>
+          <Text fontSize="xs" color={{ base: "gray.500", _dark: "#A1A1AA" }} mt={1}>
             Choose which notifications and study reminders you would like to receive.
           </Text>
         </Box>
@@ -118,9 +118,9 @@ const Notifications = () => {
               justify="space-between"
               align="center"
               p={{ base: 4, md: 5 }}
-              bg="#F4F7FB"
+              bg={{ base: "#F4F7FB", _dark: "#1A1A1A" }}
               rounded="xl"
-              border="none"
+              border={{ base: "none", _dark: "1px solid #262626" }}
               outline="none"
               boxShadow="none"
               w="100%"
@@ -138,10 +138,10 @@ const Notifications = () => {
                   <item.icon size={22} />
                 </Icon>
                 <Box>
-                  <Heading as="h4" fontSize={{ base: "sm", md: "md" }} color="gray.800">
+                  <Heading as="h4" fontSize={{ base: "sm", md: "md" }} color={{ base: "gray.800", _dark: "#F5F5F5" }}>
                     {item.title}
                   </Heading>
-                  <Text fontSize="xs" color="gray.500" mt={1} lineHeight="tall">
+                  <Text fontSize="xs" color={{ base: "gray.500", _dark: "#A1A1AA" }} mt={1} lineHeight="tall">
                     {item.desc}
                   </Text>
                 </Box>

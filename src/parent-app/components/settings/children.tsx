@@ -28,14 +28,14 @@ const Children = () => {
               flexWrap="wrap"
               gap={3}
               w="full"
-              bg="#F4F7FB"
+              bg={{ base: "#F4F7FB", _dark: "#1A1A1A" }}
               borderRadius="xl"
-              border="none"
+              border={{ base: "none", _dark: "1px solid #262626" }}
               outline="none"
               boxShadow="none"
               p={{ base: "4", md: "4", lg: "5" }}
               transition="all 0.2s"
-              _hover={{ bg: "blue.50/30" }}
+              _hover={{ bg: { base: "blue.50/30", _dark: "#222222" } }}
             >
               <Box
                 display="flex"
@@ -51,14 +51,14 @@ const Children = () => {
                     as="h2"
                     fontSize={{ base: "sm", md: "md" }}
                     fontWeight="700"
-                    color="gray.800"
+                    color={{ base: "gray.800", _dark: "#F5F5F5" }}
                     truncate 
                   >
                     {student.firstname} {student.lastname}
                   </Heading>
                   <Text
                     fontSize="xs"
-                    color="gray.500"
+                    color={{ base: "gray.500", _dark: "#A1A1AA" }}
                     textTransform="capitalize"
                     truncate 
                     mt={0.5}

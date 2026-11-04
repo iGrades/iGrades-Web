@@ -49,11 +49,11 @@ const Sidebar = () => {
       h="full"
       overflowY="auto"
       overflowX="hidden"
-      bg="white"
+      bg={{ base: "white", _dark: "#121212" }}
       px={{ base: 4, md: 1.5, lg: 3 }}
       py={{ base: 6, md: 4, lg: 6 }}
       borderRight="1px solid"
-      borderColor="gray.100"
+      borderColor={{ base: "gray.100", _dark: "#262626" }}
       shadow="xs"
       left={0}
       position="sticky"

@@ -97,7 +97,7 @@ const Security = () => {
 
   return (
     <Box 
-      bg="white" 
+      bg={{ base: "white", _dark: "#121212" }} 
       border="none"
       outline="none"
       boxShadow="none"
@@ -129,7 +129,7 @@ const Security = () => {
         mb={{ base: 5, md: 8 }}
         fontSize={{ base: "14px", md: "16px" }}
         fontWeight="700"
-        color="gray.800"
+        color={{ base: "gray.800", _dark: "#F5F5F5" }}
       >
         Change Account Password
       </Heading>
@@ -141,11 +141,11 @@ const Security = () => {
         align="stretch"
       >
         <Field.Root width="100%">
-          <Field.Label fontSize="11px" fontWeight="bold" color="gray.700" mb={1.5}>Current Password</Field.Label>
+          <Field.Label fontSize="11px" fontWeight="bold" color={{ base: "gray.700", _dark: "#D4D4D8" }} mb={1.5}>Current Password</Field.Label>
           <PasswordInput
             value={currentPassword}
-            bg="#F4F7FB"
-            border="none"
+            bg={{ base: "#F4F7FB", _dark: "#181818" }}
+            border={{ base: "none", _dark: "1px solid #262626" }}
             outline="none"
             boxShadow="none"
             h="44px" 
@@ -158,11 +158,11 @@ const Security = () => {
         </Field.Root>
 
         <Field.Root width="100%">
-          <Field.Label fontSize="11px" fontWeight="bold" color="gray.700" mb={1.5}>New Password</Field.Label>
+          <Field.Label fontSize="11px" fontWeight="bold" color={{ base: "gray.700", _dark: "#D4D4D8" }} mb={1.5}>New Password</Field.Label>
           <PasswordInput
             value={newPassword}
-            bg="#F4F7FB"
-            border="none"
+            bg={{ base: "#F4F7FB", _dark: "#181818" }}
+            border={{ base: "none", _dark: "1px solid #262626" }}
             outline="none"
             boxShadow="none"
             h="44px" 

@@ -177,9 +177,9 @@ export const NextStudyRecommendationCard: React.FC<NextStudyRecommendationCardPr
   return (
     <Box
       borderRadius="2xl"
-      bg="white"
+      bg={{ base: "white", _dark: "#121212" }}
       border="1px solid"
-      borderColor="gray.100"
+      borderColor={{ base: "gray.100", _dark: "#262626" }}
       boxShadow="0 1px 3px rgba(0, 0, 0, 0.04)"
       p={{ base: 4, sm: 5 }}
       my={4}
@@ -191,13 +191,13 @@ export const NextStudyRecommendationCard: React.FC<NextStudyRecommendationCardPr
             as="h2"
             fontSize={{ base: "13.5px", sm: "15px", md: "16px" }}
             fontWeight="700"
-            color="#1E293B"
+            color={{ base: "#1E293B", _dark: "#F5F5F5" }}
             lineHeight="1.2"
             whiteSpace="nowrap"
           >
             What should I study next?
           </Heading>
-          <Text fontSize="11px" color="#64748B" mt={0.5} whiteSpace="nowrap" overflow="hidden" textOverflow="ellipsis">
+          <Text fontSize="11px" color={{ base: "#64748B", _dark: "#A1A1AA" }} mt={0.5} whiteSpace="nowrap" overflow="hidden" textOverflow="ellipsis">
             Tailored recommendation for {targetExam}
           </Text>
         </Box>
@@ -222,9 +222,9 @@ export const NextStudyRecommendationCard: React.FC<NextStudyRecommendationCardPr
       <Box
         p={3.5}
         borderRadius="xl"
-        bg="#F8FAFC"
+        bg={{ base: "#F8FAFC", _dark: "#1A1A1A" }}
         border="1px solid"
-        borderColor="#E2E8F0"
+        borderColor={{ base: "#E2E8F0", _dark: "#262626" }}
         mb={3}
       >
         {/* Top card info row */}
@@ -243,7 +243,7 @@ export const NextStudyRecommendationCard: React.FC<NextStudyRecommendationCardPr
             >
               <TypeIcon />
             </Flex>
-            <Text fontSize="13px" fontWeight="700" color="#1E293B" truncate>
+            <Text fontSize="13px" fontWeight="700" color={{ base: "#1E293B", _dark: "#F8FAFC" }} truncate>
               {recommendation.title}
             </Text>
           </HStack>
@@ -254,7 +254,7 @@ export const NextStudyRecommendationCard: React.FC<NextStudyRecommendationCardPr
                 Priority
               </Badge>
             )}
-            <HStack gap={1} fontSize="10px" color="#64748B" bg="#EDF2F7" px={1.5} py={0.5} borderRadius="md">
+            <HStack gap={1} fontSize="10px" color={{ base: "#64748B", _dark: "#A1A1AA" }} bg={{ base: "#EDF2F7", _dark: "#1A1A1A" }} border={{ base: "none", _dark: "1px solid #262626" }} px={1.5} py={0.5} borderRadius="md">
               <Icon as={FiClock} boxSize="10px" />
               <Text>{recommendation.estimatedMinutes || 15}m</Text>
             </HStack>
@@ -262,7 +262,7 @@ export const NextStudyRecommendationCard: React.FC<NextStudyRecommendationCardPr
         </Flex>
 
         {/* Description */}
-        <Text fontSize="12px" color="#475569" lineHeight="1.45" mb={2.5}>
+        <Text fontSize="12px" color={{ base: "#475569", _dark: "#CBD5E1" }} lineHeight="1.45" mb={2.5}>
           {recommendation.description}
         </Text>
 
@@ -272,16 +272,16 @@ export const NextStudyRecommendationCard: React.FC<NextStudyRecommendationCardPr
             gap={2}
             p={2}
             borderRadius="lg"
-            bg="#EFF6FF"
+            bg={{ base: "#EFF6FF", _dark: "rgba(59, 130, 246, 0.12)" }}
             border="1px solid"
-            borderColor="#DBEAFE"
+            borderColor={{ base: "#DBEAFE", _dark: "rgba(59, 130, 246, 0.25)" }}
             align="flex-start"
             mb={3}
           >
             <Box color="#288AE4" mt={0.5} flexShrink={0}>
               <Icon as={FiHelpCircle} boxSize="12px" />
             </Box>
-            <Text fontSize="11px" color="#1E40AF" lineHeight="1.35">
+            <Text fontSize="11px" color={{ base: "#1E40AF", _dark: "#93C5FD" }} lineHeight="1.35">
               <strong>Why:</strong> {recommendation.reason}
             </Text>
           </Flex>
@@ -311,13 +311,13 @@ export const NextStudyRecommendationCard: React.FC<NextStudyRecommendationCardPr
               w="full"
               h="34px"
               variant="outline"
-              borderColor="#CBD5E1"
-              color="#288AE4"
-              bg="white"
+              borderColor={{ base: "#CBD5E1", _dark: "#333333" }}
+              color={{ base: "#288AE4", _dark: "#60A5FA" }}
+              bg={{ base: "white", _dark: "#121212" }}
               borderRadius="xl"
               fontSize="11.5px"
               fontWeight="600"
-              _hover={{ bg: "#F8FAFC" }}
+              _hover={{ bg: { base: "#F8FAFC", _dark: "#1E1E1E" } }}
               _active={{ bg: "#F1F5F9" }}
               onClick={() => {
                 if (effectivePlan !== "premium") {

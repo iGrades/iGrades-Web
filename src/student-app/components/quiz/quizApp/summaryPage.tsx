@@ -14,6 +14,7 @@ import {
 import { IoClose, IoCheckmarkCircle, IoCloseCircle, IoInformationCircle } from "react-icons/io5";
 import type { QuizResults, QuizAttemptProps } from "./types";
 import PerformanceAnalytics from "./performanceAnalytics";
+import { useBackButton } from "@/hooks/useBackButton";
 
 interface SummaryPageProps {
   quizResults: QuizResults;
@@ -22,6 +23,11 @@ interface SummaryPageProps {
 }
 
 const SummaryPage = ({ quizResults, quizData, onClose }: SummaryPageProps) => {
+  useBackButton("quiz-summary-modal", 70, () => {
+    onClose();
+    return true;
+  });
+
   const studentAnswers = quizResults.studentAnswers || {};
 
   return (

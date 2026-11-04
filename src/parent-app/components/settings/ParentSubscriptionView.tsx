@@ -145,7 +145,7 @@ export const ParentSubscriptionView: React.FC = () => {
   };
 
   return (
-    <Box bg="white" border="none" outline="none" boxShadow="none" p={{ base: 4, sm: 6 }} mb={10} w="100%">
+    <Box bg={{ base: "white", _dark: "#121212" }} border="none" outline="none" boxShadow="none" p={{ base: 4, sm: 6 }} mb={10} w="100%">
       {/* ── HEADER ── */}
       <Flex
         direction={{ base: "column", md: "row" }}
@@ -156,22 +156,22 @@ export const ParentSubscriptionView: React.FC = () => {
       >
         <Box>
           <HStack gap={2.5} mb={1}>
-            <Heading size={{ base: "sm", md: "md" }} color="gray.900" fontWeight="800">
+            <Heading size={{ base: "sm", md: "md" }} color={{ base: "gray.900", _dark: "#F5F5F5" }} fontWeight="800">
               Family Subscriptions & Entitlements
             </Heading>
             <Badge colorPalette="blue" variant="solid" size="xs" borderRadius="full" px={2}>
               B2C Model
             </Badge>
           </HStack>
-          <Text fontSize="xs" color="gray.500" maxW="600px">
+          <Text fontSize="xs" color={{ base: "gray.500", _dark: "#A1A1AA" }} maxW="600px">
             Parent intelligence (Weekly Reports, Action Radar, and Cognitive Diagnostics) is tied to
             your connected child's Premium subscription. Child connection is free and unlimited.
           </Text>
         </Box>
 
-        <HStack bg="blue.50" px={3.5} py={2} borderRadius="xl" border="1px solid" borderColor="blue.100">
+        <HStack bg={{ base: "blue.50", _dark: "#1A1A1A" }} px={3.5} py={2} borderRadius="xl" border="1px solid" borderColor={{ base: "blue.100", _dark: "#262626" }}>
           <Icon as={FiUsers} color="#206CE1" />
-          <Text fontSize="xs" fontWeight="700" color="#1E56B3">
+          <Text fontSize="xs" fontWeight="700" color={{ base: "#1E56B3", _dark: "#93C5FD" }}>
             Connected Children: {studentsData?.length || 0}
           </Text>
         </HStack>
@@ -179,13 +179,13 @@ export const ParentSubscriptionView: React.FC = () => {
 
       {/* ── CONNECTED CHILDREN SUBSCRIPTION MANAGEMENT ── */}
       <Box mb={10}>
-        <Heading size="sm" color="gray.800" fontWeight="700" mb={3}>
+        <Heading size="sm" color={{ base: "gray.800", _dark: "#F5F5F5" }} fontWeight="700" mb={3}>
           Connected Children ({studentsData?.length || 0})
         </Heading>
 
         {(!studentsData || studentsData.length === 0) ? (
-          <Box p={6} bg="gray.50" borderRadius="xl" textAlign="center">
-            <Text fontSize="xs" color="gray.500">
+          <Box p={6} bg={{ base: "gray.50", _dark: "#1A1A1A" }} borderRadius="xl" textAlign="center" border={{ base: "none", _dark: "1px solid #262626" }}>
+            <Text fontSize="xs" color={{ base: "gray.500", _dark: "#A1A1AA" }}>
               No children connected yet. Connect your child from the Student Directory to view and manage their subscription.
             </Text>
           </Box>
@@ -208,18 +208,12 @@ export const ParentSubscriptionView: React.FC = () => {
                   border="1.5px solid"
                   borderColor={
                     isPremium
-                      ? "purple.300"
+                      ? { base: "purple.300", _dark: "purple.800" }
                       : isStandard
-                      ? "blue.300"
-                      : "gray.200"
+                      ? { base: "blue.300", _dark: "blue.800" }
+                      : { base: "gray.200", _dark: "#262626" }
                   }
-                  bg={
-                    isPremium
-                      ? "purple.50/20"
-                      : isStandard
-                      ? "blue.50/20"
-                      : "gray.50/40"
-                  }
+                  bg={{ base: isPremium ? "purple.50/20" : isStandard ? "blue.50/20" : "gray.50/40", _dark: "#1A1A1A" }}
                   shadow="sm"
                   position="relative"
                 >
@@ -228,16 +222,16 @@ export const ParentSubscriptionView: React.FC = () => {
                       <Box
                         p={2}
                         borderRadius="xl"
-                        bg="blue.50"
+                        bg={{ base: "blue.50", _dark: "#262626" }}
                         color="#206CE1"
                       >
                         <PiStudentBold size={20} />
                       </Box>
                       <Box>
-                        <Text fontWeight="800" fontSize="sm" color="gray.900">
+                        <Text fontWeight="800" fontSize="sm" color={{ base: "gray.900", _dark: "#F5F5F5" }}>
                           {student.firstname} {student.lastname || ""}
                         </Text>
-                        <Text fontSize="11px" color="gray.500">
+                        <Text fontSize="11px" color={{ base: "gray.500", _dark: "#A1A1AA" }}>
                           Class: {student.class || "General"}
                         </Text>
                       </Box>
@@ -342,10 +336,10 @@ export const ParentSubscriptionView: React.FC = () => {
 
       {/* ── B2C PLANS GRID ── */}
       <Box mb={10}>
-        <Heading size="sm" color="gray.800" fontWeight="700" mb={1}>
+        <Heading size="sm" color={{ base: "gray.800", _dark: "#F5F5F5" }} fontWeight="700" mb={1}>
           Available iGrades B2C Plans
         </Heading>
-        <Text fontSize="xs" color="gray.500" mb={4}>
+        <Text fontSize="xs" color={{ base: "gray.500", _dark: "#A1A1AA" }} mb={4}>
           Select a tier to upgrade your child's learning experience and unlock advanced parental intelligence.
         </Text>
 
@@ -365,24 +359,25 @@ export const ParentSubscriptionView: React.FC = () => {
                 border="2px solid"
                 borderColor={
                   isPremiumTier
-                    ? "purple.200"
+                    ? { base: "purple.200", _dark: "purple.800" }
                     : isStandardTier
-                    ? "blue.100"
-                    : "gray.200"
+                    ? { base: "blue.100", _dark: "blue.800" }
+                    : { base: "gray.200", _dark: "#262626" }
                 }
-                bg={
-                  isPremiumTier
+                bg={{
+                  base: isPremiumTier
                     ? "purple.50/20"
                     : isStandardTier
                     ? "blue.50/10"
-                    : "white"
-                }
+                    : "white",
+                  _dark: "#1A1A1A"
+                }}
                 shadow="sm"
                 position="relative"
               >
                 <Box>
                   <HStack justify="space-between" align="center" mb={1}>
-                    <Heading size="md" color="gray.900" fontWeight="800">
+                    <Heading size="md" color={{ base: "gray.900", _dark: "#F5F5F5" }} fontWeight="800">
                       {plan.name}
                     </Heading>
                     {isPremiumTier && (
@@ -392,30 +387,30 @@ export const ParentSubscriptionView: React.FC = () => {
                     )}
                   </HStack>
 
-                  <Text fontSize="xs" color="gray.500" mb={3} minH="34px">
+                  <Text fontSize="xs" color={{ base: "gray.500", _dark: "#A1A1AA" }} mb={3} minH="34px">
                     {plan.text}
                   </Text>
 
                   <HStack align="baseline" gap={1} mb={4}>
-                    <Text fontSize="2xl" fontWeight="900" color="gray.900">
+                    <Text fontSize="2xl" fontWeight="900" color={{ base: "gray.900", _dark: "#F5F5F5" }}>
                       {plan.price}
                     </Text>
                     {plan.amount > 0 && (
-                      <Text fontSize="xs" color="gray.500">
+                      <Text fontSize="xs" color={{ base: "gray.500", _dark: "#A1A1AA" }}>
                         / month per child
                       </Text>
                     )}
                   </HStack>
 
-                  <Box borderTop="1px solid" borderColor="gray.100" pt={4} mb={4}>
-                    <Text fontSize="11px" fontWeight="800" color="gray.500" textTransform="uppercase" letterSpacing="0.05em" mb={3}>
+                  <Box borderTop="1px solid" borderColor={{ base: "gray.100", _dark: "#262626" }} pt={4} mb={4}>
+                    <Text fontSize="11px" fontWeight="800" color={{ base: "gray.500", _dark: "#A1A1AA" }} textTransform="uppercase" letterSpacing="0.05em" mb={3}>
                       What's Included
                     </Text>
                     <VStack align="stretch" gap={2}>
                       {plan.desc.map((feat, idx) => (
                         <HStack key={idx} align="start" gap={2} w="full">
                           <Icon as={IoIosCheckmarkCircle} color={isPremiumTier ? "purple.500" : "#206CE1"} boxSize={4} flexShrink={0} mt="2px" />
-                          <Text fontSize="xs" color="gray.700" lineHeight="1.3">
+                          <Text fontSize="xs" color={{ base: "gray.700", _dark: "#D4D4D8" }} lineHeight="1.3">
                             {feat}
                           </Text>
                         </HStack>

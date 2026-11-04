@@ -57,12 +57,12 @@ const renderXAxisTick = (props: any) => {
   return (
     <text
       x={x}
-      y={y + 9}
+      y={y + 11}
       textAnchor="middle"
-      fill="#94A3B8"
-      fontSize="8px"
-      fontWeight="500"
-      style={{ fontSize: "8px", fill: "#94A3B8" }}
+      fill="#64748B"
+      fontSize="11px"
+      fontWeight="600"
+      style={{ fontSize: "11px", fill: "#64748B" }}
     >
       {val}
     </text>
@@ -74,12 +74,12 @@ const renderYAxisTick = (props: any) => {
   return (
     <text
       x={x}
-      y={y + 3}
+      y={y + 4}
       textAnchor="end"
-      fill="#94A3B8"
-      fontSize="8px"
-      fontWeight="500"
-      style={{ fontSize: "8px", fill: "#94A3B8" }}
+      fill="#64748B"
+      fontSize="11px"
+      fontWeight="600"
+      style={{ fontSize: "11px", fill: "#64748B" }}
     >
       {payload?.value}%
     </text>
@@ -383,22 +383,22 @@ const HomeChart = () => {
         gap={2}
       >
         <Box>
-          <Heading fontSize={{ base: "15px", md: "16px" }} color="#1E293B" fontWeight="700">
+          <Heading fontSize={{ base: "15px", md: "16px" }} color={{ base: "#1E293B", _dark: "#F8FAFC" }} fontWeight="700">
             Quiz Analytics
           </Heading>
-          <Text fontSize="11px" color="#64748B">
+          <Text fontSize="11px" color={{ base: "#64748B", _dark: "#94A3B8" }}>
             Average monthly performance across completed quizzes
           </Text>
         </Box>
         {totalAttempts > 0 ? (
-          <Box px={2.5} py={0.5} bg="blue.50" borderRadius="full" border="1px solid" borderColor="blue.200">
-            <Text fontSize="11px" fontWeight="600" color="blue.700">
+          <Box px={2.5} py={0.5} bg={{ base: "blue.50", _dark: "rgba(59, 130, 246, 0.15)" }} borderRadius="full" border="1px solid" borderColor={{ base: "blue.200", _dark: "rgba(59, 130, 246, 0.3)" }}>
+            <Text fontSize="11px" fontWeight="600" color={{ base: "blue.700", _dark: "#60A5FA" }}>
               Avg: {overallAverage}% ({totalAttempts} {totalAttempts === 1 ? "quiz" : "quizzes"})
             </Text>
           </Box>
         ) : (
-          <Box px={2.5} py={0.5} bg="gray.50" borderRadius="full" border="1px solid" borderColor="gray.200">
-            <Text fontSize="11px" color="gray.500">
+          <Box px={2.5} py={0.5} bg={{ base: "gray.50", _dark: "gray.800" }} borderRadius="full" border="1px solid" borderColor={{ base: "gray.200", _dark: "gray.700" }}>
+            <Text fontSize="11px" color={{ base: "gray.500", _dark: "gray.400" }}>
               0 quizzes taken
             </Text>
           </Box>
@@ -413,14 +413,14 @@ const HomeChart = () => {
         css={{
           "& .recharts-surface": { overflow: "visible !important" },
           "& .recharts-wrapper": { overflow: "visible !important" },
-          "& .recharts-cartesian-axis-tick text": { fontSize: "8px !important" },
-          "& text.recharts-text": { fontSize: "8px !important" },
+          "& .recharts-cartesian-axis-tick text": { fontSize: "11px !important", fill: "#64748B !important" },
+          "& text.recharts-text": { fontSize: "11px !important", fill: "#64748B !important" },
         }}
       >
         <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={220}>
           <AreaChart
             data={quizProgress}
-            margin={{ top: 14, right: 14, left: 6, bottom: 4 }}
+            margin={{ top: 14, right: 14, left: 4, bottom: 6 }}
           >
             <defs>
               <linearGradient id="studentQuizGradient" x1="0" y1="0" x2="0" y2="1">
@@ -438,7 +438,7 @@ const HomeChart = () => {
             />
             <YAxis
               domain={[0, 100]}
-              width={32}
+              width={38}
               axisLine={false}
               tickLine={false}
               tick={renderYAxisTick}
