@@ -1,4 +1,4 @@
-import { Box, Heading, Text, Flex, RadioGroup, VStack, HStack, Progress } from "@chakra-ui/react";
+import { Box, Heading, Text, Flex, VStack, HStack, Progress } from "@chakra-ui/react";
 import type { QuestionComponentProps } from "./types";
 import { hapticsService } from "@/services/hapticsService";
 
@@ -10,6 +10,26 @@ export const QuestionComponent = ({
   onAnswerSelect,
   disabled,
 }: QuestionComponentProps) => {
+  if (!currentQuestion) {
+    return (
+      <Box
+        p={{ base: 4, md: 8 }}
+        bg="white"
+        borderRadius={{ base: "xl", md: "2xl" }}
+        border="1px solid"
+        borderColor="gray.100"
+        textAlign="center"
+        w="full"
+        maxW="5xl"
+        m="auto"
+      >
+        <Text color="gray.500" fontSize="sm">
+          Loading question...
+        </Text>
+      </Box>
+    );
+  }
+
   const hasImage = Boolean(currentQuestion?.image_url);
   const progressPercent = totalQuestions > 0 ? ((currentQuestionIndex + 1) / totalQuestions) * 100 : 0;
 
@@ -94,104 +114,96 @@ export const QuestionComponent = ({
             Select one answer option
           </Text>
 
-          <RadioGroup.Root
-            value={selectedAnswer}
-            onValueChange={(details) => {
-              if (details.value) {
-                hapticsService.triggerAnswerSelection();
-                onAnswerSelect(
-                  currentQuestion.id,
-                  details.value.toUpperCase()
-                );
-              }
-            }}
-            size="sm"
-            colorPalette="blue"
-            disabled={disabled}
-            w="full"
-          >
-            <VStack align="stretch" gap={{ base: 2.5, md: 3 }} w="full">
-              {["A", "B", "C", "D"].map((option) => {
-                const isSelected = selectedAnswer === option;
-                const optionText = currentQuestion[
-                  `option_${option.toLowerCase()}` as keyof typeof currentQuestion
-                ] as string;
+          <VStack align="stretch" gap={{ base: 2.5, md: 3 }} w="full">
+            {["A", "B", "C", "D"].map((option) => {
+              const isSelected = selectedAnswer?.toUpperCase() === option;
+              const optionText = currentQuestion[
+                `option_${option.toLowerCase()}` as keyof typeof currentQuestion
+              ] as string;
 
-                if (!optionText && optionText !== "") return null;
+              if (!optionText && optionText !== "") return null;
 
-                return (
+              return (
+                <Box
+                  key={`${currentQuestion.id}-${option}`}
+                  as="button"
+                  type="button"
+                  role="radio"
+                  aria-checked={isSelected}
+                  disabled={disabled}
+                  onClick={() => {
+                    if (!disabled) {
+                      hapticsService.triggerAnswerSelection();
+                      onAnswerSelect(currentQuestion.id, option);
+                    }
+                  }}
+                  display="flex"
+                  alignItems="center"
+                  textAlign="left"
+                  gap={3.5}
+                  p={{ base: 3, sm: 3.5, md: 4 }}
+                  minH="54px"
+                  borderRadius="xl"
+                  cursor={disabled ? "not-allowed" : "pointer"}
+                  bg={isSelected ? "blue.50/80" : "white"}
+                  border="1.5px solid"
+                  borderColor={isSelected ? "primaryColor" : "gray.200"}
+                  boxShadow={isSelected ? "0 2px 8px rgba(32, 108, 225, 0.12)" : "xs"}
+                  transition="all 0.15s cubic-bezier(0.16, 1, 0.3, 1)"
+                  _hover={!disabled ? { borderColor: isSelected ? "primaryColor" : "gray.300", bg: isSelected ? "blue.50" : "gray.50" } : {}}
+                  _active={!disabled ? { transform: "scale(0.99)" } : {}}
+                  opacity={disabled ? 0.6 : 1}
+                  w="full"
+                >
+                  {/* Option Badge Circle */}
+                  <Flex
+                    align="center"
+                    justify="center"
+                    w="32px"
+                    h="32px"
+                    minW="32px"
+                    borderRadius="full"
+                    bg={isSelected ? "primaryColor" : "gray.100"}
+                    color={isSelected ? "white" : "gray.700"}
+                    fontWeight="bold"
+                    fontSize="sm"
+                    transition="background-color 0.15s ease"
+                    flexShrink={0}
+                  >
+                    {option}
+                  </Flex>
+
+                  {/* Option Text */}
+                  <Text
+                    fontSize={{ base: "sm", md: "15px" }}
+                    fontWeight={isSelected ? "600" : "400"}
+                    color={isSelected ? "gray.900" : "gray.700"}
+                    lineHeight="1.45"
+                    flex={1}
+                  >
+                    {optionText}
+                  </Text>
+
+                  {/* Radio visual indicator on right */}
                   <Box
-                    key={option}
-                    as="label"
+                    w="18px"
+                    h="18px"
+                    borderRadius="full"
+                    border="2px solid"
+                    borderColor={isSelected ? "primaryColor" : "gray.300"}
                     display="flex"
                     alignItems="center"
-                    gap={3.5}
-                    p={{ base: 3, sm: 3.5, md: 4 }}
-                    minH="54px"
-                    borderRadius="xl"
-                    cursor={disabled ? "not-allowed" : "pointer"}
-                    bg={isSelected ? "blue.50/80" : "white"}
-                    border="1.5px solid"
-                    borderColor={isSelected ? "primaryColor" : "gray.200"}
-                    boxShadow={isSelected ? "0 2px 8px rgba(32, 108, 225, 0.12)" : "xs"}
-                    transition="all 0.15s cubic-bezier(0.16, 1, 0.3, 1)"
-                    _hover={!disabled ? { borderColor: isSelected ? "primaryColor" : "gray.300", bg: isSelected ? "blue.50" : "gray.50" } : {}}
-                    _active={!disabled ? { transform: "scale(0.99)" } : {}}
-                    opacity={disabled ? 0.6 : 1}
+                    justifyContent="center"
+                    flexShrink={0}
                   >
-                    <RadioGroup.Item value={option} style={{ display: "none" }}>
-                      <RadioGroup.ItemHiddenInput />
-                    </RadioGroup.Item>
-
-                    {/* Option Badge Circle */}
-                    <Flex
-                      align="center"
-                      justify="center"
-                      w="32px"
-                      h="32px"
-                      minW="32px"
-                      borderRadius="full"
-                      bg={isSelected ? "primaryColor" : "gray.100"}
-                      color={isSelected ? "white" : "gray.700"}
-                      fontWeight="bold"
-                      fontSize="sm"
-                      transition="background-color 0.15s ease"
-                    >
-                      {option}
-                    </Flex>
-
-                    {/* Option Text */}
-                    <Text
-                      fontSize={{ base: "sm", md: "15px" }}
-                      fontWeight={isSelected ? "600" : "400"}
-                      color={isSelected ? "gray.900" : "gray.700"}
-                      lineHeight="1.45"
-                      flex={1}
-                    >
-                      {optionText}
-                    </Text>
-
-                    {/* Radio visual indicator on right */}
-                    <Box
-                      w="18px"
-                      h="18px"
-                      borderRadius="full"
-                      border="2px solid"
-                      borderColor={isSelected ? "primaryColor" : "gray.300"}
-                      display="flex"
-                      alignItems="center"
-                      justifyContent="center"
-                      flexShrink={0}
-                    >
-                      {isSelected && (
-                        <Box w="8px" h="8px" borderRadius="full" bg="primaryColor" />
-                      )}
-                    </Box>
+                    {isSelected && (
+                      <Box w="8px" h="8px" borderRadius="full" bg="primaryColor" />
+                    )}
                   </Box>
-                );
-              })}
-            </VStack>
-          </RadioGroup.Root>
+                </Box>
+              );
+            })}
+          </VStack>
         </Box>
       </Box>
     </Box>

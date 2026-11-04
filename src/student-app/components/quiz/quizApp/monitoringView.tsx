@@ -1,5 +1,6 @@
-import { memo } from "react";
-import { Box, Text, HStack, VStack, Badge } from "@chakra-ui/react";
+import { memo, useState } from "react";
+import { Box, Text, HStack, VStack, Badge, IconButton } from "@chakra-ui/react";
+import { FiX, FiVideo, FiMic, FiMonitor, FiShield } from "react-icons/fi";
 import type { AIProctoringStatus } from "@/hooks/useAIProctoring";
 
 interface MonitoringViewProps {
@@ -31,36 +32,85 @@ export const MonitoringView = memo(({
   isScreenShareSupported = true,
   bypassedScreenShare = false,
 }: MonitoringViewProps) => {
+  const [showDetailsPopover, setShowDetailsPopover] = useState(false);
+
   const getProctorBadge = () => {
     if (!proctorStatus || !proctorStatus.isModelReady) {
-      return { label: "AI Readying...", color: "gray.500", bg: "gray.100" };
+      return {
+        label: "AI Readying...",
+        shortLabel: "Readying",
+        color: "#475569",
+        bg: "#F1F5F9",
+        dot: "#94A3B8",
+      };
     }
     if (proctorStatus.detectedObjects.length > 0) {
       return {
         label: proctorStatus.detectedObjects[0],
-        color: "red.600",
-        bg: "red.50",
+        shortLabel: proctorStatus.detectedObjects[0],
+        color: "#B91C1C",
+        bg: "#FEF2F2",
+        dot: "#EF4444",
       };
     }
     switch (proctorStatus.faceStatus) {
       case "centered":
-        return { label: "Face Centered", color: "green.600", bg: "green.50" };
+        return {
+          label: "Face Centered",
+          shortLabel: "Centered",
+          color: "#047857",
+          bg: "#ECFDF5",
+          dot: "#10B981",
+        };
       case "turned":
-        return { label: "Head Shifted", color: "orange.600", bg: "orange.50" };
+        return {
+          label: "Head Shifted",
+          shortLabel: "Shifted",
+          color: "#B45309",
+          bg: "#FFFBEB",
+          dot: "#F59E0B",
+        };
       case "multiple":
-        return { label: "2+ People Detected", color: "red.600", bg: "red.50" };
+        return {
+          label: "2+ People Detected",
+          shortLabel: "Multiple",
+          color: "#B91C1C",
+          bg: "#FEF2F2",
+          dot: "#EF4444",
+        };
       case "missing":
-        return { label: "No Face Detected", color: "red.600", bg: "red.50" };
+        return {
+          label: "No Face Detected",
+          shortLabel: "No Face",
+          color: "#B91C1C",
+          bg: "#FEF2F2",
+          dot: "#EF4444",
+        };
       default:
-        return { label: "AI Active", color: "green.600", bg: "green.50" };
+        return {
+          label: "AI Active",
+          shortLabel: "Active",
+          color: "#047857",
+          bg: "#ECFDF5",
+          dot: "#10B981",
+        };
     }
   };
 
   const proctorBadge = getProctorBadge();
 
+  const borderColor =
+    proctorStatus?.faceStatus === "turned"
+      ? "#F59E0B"
+      : proctorStatus?.faceStatus === "multiple" ||
+        proctorStatus?.faceStatus === "missing" ||
+        (proctorStatus?.detectedObjects.length ?? 0) > 0
+      ? "#EF4444"
+      : "#10B981";
+
   return (
     <>
-      {/* Background Screen Share (Invisible but active) */}
+      {/* Background Screen Share (Active in DOM but invisible) */}
       <video
         ref={setScreenNode}
         autoPlay
@@ -76,36 +126,30 @@ export const MonitoringView = memo(({
       />
 
       {showMonitoring && (
-        <VStack
-          position="fixed"
-          left="10px"
-          top="80px"
-          zIndex={1000}
-          align="stretch"
-          gap={2}
-          width="150px"
+        <HStack
+          position="relative"
+          align="center"
+          gap={{ base: 1.5, sm: 2 }}
+          py={0.5}
         >
-          {/* Webcam Feed */}
+          {/* Mini Live Webcam Stream in Topbar */}
           {hasWebcamAccess && (
             <Box
-              width="150px"
-              height="95px"
+              w={{ base: "48px", sm: "58px", md: "68px" }}
+              h={{ base: "30px", sm: "36px", md: "40px" }}
               bg="black"
-              borderRadius="lg"
-              boxShadow="xl"
+              borderRadius="md"
               overflow="hidden"
               border="2px solid"
-              borderColor={
-                proctorStatus?.faceStatus === "turned"
-                  ? "orange.400"
-                  : proctorStatus?.faceStatus === "multiple" ||
-                    proctorStatus?.faceStatus === "missing" ||
-                    (proctorStatus?.detectedObjects.length ?? 0) > 0
-                  ? "red.500"
-                  : "blue.500"
-              }
-              userSelect="none"
+              borderColor={borderColor}
               position="relative"
+              cursor="pointer"
+              onClick={() => setShowDetailsPopover((prev) => !prev)}
+              title="Click to view AI Proctoring details"
+              flexShrink={0}
+              boxShadow="xs"
+              transition="transform 0.15s ease"
+              _hover={{ transform: "scale(1.04)" }}
             >
               <video
                 ref={setWebcamNode}
@@ -120,34 +164,35 @@ export const MonitoringView = memo(({
                 }}
               />
 
-              {/* Top Overlay Indicator */}
+              {/* Mini Top Overlay Tag */}
               <Box
                 position="absolute"
-                top="0"
-                width="100%"
-                height="22px"
-                bgGradient="to-b"
-                gradientFrom="blackAlpha.800"
-                gradientTo="transparent"
-                px={2}
-                pt={1}
+                top="1px"
+                left="2px"
+                bg="blackAlpha.800"
+                px="3px"
+                py="0.5px"
+                borderRadius="xs"
+                display="flex"
+                alignItems="center"
+                gap="2px"
               >
-                <HStack justify="space-between" align="center">
-                  <HStack gap={1}>
-                    <Box boxSize="5px" borderRadius="full" bg="red.500" />
-                    <Text
-                      fontSize="9px"
-                      color="white"
-                      fontWeight="bold"
-                      letterSpacing="wider"
-                    >
-                      LIVE PROCTOR
-                    </Text>
-                  </HStack>
-                </HStack>
+                <Box
+                  boxSize="4px"
+                  borderRadius="full"
+                  bg="red.500"
+                />
+                <Text
+                  fontSize="7px"
+                  fontWeight="800"
+                  color="white"
+                  letterSpacing="0.03em"
+                >
+                  LIVE
+                </Text>
               </Box>
 
-              {/* Bottom Alert Overlay (if warning) */}
+              {/* Warning tag if head shifted or face missing */}
               {(proctorStatus?.faceStatus === "turned" ||
                 proctorStatus?.faceStatus === "multiple" ||
                 proctorStatus?.faceStatus === "missing" ||
@@ -157,144 +202,174 @@ export const MonitoringView = memo(({
                   bottom="0"
                   width="100%"
                   bg="blackAlpha.800"
-                  py="2px"
-                  px={1}
+                  px={0.5}
                   textAlign="center"
                 >
                   <Text
-                    fontSize="8px"
-                    fontWeight="bold"
+                    fontSize="6.5px"
+                    fontWeight="800"
                     color={
                       proctorStatus?.faceStatus === "turned"
                         ? "orange.300"
                         : "red.300"
                     }
-                    lineClamp={1}
+                    noOfLines={1}
                   >
-                    ⚠️ {proctorBadge.label}
+                    ⚠️ {proctorBadge.shortLabel}
                   </Text>
                 </Box>
               )}
             </Box>
           )}
 
-          {/* Compact Status List (Under Webcam) */}
-          <VStack
-            align="stretch"
-            gap={1}
-            p={2}
-            bg="whiteAlpha.950"
-            borderRadius="md"
-            boxShadow="sm"
+          {/* Compact Proctor Status Pill Button */}
+          <Box
+            as="button"
+            onClick={() => setShowDetailsPopover((prev) => !prev)}
+            px={{ base: 1.5, sm: 2 }}
+            py={1}
+            borderRadius="full"
+            bg={proctorBadge.bg}
+            color={proctorBadge.color}
             border="1px solid"
-            borderColor="gray.200"
+            borderColor={borderColor}
+            cursor="pointer"
+            display="flex"
+            alignItems="center"
+            gap={1}
+            transition="all 0.15s ease"
+            _hover={{ opacity: 0.85 }}
+            title="Click to view sensor diagnostics"
           >
-            <HStack justify="space-between">
-              <HStack gap={1.5}>
-                <Box
-                  boxSize="6px"
-                  borderRadius="full"
-                  bg={hasWebcamAccess ? "green.500" : "red.500"}
-                />
-                <Text fontSize="10px" fontWeight="semibold" color="gray.700">
-                  Camera
-                </Text>
-              </HStack>
-              <Text fontSize="9px" color={hasWebcamAccess ? "green.600" : "red.500"}>
-                {hasWebcamAccess ? "ON" : "OFF"}
+            <Box boxSize="6px" borderRadius="full" bg={proctorBadge.dot} flexShrink={0} />
+            <Text
+              fontSize={{ base: "9px", sm: "10.5px", md: "11px" }}
+              fontWeight="700"
+              lineHeight="1"
+              whiteSpace="nowrap"
+            >
+              <Text as="span" display={{ base: "none", md: "inline" }}>
+                AI Proctor:{" "}
               </Text>
-            </HStack>
+              <Text as="span" display={{ base: "inline", sm: "none" }}>
+                {proctorBadge.shortLabel}
+              </Text>
+              <Text as="span" display={{ base: "none", sm: "inline" }}>
+                {proctorBadge.label}
+              </Text>
+            </Text>
+          </Box>
 
-            <HStack justify="space-between">
-              <HStack gap={1.5}>
-                <Box
-                  boxSize="6px"
-                  borderRadius="full"
-                  bg={
-                    hasScreenAccess
-                      ? "green.500"
-                      : !isScreenShareSupported || bypassedScreenShare
-                      ? "blue.500"
-                      : "red.500"
-                  }
-                />
-                <Text fontSize="10px" fontWeight="semibold" color="gray.700">
-                  Screen
-                </Text>
-              </HStack>
-              <Text
-                fontSize="9px"
-                fontWeight="semibold"
-                color={
-                  hasScreenAccess
-                    ? "green.600"
-                    : !isScreenShareSupported || bypassedScreenShare
-                    ? "blue.600"
-                    : "red.500"
-                }
+          {/* Expandable Diagnostic Popover Card */}
+          {showDetailsPopover && (
+            <>
+              {/* Invisible click-away backdrop */}
+              <Box
+                position="fixed"
+                inset="0"
+                zIndex={1200}
+                onClick={() => setShowDetailsPopover(false)}
+              />
+
+              <Box
+                position="absolute"
+                top="calc(100% + 6px)"
+                left={{ base: "-30px", sm: "0" }}
+                zIndex={1201}
+                w={{ base: "230px", sm: "260px" }}
+                bg="white"
+                borderRadius="xl"
+                p={3}
+                boxShadow="0 10px 25px -5px rgba(0, 0, 0, 0.15), 0 8px 10px -6px rgba(0, 0, 0, 0.1)"
+                border="1px solid"
+                borderColor="gray.200"
+                fontSize="11px"
               >
-                {hasScreenAccess
-                  ? "SHARED"
-                  : !isScreenShareSupported || bypassedScreenShare
-                  ? "TAB FOCUS"
-                  : "OFF"}
-              </Text>
-            </HStack>
+                <Flex justify="space-between" align="center" pb={2} mb={2} borderBottom="1px solid" borderColor="gray.100">
+                  <HStack gap={1.5} align="center">
+                    <FiShield color="#206CE1" size={14} />
+                    <Text fontWeight="800" color="gray.800" fontSize="12px">
+                      AI Proctoring Live Status
+                    </Text>
+                  </HStack>
+                  <IconButton
+                    aria-label="Close"
+                    size="xs"
+                    variant="ghost"
+                    h="20px"
+                    w="20px"
+                    minW="20px"
+                    onClick={() => setShowDetailsPopover(false)}
+                  >
+                    <FiX size={12} />
+                  </IconButton>
+                </Flex>
 
-            <HStack justify="space-between">
-              <HStack gap={1.5}>
-                <Box
-                  boxSize="6px"
-                  borderRadius="full"
-                  bg={hasAudioAccess ? "green.500" : "red.500"}
-                />
-                <Text fontSize="10px" fontWeight="semibold" color="gray.700">
-                  Microphone
-                </Text>
-              </HStack>
-              <Text fontSize="9px" color={hasAudioAccess ? "green.600" : "red.500"}>
-                {hasAudioAccess ? "ACTIVE" : "OFF"}
-              </Text>
-            </HStack>
+                <VStack align="stretch" gap={1.5}>
+                  <HStack justify="space-between" align="center">
+                    <HStack gap={1.5}>
+                      <FiVideo size={13} color={hasWebcamAccess ? "#10B981" : "#EF4444"} />
+                      <Text color="gray.600" fontWeight="600">Front Camera</Text>
+                    </HStack>
+                    <Badge colorPalette={hasWebcamAccess ? "green" : "red"} size="xs">
+                      {hasWebcamAccess ? "ACTIVE" : "OFF"}
+                    </Badge>
+                  </HStack>
 
-            {/* AI Vision & Head Pose Status */}
-            <Box pt={1} borderTop="1px solid" borderColor="gray.100">
-              <HStack justify="space-between" align="center" mb={1}>
-                <Text fontSize="9px" fontWeight="bold" color="gray.600">
-                  AI Proctor:
-                </Text>
-                <Badge
-                  size="xs"
-                  fontSize="8px"
-                  px={1}
-                  py={0.5}
-                  colorPalette={
-                    proctorBadge.color.startsWith("green")
-                      ? "green"
-                      : proctorBadge.color.startsWith("orange")
-                      ? "orange"
-                      : "red"
-                  }
-                >
-                  {proctorBadge.label}
-                </Badge>
-              </HStack>
-              <HStack justify="space-between" align="center">
-                <Text fontSize="8px" color="gray.500">Tier:</Text>
-                <Badge
-                  size="xs"
-                  fontSize="7.5px"
-                  px={1}
-                  py={0}
-                  colorPalette={effectivePlan === "premium" ? "purple" : "blue"}
-                  variant="subtle"
-                >
-                  {effectivePlan === "premium" ? "Full Access (Premium)" : "Limited (Standard)"}
-                </Badge>
-              </HStack>
-            </Box>
-          </VStack>
-        </VStack>
+                  <HStack justify="space-between" align="center">
+                    <HStack gap={1.5}>
+                      <FiMonitor size={13} color={hasScreenAccess || !isScreenShareSupported || bypassedScreenShare ? "#10B981" : "#EF4444"} />
+                      <Text color="gray.600" fontWeight="600">Focus & Screen</Text>
+                    </HStack>
+                    <Badge
+                      colorPalette={hasScreenAccess ? "green" : !isScreenShareSupported || bypassedScreenShare ? "blue" : "red"}
+                      size="xs"
+                    >
+                      {hasScreenAccess ? "SHARED" : !isScreenShareSupported || bypassedScreenShare ? "TAB FOCUS" : "OFF"}
+                    </Badge>
+                  </HStack>
+
+                  <HStack justify="space-between" align="center">
+                    <HStack gap={1.5}>
+                      <FiMic size={13} color={hasAudioAccess ? "#10B981" : "#EF4444"} />
+                      <Text color="gray.600" fontWeight="600">Microphone</Text>
+                    </HStack>
+                    <Badge colorPalette={hasAudioAccess ? "green" : "red"} size="xs">
+                      {hasAudioAccess ? "ACTIVE" : "OFF"}
+                    </Badge>
+                  </HStack>
+
+                  <Box pt={1.5} borderTop="1px solid" borderColor="gray.100">
+                    <HStack justify="space-between" align="center">
+                      <Text color="gray.600" fontWeight="700">Head Pose / Gaze:</Text>
+                      <Badge
+                        size="xs"
+                        colorPalette={
+                          proctorBadge.color.includes("047857")
+                            ? "green"
+                            : proctorBadge.color.includes("B45309")
+                            ? "orange"
+                            : "red"
+                        }
+                      >
+                        {proctorBadge.label}
+                      </Badge>
+                    </HStack>
+                  </Box>
+
+                  {effectivePlan && (
+                    <HStack justify="space-between" align="center" pt={1}>
+                      <Text color="gray.500" fontSize="10px">Plan Level:</Text>
+                      <Badge size="xs" colorPalette={effectivePlan === "premium" ? "purple" : "blue"} variant="subtle">
+                        {effectivePlan === "premium" ? "Premium Live Vision" : "Standard Monitoring"}
+                      </Badge>
+                    </HStack>
+                  )}
+                </VStack>
+              </Box>
+            </>
+          )}
+        </HStack>
       )}
     </>
   );

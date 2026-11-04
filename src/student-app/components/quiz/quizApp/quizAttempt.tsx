@@ -1,4 +1,4 @@
-import { useCallback, useEffect, memo, useRef } from "react";
+import { useCallback, useEffect, useRef } from "react";
 import { Box, Alert, Text, Button, Dialog, VStack, HStack, Badge } from "@chakra-ui/react";
 import { toaster } from "@/components/ui/toaster";
 import { supabase } from "@/lib/supabaseClient";
@@ -22,83 +22,7 @@ import { FiCamera, FiMic, FiMonitor, FiShield } from "react-icons/fi";
 import { useExamWakeLock } from "@/services/examWakeLockService";
 
 
-// ─── Memoized Monitoring View (unchanged) ─────────────────────────────────────
 
-const MemoizedMonitoring = memo(
-  ({
-    hasWebcamAccess,
-    hasScreenAccess,
-    hasAudioAccess,
-    showMonitoring,
-    setWebcamNode,
-    setScreenNode,
-    toggleMonitoring,
-    handleManualPlay,
-    bypassedScreenShare,
-    initializeScreenShare,
-    proctorStatus,
-    isScreenShareSupported = true,
-  }: any) => {
-    return (
-      <>
-        {!hasWebcamAccess && (
-          <Alert.Root status="warning" size="sm" mb={2}>
-            <Alert.Indicator />
-            <Alert.Description fontSize="xs">
-              Webcam disconnected. Please ensure your camera is enabled.
-            </Alert.Description>
-          </Alert.Root>
-        )}
-
-        {!hasScreenAccess && !bypassedScreenShare && isScreenShareSupported && (
-          <Alert.Root status="error" size="sm" mb={2}>
-            <Alert.Indicator />
-            <Alert.Title fontSize="xs">Screen Sharing Inactive</Alert.Title>
-            <Alert.Description fontSize="xs">
-              Entire screen sharing is required during desktop examinations.
-            </Alert.Description>
-            {initializeScreenShare && (
-              <Button
-                size="xs"
-                colorPalette="red"
-                ml="auto"
-                onClick={initializeScreenShare}
-              >
-                Re-share Screen
-              </Button>
-            )}
-          </Alert.Root>
-        )}
-
-        {(!isScreenShareSupported || bypassedScreenShare) && hasWebcamAccess && (
-          <Alert.Root status="info" size="sm" mb={2} borderRadius="md">
-            <Alert.Indicator />
-            <Alert.Title fontSize="xs">Mobile Proctored Mode Active</Alert.Title>
-            <Alert.Description fontSize="xs">
-              Front Camera & Tab/App Focus tracking active. Maintain eye contact with the screen.
-            </Alert.Description>
-          </Alert.Root>
-        )}
-
-        {showMonitoring && (hasWebcamAccess || hasScreenAccess) && (
-          <MonitoringView
-            hasWebcamAccess={hasWebcamAccess}
-            hasScreenAccess={hasScreenAccess}
-            hasAudioAccess={hasAudioAccess}
-            showMonitoring={showMonitoring}
-            setWebcamNode={setWebcamNode}
-            setScreenNode={setScreenNode}
-            toggleMonitoring={toggleMonitoring}
-            handleManualPlay={handleManualPlay}
-            proctorStatus={proctorStatus}
-            isScreenShareSupported={isScreenShareSupported}
-            bypassedScreenShare={bypassedScreenShare}
-          />
-        )}
-      </>
-    );
-  }
-);
 
 // ─── Main Component ───────────────────────────────────────────────────────────
 
@@ -679,28 +603,9 @@ const QuizAttempt = ({
 
   return (
     <Box w="full" maxW="6xl" mx="auto" px={{ base: 2, sm: 4, md: 6 }}>
-      {isMonitoringEnabled && (
-        <MemoizedMonitoring
-          hasWebcamAccess={hasWebcamAccess}
-          hasScreenAccess={hasScreenAccess}
-          hasAudioAccess={hasAudioAccess}
-          showMonitoring={showMonitoring}
-          setWebcamNode={setWebcamNode}
-          setScreenNode={setScreenNode}
-          toggleMonitoring={toggleMonitoring}
-          handleManualPlay={handleManualPlay}
-          cheatingScore={cheatingScore}
-          reportInfraction={reportInfraction}
-          bypassedScreenShare={bypassedScreenShare}
-          initializeScreenShare={initializeScreenShare}
-          proctorStatus={proctorStatus}
-          isScreenShareSupported={isScreenShareSupported}
-        />
-      )}
-
       {subjectTimeLeft[currentSubjectIndex] !== undefined &&
         subjectTimeLeft[currentSubjectIndex] <= 0 && (
-          <Alert.Root status="warning" my={4}>
+          <Alert.Root status="warning" my={2}>
             <Alert.Indicator />
             <Alert.Title>Time Finished</Alert.Title>
             <Alert.Description>
@@ -724,7 +629,53 @@ const QuizAttempt = ({
             subjectTimeLeft[currentSubjectIndex] <= 0)
         }
         cheatingScore={cheatingScore}
+        monitoringNode={
+          isMonitoringEnabled && showMonitoring && (hasWebcamAccess || hasScreenAccess) ? (
+            <MonitoringView
+              hasWebcamAccess={hasWebcamAccess}
+              hasScreenAccess={hasScreenAccess}
+              hasAudioAccess={hasAudioAccess}
+              showMonitoring={showMonitoring}
+              setWebcamNode={setWebcamNode}
+              setScreenNode={setScreenNode}
+              toggleMonitoring={toggleMonitoring}
+              handleManualPlay={handleManualPlay}
+              proctorStatus={proctorStatus}
+              isScreenShareSupported={isScreenShareSupported}
+              bypassedScreenShare={bypassedScreenShare}
+            />
+          ) : undefined
+        }
       />
+
+      {isMonitoringEnabled && !hasScreenAccess && !bypassedScreenShare && isScreenShareSupported && (
+        <Alert.Root status="error" size="sm" my={2}>
+          <Alert.Indicator />
+          <Alert.Title fontSize="xs">Screen Sharing Inactive</Alert.Title>
+          <Alert.Description fontSize="xs">
+            Entire screen sharing is required during desktop examinations.
+          </Alert.Description>
+          {initializeScreenShare && (
+            <Button
+              size="xs"
+              colorPalette="red"
+              ml="auto"
+              onClick={initializeScreenShare}
+            >
+              Re-share Screen
+            </Button>
+          )}
+        </Alert.Root>
+      )}
+
+      {isMonitoringEnabled && !hasWebcamAccess && (
+        <Alert.Root status="warning" size="sm" my={2}>
+          <Alert.Indicator />
+          <Alert.Description fontSize="xs">
+            Webcam disconnected. Please ensure your camera is enabled for proctoring.
+          </Alert.Description>
+        </Alert.Root>
+      )}
 
       <SubjectNavigation
         subjects={quizData.subjects}
@@ -739,10 +690,16 @@ const QuizAttempt = ({
       />
 
       <QuestionComponent
+        key={
+          currentSubjectQuestions[currentQuestionIndex]?.id ||
+          `${currentSubjectIndex}-${currentQuestionIndex}`
+        }
         currentQuestion={currentSubjectQuestions[currentQuestionIndex]}
         currentQuestionIndex={currentQuestionIndex}
         totalQuestions={currentSubjectQuestions.length}
-        selectedAnswer={answers[currentSubjectQuestions[currentQuestionIndex]?.id] || ""}
+        selectedAnswer={
+          answers[currentSubjectQuestions[currentQuestionIndex]?.id] || ""
+        }
         onAnswerSelect={handleAnswerSelect}
         disabled={
           subjectTimeLeft[currentSubjectIndex] !== undefined &&

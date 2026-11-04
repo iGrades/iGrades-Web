@@ -53,11 +53,7 @@ export const SubjectNavigation = ({
             }
             variant={currentSubjectIndex === index ? "solid" : "ghost"}
             onClick={() => onSubjectChange(index)}
-            disabled={
-              (!completedSubjects.has(currentSubjectIndex) &&
-                currentSubjectIndex !== index) ||
-              !hasQuizzes
-            }
+            disabled={!hasQuizzes}
             title={!hasQuizzes ? "No quiz available for this subject" : ""}
           >
             {subject.displayName}

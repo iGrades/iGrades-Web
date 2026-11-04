@@ -18,7 +18,7 @@ import { supabase } from "@/lib/supabaseClient";
 import { useAuthdStudentData } from "@/student-app/context/studentDataContext";
 import { GoArrowRight } from "react-icons/go";
 import { IoIosCheckmarkCircle } from "react-icons/io";
-import { LuArrowLeft, LuArrowRight } from "react-icons/lu";
+import { LuArrowLeft, LuArrowRight, LuLayers } from "react-icons/lu";
 import Slider from "react-slick";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
@@ -128,13 +128,10 @@ const QuizInstructions = ({
     try {
       if (!authdStudent?.id) throw new Error("Student not authenticated.");
 
-      // 1. Get all subject IDs from the database using the dbNames
-      const dbNames = selectedCourses.map((course) => course.dbName);
-
-      const { data: subjectsData, error: subjectsError } = await supabase
+      // 1. Resolve subject IDs with case-insensitive matching
+      const { data: allDbSubjects, error: subjectsError } = await supabase
         .from("subjects")
-        .select("id, name")
-        .in("name", dbNames);
+        .select("id, name");
 
       if (subjectsError) {
         console.error("Error fetching subjects:", subjectsError);
@@ -143,10 +140,16 @@ const QuizInstructions = ({
 
       const validSelectedCourses = selectedCourses
         .map((course) => {
-          const dbSubject = subjectsData?.find((s) => s.name === course.dbName);
+          const normCourse = (course.dbName || course.displayName || "").trim().toLowerCase();
+          const dbSubject = (allDbSubjects || []).find(
+            (s) =>
+              s.name?.trim().toLowerCase() === normCourse ||
+              s.id === course.id
+          );
           return {
             ...course,
             id: dbSubject ? dbSubject.id : course.id,
+            dbName: dbSubject ? dbSubject.name : course.dbName,
           };
         })
         .filter((c) => c.id);
@@ -159,104 +162,103 @@ const QuizInstructions = ({
         throw new Error("Could not find subject IDs in database. Please contact support.");
       }
 
-      if (validTopics.length === 0) {
-        throw new Error("No valid topics selected. Please select topics again.");
+      // 2. Fetch all quizzes available for the selected subjects
+      const subjectIds = validSelectedCourses.map((c) => c.id);
+      const { data: allDbQuizzes, error: quizzesError } = await supabase
+        .from("quizzes")
+        .select("id, subject_id, topic_id, title")
+        .in("subject_id", subjectIds);
+
+      if (quizzesError) {
+        console.error("Error fetching quizzes:", quizzesError);
+        throw new Error(`Quiz fetch error: ${quizzesError.message}`);
       }
 
-      // 2. Resolve quizzes for the selected subject(s) and topics
-      let allQuizzes: any[] = [];
-      try {
-        const { data: dbQuizzes, error: quizzesError } = await supabase
-          .from("quizzes")
-          .select("id, subject_id, topic_id, title")
-          .in("subject_id", validSelectedCourses.map((c) => c.id))
-          .in("topic_id", validTopics);
-
-        if (quizzesError) throw quizzesError;
-        allQuizzes = dbQuizzes || [];
-      } catch (err: any) {
-        console.error("Error fetching quizzes:", err);
-        throw new Error(`Quiz fetch error: ${err.message}`);
+      const resolvedQuizzes = allDbQuizzes || [];
+      if (resolvedQuizzes.length === 0) {
+        throw new Error("No quizzes found for the selected subjects. Please select different subjects.");
       }
 
-      if (allQuizzes.length === 0) {
-        throw new Error(
-          "No quizzes found for the selected subjects and topics."
+      // 3. Assemble questions strictly from selected topics and subtopics, picked at random, capped at 60 per subject
+      const MAX_PER_SUBJECT = 60;
+      const loadedQuestions: any[] = [];
+
+      for (const subject of validSelectedCourses) {
+        // Only consider quizzes belonging to this subject AND matching selected topics
+        const topicQuizzes = resolvedQuizzes.filter(
+          (q) => q.subject_id === subject.id && validTopics.includes(q.topic_id)
         );
-      }
+        const topicQuizIds = topicQuizzes.map((q) => q.id);
 
-      const quizIds = allQuizzes.map((quiz) => quiz.id);
+        let subjectQuestions: any[] = [];
 
-      // 3. Fetch questions with Topic & Subtopic logic
-      // In Quick Test mode: Filter or prioritize by selectedSubtopics
-      // In Examination mode: Fetch across all subtopics in the selected topics
-      let loadedQuestions: any[] = [];
+        // 3a. Fetch questions by quiz_id under the selected topics
+        if (topicQuizIds.length > 0) {
+          const { data: qData } = await supabase
+            .from("questions")
+            .select("*")
+            .in("quiz_id", topicQuizIds);
 
-      // Query questions matching the quizzes or topics
-      const { data: rawQuestions, error: questionsError } = await supabase
-        .from("questions")
-        .select("*")
-        .in("quiz_id", quizIds);
+          if (qData && qData.length > 0) {
+            subjectQuestions.push(...qData);
+          }
+        }
 
-      if (questionsError) {
-        console.error("Error fetching questions by quiz_id:", questionsError);
-      }
-
-      const allFetchedQuestions = rawQuestions || [];
-
-      // Also try fetching questions directly by topic_id if fewer questions found
-      if (allFetchedQuestions.length < 5) {
-        const { data: topicQuestions } = await supabase
+        // 3b. Also fetch questions directly matching selected topic_id and subject_id
+        const { data: directTopicQuestions } = await supabase
           .from("questions")
           .select("*")
+          .eq("subject_id", subject.id)
           .in("topic_id", validTopics);
 
-        if (topicQuestions && topicQuestions.length > 0) {
-          const existingIds = new Set(allFetchedQuestions.map((q) => q.id));
-          topicQuestions.forEach((tq) => {
-            if (!existingIds.has(tq.id)) {
-              allFetchedQuestions.push(tq);
+        if (directTopicQuestions && directTopicQuestions.length > 0) {
+          const existingIds = new Set(subjectQuestions.map((q) => q.id));
+          directTopicQuestions.forEach((dq) => {
+            if (!existingIds.has(dq.id)) {
+              subjectQuestions.push(dq);
+              existingIds.add(dq.id);
             }
           });
         }
+
+        // 3c. In Quick Test mode: strictly filter to selected subtopics if any were selected
+        if (examMode === "quick test" && selectedSubtopics.length > 0) {
+          const realSubtopicIds = selectedSubtopics.filter(
+            (stId) => !stId.startsWith("default_")
+          );
+          if (realSubtopicIds.length > 0) {
+            subjectQuestions = subjectQuestions.filter(
+              (q) => q.subtopic_id && realSubtopicIds.includes(q.subtopic_id)
+            );
+          }
+        }
+
+        // Ensure every question has the subject_id stamped
+        const taggedQuestions = subjectQuestions.map((q) => ({
+          ...q,
+          subject_id: subject.id,
+        }));
+
+        // Pick at random and cap at 60 questions per subject
+        const finalSubjQuestions = taggedQuestions
+          .sort(() => 0.5 - Math.random())
+          .slice(0, MAX_PER_SUBJECT);
+
+        loadedQuestions.push(...finalSubjQuestions);
       }
 
-      if (allFetchedQuestions.length === 0) {
+      if (loadedQuestions.length === 0) {
         throw new Error(
-          "No questions found for the selected quizzes. Please ensure questions are loaded in the CMS."
+          "No questions found for the selected topic(s) and subtopic(s). Please choose topics or subtopics that have questions loaded."
         );
       }
 
-      // Mode-specific Question Filtering
-      if (examMode === "quick test" && selectedSubtopics.length > 0) {
-        // Priority 1: Questions matching the exact subtopic IDs selected
-        const subtopicQuestions = allFetchedQuestions.filter(
-          (q) => q.subtopic_id && selectedSubtopics.includes(q.subtopic_id)
-        );
-
-        // Priority 2: Questions matching the selected topics (if subtopic_id is null/unassigned)
-        const topicOnlyQuestions = allFetchedQuestions.filter(
-          (q) => !q.subtopic_id || !selectedSubtopics.includes(q.subtopic_id)
-        );
-
-        // Combine prioritized subtopic questions first, supplemented by topic questions if needed
-        const combined = [...subtopicQuestions, ...topicOnlyQuestions];
-        // 15 questions per subject for test mode
-        const targetCount = validSelectedCourses.length * 15;
-        loadedQuestions = combined.slice(0, Math.max(targetCount, 15));
-      } else {
-        // Examination mode: shuffle and take up to 60 questions per subject
-        const shuffled = [...allFetchedQuestions].sort(() => 0.5 - Math.random());
-        const targetCount = validSelectedCourses.length * 60;
-        loadedQuestions = shuffled.slice(0, Math.max(targetCount, 60));
-      }
-
-      // 4. Prepare quiz data
+      // 4. Prepare complete quiz data
       const quizDataObj = {
         mode: examMode,
         subjects: validSelectedCourses,
         topics: validTopics,
-        quizzes: allQuizzes,
+        quizzes: resolvedQuizzes,
         questions: loadedQuestions,
         timePerSubject,
         totalTime: allocatedTime,
@@ -626,8 +628,8 @@ const QuizInstructions = ({
                       color="gray.800"
                     >
                       {examMode === "examination"
-                        ? `⏱️ Examination Duration: ${timePerSubject} minutes per subject`
-                        : `📝 Quick Test: 15 questions per subject`}
+                        ? `⏱️ Examination Duration: ${timePerSubject} minutes per subject (up to 60 questions)`
+                        : `📝 Quick Test: Practice on Selected Topics & Subtopics`}
                     </Text>
                     {examMode === "examination" && (
                       <Badge

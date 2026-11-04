@@ -66,6 +66,7 @@ export interface QuizHeaderProps {
   mode: string;
   disableActions?: boolean;
   cheatingScore: number;
+  monitoringNode?: React.ReactNode;
 }
 
 export interface SubjectNavigationProps {

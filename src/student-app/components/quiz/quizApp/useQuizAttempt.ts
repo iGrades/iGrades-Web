@@ -143,25 +143,28 @@ export const useQuizAttempt = (quizData: QuizAttemptProps["quizData"]) => {
       setCurrentQuestionIndex((prev) => prev + 1);
     } else {
       setCompletedSubjects((prev) => new Set(prev).add(currentSubjectIndex));
+      // Auto-advance to the next subject if one exists and current is completed
+      if (currentSubjectIndex < quizData.subjects.length - 1) {
+        setCurrentSubjectIndex((prev) => prev + 1);
+        setCurrentQuestionIndex(0);
+      }
     }
   };
 
   const handlePreviousQuestion = () => {
     if (currentQuestionIndex > 0) {
       setCurrentQuestionIndex((prev) => prev - 1);
+    } else if (currentSubjectIndex > 0) {
+      // Step back to previous subject's last question
+      const prevSubjectIndex = currentSubjectIndex - 1;
+      const prevSubject = quizData.subjects[prevSubjectIndex];
+      const prevQuestions = quizData.questions.filter((q) => q.subject_id === prevSubject?.id);
+      setCurrentSubjectIndex(prevSubjectIndex);
+      setCurrentQuestionIndex(Math.max(0, prevQuestions.length - 1));
     }
   };
 
   const handleSubjectChange = (subjectIndex: number) => {
-    if (
-      !completedSubjects.has(currentSubjectIndex) &&
-      currentSubjectIndex !== subjectIndex
-    ) {
-      setError(
-        "Please complete all questions in the current subject before switching."
-      );
-      return;
-    }
     setError(null);
     setCurrentSubjectIndex(subjectIndex);
     setCurrentQuestionIndex(0);

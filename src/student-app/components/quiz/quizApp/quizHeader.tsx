@@ -23,6 +23,7 @@ export const QuizHeader = ({
   isSubmitting,
   mode,
   cheatingScore,
+  monitoringNode,
 }: QuizHeaderProps) => {
   const { subjectImages } = useStudentData();
   const currentSubjectImage = subjectImages[currentSubject?.dbName] || null;
@@ -49,11 +50,11 @@ export const QuizHeader = ({
       borderBottom="1px solid"
       borderColor="gray.100"
       boxShadow="xs"
-      gap={2}
+      gap={{ base: 1, sm: 2 }}
     >
       {/* Left: Logo & Current Subject */}
-      <HStack gap={{ base: 2, md: 3 }} align="center" flexShrink={0}>
-        <Box w={{ base: "70px", sm: "85px", md: "110px" }}>
+      <HStack gap={{ base: 1.5, sm: 2, md: 3 }} align="center" flexShrink={0}>
+        <Box w={{ base: "60px", sm: "75px", md: "100px" }}>
           <Image
             src={logo}
             alt="Logo"
@@ -67,12 +68,12 @@ export const QuizHeader = ({
             <Image
               src={currentSubjectImage}
               alt={currentSubject.displayName}
-              boxSize={{ base: "32px", md: "40px" }}
+              boxSize={{ base: "26px", sm: "32px", md: "38px" }}
               objectFit="contain"
             />
           ) : (
             <Box
-              boxSize={{ base: "32px", md: "40px" }}
+              boxSize={{ base: "26px", sm: "32px", md: "38px" }}
               bg="blue.50"
               border="1px solid"
               borderColor="blue.200"
@@ -89,12 +90,15 @@ export const QuizHeader = ({
         </Box>
       </HStack>
 
-      {/* Center: Proctoring info if exam mode */}
-      {mode === "examination" && (
-        <Box display={{ base: "none", md: "block" }}>
-          <CheatingProgressBar cheatingScore={cheatingScore} />
-        </Box>
-      )}
+      {/* Center: Live Proctoring Mini View & Cheating Meter */}
+      <HStack gap={{ base: 1, sm: 2 }} align="center" justify="center" flexShrink={0}>
+        {monitoringNode}
+        {mode === "examination" && (
+          <Box display={{ base: "none", lg: "block" }}>
+            <CheatingProgressBar cheatingScore={cheatingScore} />
+          </Box>
+        )}
+      </HStack>
 
       {/* Right: Timer, Calculator, Subject status, Submit Button */}
       <HStack gap={{ base: 1.5, sm: 3 }} align="center" ml="auto">
